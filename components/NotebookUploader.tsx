@@ -3,6 +3,59 @@
 import React, { useState, useRef } from "react";
 import { Camera, RefreshCw, Upload, CheckCircle, AlertCircle, X } from "lucide-react";
 
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { ImageIcon, Sparkles } from "lucide-react";
+
+function fixImageUrl(src: string): string {
+    if (src.includes("pollinations.ai")) {
+        let prompt = "";
+        if (src.includes("/p/")) {
+            prompt = src.split("/p/")[1]?.split("?")[0]?.replace(/\\+/g, " ") || "";
+        } else if (src.includes("/prompt/")) {
+            prompt = decodeURIComponent(src.split("/prompt/")[1]?.split("?")[0] || "");
+        }
+        if (prompt) {
+            return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=400&nologo=true`;
+        }
+    }
+    return src;
+}
+
+function PollinationsImage({ src, alt }: { src?: string; alt?: string }) {
+    const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
+    const fixedSrc = src ? fixImageUrl(src) : "";
+
+    return status === "error" || !fixedSrc ? (
+        <div className="w-full rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 border-2 border-dashed border-indigo-200 p-6 text-center my-4">
+            <ImageIcon className="w-12 h-12 text-indigo-300 mx-auto mb-3" />
+            <p className="text-indigo-600 font-medium text-sm italic">{alt || "Ilustración"}</p>
+        </div>
+    ) : (
+        <div className="my-4 relative">
+            {status === "loading" && (
+                <div className="absolute inset-0 flex items-center justify-center bg-indigo-50 rounded-xl animate-pulse">
+                    <Sparkles className="w-8 h-8 text-indigo-300 animate-spin" />
+                </div>
+            )}
+            <img
+                src={fixedSrc}
+                alt={alt || "Ilustración"}
+                className="w-full rounded-xl shadow-md border border-indigo-100"
+                loading="lazy"
+                onLoad={() => setStatus("loaded")}
+                onError={() => setStatus("error")}
+            />
+        </div>
+    );
+}
+
+const markdownComponents: any = {
+    img: ({ src, alt }: { src?: string; alt?: string }) => (
+        <PollinationsImage src={src} alt={alt} />
+    ),
+};
+
 type Step = "idle" | "preview" | "analyzing" | "feedback" | "text_input";
 
 interface NotebookUploaderProps {
@@ -113,12 +166,14 @@ export default function NotebookUploader({ context, studentName = "Aventurero", 
                       throw new Error("Not JSON");
                     }
 
-                    const activeProblem = parsed.evidenceProblem || parsed.practiceProblem;
+                    const problemTextStr = parsed.originalProblemText || (parsed.practiceProblem && parsed.practiceProblem.statement) || (parsed.evidenceProblem && parsed.evidenceProblem.statement);
 
-                    if (activeProblem) {
+                    if (problemTextStr && typeof problemTextStr === 'string') {
                       return (
-                        <div className="space-y-2">
-                          <p className="whitespace-pre-wrap">{(activeProblem.statement || "").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}</p>
+                        <div className="prose prose-slate dark:prose-invert max-w-none text-sm text-slate-700 dark:text-slate-300">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                              {problemTextStr.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
+                          </ReactMarkdown>
                         </div>
                       );
                     }
@@ -144,7 +199,13 @@ export default function NotebookUploader({ context, studentName = "Aventurero", 
                     try {
                       if (context.startsWith('"') && context.endsWith('"')) rawText = JSON.parse(context);
                     } catch (e2) { }
-                    return <p className="whitespace-pre-wrap">{rawText}</p>;
+                    return (
+                        <div className="prose prose-slate dark:prose-invert max-w-none text-sm text-slate-700 dark:text-slate-300">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                                {rawText.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
+                            </ReactMarkdown>
+                        </div>
+                    );
                   }
                 })()}
               </div>
