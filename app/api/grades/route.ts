@@ -1,9 +1,14 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 // GET /api/grades?teacherId=xxx — fetch all grades for a teacher
 export async function GET(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
         const { searchParams } = new URL(req.url);
         const teacherId = searchParams.get("teacherId");
 
@@ -11,8 +16,13 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "teacherId required" }, { status: 400 });
         }
 
+        const whereClause: any = { teacherId };
+        if (schoolId) {
+            whereClause.schoolId = schoolId;
+        }
+
         const grades = await prisma.grade.findMany({
-            where: { teacherId },
+            where: whereClause,
             include: {
                 classrooms: {
                     include: {
@@ -33,6 +43,9 @@ export async function GET(req: Request) {
 // POST /api/grades — create a new grade
 export async function POST(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
         const { name, description, teacherId } = await req.json();
 
         if (!name?.trim() || !teacherId) {
@@ -43,7 +56,8 @@ export async function POST(req: Request) {
             data: {
                 name: name.trim(),
                 description: description?.trim() || null,
-                teacherId
+                teacherId,
+                schoolId: schoolId || null
             },
             include: {
                 classrooms: true

@@ -14,19 +14,23 @@ model User {
   emailVerified DateTime?
   image         String?
   role          Role      @default(STUDENT)
-  avatar        String?   // Emoji avatar for students
+  avatar        String? // Emoji avatar for students
   status        String    @default("active") // active, idle, needs_help
   lastActivity  DateTime  @default(now())
-  
+
   // Gamification Stats
-  lives         Int       @default(5)
-  gems          Int       @default(0)
-  streak        Int       @default(0)
-  xp            Int       @default(0)
+  lives  Int @default(5)
+  gems   Int @default(0)
+  streak Int @default(0)
+  xp     Int @default(0)
 
   // Auth Relations
-  accounts      Account[]
-  sessions      Session[]
+  accounts Account[]
+  sessions Session[]
+
+  // Multi-tenant SaaS Relation
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id])
 
   // Student specific relations
   progress          Progress[]
@@ -38,25 +42,25 @@ model User {
   evidenceEntries   EvidenceEntry[]
 
   // Classroom relations
-  classroomId       String?
-  classroom         Classroom? @relation("ClassroomStudents", fields: [classroomId], references: [id])
-  ownedClassrooms   Classroom[] @relation("ClassroomTeacher")
-  ownedGrades       Grade[]     @relation("GradeTeacher")
+  classroomId     String?
+  classroom       Classroom?  @relation("ClassroomStudents", fields: [classroomId], references: [id])
+  ownedClassrooms Classroom[] @relation("ClassroomTeacher")
+  ownedGrades     Grade[]     @relation("GradeTeacher")
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -80,21 +84,38 @@ model VerificationToken {
 }
 
 enum Role {
+  SUPERADMIN
   TEACHER
   STUDENT
 }
 
-model World {
-  id        String     @id @default(cuid())
-  title     String
-  theme     String     // e.g., "detective", "explorer"
-  daysJson  String     // Store the complex LevelContent array as JSON string for now
-  pedagogyJson String? // Store the pedagogy metadata as JSON string
-  createdAt DateTime   @default(now())
-  
-  // Relations
-  progress   Progress[]
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users      User[]
+  worlds     World[]
+  grades     Grade[]
   classrooms Classroom[]
+}
+
+model World {
+  id           String   @id @default(cuid())
+  title        String
+  theme        String // e.g., "detective", "explorer"
+  daysJson     String // Store the complex LevelContent array as JSON string for now
+  pedagogyJson String? // Store the pedagogy metadata as JSON string
+  createdAt    DateTime @default(now())
+
+  // Multi-tenant
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id])
+
+  // Relations
+  progress        Progress[]
+  classrooms      Classroom[]
   studentMissions StudentMission[]
   evidenceEntries EvidenceEntry[]
 }
@@ -111,8 +132,8 @@ model EvidenceEntry {
   emotionDetected String?
   createdAt       DateTime @default(now())
 
-  student         User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  world           World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  student User  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  world   World @relation(fields: [worldId], references: [id], onDelete: Cascade)
 }
 
 model Progress {
@@ -122,8 +143,8 @@ model Progress {
   levelId   Int
   createdAt DateTime @default(now())
 
-  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  world     World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  student User  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  world   World @relation(fields: [worldId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, worldId, levelId])
 }
@@ -134,21 +155,21 @@ model Inventory {
   itemId    String
   createdAt DateTime @default(now())
 
-  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, itemId])
 }
 
 // Epic 5 Gamification Expansion Models
 model Achievement {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   name        String
   description String
-  icon        String   // Emoji or URL
-  condition   String   // e.g. "STREAK_7", "FIRST_BLOOD"
-  xpReward    Int      @default(0)
-  
-  users       UserAchievement[]
+  icon        String // Emoji or URL
+  condition   String // e.g. "STREAK_7", "FIRST_BLOOD"
+  xpReward    Int    @default(0)
+
+  users UserAchievement[]
 }
 
 model UserAchievement {
@@ -157,8 +178,8 @@ model UserAchievement {
   achievementId String
   earnedAt      DateTime @default(now())
 
-  student       User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  student     User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, achievementId])
 }
@@ -171,7 +192,7 @@ model RaidBoss {
   currentHealth Int
   status        String   @default("ACTIVE") // ACTIVE, DEFEATED
   createdAt     DateTime @default(now())
-  
+
   contributions RaidContribution[]
 }
 
@@ -182,8 +203,8 @@ model RaidContribution {
   damageDealt Int
   createdAt   DateTime @default(now())
 
-  raidBoss    RaidBoss @relation(fields: [raidBossId], references: [id], onDelete: Cascade)
-  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  raidBoss RaidBoss @relation(fields: [raidBossId], references: [id], onDelete: Cascade)
+  student  User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Hint {
@@ -193,18 +214,18 @@ model Hint {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model StudentMission {
   id        String   @id @default(cuid())
   studentId String
   worldId   String
-  daysJson  String   @db.Text  // JSON array of extra LevelContent days for this student
+  daysJson  String   @db.Text // JSON array of extra LevelContent days for this student
   createdAt DateTime @default(now())
 
-  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  world     World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  student User  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  world   World @relation(fields: [worldId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, worldId])
 }
@@ -216,8 +237,12 @@ model Grade {
   teacherId   String
   createdAt   DateTime @default(now())
 
-  teacher     User        @relation("GradeTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
-  classrooms  Classroom[]
+  // Multi-tenant
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id])
+
+  teacher    User        @relation("GradeTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  classrooms Classroom[]
 }
 
 model Classroom {
@@ -229,8 +254,12 @@ model Classroom {
   gradeId     String?
   createdAt   DateTime @default(now())
 
-  grade       Grade?   @relation(fields: [gradeId], references: [id])
-  teacher     User     @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
-  students    User[]   @relation("ClassroomStudents")
-  worlds      World[]
+  // Multi-tenant
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id])
+
+  grade    Grade?  @relation(fields: [gradeId], references: [id])
+  teacher  User    @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  students User[]  @relation("ClassroomStudents")
+  worlds   World[]
 }

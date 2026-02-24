@@ -19,7 +19,8 @@ export default function Home() {
   useEffect(() => {
     if (mounted && status === "authenticated" && session?.user) {
       const role = (session.user as any)?.role;
-      router.push(role === "TEACHER" ? "/teacher" : "/student");
+      if (role === "SUPERADMIN") router.push("/superadmin");
+      else router.push(role === "TEACHER" ? "/teacher" : "/student");
     }
   }, [mounted, status, session, router]);
 
@@ -78,7 +79,7 @@ export default function Home() {
               <BookOpen className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white">¡Bienvenido!</h2>
-            <p className="text-indigo-200 text-sm mt-1">Alumnos y Docentes</p>
+            <p className="text-indigo-200 text-sm mt-1">Alumnos, Docentes y Admin</p>
           </div>
 
           <div className="p-8">

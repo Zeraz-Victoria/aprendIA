@@ -13,14 +13,19 @@ export async function GET(req: Request) {
             classroomId = user?.classroomId;
         }
 
-        const whereClause = classroomId
+        const schoolId = (session?.user as any)?.schoolId;
+
+        const baseWhere: any = schoolId ? { schoolId } : {};
+
+        const whereClause: any = classroomId
             ? {
+                ...baseWhere,
                 OR: [
                     { classrooms: { some: { id: classroomId } } },
                     { classrooms: { none: {} } }
                 ]
             }
-            : {};
+            : baseWhere;
 
         const worlds = await prisma.world.findMany({
             where: whereClause,
@@ -51,11 +56,15 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required world fields' }, { status: 400 });
         }
 
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
         const newWorld = await prisma.world.create({
             data: {
                 id,
                 title,
                 theme,
+                schoolId,
                 daysJson: JSON.stringify(days),
                 pedagogyJson: pedagogy ? JSON.stringify(pedagogy) : null,
                 ...(classroomIds && classroomIds.length > 0 && {

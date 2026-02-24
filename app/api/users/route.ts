@@ -1,10 +1,18 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 export async function GET() {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
         const students = await prisma.user.findMany({
-            where: { role: 'STUDENT' },
+            where: {
+                role: 'STUDENT',
+                ...(schoolId ? { schoolId } : {})
+            },
             orderBy: { name: 'asc' },
             select: {
                 id: true, name: true, email: true, avatar: true, role: true,
@@ -22,6 +30,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
         const body = await req.json();
         const { name, avatar, classroomId } = body;
 
@@ -40,6 +51,7 @@ export async function POST(req: NextRequest) {
                 streak: 0,
                 xp: 0,
                 classroomId: classroomId || null,
+                schoolId: schoolId || null,
             }
         });
 
