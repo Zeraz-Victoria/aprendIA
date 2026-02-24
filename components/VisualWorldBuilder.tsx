@@ -170,28 +170,35 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             const element = document.getElementById("full-map-pdf-container");
             if (!element) return;
 
-            // Temporarily show element for capturing
+            // Show element
             element.style.display = "block";
 
-            const canvas = await html2canvas(element, { scale: 1.5, useCORS: true });
+            // Wait for React and the browser to paint the DOM element
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // Lowered scale to 1 to avoid hitting canvas max-size limits on long maps
+            const canvas = await html2canvas(element, { scale: 1, useCORS: true, logging: false });
             const imgData = canvas.toDataURL("image/png");
 
-            const pdf = new jsPDF("p", "mm", "a4");
-            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfWidth = 210; // 210mm is A4 width
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-            // If the map is very long, it will be scaled down to fit on one long page,
-            // or we just let it span one continuous long page (like a scroll). 
-            // For a basic guide, compressing to fit width is acceptable, though it might run long.
+            // Create a custom-sized PDF so the whole image fits on one continuous page without crashing
+            const pdf = new jsPDF({
+                orientation: pdfHeight > pdfWidth ? "portrait" : "landscape",
+                unit: "mm",
+                format: [pdfWidth, Math.max(297, pdfHeight + 10)]
+            });
+
             pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
             pdf.save(`Guia-Docente-${title.replace(/\\s+/g, '-')}.pdf`);
 
-            // Hide element again
-            element.style.display = "none";
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error generating PDF:", error);
-            alert("Hubo un error al generar la guía en PDF.");
+            alert(`Hubo un error al generar la guía en PDF: ${error?.message || 'Error desconocido'}`);
         } finally {
+            const element = document.getElementById("full-map-pdf-container");
+            if (element) element.style.display = "none";
             setIsDownloadingPdf(false);
         }
     };

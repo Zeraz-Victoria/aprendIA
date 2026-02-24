@@ -114,25 +114,32 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             const element = document.getElementById("full-lesson-pdf-container");
             if (!element) return;
 
-            // Temporarily show element for capturing
             element.style.display = "block";
 
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+            // Wait for paint
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            const canvas = await html2canvas(element, { scale: 1.5, useCORS: true, logging: false });
             const imgData = canvas.toDataURL("image/png");
 
-            const pdf = new jsPDF("p", "mm", "a4");
-            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfWidth = 210;
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            const pdf = new jsPDF({
+                orientation: pdfHeight > pdfWidth ? "portrait" : "landscape",
+                unit: "mm",
+                format: [pdfWidth, Math.max(297, pdfHeight + 10)]
+            });
 
             pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
             pdf.save(`Leccion-${data.title.replace(/\\s+/g, '-')}.pdf`);
 
-            // Hide element again
-            element.style.display = "none";
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error generating PDF:", error);
-            alert("Hubo un error al generar el PDF.");
+            alert(`Hubo un error al generar el PDF: ${error?.message || 'Error desconocido'}`);
         } finally {
+            const element = document.getElementById("full-lesson-pdf-container");
+            if (element) element.style.display = "none";
             setIsDownloading(false);
         }
     };
