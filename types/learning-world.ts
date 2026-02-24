@@ -11,10 +11,16 @@ export interface DayContent {
             analogy: string;
         };
         miniGame?: {
-            type: "multiple_choice" | "drag_drop" | "tap_correct";
-            question: string;
-            options: string[];
-            correctAnswer: string;
+            type: "multiple_choice" | "drag_drop" | "tap_correct" | "word_search" | "memory_match";
+            // For multiple_choice
+            question?: string;
+            options?: string[];
+            correctAnswer?: string;
+            // For word_search
+            words?: string[]; // Array of words to find
+            // For memory_match
+            pairs?: { concept: string; definition: string }[];
+            // Common
             feedbackSuccess: string;
             feedbackError: string;
         };

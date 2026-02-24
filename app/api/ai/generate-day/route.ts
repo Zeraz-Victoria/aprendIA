@@ -38,6 +38,16 @@ export async function POST(req: Request) {
                 "explanation": {
                     "chunks": ["Explicación detallada 1 de la teoría matemática", "Explicación detallada 2", "Explicación detallada 3"],
                     "analogy": "Una analogía muy descriptiva para entender el concepto matemático"
+                },
+                "miniGame": {
+                    "type": "word_search", // O "memory_match" alternando al azar
+                    "words": ["FRACCION", "NUMERADOR", "DENOMINADOR", "MITAD", "ENTERO"], // 5-8 palabras si es word_search (MÁXIMO 10 letras cada una, SIN ESPACIOS, SIN ACENTOS). Si usas memory_match ignora 'words'.
+                    "pairs": [ // Solo si es memory_match, pares concepto-definición cortos (ignora esto si es word_search)
+                        {"concept": "Numerador", "definition": "Partes que tomamos"}, 
+                        {"concept": "Denominador", "definition": "En cuántas partes se divide"}
+                    ],
+                    "feedbackSuccess": "¡Excelente!",
+                    "feedbackError": "Revisa bien."
                 }
             }
         }`;
@@ -103,6 +113,7 @@ export async function POST(req: Request) {
     - OBLIGATORIO PARA JEFES FINALES (boss_fight): El "originalProblemText" NO puede ser solo una historia. DEBE incluir obligatoriamente el planteamiento de un problema, reto o pregunta que requiera aplicar todo lo aprendido en el mapa. Termina el texto con una indicación clara sobre qué calcular, deducir o resolver.
     - Formula SIEMPRE UNA SOLA PREGUNTA DIRECTA en los problemas prácticos.
     - ESTRICTAMENTE PROHIBIDO crear sub-incisos múltiples (por ejemplo, nada de "Pregunta 1a, Pregunta 1b, Problema 2a").
+    - ES OBLIGATORIO que los días teóricos (concept_story) terminen siempre con un miniGame de "word_search" (sopa de letras) o "memory_match" (memorama) conteniendo palabras o pares clave DE LA LECTURA. Asegúrate que si es "word_search", uses puras MAYÚSCULAS y SIN ACENTOS y SIN ESPACIOS.
     
     REGLA DE PERSONALIZACIÓN Y FORMATO:
     - Dirígete al niño usando EXPLÍCITAMENTE la etiqueta \`[NOMBRE_DEL_ESTUDIANTE]\` varias veces a lo largo de tu "plática".

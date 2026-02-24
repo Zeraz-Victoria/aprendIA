@@ -6,6 +6,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { DayContent } from "@/types/learning-world";
 import { useLearning } from "@/contexts/LearningContext";
+import WordSearch from "./minigames/WordSearch";
+import MemoryMatch from "./minigames/MemoryMatch";
 
 function fixImageUrl(src: string): string {
     // We previously intercepted pollinations.ai URLs to our local API.
@@ -94,7 +96,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             if (data.type === 'guided_practice') {
                 setRevealedAnswer(String(data.content.practiceProblem?.correctValue));
             } else if (data.content?.miniGame) {
-                setRevealedAnswer(data.content.miniGame.correctAnswer);
+                setRevealedAnswer(data.content.miniGame.correctAnswer || null);
             }
             setShowTeacherAuth(false);
             setTeacherPassword("");
@@ -218,6 +220,15 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             loseLife();
             setFeedback("error");
         }
+    };
+
+    const handleAlternativeGameComplete = () => {
+        const bonus = 15; // standard bonus for word searches / memory matches
+        rewardGems(bonus);
+        setFeedback("success");
+        setTimeout(() => {
+            onComplete();
+        }, 2500);
     };
 
     const handlePracticeCheck = () => {
@@ -345,6 +356,36 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     };
 
     const renderMiniGame = () => {
+        const type = data.content?.miniGame?.type;
+
+        if (type === "word_search" && data.content?.miniGame?.words) {
+            return (
+                <div className="space-y-6 animate-fade-in-up">
+                    <WordSearch words={data.content.miniGame.words} onComplete={handleAlternativeGameComplete} />
+                    {feedback === "success" && (
+                        <div className="text-center animate-bounce-slow mt-4">
+                            <span className="text-6xl">🎉</span>
+                            <p className="text-green-600 font-bold text-xl mt-2">¡Excelente! ¡Encontraste todas!</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        if (type === "memory_match" && data.content?.miniGame?.pairs) {
+            return (
+                <div className="space-y-6 animate-fade-in-up">
+                    <MemoryMatch pairs={data.content.miniGame.pairs} onComplete={handleAlternativeGameComplete} />
+                    {feedback === "success" && (
+                        <div className="text-center animate-bounce-slow mt-4">
+                            <span className="text-6xl">🎉</span>
+                            <p className="text-green-600 font-bold text-xl mt-2">¡Memoria fabulosa!</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
         return (
             <div className="space-y-6 animate-fade-in-up">
                 <h2 className="text-2xl font-bold text-center text-indigo-900 mb-6 font-display">
@@ -355,7 +396,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     <p className="text-xl text-slate-700 mb-8">{data.content?.miniGame?.question}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {data.content?.miniGame?.options.map((option, idx) => (
+                        {(data.content?.miniGame?.options || []).map((option, idx) => (
                             <button
                                 key={idx}
                                 type="button"
