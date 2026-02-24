@@ -121,7 +121,7 @@ export default function WordSearch({ words, onComplete }: WordSearchProps) {
 
         const path: CellPos[] = [];
         for (let i = 0; i <= steps; i++) {
-            path.push({ r: start.r + stepR * i, c: start.c + stepC * i });
+            path.push({ r: Math.round(start.r + stepR * i), c: Math.round(start.c + stepC * i) });
         }
         return path;
     };
@@ -138,6 +138,8 @@ export default function WordSearch({ words, onComplete }: WordSearchProps) {
                 const wordExtracted = path.map(p => grid[p.r][p.c]).join('');
                 const wordRev = wordExtracted.split('').reverse().join('');
 
+                // Sometimes rounding or fast mouse movement misses the exact final letter length if not perfectly aligned to a square grid dimension.
+                // It's a kids game, so if they select a prefix/exact match we can be a bit forgiving, but let's stick to exact path matching first with the rounding fix above.
                 const matchedWord = cleanWords.find(w => !foundWords.includes(w) && (w === wordExtracted || w === wordRev));
 
                 if (matchedWord) {
