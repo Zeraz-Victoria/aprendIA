@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Swords, Save, Settings, X, GripVertical, FileText, Target, Sparkles, Bot } from "lucide-react";
+import { Plus, Swords, Save, Settings, X, GripVertical, FileText, Target, Sparkles, Bot, Download } from "lucide-react";
 import { useLearning, LearningWorld } from "@/contexts/LearningContext";
 import { LevelContent, DayContent, BossDayContent } from "@/types/learning-world";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose: () => void, initialWorld?: LearningWorld }) {
     const { addWorld, updateWorld, setActiveWorld, classrooms } = useLearning();
@@ -18,6 +20,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
     const [aiTopic, setAiTopic] = useState("");
     const [aiDifficulty, setAiDifficulty] = useState("Básico");
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
     // Default starting node
     const [nodes, setNodes] = useState<LevelContent[]>(initialWorld?.days || [
@@ -161,6 +164,38 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
         onClose();
     };
 
+    const handleDownloadCompleteMapPdf = async () => {
+        setIsDownloadingPdf(true);
+        try {
+            const element = document.getElementById("full-map-pdf-container");
+            if (!element) return;
+
+            // Temporarily show element for capturing
+            element.style.display = "block";
+
+            const canvas = await html2canvas(element, { scale: 1.5, useCORS: true });
+            const imgData = canvas.toDataURL("image/png");
+
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            // If the map is very long, it will be scaled down to fit on one long page,
+            // or we just let it span one continuous long page (like a scroll). 
+            // For a basic guide, compressing to fit width is acceptable, though it might run long.
+            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`Guia-Docente-${title.replace(/\\s+/g, '-')}.pdf`);
+
+            // Hide element again
+            element.style.display = "none";
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            alert("Hubo un error al generar la guía en PDF.");
+        } finally {
+            setIsDownloadingPdf(false);
+        }
+    };
+
     const getNodeIcon = (type: string) => {
         switch (type) {
             case "concept_story": return <FileText className="w-5 h-5" />;
@@ -220,6 +255,13 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                     </div>
                 </div>
                 <div className="flex gap-4">
+                    <button
+                        onClick={handleDownloadCompleteMapPdf} disabled={isDownloadingPdf}
+                        className="bg-sky-100 hover:bg-sky-200 text-sky-900 border border-sky-300 px-4 py-2 rounded-full font-bold shadow-sm transition flex items-center gap-2 disabled:opacity-50"
+                    >
+                        {isDownloadingPdf ? <Sparkles className="w-4 h-4 animate-spin text-sky-500" /> : <Download className="w-4 h-4 text-sky-500" />}
+                        {isDownloadingPdf ? "Generando..." : "Descargar Guía PDF"}
+                    </button>
                     <button
                         onClick={() => setShowAIPrompt(true)}
                         className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-4 py-2 rounded-full font-bold shadow-sm transition flex items-center gap-2"
@@ -366,6 +408,76 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                     </div>
                 </div>
             )}
+
+            {/* Hidden Container for PDF Download (Complete Map / Teacher Guide) */}
+            <div
+                id="full-map-pdf-container"
+                className="absolute top-[-9999px] left-[-9999px] bg-white w-[900px] p-10 text-black"
+                style={{ display: "none" }}
+            >
+                <div className="border-b-4 border-indigo-600 pb-6 mb-8 text-center">
+                    <h1 className="text-4xl font-black text-indigo-900 mb-2">{title}</h1>
+                    <p className="text-xl text-slate-600 font-medium">Guía Docente Completa • Tema: {theme}</p>
+                </div>
+
+                <div className="space-y-12">
+                    {nodes.map((node, idx) => (
+                        <div key={idx} className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 shadow-sm break-inside-avoid">
+                            <div className="flex items-center gap-4 mb-4 border-b border-slate-200 pb-4">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl ${node.type === 'boss_fight' ? 'bg-red-500' : 'bg-indigo-500'}`}>
+                                    {idx + 1}
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-slate-800">{node.title}</h2>
+                                    <p className="text-sm font-bold tracking-wide text-indigo-500 uppercase">{node.type.replace('_', ' ')}</p>
+                                </div>
+                            </div>
+
+                            <div className="prose prose-lg max-w-none">
+                                {node.type === 'boss_fight' ? (
+                                    <>
+                                        <h3 className="text-lg font-bold text-slate-800">Problema Inicial (Texto del Jefe):</h3>
+                                        <div className="bg-white p-4 border border-slate-300 rounded-lg whitespace-pre-wrap">
+                                            {(node as BossDayContent).originalProblemText}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h3 className="text-lg font-bold text-slate-800 mt-2">Teoría / Historia:</h3>
+                                        <div className="bg-white p-4 border border-slate-300 rounded-lg whitespace-pre-wrap">
+                                            {(node as DayContent).narrative || "Sin historia configurada."}
+                                        </div>
+
+                                        {(node.type as string) === 'guided_practice' && (node as DayContent).content?.practiceProblem && (
+                                            <div className="mt-4 border-t border-dashed border-slate-300 pt-4">
+                                                <h3 className="text-lg font-bold text-slate-800 mt-2 text-emerald-700">Práctica / Ejercicio Sugerido:</h3>
+                                                <div className="bg-emerald-50 p-4 border border-emerald-200 rounded-lg whitespace-pre-wrap text-emerald-900">
+                                                    {(node as DayContent).content?.practiceProblem?.statement || ""}
+                                                    <br /><br />
+                                                    <strong>Respuesta Correcta:</strong> {(node as DayContent).content?.practiceProblem?.correctValue || "N/A"}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {(node as DayContent).content?.miniGame && (
+                                            <div className="mt-4 border-t border-dashed border-slate-300 pt-4">
+                                                <h3 className="text-lg font-bold text-slate-800 mt-2 text-amber-700">Minijuego:</h3>
+                                                <div className="bg-amber-50 p-4 border border-amber-200 rounded-lg text-amber-900">
+                                                    <strong>Pregunta:</strong> {(node as DayContent).content?.miniGame?.question || "N/A"}
+                                                    <br />
+                                                    <strong>Opciones:</strong> {((node as DayContent).content?.miniGame?.options || []).join(', ') || "N/A"}
+                                                    <br />
+                                                    <strong>Respuesta:</strong> {(node as DayContent).content?.miniGame?.correctAnswer || "N/A"}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
             {/* AI Generator Overlay */}
             {showAIPrompt && (

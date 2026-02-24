@@ -8,6 +8,8 @@ import { DayContent } from "@/types/learning-world";
 import { useLearning } from "@/contexts/LearningContext";
 import WordSearch from "./minigames/WordSearch";
 import MemoryMatch from "./minigames/MemoryMatch";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 function fixImageUrl(src: string): string {
     // We previously intercepted pollinations.ai URLs to our local API.
@@ -80,6 +82,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     const [gemReward, setGemReward] = useState<number | null>(null);
     const [showGameOver, setShowGameOver] = useState(false);
     const [gameOverTimer, setGameOverTimer] = useState(30);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     // AI Tutor and Practice State
     const [studentInput, setStudentInput] = useState("");
@@ -102,6 +105,35 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             setTeacherPassword("");
         } else {
             alert("Contraseña incorrecta");
+        }
+    };
+
+    const handleDownloadPDF = async () => {
+        setIsDownloading(true);
+        try {
+            const element = document.getElementById("full-lesson-pdf-container");
+            if (!element) return;
+
+            // Temporarily show element for capturing
+            element.style.display = "block";
+
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+            const imgData = canvas.toDataURL("image/png");
+
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`Leccion-${data.title.replace(/\\s+/g, '-')}.pdf`);
+
+            // Hide element again
+            element.style.display = "none";
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            alert("Hubo un error al generar el PDF.");
+        } finally {
+            setIsDownloading(false);
         }
     };
 
@@ -536,6 +568,9 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 {revealedAnswer && (
                     <div className="bg-green-100 border-b border-green-200 p-3 text-center text-green-800 font-bold text-sm flex items-center justify-center gap-4 animate-fade-in-up">
                         <span>💡 Respuesta Correcta: <span className="text-lg bg-green-200 px-2 py-0.5 rounded ml-2">{revealedAnswer}</span></span>
+                        <button type="button" onClick={handleDownloadPDF} disabled={isDownloading} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-sm transition-colors shadow-sm">
+                            {isDownloading ? "Generando..." : "Descargar PDF de Lección"}
+                        </button>
                         <button type="button" onClick={() => setRevealedAnswer(null)} className="text-green-600 hover:text-green-900 text-xs bg-white/50 hover:bg-white px-2 py-1 rounded-full transition-colors">Ocultar</button>
                     </div>
                 )}
@@ -587,6 +622,61 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             {data.type === 'guided_practice' ? renderGuidedPractice() : renderMiniGame()}
                         </div>
                     )}
+                </div>
+            </div>
+
+            {/* Hidden Container for PDF Download */}
+            <div
+                id="full-lesson-pdf-container"
+                className="absolute top-[-9999px] left-[-9999px] bg-white w-[800px] p-8 text-black"
+                style={{ display: "none" }}
+            >
+                <h1 className="text-3xl font-bold text-center mb-6 text-indigo-900 border-b-2 border-indigo-200 pb-4">{data.title}</h1>
+
+                <div className="space-y-6 prose prose-lg max-w-none mb-10">
+                    {chunks.map((chunk, idx) => (
+                        <div key={idx} className="mb-4">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                                {(chunk || "").replace(/\\[NOMBRE_DEL_ESTUDIANTE\\]/gi, studentName)}
+                            </ReactMarkdown>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="border-t-4 border-indigo-500 pt-6 mt-8">
+                    <h2 className="text-2xl font-bold text-indigo-900 mb-4">Actividad Práctica</h2>
+                    {data.type === 'guided_practice' ? (
+                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                            <div className="prose max-w-none">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                                    {(data.content?.practiceProblem?.statement || "").replace(/\\[NOMBRE_DEL_ESTUDIANTE\\]/gi, studentName)}
+                                </ReactMarkdown>
+                            </div>
+                            <div className="mt-8">
+                                <p className="font-bold mb-2">Respuesta (Escribe tu procedimiento abajo):</p>
+                                <div className="border border-dashed border-gray-400 p-4 h-32 bg-white w-full rounded"></div>
+                            </div>
+                        </div>
+                    ) : data.content?.miniGame ? (
+                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                            <h3 className="text-xl font-bold mb-4">{data.content.miniGame.question || "Resuelve el reto de la clase"}</h3>
+                            {data.content.miniGame.type === 'word_search' && data.content.miniGame.words && (
+                                <div className="mb-6">
+                                    <p className="mb-2 font-medium">Encuentra las siguientes palabras:</p>
+                                    <ul className="list-disc pl-6 space-y-1">
+                                        {data.content.miniGame.words.map(w => <li key={w}>{w}</li>)}
+                                    </ul>
+                                </div>
+                            )}
+                            {data.content.miniGame.options && data.content.miniGame.options.length > 0 && (
+                                <div className="mt-4 grid grid-cols-2 gap-4">
+                                    {data.content.miniGame.options.map((opt, i) => (
+                                        <div key={i} className="border border-gray-300 bg-white p-3 rounded-lg text-center font-medium shadow-sm">{opt}</div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ) : null}
                 </div>
             </div>
         </div>

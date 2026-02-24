@@ -94,6 +94,9 @@ export default function WordSearch({ words, onComplete }: WordSearchProps) {
         setSelectionStart(null);
     }, [cleanWords]);
 
+    // Use a stable string key to prevent unnecessary regenerations if parent re-renders
+    const wordsKey = cleanWords.join(',');
+
     useEffect(() => {
         if (cleanWords.length > 0) {
             generateGrid();
@@ -101,7 +104,8 @@ export default function WordSearch({ words, onComplete }: WordSearchProps) {
             // Failsafe if no valid words
             onComplete();
         }
-    }, [cleanWords, generateGrid, onComplete]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [wordsKey]); // Only regenerate when the actual words change
 
     const getCellsInPath = (start: CellPos, end: CellPos): CellPos[] => {
         const dr = end.r - start.r;
