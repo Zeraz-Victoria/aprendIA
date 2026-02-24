@@ -39,3 +39,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test/debug and loose files
+test*.js
+test*.ts
+!test-prisma.ts
+*.pdf
+debug-failed-json.txt
+test_out.json
+test-response.json
+.next_server_log
+check-users.js
+cleanup-orphans.ts
+create-pdf.js
+fix-regex.js
+list-models.js
+mock_planeacion.pdf
+real_planeacion.pdf

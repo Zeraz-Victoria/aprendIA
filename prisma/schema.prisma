@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Alwaysdata supports PostgreSQL and MySQL. We default to postgresql.
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(STUDENT)
+  avatar        String?   // Emoji avatar for students
+  status        String    @default("active") // active, idle, needs_help
+  lastActivity  DateTime  @default(now())
+  
+  // Gamification Stats
+  lives         Int       @default(5)
+  gems          Int       @default(0)
+  streak        Int       @default(0)
+  xp            Int       @default(0)
+
+  // Auth Relations
+  accounts      Account[]
+  sessions      Session[]
+
+  // Student specific relations
+  progress          Progress[]
+  inventory         Inventory[]
+  achievements      UserAchievement[]
+  raidContributions RaidContribution[]
+  hints             Hint[]
+  studentMissions   StudentMission[]
+  evidenceEntries   EvidenceEntry[]
+
+  // Classroom relations
+  classroomId       String?
+  classroom         Classroom? @relation("ClassroomStudents", fields: [classroomId], references: [id])
+  ownedClassrooms   Classroom[] @relation("ClassroomTeacher")
+  ownedGrades       Grade[]     @relation("GradeTeacher")
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum Role {
+  TEACHER
+  STUDENT
+}
+
+model World {
+  id        String     @id @default(cuid())
+  title     String
+  theme     String     // e.g., "detective", "explorer"
+  daysJson  String     // Store the complex LevelContent array as JSON string for now
+  pedagogyJson String? // Store the pedagogy metadata as JSON string
+  createdAt DateTime   @default(now())
+  
+  // Relations
+  progress   Progress[]
+  classrooms Classroom[]
+  studentMissions StudentMission[]
+  evidenceEntries EvidenceEntry[]
+}
+
+model EvidenceEntry {
+  id              String   @id @default(cuid())
+  studentId       String
+  worldId         String
+  levelId         Int
+  studentAnswer   String   @db.Text
+  isCorrect       Boolean
+  feedback        String   @db.Text
+  topic           String?
+  emotionDetected String?
+  createdAt       DateTime @default(now())
+
+  student         User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  world           World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+}
+
+model Progress {
+  id        String   @id @default(cuid())
+  studentId String
+  worldId   String
+  levelId   Int
+  createdAt DateTime @default(now())
+
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  world     World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, worldId, levelId])
+}
+
+model Inventory {
+  id        String   @id @default(cuid())
+  studentId String
+  itemId    String
+  createdAt DateTime @default(now())
+
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, itemId])
+}
+
+// Epic 5 Gamification Expansion Models
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  icon        String   // Emoji or URL
+  condition   String   // e.g. "STREAK_7", "FIRST_BLOOD"
+  xpReward    Int      @default(0)
+  
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  studentId     String
+  achievementId String
+  earnedAt      DateTime @default(now())
+
+  student       User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, achievementId])
+}
+
+model RaidBoss {
+  id            String   @id @default(cuid())
+  name          String
+  imageUrl      String?
+  maxHealth     Int
+  currentHealth Int
+  status        String   @default("ACTIVE") // ACTIVE, DEFEATED
+  createdAt     DateTime @default(now())
+  
+  contributions RaidContribution[]
+}
+
+model RaidContribution {
+  id          String   @id @default(cuid())
+  raidBossId  String
+  studentId   String
+  damageDealt Int
+  createdAt   DateTime @default(now())
+
+  raidBoss    RaidBoss @relation(fields: [raidBossId], references: [id], onDelete: Cascade)
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Hint {
+  id        String   @id @default(cuid())
+  studentId String
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model StudentMission {
+  id        String   @id @default(cuid())
+  studentId String
+  worldId   String
+  daysJson  String   @db.Text  // JSON array of extra LevelContent days for this student
+  createdAt DateTime @default(now())
+
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  world     World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, worldId])
+}
+
+model Grade {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  teacherId   String
+  createdAt   DateTime @default(now())
+
+  teacher     User        @relation("GradeTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  classrooms  Classroom[]
+}
+
+model Classroom {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  emoji       String   @default("📚")
+  teacherId   String
+  gradeId     String?
+  createdAt   DateTime @default(now())
+
+  grade       Grade?   @relation(fields: [gradeId], references: [id])
+  teacher     User     @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  students    User[]   @relation("ClassroomStudents")
+  worlds      World[]
+}

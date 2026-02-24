@@ -1,65 +1,133 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { User, ArrowRight, BookOpen, Sparkles } from "lucide-react";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  // Redirect after mount to avoid hydration mismatch
+  useEffect(() => {
+    if (mounted && status === "authenticated" && session?.user) {
+      const role = (session.user as any)?.role;
+      router.push(role === "TEACHER" ? "/teacher" : "/student");
+    }
+  }, [mounted, status, session, router]);
+
+  // Show a consistent loading state for both server and client
+  if (!mounted || status === "loading" || (status === "authenticated" && session?.user)) {
+    return (
+      <div className="min-h-screen bg-[#fdf6e3] flex items-center justify-center">
+        <div className="animate-pulse text-indigo-600 font-bold text-xl">Cargando...</div>
+      </div>
+    );
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+
+    setIsLoggingIn(true);
+    setError("");
+
+    // Clear any stale session
+    await signOut({ redirect: false });
+
+    const res = await signIn("credentials", {
+      name: name.trim(),
+      redirect: false,
+    });
+
+    if (res?.error) {
+      setError("Usuario no encontrado. Verifica tu nombre o pide ayuda a tu profesor.");
+      setIsLoggingIn(false);
+    }
+    // On success, useSession will update and the redirect logic above fires
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-[#fdf6e3] relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] pointer-events-none"></div>
+      <div className="absolute bottom-10 right-10 text-amber-900/10 animate-bounce-slow pointer-events-none">
+        <Sparkles className="w-32 h-32" />
+      </div>
+
+      <div className="z-10 w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-black font-serif text-amber-900 mb-2 tracking-tight drop-shadow-sm">
+            Edu<span className="text-indigo-600">Quest</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-amber-800/70 font-medium">
+            Ingresa tu nombre para comenzar
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-center">
+            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur">
+              <BookOpen className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-white">¡Bienvenido!</h2>
+            <p className="text-indigo-200 text-sm mt-1">Alumnos y Docentes</p>
+          </div>
+
+          <div className="p-8">
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  Tu Nombre
+                </label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition font-medium text-slate-800"
+                    placeholder="Ej. Jimena, Profe..."
+                    autoFocus
+                    disabled={isLoggingIn}
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg text-center">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={!name.trim() || isLoggingIn}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
+              >
+                {isLoggingIn ? "Ingresando..." : <>Ingresar <ArrowRight className="w-5 h-5" /></>}
+              </button>
+
+              <div className="text-center">
+                <p className="text-xs text-slate-400">
+                  Pide ayuda a tu profesor si no puedes ingresar.
+                </p>
+              </div>
+            </form>
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+
+      <footer className="absolute bottom-4 text-center text-amber-900/40 text-sm font-semibold">
+        © 2024 EduQuest • Learning Engine
+      </footer>
+    </main>
   );
 }

@@ -1,0 +1,67 @@
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+
+// GET /api/hints?studentId=xxx — fetch unread hints for a student
+export async function GET(req: Request) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const studentId = searchParams.get('studentId');
+
+        if (!studentId) {
+            return NextResponse.json({ error: 'Missing studentId' }, { status: 400 });
+        }
+
+        const hints = await prisma.hint.findMany({
+            where: { studentId, read: false },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return NextResponse.json(hints);
+    } catch (error) {
+        console.error('Error fetching hints:', error);
+        return NextResponse.json({ error: 'Failed to fetch hints' }, { status: 500 });
+    }
+}
+
+// POST /api/hints — create a new hint from the teacher
+export async function POST(req: Request) {
+    try {
+        const body = await req.json();
+        const { studentId, message } = body;
+
+        if (!studentId || !message) {
+            return NextResponse.json({ error: 'Missing studentId or message' }, { status: 400 });
+        }
+
+        const hint = await prisma.hint.create({
+            data: { studentId, message },
+        });
+
+        return NextResponse.json(hint, { status: 201 });
+    } catch (error) {
+        console.error('Error creating hint:', error);
+        return NextResponse.json({ error: 'Failed to create hint' }, { status: 500 });
+    }
+}
+
+// PATCH /api/hints — mark hints as read
+export async function PATCH(req: Request) {
+    try {
+        const body = await req.json();
+        const { hintIds } = body;
+
+        if (!hintIds || !Array.isArray(hintIds)) {
+            return NextResponse.json({ error: 'Missing hintIds array' }, { status: 400 });
+        }
+
+        await prisma.hint.updateMany({
+            where: { id: { in: hintIds } },
+            data: { read: true },
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Error marking hints as read:', error);
+        return NextResponse.json({ error: 'Failed to update hints' }, { status: 500 });
+    }
+}
