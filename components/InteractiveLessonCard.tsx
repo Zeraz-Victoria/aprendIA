@@ -11,6 +11,28 @@ import MemoryMatch from "./minigames/MemoryMatch";
 import jsPDF from "jspdf";
 import { toCanvas } from "html-to-image";
 
+
+function safeParsePromptText(text: string | undefined): string {
+    if (!text) return "";
+    try {
+        const trimmed = text.trim();
+        if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+            const parsed = JSON.parse(trimmed);
+            if (parsed && typeof parsed === "object") {
+                if (parsed.originalProblemText) return parsed.originalProblemText;
+                if (parsed.statement) return parsed.statement;
+                if (parsed.narrative) return parsed.narrative;
+                // If it's an array or just has random keys, try to stringify it prettier or just return it
+                return JSON.stringify(parsed, null, 2);
+            }
+        }
+    } catch (e) {
+        // Not JSON, return as is
+    }
+    return text;
+}
+
+
 function fixImageUrl(src: string): string {
     // We previously intercepted pollinations.ai URLs to our local API.
     // That was causing issues so we will just use the pollinations.ai URLs directly.

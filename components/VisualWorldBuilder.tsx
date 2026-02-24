@@ -7,6 +7,28 @@ import { LevelContent, DayContent, BossDayContent } from "@/types/learning-world
 import jsPDF from "jspdf";
 import { toCanvas } from "html-to-image";
 
+
+function safeParsePromptText(text: string | undefined): string {
+    if (!text) return "";
+    try {
+        const trimmed = text.trim();
+        if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+            const parsed = JSON.parse(trimmed);
+            if (parsed && typeof parsed === "object") {
+                if (parsed.originalProblemText) return parsed.originalProblemText;
+                if (parsed.statement) return parsed.statement;
+                if (parsed.narrative) return parsed.narrative;
+                // If it's an array or just has random keys, try to stringify it prettier or just return it
+                return JSON.stringify(parsed, null, 2);
+            }
+        }
+    } catch (e) {
+        // Not JSON, return as is
+    }
+    return text;
+}
+
+
 export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose: () => void, initialWorld?: LearningWorld }) {
     const { addWorld, updateWorld, setActiveWorld, classrooms } = useLearning();
     const [title, setTitle] = useState(initialWorld?.title || "Nueva Aventura Épica");
@@ -320,7 +342,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                                     </div>
                                 </div>
                                 <p className="text-slate-500 text-sm line-clamp-2">
-                                    {node.type === 'boss_fight' ? (node as BossDayContent).originalProblemText : (node as DayContent).narrative || "Sin historia configurada."}
+                                    {node.type === 'boss_fight' ? safeParsePromptText((node as BossDayContent).originalProblemText) : safeParsePromptText((node as DayContent).narrative) || 'Sin historia configurada.'}
                                 </p>
                             </div>
                         </div>
@@ -400,7 +422,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Problema Original (Jefe)</label>
                                     <textarea
                                         rows={4}
-                                        value={(nodes[editingNode] as BossDayContent).originalProblemText}
+                                        value={safeParsePromptText((nodes[editingNode] as BossDayContent).originalProblemText)}
                                         onChange={(e) => {
                                             const curr = [...nodes];
                                             (curr[editingNode] as BossDayContent).originalProblemText = e.target.value;
