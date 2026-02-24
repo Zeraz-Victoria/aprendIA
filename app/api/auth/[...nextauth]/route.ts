@@ -9,21 +9,39 @@ export const authOptions: NextAuthOptions = {
         CredentialsProvider({
             name: "Student Name",
             credentials: {
-                name: { label: "Nombre", type: "text", placeholder: "Tu nombre (ej. Sofia)" }
+                name: { label: "Nombre", type: "text", placeholder: "Tu nombre (ej. Sofia)" },
+                accessCode: { label: "Código de Clase", type: "text", placeholder: "Ej. X7P9K (Opcional para Maestros)" }
             },
             async authorize(credentials) {
-                if (!credentials?.name) return null;
+                const { name, accessCode } = credentials as any;
+                if (!name) return null;
 
-                // In a real app we'd verify a password here.
-                // For this classroom app, we're just matching the pre-seeded names.
-                const user = await prisma.user.findFirst({
-                    where: {
-                        name: {
-                            equals: credentials.name,
-                            mode: 'insensitive'
+                let user;
+
+                if (accessCode && accessCode.trim() !== '') {
+                    // Student login requires a valid class code
+                    const classroom = await prisma.classroom.findUnique({
+                        where: { accessCode: accessCode.trim().toUpperCase() }
+                    });
+
+                    if (!classroom) return null; // Invalid code
+
+                    user = await prisma.user.findFirst({
+                        where: {
+                            name: { equals: name.trim(), mode: 'insensitive' },
+                            classroomId: classroom.id,
+                            role: 'STUDENT'
                         }
-                    }
-                });
+                    });
+                } else {
+                    // Teacher or Superadmin login (they don't use class codes currently)
+                    user = await prisma.user.findFirst({
+                        where: {
+                            name: { equals: name.trim(), mode: 'insensitive' },
+                            role: { in: ['TEACHER', 'SUPERADMIN'] }
+                        }
+                    });
+                }
 
                 if (user) {
                     // Any object returned will be saved in `user` property of the JWT

@@ -118,6 +118,7 @@ export interface Classroom {
   emoji: string;
   teacherId: string;
   gradeId?: string | null;
+  accessCode?: string | null;
   _count?: { students: number };
 }
 

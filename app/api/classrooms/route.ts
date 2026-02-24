@@ -4,6 +4,10 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 
 // GET /api/classrooms?teacherId=xxx — fetch all classrooms for a teacher
+function generateCode() {
+    return Math.random().toString(36).substring(2, 7).toUpperCase();
+}
+
 export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -43,6 +47,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Name and teacherId required" }, { status: 400 });
         }
 
+        let code = generateCode();
+        let isUnique = false;
+        while (!isUnique) {
+            const exists = await prisma.classroom.findUnique({ where: { accessCode: code } });
+            if (!exists) {
+                isUnique = true;
+            } else {
+                code = generateCode();
+            }
+        }
+
         const classroom = await prisma.classroom.create({
             data: {
                 name: name.trim(),
@@ -50,7 +65,8 @@ export async function POST(req: Request) {
                 emoji: emoji || "📚",
                 teacherId,
                 gradeId: gradeId || null,
-                schoolId: schoolId || null
+                schoolId: schoolId || null,
+                accessCode: code
             }
         });
 

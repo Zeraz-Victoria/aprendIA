@@ -776,7 +776,10 @@ export default function TeacherDashboard() {
                                                         <div className="flex items-center gap-1.5 whitespace-nowrap">
                                                             <span>{cls.emoji}</span> {cls.name}
                                                         </div>
-                                                        {cls.description && <span className="text-[9px] font-normal leading-none opacity-80 max-w-[80px] truncate" title={cls.description}>{cls.description}</span>}
+                                                        <div className="flex items-center gap-1 opacity-80 mt-1">
+                                                            <span className="text-[9px] font-mono tracking-wider bg-slate-100 px-1.5 py-0.5 rounded text-indigo-700">Código: {cls.accessCode || 'N/A'}</span>
+                                                        </div>
+                                                        {cls.description && <span className="text-[9px] font-normal leading-none opacity-80 max-w-[80px] truncate mt-0.5" title={cls.description}>{cls.description}</span>}
                                                     </button>
                                                     <div className="absolute -top-6 right-0 hidden group-hover/cls:flex items-center bg-white shadow-lg border border-slate-100 rounded-lg p-1 z-10 transition-all gap-1">
                                                         <button onClick={() => { setEditingClassroom(cls); setNewClassName(cls.name); setNewClassDescription(cls.description || ""); setNewClassEmoji(cls.emoji); setSelectedGradeIdInModal(cls.gradeId || ""); setShowAddClassroomModal(true); }} className="px-1.5 py-0.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md text-[10px] font-bold transition-colors">Editar</button>
@@ -808,7 +811,10 @@ export default function TeacherDashboard() {
                                                         <div className="flex items-center gap-1.5 whitespace-nowrap">
                                                             <span>{cls.emoji}</span> {cls.name}
                                                         </div>
-                                                        {cls.description && <span className="text-[9px] font-normal leading-none opacity-80 max-w-[80px] truncate" title={cls.description}>{cls.description}</span>}
+                                                        <div className="flex items-center gap-1 opacity-80 mt-1">
+                                                            <span className="text-[9px] font-mono tracking-wider bg-slate-100 px-1.5 py-0.5 rounded text-indigo-700">Código: {cls.accessCode || 'N/A'}</span>
+                                                        </div>
+                                                        {cls.description && <span className="text-[9px] font-normal leading-none opacity-80 max-w-[80px] truncate mt-0.5" title={cls.description}>{cls.description}</span>}
                                                     </button>
                                                     <div className="absolute -top-6 right-0 hidden group-hover/cls:flex items-center bg-white shadow-lg border border-slate-100 rounded-lg p-1 z-10 transition-all gap-1">
                                                         <button onClick={() => { setEditingClassroom(cls); setNewClassName(cls.name); setNewClassDescription(cls.description || ""); setNewClassEmoji(cls.emoji); setSelectedGradeIdInModal(cls.gradeId || ""); setShowAddClassroomModal(true); }} className="px-1.5 py-0.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md text-[10px] font-bold transition-colors">Editar</button>

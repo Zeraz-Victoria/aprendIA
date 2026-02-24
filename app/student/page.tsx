@@ -72,14 +72,14 @@ export default function StudentPage() {
     // Consistent loading for SSR + client
     if (!mounted || status === "loading" || !currentUser) {
         return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-                <div className="animate-pulse text-indigo-400 font-bold text-xl">Cargando tu aventura...</div>
+            <div className="min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50 flex items-center justify-center">
+                <div className="animate-pulse text-teal-600 font-bold text-xl">Cargando tu aventura...</div>
             </div>
         );
     }
 
     return (
-        <main className="min-h-screen bg-slate-900">
+        <main className="min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50">
             <StudentHUD
                 onOpenStore={() => setShowStore(true)}
                 onOpenLeaderboard={() => setShowLeaderboard(true)}
@@ -88,7 +88,7 @@ export default function StudentPage() {
             <div className="fixed top-24 left-4 z-40">
                 <button
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="bg-slate-800/80 backdrop-blur p-2 rounded-full shadow-lg border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white transition-all flex items-center gap-2 px-4 font-bold text-sm"
+                    className="bg-white/80 backdrop-blur p-2 rounded-full shadow-lg border border-teal-100 text-teal-700 hover:bg-teal-50 hover:text-teal-900 transition-all flex items-center gap-2 px-4 font-bold text-sm"
                 >
                     <ArrowLeft className="w-4 h-4" /> Salir
                 </button>
