@@ -6,8 +6,9 @@ import { useLearning, LearningWorld, Student, Grade, Classroom } from "@/context
 import UploadEngine from "./UploadEngine";
 import VisualWorldBuilder from "./VisualWorldBuilder";
 import BulkEvidenceUploader from "./BulkEvidenceUploader";
-import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus } from "lucide-react";
+import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut } from "lucide-react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -596,7 +597,12 @@ export default function TeacherDashboard() {
                     </button>
                 </nav>
                 <div className="p-4 border-t border-teal-50">
-                    <Link href="/" className="text-sm text-slate-400 hover:text-teal-600 transition-colors">← Volver al Inicio</Link>
+                    <button
+                        onClick={() => signOut({ callbackUrl: "/" })}
+                        className="w-full text-left flex items-center gap-2 text-sm text-slate-500 hover:text-teal-600 p-2 rounded-lg transition-colors hover:bg-teal-50"
+                    >
+                        <LogOut className="w-4 h-4" /> Cerrar Sesión
+                    </button>
                 </div>
             </aside>
 
