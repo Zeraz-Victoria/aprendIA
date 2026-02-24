@@ -5,7 +5,7 @@ import { Plus, Swords, Save, Settings, X, GripVertical, FileText, Target, Sparkl
 import { useLearning, LearningWorld } from "@/contexts/LearningContext";
 import { LevelContent, DayContent, BossDayContent } from "@/types/learning-world";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import { toCanvas } from "html-to-image";
 
 export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose: () => void, initialWorld?: LearningWorld }) {
     const { addWorld, updateWorld, setActiveWorld, classrooms } = useLearning();
@@ -177,7 +177,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             await new Promise(resolve => setTimeout(resolve, 200));
 
             // Lowered scale to 1 to avoid hitting canvas max-size limits on long maps
-            const canvas = await html2canvas(element, { scale: 1, useCORS: true, logging: false });
+            const canvas = await toCanvas(element, { pixelRatio: 1 });
             const imgData = canvas.toDataURL("image/png");
 
             const pdfWidth = 210; // 210mm is A4 width

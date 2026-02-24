@@ -9,7 +9,7 @@ import { useLearning } from "@/contexts/LearningContext";
 import WordSearch from "./minigames/WordSearch";
 import MemoryMatch from "./minigames/MemoryMatch";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import { toCanvas } from "html-to-image";
 
 function fixImageUrl(src: string): string {
     // We previously intercepted pollinations.ai URLs to our local API.
@@ -119,7 +119,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             // Wait for paint
             await new Promise(resolve => setTimeout(resolve, 200));
 
-            const canvas = await html2canvas(element, { scale: 1.5, useCORS: true, logging: false });
+            const canvas = await toCanvas(element, { pixelRatio: 1.5 });
             const imgData = canvas.toDataURL("image/png");
 
             const pdfWidth = 210;
