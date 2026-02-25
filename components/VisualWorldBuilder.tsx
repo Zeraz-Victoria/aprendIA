@@ -200,8 +200,10 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             // Wait for React and the browser to paint the DOM element
             await new Promise(resolve => setTimeout(resolve, 500));
 
-            // Lowered scale to 1 to avoid hitting canvas max-size limits on long maps
-            const canvas = await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff' });
+            // Lowered scale to 1.5 to avoid hitting canvas max-size limits on long maps
+            // Safari workaround: First call warms up the internal SVG/font cache, second call captures
+            await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false }).catch(() => { });
+            const canvas = await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false });
             const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
             const pdfWidth = 210; // 210mm is A4 width

@@ -179,7 +179,9 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             // Wait for paint
             await new Promise(resolve => setTimeout(resolve, 500));
 
-            const canvas = await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff' });
+            // Safari workaround: First call warms up the internal SVG/font cache, second call captures
+            await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false }).catch(() => { });
+            const canvas = await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false });
             const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
             const pdfWidth = 210;
