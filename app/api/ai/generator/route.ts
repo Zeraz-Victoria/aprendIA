@@ -61,62 +61,60 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM) y Gamificación.
+Actúa como un Senior Instructional Designer y Arquitecto de Software Educativo experto en la Nueva Escuela Mexicana (NEM). Tu misión es transformar una planeación o un tema educativo en un "Mapa de Aprendizaje Gamificado" en formato JSON.
 
 CONTEXTO ACTUAL PROPORCIONADO POR EL DOCENTE:
 - Tema: ${topic}
 - Temática Narrativa: ${theme}
 - Dificultad: ${difficulty}
 
-TU MISIÓN:
-Generar un Grafo de Aprendizaje Autónomo en formato JSON para un mapa interactivo. El sistema debe funcionar bajo dos escenarios:
-1. SI SE PROPORCIONA UNA PLANEACIÓN: Transformar cada sesión y fase en niveles del juego.
-2. SI SE PROPORCIONA SOLO UN TEMA: Crear primero una planeación pedagógica interna basada en la Fase 5 o 6 (según corresponda) con metodología ABP o Proyectos Comunitarios, y posteriormente generar el juego.
+REGLAS DE IDENTIFICACIÓN PEDAGÓGICA (NEM):
+1. FASES DEL PROGRAMA SINTÉTICO: Debes ubicar el contenido estrictamente en la fase que corresponda (Fase 1 a Fase 6).
+2. SELECCIÓN DE METODOLOGÍA: Debes identificar (si viene en la planeación) o elegir (si partes de un tema) la metodología sociocrítica más apta:
+   - Aprendizaje Basado en Problemas (ABP).
+   - Aprendizaje Basado en Proyectos.
+   - Aprendizaje Basado en Indagación (STEAM).
+   - Aprendizaje Basado en Problemas Comunitarios.
+   - Aprendizaje de Servicio (AS).
+3. ESTRUCTURA DE LA EXPERIENCIA: Cada sesión debe respetar el flujo de Inicio, Desarrollo y Cierre, integrando el diagnóstico socioeducativo en la narrativa del juego.
 
-DIRECTRICES PEDAGÓGICAS (STRICT):
-- DIAGNÓSTICO: Utiliza o crea un contexto socioeducativo real (problemas de la comunidad, escuela o aula) para situar la narrativa del juego.
-- PDA Y CONTENIDOS: Los retos deben validar específicamente los Procesos de Desarrollo de Aprendizaje oficiales de la NEM.
-- ESTRUCTURA DE SESIÓN: Cada nivel debe tener: Inicio (Narrativa), Desarrollo (Teoría + Reto) y Cierre (Reflexión/Feedback).
-- AULA INVERTIDA (EL ORÁCULO): Antes de cada desafío, presenta un bloque de teoría lúdica y clara ("Aula Invertida") para que el alumno aprenda de forma autónoma.
-- MECÁNICAS DE JUEGO (GAME_ENGINE): Selecciona dinámicas que tu frontend pueda renderizar:
-    * 'LOGIC_PUZZLE': Retos lógicos o matemáticos.
-    * 'TEXT_MASTER': Redacción, ortografía y puntuación.
-    * 'CONCEPT_MAP': Relación de conceptos o columnas.
-    * 'TRIVIA_QUEST': Preguntas de opción múltiple con pistas socráticas.
+INSTRUCCIONES DE DISEÑO INSTRUCCIONAL:
+- AULA INVERTIDA: Cada nivel del mapa debe iniciar con un "Oráculo de Sabiduría" (Teoría técnica pero accesible) que el alumno debe leer para resolver el reto de forma autónoma.
+- MECÁNICAS DE JUEGO: Define el tipo de componente UI que el frontend debe cargar (LOGIC_PUZZLE, TEXT_MASTER, CONCEPT_SORT, o TRIVIA_QUEST).
+- RETROALIMENTACIÓN SOCRÁTICA: Si el alumno falla, no des la respuesta; genera una pregunta que lo obligue a reflexionar sobre la teoría leída.
 
-ESPECIFICACIÓN TÉCNICA DE SALIDA (JSON ÚNICAMENTE):
+ESPECIFICACIÓN TÉCNICA DE SALIDA (JSON ESTRICTO):
 {
-  "metadatos_docente": {
-    "proyecto_nombre": "Nombre creativo del proyecto",
-    "metodologia": "ABP | Proyectos Comunitarios",
-    "fase": "Fase 5 o 6",
+  "configuracion_pedagogica": {
+    "fase_programa_sintetico": "Fase 1-6",
+    "metodologia_seleccionada": "ABP | Proyectos | STEAM | Comunitarios | Servicio",
     "campo_formativo": "Nombre del campo",
-    "pda_general": "Objetivo principal a lograr"
+    "pda_objetivo": "Proceso de Desarrollo de Aprendizaje a lograr"
   },
-  "mapa_interactivo": [
+  "mapa_de_juego": [
     {
-      "fase_id": "Fase_Nombre",
+      "etapa_metodologica": "Nombre de la fase según la metodología (ej. Presentemos o Acción)",
       "niveles": [
         {
-          "id": "S1",
-          "titulo_nivel": "Título épico del nivel",
-          "narrativa_intro": "Historia que sitúa al alumno en el problema",
-          "oraculo_teoria": {
-            "contenido_html": "Texto educativo para aprendizaje autónomo",
-            "analogia_clave": "Comparación con la vida real"
+          "id": "Nivel_X",
+          "titulo": "Título épico",
+          "contexto_narrativo": "Historia basada en el diagnóstico socioeducativo",
+          "aula_invertida_teoria": {
+            "contenido": "Teoría necesaria para el aprendizaje autónomo",
+            "puntos_clave": ["Dato 1", "Dato 2"]
           },
-          "desafio": {
-            "tipo_componente": "QUIZ | CROSSWORD | MATCHING | CHALLENGE",
-            "datos_juego": {
-                "pregunta": "El reto a resolver",
-                "opciones": ["si aplica"],
-                "respuesta_correcta": "Valor exacto",
-                "pista_socratica": "Pregunta guía que no da la respuesta"
+          "desafio_interactivo": {
+            "tipo_ui": "LOGIC_PUZZLE | TEXT_MASTER | CONCEPT_SORT | TRIVIA_QUEST",
+            "config": {
+              "reto": "Pregunta o problema a resolver",
+              "opciones": ["si aplica"],
+              "valor_correcto": "Respuesta esperada",
+              "pista_socratica": "Pregunta guía ante el error"
             }
           },
-          "feedback": {
-            "exito": "Mensaje de motivación",
-            "repaso": "Explicación del porqué de la respuesta"
+          "evaluacion_formativa": {
+            "criterio": "Qué se está evaluando",
+            "mensaje_exito": "Refuerzo positivo"
           }
         }
       ]
@@ -124,10 +122,10 @@ ESPECIFICACIÓN TÉCNICA DE SALIDA (JSON ÚNICAMENTE):
   ]
 }
 
-REGLAS CRÍTICAS:
-- No incluyas texto explicativo fuera del bloque JSON.
-- Si el docente solo da un tema, garantiza que la estructura del JSON refleje una planeación completa de la NEM (mínimo 6 sesiones).
-- La dificultad debe ser progresiva: de la recuperación de saberes al pensamiento crítico.
+REGLAS CRÍTICAS DE FORMATO:
+- Genera ÚNICAMENTE el código JSON. NO agregues comillas inclinadas (\\\`\\\`\\\`json) al inicio ni al final.
+- Asegúrate de que la dificultad sea progresiva y que el alumno pueda completar el mapa sin ayuda constante del docente.
+- Si solo se proporciona un tema general, garantiza generar al menos 5 o 6 niveles.
 `;
 
     const result = await model.generateContent(prompt);
@@ -192,27 +190,27 @@ REGLAS CRÍTICAS:
 
     // Adapt new JSON format to old Data Schema to avoid frontend breakage
     let days: any[] = [];
-    const interactiveMap = parsedResponse.mapa_interactivo || (Array.isArray(parsedResponse) ? parsedResponse : []);
+    const interactiveMap = parsedResponse.mapa_de_juego || parsedResponse.mapa_interactivo || (Array.isArray(parsedResponse) ? parsedResponse : []);
 
     if (interactiveMap && Array.isArray(interactiveMap)) {
       let globalIndex = 1;
-      interactiveMap.forEach((fase: any) => {
-        if (fase.niveles && Array.isArray(fase.niveles)) {
-          fase.niveles.forEach((nivel: any) => {
+      interactiveMap.forEach((etapa: any) => {
+        if (etapa.niveles && Array.isArray(etapa.niveles)) {
+          etapa.niveles.forEach((nivel: any) => {
             days.push({
               dayNumber: globalIndex++,
               type: "guided_practice", // Fallback for all items currently
-              title: nivel.titulo_nivel || "Nivel",
-              narrative: nivel.narrativa_intro || "",
+              title: nivel.titulo || nivel.titulo_nivel || "Nivel",
+              narrative: nivel.contexto_narrativo || nivel.narrativa_intro || "",
               content: {
                 explanation: {
-                  chunks: [nivel.oraculo_teoria?.contenido_html || ""],
-                  analogy: nivel.oraculo_teoria?.analogia_clave || ""
+                  chunks: [nivel.aula_invertida_teoria?.contenido || nivel.oraculo_teoria?.contenido_html || ""],
+                  analogy: (nivel.aula_invertida_teoria?.puntos_clave || []).join(' • ') || nivel.oraculo_teoria?.analogia_clave || ""
                 },
                 practiceProblem: {
-                  statement: nivel.desafio?.datos_juego?.pregunta || "Pregunta no definida",
-                  correctValue: nivel.desafio?.datos_juego?.respuesta_correcta ?? "N/A",
-                  hint: nivel.desafio?.datos_juego?.pista_socratica || ""
+                  statement: nivel.desafio_interactivo?.config?.reto || nivel.desafio?.datos_juego?.pregunta || "Pregunta no definida",
+                  correctValue: (nivel.desafio_interactivo?.config?.valor_correcto || nivel.desafio?.datos_juego?.respuesta_correcta) ?? "N/A",
+                  hint: nivel.desafio_interactivo?.config?.pista_socratica || nivel.desafio?.datos_juego?.pista_socratica || ""
                 }
               }
             });
