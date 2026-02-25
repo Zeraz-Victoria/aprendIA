@@ -192,15 +192,17 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             const element = document.getElementById("full-map-pdf-container");
             if (!element) return;
 
-            // Show element
+            // Show element behind everything else but physically in the viewport
             element.style.display = "block";
+            element.classList.remove("top-[-9999px]", "left-[-9999px]");
+            element.classList.add("fixed", "top-0", "left-0", "z-[-50]");
 
             // Wait for React and the browser to paint the DOM element
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // Lowered scale to 1 to avoid hitting canvas max-size limits on long maps
-            const canvas = await toCanvas(element, { pixelRatio: 1 });
-            const imgData = canvas.toDataURL("image/png");
+            const canvas = await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
             const pdfWidth = 210; // 210mm is A4 width
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
@@ -212,15 +214,19 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                 format: [pdfWidth, Math.max(297, pdfHeight + 10)]
             });
 
-            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`Guia-Docente-${title.replace(/\\s+/g, '-')}.pdf`);
+            pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`Guia-Docente-${title.replace(/\s+/g, '-')}.pdf`);
 
         } catch (error: any) {
             console.error("Error generating PDF:", error);
             alert(`Hubo un error al generar la guía en PDF: ${error?.message || 'Error desconocido'}`);
         } finally {
             const element = document.getElementById("full-map-pdf-container");
-            if (element) element.style.display = "none";
+            if (element) {
+                element.style.display = "none";
+                element.classList.add("top-[-9999px]", "left-[-9999px]");
+                element.classList.remove("fixed", "top-0", "left-0", "z-[-50]");
+            }
             setIsDownloadingPdf(false);
         }
     };
@@ -441,7 +447,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             {/* Hidden Container for PDF Download (Complete Map / Teacher Guide) */}
             <div
                 id="full-map-pdf-container"
-                className="absolute top-[-9999px] left-[-9999px] bg-white w-[900px] p-10 text-black"
+                className="absolute top-[-9999px] left-[-9999px] bg-white w-[900px] p-10 text-black min-h-screen"
                 style={{ display: "none" }}
             >
                 <div className="border-b-4 border-indigo-600 pb-6 mb-8 text-center">

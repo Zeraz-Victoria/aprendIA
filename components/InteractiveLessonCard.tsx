@@ -173,12 +173,14 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             if (!element) return;
 
             element.style.display = "block";
+            element.classList.remove("top-[-9999px]", "left-[-9999px]");
+            element.classList.add("fixed", "top-0", "left-0", "z-[-50]");
 
             // Wait for paint
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 500));
 
-            const canvas = await toCanvas(element, { pixelRatio: 1.5 });
-            const imgData = canvas.toDataURL("image/png");
+            const canvas = await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
             const pdfWidth = 210;
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
@@ -189,15 +191,19 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 format: [pdfWidth, Math.max(297, pdfHeight + 10)]
             });
 
-            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`Leccion-${data.title.replace(/\\s+/g, '-')}.pdf`);
+            pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`Leccion-${data.title.replace(/\s+/g, '-')}.pdf`);
 
         } catch (error: any) {
             console.error("Error generating PDF:", error);
             alert(`Hubo un error al generar el PDF: ${error?.message || 'Error desconocido'}`);
         } finally {
             const element = document.getElementById("full-lesson-pdf-container");
-            if (element) element.style.display = "none";
+            if (element) {
+                element.style.display = "none";
+                element.classList.add("top-[-9999px]", "left-[-9999px]");
+                element.classList.remove("fixed", "top-0", "left-0", "z-[-50]");
+            }
             setIsDownloading(false);
         }
     };
@@ -714,7 +720,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             {/* Hidden Container for PDF Download */}
             <div
                 id="full-lesson-pdf-container"
-                className="absolute top-[-9999px] left-[-9999px] bg-white w-[800px] p-8 text-black"
+                className="absolute top-[-9999px] left-[-9999px] bg-white w-[800px] p-8 text-black min-h-screen"
                 style={{ display: "none" }}
             >
                 <h1 className="text-3xl font-bold text-center mb-6 text-indigo-900 border-b-2 border-indigo-200 pb-4">{data.title}</h1>
