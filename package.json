@@ -12,6 +12,7 @@
     "@auth/prisma-adapter": "^2.11.1",
     "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.22.0",
+    "@stripe/stripe-js": "^8.8.0",
     "@tailwindcss/typography": "^0.5.19",
     "html-to-image": "^1.11.13",
     "jspdf": "^4.2.0",
@@ -21,10 +22,13 @@
     "next": "16.1.6",
     "next-auth": "^4.24.13",
     "pdfkit": "^0.17.2",
+    "pusher": "^5.3.2",
+    "pusher-js": "^8.4.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "stripe": "^20.3.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

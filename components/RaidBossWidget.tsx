@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Swords, X, Activity, Trophy } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
+import { getPusherClient } from "@/lib/pusher";
 
 interface RaidBoss {
     id: string;
@@ -34,8 +35,28 @@ export default function RaidBossWidget() {
     useEffect(() => {
         fetchBoss();
         const interval = setInterval(fetchBoss, 10000);
-        return () => clearInterval(interval);
-    }, []);
+
+        const pusher = getPusherClient();
+        const channel = pusher.subscribe('raid-boss');
+
+        channel.bind('hp-update', (data: any) => {
+            setBoss(prev => {
+                if (!prev || prev.id !== data.bossId) return prev;
+                return { ...prev, currentHealth: data.currentHealth };
+            });
+            // Only show animation if someone else attacked, self attacks already show it
+            if (currentUser && data.attackerId !== currentUser.id) {
+                setDamageAnim(data.damageAmount);
+                setTimeout(() => setDamageAnim(null), 1000);
+            }
+        });
+
+        return () => {
+            clearInterval(interval);
+            channel.unbind_all();
+            channel.unsubscribe();
+        };
+    }, [currentUser]);
 
     const handleAttack = async () => {
         if (!boss || !currentUser || stats.gems < 5) return;

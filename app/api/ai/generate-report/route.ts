@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
     try {
-        const { studentId, studentName } = await req.json();
+        const { studentId, studentName, reportType = 'teacher' } = await req.json();
 
         if (!studentId) {
             return NextResponse.json({ error: "Missing studentId" }, { status: 400 });
@@ -41,7 +41,24 @@ export async function POST(req: Request) {
         const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || "");
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-        const prompt = `# ROL
+        const prompt = reportType === 'parent' ? `# ROL
+Eres un pedagogo cálido y empático. Escribirás un reporte breve para los PADRES del alumno.
+
+# DATOS DEL ALUMNO
+- Nombre: ${studentName || "Alumno"}
+- Ejercicios intentados: ${entries.length}
+- Progreso de aciertos: ${Math.round(correctCount / entries.length * 100)}%
+- Temas practicados: ${topics.join(', ') || 'Sin datos'}
+
+# INSTRUCCIONES
+Redacta una nota formal pero motivadora dirigida a la familia.
+1. Saluda cordialmente.
+2. Destaca lo positivo (en qué temas le fue bien).
+3. Menciona sutilmente un área de oportunidad basada en sus errores, sin ser punitivo.
+4. Sugiere 1 actividad fácil para hacer en casa (juegos de mesa, leer juntos, contar monedas al comprar).
+5. Despide con motivación.
+
+Tu respuesta DEBE ESTAR EN FORMATO MARKDOWN LISTO PARA LEERSE.` : `# ROL
 Eres un asesor pedagógico experto que genera reportes para docentes de primaria y secundaria.
 
 # DATOS DEL ALUMNO

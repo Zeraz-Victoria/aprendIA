@@ -106,6 +106,42 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     const [gameOverTimer, setGameOverTimer] = useState(30);
     const [isDownloading, setIsDownloading] = useState(false);
 
+    // TTS State
+    const [isSpeaking, setIsSpeaking] = useState(false);
+    const [speechSupported, setSpeechSupported] = useState(true);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && !('speechSynthesis' in window)) {
+            setSpeechSupported(false);
+        }
+        return () => {
+            if (typeof window !== 'undefined' && window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        };
+    }, []);
+
+    const handleSpeak = (textToSpeak: string) => {
+        if (!speechSupported) return;
+        
+        if (isSpeaking) {
+            window.speechSynthesis.cancel();
+            setIsSpeaking(false);
+            return;
+        }
+
+        const cleanText = textToSpeak.replace(/[\[\]*#_]/g, '').trim(); // Remove some markdown chars for reading
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = 'es-MX'; // Or generic 'es-ES'
+        utterance.rate = 0.9;
+        
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+
+        window.speechSynthesis.speak(utterance);
+    };
+
     // AI Tutor and Practice State
     const [studentInput, setStudentInput] = useState("");
     const [aiHint, setAiHint] = useState<string | null>(null);
@@ -359,6 +395,19 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 {(statement || "Resuelve el siguiente acertijo.").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
                             </ReactMarkdown>
                         </div>
+                        
+                        {speechSupported && (
+                            <div className="mt-4 flex justify-end">
+                                <button
+                                    onClick={() => handleSpeak((statement || "Resuelve el siguiente acertijo.").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName))}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${isSpeaking ? 'bg-indigo-200 text-indigo-700 animate-pulse' : 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'}`}
+                                    title="Leer en voz alta"
+                                >
+                                    <Volume2 className="w-4 h-4" />
+                                    {isSpeaking ? "Escuchando..." : "Escuchar"}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 

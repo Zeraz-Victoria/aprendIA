@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { pusherServer } from "@/lib/pusher";
 
 export async function GET() {
     try {
@@ -84,6 +85,19 @@ export async function POST(req: Request) {
                 xp: { increment: Math.floor(damage / 2) }
             }
         });
+
+        // Trigger Real-Time sync
+        try {
+            await pusherServer.trigger('raid-boss', 'hp-update', {
+                bossId: activeBoss.id,
+                currentHealth: newHealth,
+                maxHealth: activeBoss.maxHealth,
+                attackerId: studentId,
+                damageAmount: damage
+            });
+        } catch (e) {
+            console.error("Pusher trigger error (probably missing keys, safe to ignore locally):", e);
+        }
 
         return NextResponse.json({ currentHealth: newHealth });
     } catch (error) {

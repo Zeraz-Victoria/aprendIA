@@ -89,6 +89,82 @@ Devuelve SÓLO este JSON crudo:
                     });
                     console.log("✅ Auto-logged evidence to DB:", savedEntry.id);
                     dbSaveStatus = "saved:" + savedEntry.id;
+
+                    // AUTO-RESCUE: Continuous Adaptive Difficulty (Feature 5)
+                    if (!parsedData.isCorrect) {
+                        const parsedLevelId = typeof levelId === 'string' ? parseInt(levelId) : levelId;
+                        const recentFails = await prisma.evidenceEntry.findMany({
+                            where: {
+                                studentId,
+                                worldId,
+                                levelId: parsedLevelId,
+                                isCorrect: false
+                            },
+                            orderBy: { createdAt: 'desc' },
+                            take: 2 // We just added one above, so this will return at least 1. If it returns 3 (including the current), it means 3 strikes.
+                        });
+
+                        // 3 fails means 1 just inserted + 2 previous
+                        if (recentFails.length >= 2) {
+                            // Check if a rescue mission already exists for this level to avoid spamming
+                            const existingMission = await prisma.studentMission.findUnique({
+                                where: { studentId_worldId: { studentId, worldId } }
+                            });
+
+                            const days = existingMission ? JSON.parse(existingMission.daysJson) : [];
+                            const alreadyHasRescue = days.find((d: any) => d.insertAfterDay === parsedLevelId);
+
+                            if (!alreadyHasRescue && process.env.AI_API_KEY) {
+                                console.log(`🚀 [Adaptive AI] Student ${studentId} failed 3 times on level ${parsedLevelId}. Generating Rescue Mission...`);
+
+                                const rescuePrompt = `
+Eres un creador de contenido de aprendizaje gamificado. 
+El estudiante falló en el siguiente concepto repetidamente:
+"""
+${context || 'Matemáticas o Lógica'}
+"""
+Crea UN problema de "Misión de Rescate" MUY sencillo, usando analogías muy básicas (como manzanas, pizzas, monedas) para recuperar su confianza.
+Tu respuesta DEBE ser un JSON válido como este:
+{
+  "title": "Misión de Rescate",
+  "narrative": "Mensaje motivador corto pidiéndole que baje el ritmo.",
+  "practiceProblem": {
+    "statement": "El problema super fácil de analogía.",
+    "correctAnswer": "respuesta",
+    "concept": "Repaso Básico"
+  }
+}
+`;
+                                const rescueResult = await model.generateContent(rescuePrompt);
+                                const rescueClean = rescueResult.response.text().replace(/```json/gi, '').replace(/```/gi, '').trim();
+
+                                try {
+                                    const rescueGen = JSON.parse(rescueClean);
+
+                                    const newDay = {
+                                        insertAfterDay: parsedLevelId,
+                                        type: "practice",
+                                        title: rescueGen.title || "Refuerzo",
+                                        narrative: rescueGen.narrative || "¡Tómate un descanso! Vamos con un repaso más sencillo.",
+                                        practiceProblem: rescueGen.practiceProblem,
+                                        isBoss: false
+                                    };
+
+                                    days.push(newDay);
+                                    await prisma.studentMission.upsert({
+                                        where: { studentId_worldId: { studentId, worldId } },
+                                        update: { daysJson: JSON.stringify(days) },
+                                        create: { studentId, worldId, daysJson: JSON.stringify(days) }
+                                    });
+
+                                    parsedData.extractedText += " ¡Hemos ajustado la dificultad y desbloqueado una misión más fácil para la próxima vez!";
+                                } catch (e) {
+                                    console.error("Rescue Mission Gen error:", e);
+                                }
+                            }
+                        }
+                    }
+
                 } catch (dbErr: any) {
                     console.error("❌ Failed to save EvidenceEntry to Database:", dbErr?.message || dbErr);
                     dbSaveStatus = "error:" + (dbErr?.message || "unknown");

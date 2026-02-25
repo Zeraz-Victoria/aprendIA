@@ -12,7 +12,7 @@ import { signOut } from "next-auth/react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-type Tab = "students" | "insights" | "library" | "reports";
+type Tab = "students" | "insights" | "library" | "reports" | "subscription";
 
 export default function TeacherDashboard() {
     const {
@@ -618,6 +618,12 @@ export default function TeacherDashboard() {
                     >
                         <BrainCircuit className="w-4 h-4" /> Análisis Inteligente
                     </button>
+                    <button
+                        onClick={() => setActiveTab("subscription")}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'subscription' ? 'bg-purple-50 text-purple-700 shadow-sm' : 'text-slate-500 hover:bg-purple-50/50 hover:text-purple-600'}`}
+                    >
+                        <span>💳</span> Mi Suscripción
+                    </button>
                 </nav>
                 <div className="p-4 border-t border-teal-50">
                     <button
@@ -655,6 +661,72 @@ export default function TeacherDashboard() {
                             </select>
                         </div>
                     </header>
+                )}
+
+                {/* SUBSCRIPTION TAB */}
+                {activeTab === 'subscription' && (
+                    <div className="space-y-6 max-w-4xl mx-auto">
+                        <header className="mb-8">
+                            <h2 className="text-3xl font-black text-slate-800">Mi Plan Actual: {schoolInfo.plan}</h2>
+                            <p className="text-slate-500 font-medium">Gestiona tu suscripción y amplía el poder de tu aula virtual.</p>
+                            <p className="mt-2 text-sm text-slate-400">Estado: <span className={`font-bold ${isSuspended ? 'text-red-500' : 'text-green-500'}`}>{isSuspended ? 'SUSPENDIDA' : 'ACTIVA'}</span></p>
+                        </header>
+
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-shadow">
+                                <h3 className="text-2xl font-bold text-slate-800 mb-2">Plan Intermedio</h3>
+                                <p className="text-slate-500 mb-6">Perfecto para profesores con múltiples grupos.</p>
+                                <ul className="space-y-4 mb-8">
+                                    <li className="flex gap-2 items-center text-slate-700"><span className="text-green-500 font-bold">✓</span> Hasta 50 Alumnos concurrentes</li>
+                                    <li className="flex gap-2 items-center text-slate-700"><span className="text-green-500 font-bold">✓</span> Hasta 5 Mapas Activos</li>
+                                    <li className="flex gap-2 items-center text-slate-700"><span className="text-green-500 font-bold">✓</span> Análisis Predictivo Básico</li>
+                                </ul>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch('/api/stripe/checkout', {
+                                                method: 'POST', body: JSON.stringify({ plan: 'INTERMEDIATE' })
+                                            });
+                                            const data = await res.json();
+                                            if (data.url) window.location.href = data.url;
+                                        } catch (e) {
+                                            alert("Error al conectar con pago");
+                                        }
+                                    }}
+                                    className="w-full py-3 bg-purple-100 text-purple-700 font-bold rounded-xl hover:bg-purple-200 transition-colors"
+                                >
+                                    Elegir Plan Intermedio ($9/mes)
+                                </button>
+                            </div>
+
+                            <div className="bg-slate-900 p-8 rounded-3xl shadow-xl relative overflow-hidden transform hover:scale-105 transition-transform">
+                                <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-black text-xs px-4 py-1 rounded-bl-xl">MÁS POPULAR</div>
+                                <h3 className="text-2xl font-bold text-white mb-2">Plan Premium</h3>
+                                <p className="text-slate-400 mb-6">El poder total de la IA para toda la institución.</p>
+                                <ul className="space-y-4 mb-8">
+                                    <li className="flex gap-2 items-center text-slate-300"><span className="text-yellow-400 font-bold">✓</span> Hasta 100 Alumnos concurrentes</li>
+                                    <li className="flex gap-2 items-center text-slate-300"><span className="text-yellow-400 font-bold">✓</span> Hasta 10+ Mapas Activos</li>
+                                    <li className="flex gap-2 items-center text-slate-300"><span className="text-yellow-400 font-bold">✓</span> IA Adaptativa y PDF para Padres</li>
+                                </ul>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch('/api/stripe/checkout', {
+                                                method: 'POST', body: JSON.stringify({ plan: 'PREMIUM' })
+                                            });
+                                            const data = await res.json();
+                                            if (data.url) window.location.href = data.url;
+                                        } catch (e) {
+                                            alert("Error al conectar con pago");
+                                        }
+                                    }}
+                                    className="w-full py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-xl hover:shadow-[0_0_20px_rgba(250,204,21,0.5)] transition-all"
+                                >
+                                    Elegir Plan Premium ($19/mes)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 {/* LIBRARY TAB */}
@@ -1100,11 +1172,21 @@ export default function TeacherDashboard() {
                             </div>
 
                             {/* AI General Trends -> Dynamic Student Trends */}
-                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-teal-100">
-                                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
-                                    <TrendingUp className="w-5 h-5 text-teal-500" /> Rendimiento por Alumno
-                                </h3>
-                                <p className="text-xs text-slate-400 mb-4">🌐 Global — Todos los mapas activos</p>
+                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-teal-100 flex flex-col">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
+                                            <TrendingUp className="w-5 h-5 text-teal-500" /> Rendimiento y Emociones
+                                        </h3>
+                                        <p className="text-xs text-slate-400">🌐 Global — Todos los mapas activos</p>
+                                    </div>
+                                    <div className="flex gap-2 text-xs">
+                                        <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> Motivado</div>
+                                        <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500"></span> Dudoso</div>
+                                        <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span> Frustrado</div>
+                                    </div>
+                                </div>
+
                                 <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
                                     {students.length === 0 ? (
                                         <div className="text-sm text-slate-500 text-center py-6">No hay alumnos para analizar.</div>
@@ -1501,26 +1583,84 @@ export default function TeacherDashboard() {
                                                     "El alumno muestra dificultades. Se recomienda intervención."
                                                 )}
                                             </p>
-                                            <button
-                                                onClick={async () => {
-                                                    setIsGeneratingReport(true);
-                                                    try {
-                                                        const res = await fetch('/api/ai/generate-report', {
-                                                            method: 'POST',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                            body: JSON.stringify({ studentId: s?.id, studentName: s?.name })
-                                                        });
-                                                        const data = await res.json();
-                                                        setAiReport(data.report);
-                                                    } catch (e) {
-                                                        setAiReport('Error al generar el reporte.');
-                                                    }
-                                                    setIsGeneratingReport(false);
-                                                }}
-                                                className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
-                                            >
-                                                <BrainCircuit className="w-4 h-4" /> Generar Reporte Completo con IA
-                                            </button>
+                                            <div className="flex flex-col gap-2">
+                                                <button
+                                                    onClick={async () => {
+                                                        setIsGeneratingReport(true);
+                                                        try {
+                                                            const res = await fetch('/api/ai/generate-report', {
+                                                                method: 'POST',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ studentId: s?.id, studentName: s?.name, reportType: 'teacher' })
+                                                            });
+                                                            const data = await res.json();
+                                                            setAiReport(data.report);
+                                                        } catch (e) {
+                                                            setAiReport('Error al generar el reporte.');
+                                                        }
+                                                        setIsGeneratingReport(false);
+                                                    }}
+                                                    className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                                >
+                                                    <BrainCircuit className="w-4 h-4" /> Generar Reporte para Docente (IA)
+                                                </button>
+                                                <button
+                                                    onClick={async () => {
+                                                        setIsGeneratingReport(true);
+                                                        try {
+                                                            const res = await fetch('/api/ai/generate-report', {
+                                                                method: 'POST',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ studentId: s?.id, studentName: s?.name, reportType: 'parent' })
+                                                            });
+                                                            const data = await res.json();
+
+                                                            // Generate PDF logic here conceptually
+                                                            const doc = new jsPDF();
+                                                            doc.setFont("helvetica", "bold");
+                                                            doc.setFontSize(20);
+                                                            doc.text("Reporte para Padres", 105, 20, { align: "center" });
+
+                                                            doc.setFont("helvetica", "normal");
+                                                            doc.setFontSize(12);
+                                                            const splitTitle = doc.splitTextToSize(data.title || "Reporte de Desempeño", 180);
+                                                            doc.text(splitTitle, 20, 40);
+
+                                                            let y = 50;
+                                                            if (Array.isArray(data.paragraphs)) {
+                                                                data.paragraphs.forEach((p: string) => {
+                                                                    const lines = doc.splitTextToSize(p, 170);
+                                                                    doc.text(lines, 20, y);
+                                                                    y += (lines.length * 7) + 5;
+                                                                });
+                                                            } else {
+                                                                const lines = doc.splitTextToSize(data.report || "", 170);
+                                                                doc.text(lines, 20, y);
+                                                                y += (lines.length * 7) + 5;
+                                                            }
+
+                                                            if (data.homeActivity) {
+                                                                doc.setFont("helvetica", "bold");
+                                                                doc.text("Actividad sugerida en casa:", 20, y);
+                                                                y += 10;
+                                                                doc.setFont("helvetica", "normal");
+                                                                const lines = doc.splitTextToSize(data.homeActivity, 170);
+                                                                doc.text(lines, 20, y);
+                                                            }
+
+                                                            doc.save(`Reporte_${s?.name.replace(/\s+/g, '_')}.pdf`);
+
+                                                        } catch (e) {
+                                                            console.error("PDF Generate Error", e);
+                                                            alert('Error al generar el PDF para padres.');
+                                                        }
+                                                        setIsGeneratingReport(false);
+                                                    }}
+                                                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                                >
+                                                    <FileText className="w-4 h-4" /> Exportar Reporte para Padres (PDF)
+                                                </button>
+                                            </div>
                                         </>
                                     )}
                                 </div>
