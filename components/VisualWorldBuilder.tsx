@@ -192,10 +192,10 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             const element = document.getElementById("full-map-pdf-container");
             if (!element) return;
 
-            // Show element behind everything else but physically in the viewport
+            // Show element behind loading overlay but physically in the viewport at the top
             element.style.display = "block";
-            element.classList.remove("top-[-9999px]", "left-[-9999px]");
-            element.classList.add("fixed", "top-0", "left-0", "z-[-50]");
+            element.classList.remove("top-[-9999px]", "left-[-9999px]", "z-[-50]");
+            element.classList.add("fixed", "top-0", "left-0", "z-[9990]");
 
             // Wait for React and the browser to paint the DOM element
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -225,7 +225,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             if (element) {
                 element.style.display = "none";
                 element.classList.add("top-[-9999px]", "left-[-9999px]");
-                element.classList.remove("fixed", "top-0", "left-0", "z-[-50]");
+                element.classList.remove("fixed", "top-0", "left-0", "z-[9990]");
             }
             setIsDownloadingPdf(false);
         }
@@ -441,6 +441,15 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                         )}
                         <p className="text-xs text-slate-400 mt-4">* El constructor rápido solo permite edición básica de textos por ahora.</p>
                     </div>
+                </div>
+            )}
+
+            {/* Loading Overlay for PDF */}
+            {isDownloadingPdf && (
+                <div className="fixed inset-0 bg-slate-900/90 z-[9999] flex flex-col items-center justify-center backdrop-blur-sm">
+                    <Sparkles className="w-16 h-16 text-sky-400 animate-spin mb-6" />
+                    <h2 className="text-3xl font-bold text-white mb-2">Construyendo Guía Docente...</h2>
+                    <p className="text-slate-300 text-lg">Ensamblando el mundo de aprendizaje. Esto tomará unos segundos.</p>
                 </div>
             )}
 

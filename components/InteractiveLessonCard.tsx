@@ -173,8 +173,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             if (!element) return;
 
             element.style.display = "block";
-            element.classList.remove("top-[-9999px]", "left-[-9999px]");
-            element.classList.add("fixed", "top-0", "left-0", "z-[-50]");
+            element.classList.remove("top-[-9999px]", "left-[-9999px]", "z-[-50]");
+            element.classList.add("fixed", "top-0", "left-0", "z-[9990]");
 
             // Wait for paint
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -202,7 +202,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             if (element) {
                 element.style.display = "none";
                 element.classList.add("top-[-9999px]", "left-[-9999px]");
-                element.classList.remove("fixed", "top-0", "left-0", "z-[-50]");
+                element.classList.remove("fixed", "top-0", "left-0", "z-[9990]");
             }
             setIsDownloading(false);
         }
@@ -716,6 +716,15 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     )}
                 </div>
             </div>
+
+            {/* Loading Overlay */}
+            {isDownloading && (
+                <div className="fixed inset-0 bg-slate-900/90 z-[9999] flex flex-col items-center justify-center backdrop-blur-sm">
+                    <Sparkles className="w-16 h-16 text-sky-400 animate-spin mb-6" />
+                    <h2 className="text-3xl font-bold text-white mb-2">Construyendo Documento...</h2>
+                    <p className="text-slate-300 text-lg">Añadiendo historia y minijuegos. Esto tomará unos segundos.</p>
+                </div>
+            )}
 
             {/* Hidden Container for PDF Download */}
             <div
