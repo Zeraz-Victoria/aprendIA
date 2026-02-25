@@ -636,7 +636,7 @@ export default function TeacherDashboard() {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-8 overflow-y-auto">
+            <main className="flex-1 p-4 pb-24 md:p-8 md:pb-8 overflow-y-auto w-full max-w-[100vw] overflow-x-hidden">
 
                 {activeTab === 'insights' && (
                     <header className="flex justify-between items-center mb-8">
@@ -1251,6 +1251,27 @@ export default function TeacherDashboard() {
 
             </main>
 
+            {/* Mobile Bottom Navigation */}
+            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-teal-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-between items-center px-6 py-3 z-50">
+                <button onClick={() => setActiveTab("students")} className={`flex flex-col items-center gap-1 ${activeTab === 'students' ? 'text-teal-600' : 'text-slate-400'}`}>
+                    <Users className="w-5 h-5" />
+                    <span className="text-[10px] font-bold">Alumnos</span>
+                </button>
+                <button onClick={() => setActiveTab("library")} className={`flex flex-col items-center gap-1 ${activeTab === 'library' ? 'text-teal-600' : 'text-slate-400'}`}>
+                    <Library className="w-5 h-5" />
+                    <span className="text-[10px] font-bold">Mapas</span>
+                </button>
+                <button onClick={() => setActiveTab("insights")} className={`flex flex-col items-center gap-1 ${activeTab === 'insights' ? 'text-teal-600' : 'text-slate-400'}`}>
+                    <BrainCircuit className="w-5 h-5" />
+                    <span className="text-[10px] font-bold">Análisis</span>
+                </button>
+                <button onClick={() => signOut({ callbackUrl: "/" })} className="flex flex-col items-center gap-1 text-slate-400">
+                    <LogOut className="w-5 h-5" />
+                    <span className="text-[10px] font-bold">Salir</span>
+                </button>
+            </nav>
+
+
             {/* Upload Engine Modal */}
             {showUploadModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -1337,7 +1358,7 @@ export default function TeacherDashboard() {
             {/* Add/Edit Student Modal */}
             {(showAddStudentModal || editingStudent) && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-md p-8 relative shadow-2xl">
+                    <div className="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 relative shadow-2xl">
                         <button
                             onClick={() => { setShowAddStudentModal(false); setEditingStudent(null); setStudentName(""); setStudentAvatar("🧑🏻"); }}
                             className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition"
@@ -1361,7 +1382,7 @@ export default function TeacherDashboard() {
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 mb-2">Avatar</label>
-                                <div className="grid grid-cols-8 gap-2">
+                                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
                                     {AVATAR_OPTIONS.map((emoji) => (
                                         <button
                                             key={emoji}

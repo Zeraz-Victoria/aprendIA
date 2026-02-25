@@ -123,7 +123,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
 
     const handleSpeak = (textToSpeak: string) => {
         if (!speechSupported) return;
-        
+
         if (isSpeaking) {
             window.speechSynthesis.cancel();
             setIsSpeaking(false);
@@ -134,7 +134,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
         const utterance = new SpeechSynthesisUtterance(cleanText);
         utterance.lang = 'es-MX'; // Or generic 'es-ES'
         utterance.rate = 0.9;
-        
+
         utterance.onstart = () => setIsSpeaking(true);
         utterance.onend = () => setIsSpeaking(false);
         utterance.onerror = () => setIsSpeaking(false);
@@ -395,7 +395,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 {(statement || "Resuelve el siguiente acertijo.").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
                             </ReactMarkdown>
                         </div>
-                        
+
                         {speechSupported && (
                             <div className="mt-4 flex justify-end">
                                 <button
@@ -661,7 +661,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     </div>
                 )}
 
-                <div className="p-8 flex-1 overflow-y-auto bg-[url('https://www.transparenttextures.com/patterns/notebook.png')] bg-amber-50">
+                <div className="p-4 md:p-8 flex-1 overflow-y-auto bg-[url('https://www.transparenttextures.com/patterns/notebook.png')] bg-amber-50">
                     {!showActivity ? (
                         <div className="space-y-6">
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-amber-100 relative">
