@@ -241,7 +241,8 @@ export default function TeacherDashboard() {
                 body: JSON.stringify({
                     studentId: studentCtx.student.id,
                     worldId: studentCtx.world.id,
-                    days: reviewDays
+                    days: reviewDays,
+                    replace: true
                 })
             });
 

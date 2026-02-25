@@ -166,7 +166,7 @@ export default function NotebookUploader({ context, studentName = "Aventurero", 
                       throw new Error("Not JSON");
                     }
 
-                    const problemTextStr = parsed.originalProblemText || (parsed.practiceProblem && parsed.practiceProblem.statement) || (parsed.evidenceProblem && parsed.evidenceProblem.statement);
+                    const problemTextStr = parsed.originalProblemText || (parsed.practiceProblem && parsed.practiceProblem.statement) || (parsed.evidenceProblem && parsed.evidenceProblem.statement) || parsed.narrative || (parsed.content && parsed.content.practiceProblem && parsed.content.practiceProblem.statement);
 
                     if (problemTextStr && typeof problemTextStr === 'string') {
                       return (

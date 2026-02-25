@@ -342,13 +342,21 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     };
 
     const renderGuidedPractice = () => {
+        const statement = safeParsePromptText(
+            data.content?.practiceProblem?.statement ||
+            (data.content as any)?.evidenceProblem?.statement ||
+            (data as any).originalProblemText ||
+            data.content?.explanation?.analogy ||
+            data.narrative
+        );
+
         return (
             <div className="space-y-6 animate-fade-in-up">
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-indigo-100 dark:border-slate-700">
                     <div className="bg-indigo-50 dark:bg-slate-700 p-6 rounded-xl border border-indigo-100 dark:border-slate-600">
                         <div className="prose prose-indigo dark:prose-invert prose-lg max-w-none">
                             <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                                {(data.content?.practiceProblem?.statement || "").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
+                                {(statement || "Resuelve el siguiente acertijo.").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
                             </ReactMarkdown>
                         </div>
                     </div>

@@ -31,7 +31,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { studentId, worldId, days } = body;
+        const { studentId, worldId, days, replace } = body;
 
         if (!studentId || !worldId || !days || !Array.isArray(days)) {
             return NextResponse.json({ error: 'Missing studentId, worldId, or days array' }, { status: 400 });
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
         if (existing) {
             // Append the new days to the existing ones
             const existingDays = JSON.parse(existing.daysJson);
-            const merged = [...existingDays, ...days];
+            const merged = replace ? days : [...existingDays, ...days];
             const updated = await prisma.studentMission.update({
                 where: { id: existing.id },
                 data: { daysJson: JSON.stringify(merged) }
