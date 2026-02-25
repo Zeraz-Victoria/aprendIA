@@ -35,13 +35,15 @@ export async function GET(req: Request) {
             }
         });
 
-        // Format to a flatter structure for the UI
         const formattedTeachers = teachers.map((t: any) => ({
             id: t.id,
             name: t.name,
             classroomsCount: t._count?.ownedClassrooms || 0,
             studentsCount: t.school?._count?.users || 0,
-            lastActivity: t.lastActivity
+            lastActivity: t.lastActivity,
+            schoolId: t.school?.id,
+            subscriptionPlan: t.school?.subscriptionPlan || 'BASIC',
+            subscriptionStatus: t.school?.subscriptionStatus || 'ACTIVE'
         }));
 
         return NextResponse.json(formattedTeachers);
@@ -98,5 +100,47 @@ export async function POST(req: Request) {
     } catch (error) {
         console.error("Error creating teacher:", error);
         return NextResponse.json({ error: "Failed to create teacher" }, { status: 500 });
+    }
+}
+
+export async function PATCH(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || (session.user as any).role !== "SUPERADMIN") {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        }
+
+        const { schoolId, subscriptionPlan, subscriptionStatus } = await req.json();
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "School ID required" }, { status: 400 });
+        }
+
+        // Automatic limit setting
+        let maxMaps = 1;
+        let maxStudents = 25;
+
+        if (subscriptionPlan === 'INTERMEDIATE') {
+            maxMaps = 5;
+            maxStudents = 50;
+        } else if (subscriptionPlan === 'PREMIUM') {
+            maxMaps = 10;
+            maxStudents = 100;
+        }
+
+        const updatedSchool = await prisma.school.update({
+            where: { id: schoolId },
+            data: {
+                subscriptionPlan,
+                subscriptionStatus,
+                maxMaps,
+                maxStudents
+            }
+        });
+
+        return NextResponse.json({ success: true, school: updatedSchool });
+    } catch (error) {
+        console.error("Error updating subscription:", error);
+        return NextResponse.json({ error: "Failed to update subscription" }, { status: 500 });
     }
 }

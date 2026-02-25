@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import prisma from '@/lib/prisma';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../auth/[...nextauth]/route';
 
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
@@ -11,11 +14,48 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'theme and topic are required' }, { status: 400 });
     }
 
+    const session = await getServerSession(authOptions);
+    const schoolId = (session?.user as any)?.schoolId;
+
+    if (schoolId) {
+      const school = await prisma.school.findUnique({ where: { id: schoolId } });
+      if (school && school.subscriptionStatus === 'SUSPENDED') {
+        return NextResponse.json({ error: 'Tu cuenta ha sido suspendida. No puedes generar nuevos mapas de Aventura. Contacta a un administrador.' }, { status: 403 });
+      }
+    }
+
     if (!process.env.AI_API_KEY) {
       console.error("CRITICAL: AI_API_KEY is not defined");
       return NextResponse.json({ error: 'AI API Key not configured' }, { status: 500 });
     }
 
+    // Attempt to fetch from Cache first to save AI API tokens
+    const cachedPrompt = await prisma.aIPromptCache.findUnique({
+      where: {
+        topic_theme: {
+          topic: topic.toLowerCase().trim(),
+          theme: theme.toLowerCase().trim()
+        }
+      }
+    });
+
+    if (cachedPrompt) {
+      console.log(`[CACHE HIT] Returning cached map for Topic: ${topic} | Theme: ${theme}`);
+      try {
+        return NextResponse.json({
+          id: crypto.randomUUID(),
+          theme: theme,
+          title: `Aventura de ${topic}`,
+          days: JSON.parse(cachedPrompt.response),
+          createdAt: new Date().toISOString()
+        });
+      } catch (e) {
+        console.error("Failed to parse cached response", e);
+        // Fallthrough to regenerate if the cache is corrupt
+      }
+    }
+
+    console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
@@ -110,6 +150,19 @@ REGLAS DE FORMATO (CRÍTICO):
       // Fallback robust json parsing (e.g., trying to fix trailing commas or common issues)
       // If it still fails, return a 500 so the client knows exactly why
       return NextResponse.json({ error: 'AI returned malformed JSON structure', raw: responseText }, { status: 500 });
+    }
+
+    // Save to Cache so future requests don't hit the Gemini API
+    try {
+      await prisma.aIPromptCache.create({
+        data: {
+          topic: topic.toLowerCase().trim(),
+          theme: theme.toLowerCase().trim(),
+          response: JSON.stringify(days)
+        }
+      });
+    } catch (cacheError) {
+      console.error("Failed to save to AIPromptCache (non-fatal):", cacheError);
     }
 
     return NextResponse.json({

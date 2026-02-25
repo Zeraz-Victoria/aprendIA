@@ -40,6 +40,22 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'El nombre es obligatorio' }, { status: 400 });
         }
 
+        if (schoolId) {
+            const school = await prisma.school.findUnique({
+                where: { id: schoolId },
+                include: { _count: { select: { users: { where: { role: 'STUDENT' } } } } }
+            });
+
+            if (school) {
+                if (school.subscriptionStatus === 'SUSPENDED') {
+                    return NextResponse.json({ error: 'Cuenta suspendida. Contacte al administrador.' }, { status: 403 });
+                }
+                if (school._count.users >= school.maxStudents) {
+                    return NextResponse.json({ error: `Has alcanzado el límite de ${school.maxStudents} alumno(s) para tu plan actual.` }, { status: 403 });
+                }
+            }
+        }
+
         const student = await prisma.user.create({
             data: {
                 name: name.trim(),

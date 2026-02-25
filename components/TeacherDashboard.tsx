@@ -109,6 +109,22 @@ export default function TeacherDashboard() {
     };
     const [hintText, setHintText] = useState("");
 
+    // Subscription & Limits State
+    const [schoolInfo, setSchoolInfo] = useState<any>(null);
+
+    useEffect(() => {
+        fetch('/api/school')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.error) setSchoolInfo(data);
+            })
+            .catch(console.error);
+    }, []);
+
+    const isSuspended = schoolInfo?.subscriptionStatus === 'SUSPENDED';
+    const studentsLimitReached = schoolInfo && schoolInfo._count?.users >= schoolInfo.maxStudents;
+    const mapsLimitReached = schoolInfo && schoolInfo._count?.worlds >= schoolInfo.maxMaps;
+
     // Student Management State
     const [showAddStudentModal, setShowAddStudentModal] = useState(false);
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -568,6 +584,12 @@ export default function TeacherDashboard() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50 flex">
+            {isSuspended && (
+                <div className="fixed top-0 left-0 w-full z-[100] bg-red-600 text-white text-center py-3 font-bold shadow-lg flex items-center justify-center gap-2">
+                    <AlertTriangle className="w-5 h-5" />
+                    CUENTA SUSPENDIDA. NO PUEDE CREAR MAPAS NI ALUMNOS HASTA QUE SE REGULARICE SU SUSCRIPCIÓN.
+                </div>
+            )}
 
             {/* Sidebar */}
             <aside className="w-64 bg-white/80 backdrop-blur-sm border-r border-teal-100 hidden md:flex flex-col">
@@ -649,17 +671,23 @@ export default function TeacherDashboard() {
                             </button>
                             <button
                                 onClick={() => {
+                                    if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
+                                    if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) en tu plan actual. Borra un mapa para crear otro.`);
                                     setEditingWorld(null);
                                     setShowBuilderModal(true);
                                 }}
-                                className="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-teal-200 transition-all flex items-center gap-2"
+                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-teal-600 hover:bg-teal-700'} text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-teal-200 transition-all flex items-center gap-2`}
                             >
                                 <Map className="w-4 h-4" />
                                 Constructor Manual
                             </button>
                             <button
-                                onClick={() => setShowUploadModal(true)}
-                                className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-sky-200 transition-all flex items-center gap-2"
+                                onClick={() => {
+                                    if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
+                                    if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) en tu plan actual. Borra un mapa para crear otro.`);
+                                    setShowUploadModal(true);
+                                }}
+                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-sky-600 hover:bg-sky-700'} text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-sky-200 transition-all flex items-center gap-2`}
                             >
                                 <Plus className="w-4 h-4" />
                                 Generar con IA (PDF)
@@ -895,11 +923,13 @@ export default function TeacherDashboard() {
                                 <h3 className="font-bold text-lg text-slate-800">Progreso de Estudiantes</h3>
                                 <button
                                     onClick={() => {
+                                        if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
+                                        if (studentsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxStudents} alumno(s) en tu plan actual.`);
                                         setStudentName("");
                                         setStudentAvatar("🧑🏻");
                                         setShowAddStudentModal(true);
                                     }}
-                                    className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-full font-bold shadow-lg shadow-teal-200 transition-all flex items-center gap-2 text-sm"
+                                    className={`${isSuspended || studentsLimitReached ? 'bg-slate-400' : 'bg-teal-600 hover:bg-teal-700'} text-white px-4 py-2 rounded-full font-bold shadow-lg shadow-teal-200 transition-all flex items-center gap-2 text-sm`}
                                 >
                                     <UserPlus className="w-4 h-4" />
                                     Agregar Alumno

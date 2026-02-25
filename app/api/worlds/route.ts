@@ -59,6 +59,22 @@ export async function POST(req: Request) {
         const session = await getServerSession(authOptions);
         const schoolId = (session?.user as any)?.schoolId;
 
+        if (schoolId) {
+            const school = await prisma.school.findUnique({
+                where: { id: schoolId },
+                include: { _count: { select: { worlds: true } } }
+            });
+
+            if (school) {
+                if (school.subscriptionStatus === 'SUSPENDED') {
+                    return NextResponse.json({ error: 'Cuenta suspendida. Contacte al administrador.' }, { status: 403 });
+                }
+                if (school._count.worlds >= school.maxMaps) {
+                    return NextResponse.json({ error: `Has alcanzado el límite de ${school.maxMaps} mapa(s) para tu plan actual. Borra un mapa existente para crear uno nuevo.` }, { status: 403 });
+                }
+            }
+        }
+
         const newWorld = await prisma.world.create({
             data: {
                 id,

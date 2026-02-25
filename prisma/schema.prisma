@@ -89,11 +89,28 @@ enum Role {
   STUDENT
 }
 
+enum SubscriptionPlan {
+  BASIC
+  INTERMEDIATE
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 model School {
   id        String   @id @default(cuid())
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Subscription Details
+  subscriptionPlan   SubscriptionPlan   @default(BASIC)
+  subscriptionStatus SubscriptionStatus @default(ACTIVE)
+  maxMaps            Int                @default(1)
+  maxStudents        Int                @default(25)
 
   users      User[]
   worlds     World[]
@@ -264,4 +281,18 @@ model Classroom {
   teacher  User    @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
   students User[]  @relation("ClassroomStudents")
   worlds   World[]
+}
+
+// Note: To reduce AI costs, this model caches full generated maps
+// so if another teacher asks for the exact same theme and topic,
+// we just return the cached JSON instead of calling Gemini again.
+model AIPromptCache {
+  id        String   @id @default(cuid())
+  topic     String   // e.g. "Fracciones"
+  theme     String   // e.g. "Detectives"
+  response  String   @db.Text // The raw JSON returned by Gemini
+  createdAt DateTime @default(now())
+
+  @@unique([topic, theme])
+  @@index([topic, theme])
 }

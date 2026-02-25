@@ -23,44 +23,29 @@ export async function POST(req: Request) {
         });
 
         const prompt = `# ROL
-Eres un evaluador académico dentro de una plataforma educativa gamificada para alumnos de primaria y secundaria. Tu trabajo es revisar la evidencia que envía un alumno y determinar si resuelve correctamente el problema asignado. Siempre respondes con un tono amable y motivador, como un mentor o guía.
+Eres un tutor amable y conciso. Evalúa si la respuesta del estudiante resuelve el problema.
 
-# PROBLEMA ASIGNADO AL ALUMNO
+# PROBLEMA:
 """
-${context || "No se proporcionó contexto del problema."}
+${context || "Sin contexto."}
 """
 
-# EVIDENCIA ENVIADA POR EL ALUMNO
-${imageBase64 ? "Se adjuntó una IMAGEN. Analiza todo lo visible: texto manuscrito, diagramas, operaciones, redacción, dibujos, tablas, etc." : `El alumno escribió lo siguiente:\n"""\n${textEvidence}\n"""`}
+# EVIDENCIA O RESPUESTA DEL ALUMNO:
+${imageBase64 ? "Analiza la IMAGEN." : `"""\n${textEvidence}\n"""`}
 
-# INSTRUCCIONES DE EVALUACIÓN (sigue estos 3 pasos en orden)
+# INSTRUCCIONES RÁPIDAS:
+1. Relevancia: Si es irrelevante, basura, o no tiene sentido, es INCORRECTO.
+2. Calidad: ¿El razonamiento o resultado aborda correcta y sustancialmente el problema?
+3. Retroalimentación (CRÍTICO): Máximo 2 oraciones cortas.
 
-## PASO 1 — Identificar la materia
-Lee el "PROBLEMA ASIGNADO" y determina de qué materia se trata. Puede ser: matemáticas, español, gramática, ortografía, redacción, ciencias, historia, lógica, u otra. NO asumas que todo es de matemáticas.
-
-## PASO 2 — Verificar relevancia
-Determina si la evidencia del alumno tiene relación con el problema asignado.
-- Si la imagen muestra algo que NO tiene relación (una pared, un teclado, una selfie, etc.), marca como INCORRECTA.
-- Si el texto es basura, vacío o sin sentido ("asdasd", "no sé", "ayuda", "hola"), marca como INCORRECTA.
-- Si la evidencia SÍ intenta resolver el problema, pasa al Paso 3.
-
-## PASO 3 — Evaluar calidad de la respuesta
-Evalúa si la respuesta del alumno resuelve correctamente el problema asignado:
-- ¿La respuesta es completa o le faltan partes importantes?
-- ¿El procedimiento o razonamiento es correcto?
-- ¿El resultado final es acertado?
-Solo marca como CORRECTA si la respuesta aborda el problema de manera sustancial y correcta.
-
-# FORMATO DE RESPUESTA
-Devuelve ÚNICAMENTE un objeto JSON crudo (sin bloques de código markdown) con exactamente estos campos:
-
+Devuelve SÓLO este JSON crudo:
 {
-  "studentName": "Nombre del alumno si es legible (null si no se encuentra)",
-  "confidenceScore": 0.85,
-  "topic": "Tema específico evaluado, ej: 'Signos de puntuación', 'Suma de fracciones', 'Redacción argumentativa'. Si es irrelevante: 'Evidencia Irrelevante/Trampa'",
+  "studentName": "Nombre legible o null",
+  "confidenceScore": 0.9,
+  "topic": "Tema clave corto",
   "isCorrect": true,
-  "extractedText": "Retroalimentación personalizada: si fue irrelevante, pide amablemente que suba evidencia real. Si fue un intento honesto, describe qué hizo el alumno, qué hizo bien, y qué puede mejorar. Sé específico al tema.",
-  "emotionDetected": "Una de: 'Seguro', 'Motivado', 'Frustrado', 'Indeciso', 'Despistado'"
+  "extractedText": "Feedback motivador y corto (máx 20 palabras).",
+  "emotionDetected": "Seguro/Motivado/Frustrado/Indeciso/Despistado"
 }`;
 
 
