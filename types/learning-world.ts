@@ -28,6 +28,7 @@ export interface DayContent {
             statement: string;
             correctValue: number;
             hint: string;
+            tipo_evidencia_requerida?: "FOTO_DIBUJO" | "FOTO_GRAFICA" | "TEXTO_ENSAYO" | "MULTIPLE_CHOICE";
         };
     };
 }
@@ -40,6 +41,7 @@ export interface BossDayContent {
     originalProblemImage?: string;
     originalProblemText: string;
     hints: string[];
+    tipo_evidencia_requerida?: "FOTO_DIBUJO" | "FOTO_GRAFICA" | "TEXTO_ENSAYO" | "MULTIPLE_CHOICE";
 }
 
 export type LevelContent = DayContent | BossDayContent;

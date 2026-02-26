@@ -10,7 +10,7 @@ import WordSearch from "./minigames/WordSearch";
 import MemoryMatch from "./minigames/MemoryMatch";
 import jsPDF from "jspdf";
 import { toCanvas } from "html-to-image";
-
+import PedagogicalWrapper from "./PedagogicalWrapper";
 
 function safeParsePromptText(text: string | undefined): string {
     if (!text) return "";
@@ -684,23 +684,13 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 <div className="p-4 md:p-8 flex-1 overflow-y-auto bg-[url('https://www.transparenttextures.com/patterns/notebook.png')] bg-amber-50">
                     {!showActivity ? (
                         <div className="space-y-6">
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-amber-100 relative">
-                                {data.type === 'guided_practice' && <span className="absolute -top-3 -right-3 bg-indigo-500 text-white text-xs px-2 py-1 rounded font-bold">Teoría</span>}
-                                <div className="prose prose-slate dark:prose-invert prose-lg max-w-none leading-relaxed font-handwriting">
-                                    <ReactMarkdown
-                                        remarkPlugins={[remarkGfm]}
-                                        components={markdownComponents}
-                                    >
-                                        {(currentChunk || "")
-                                            .replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)
-                                            .replace(/<br\s*\/?>/gi, '\n\n')
-                                            .replace(/<b>(.*?)<\/b>/gi, '**$1**')
-                                            .replace(/<i>(.*?)<\/i>/gi, '*$1*')
-                                            .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
-                                            .replace(/<em>(.*?)<\/em>/gi, '*$1*')
-                                        }
-                                    </ReactMarkdown>
-                                </div>
+                            <div className="relative">
+                                {data.type === 'guided_practice' && <span className="absolute -top-3 -right-3 z-10 bg-indigo-500 text-white text-xs px-2 py-1 rounded font-bold shadow-sm">Teoría</span>}
+                                <PedagogicalWrapper
+                                    content={currentChunk || ""}
+                                    studentName={studentName || "Aventurero"}
+                                    type={data.type === 'guided_practice' ? 'theory' : 'narrative'}
+                                />
                             </div>
 
                             <div className="flex justify-between pt-4">

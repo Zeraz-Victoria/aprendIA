@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Camera, RefreshCw, Upload, CheckCircle, AlertCircle, X, Maximize2, ImageIcon, Sparkles } from "lucide-react";
+import { Camera, RefreshCw, Upload, CheckCircle, AlertCircle, X, Maximize2, ImageIcon, Sparkles, PenTool } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { BossDayContent } from "@/types/learning-world";
@@ -68,6 +68,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
     // The AI generator nests originalProblemText inside data.content, but the type has it at top-level.
     // Support both paths for robustness.
     const problemText = data.originalProblemText || (data as any).content?.originalProblemText || "";
+    const requiredEvidenceType = data.tipo_evidencia_requerida || "CUALQUIERA";
 
     const [step, setStep] = useState<Step>("idle");
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -125,6 +126,8 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
             } else if (textEvidence) {
                 payload.textEvidence = textEvidence;
             }
+
+            payload.evidenceType = requiredEvidenceType;
 
             const response = await fetch('/api/analyze-evidence', {
                 method: 'POST',
@@ -238,24 +241,31 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
 
                     {step === 'idle' && (
                         <div className="w-full text-center space-y-6">
-                            <h3 className="text-white font-bold text-lg">¿Cómo derrotarás al Jefe?</h3>
+                            <h3 className="text-white font-bold text-lg">
+                                {requiredEvidenceType === "TEXTO_ENSAYO" ? "¿Cómo redactarás tu ensayo?" :
+                                    (requiredEvidenceType === "FOTO_DIBUJO" || requiredEvidenceType === "FOTO_GRAFICA") ? "Toma o sube una foto de tu trabajo" : "¿Cómo derrotarás al Jefe?"}
+                            </h3>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="flex flex-col items-center justify-center p-6 bg-slate-800 rounded-3xl border-4 border-dashed border-red-500/50 hover:bg-slate-700 hover:border-red-400 transition-colors group"
-                                >
-                                    <Camera className="w-12 h-12 text-red-400 group-hover:text-red-300 mb-2" />
-                                    <span className="text-white font-bold text-sm">Escanear Libreta</span>
-                                </button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {(requiredEvidenceType !== "TEXTO_ENSAYO") && (
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="flex flex-col items-center justify-center p-6 bg-slate-800 rounded-3xl border-4 border-dashed border-red-500/50 hover:bg-slate-700 hover:border-red-400 transition-colors group"
+                                    >
+                                        <Camera className="w-12 h-12 text-red-400 group-hover:text-red-300 mb-2" />
+                                        <span className="text-white font-bold text-sm">Escanear Libreta</span>
+                                    </button>
+                                )}
 
-                                <button
-                                    onClick={() => setStep("text_input")}
-                                    className="flex flex-col items-center justify-center p-6 bg-slate-800 rounded-3xl border-4 border-dashed border-indigo-500/50 hover:bg-slate-700 hover:border-indigo-400 transition-colors group"
-                                >
-                                    <span className="text-4xl mb-2">⌨️</span>
-                                    <span className="text-white font-bold text-sm">Escribir Respuesta</span>
-                                </button>
+                                {(requiredEvidenceType !== "FOTO_DIBUJO" && requiredEvidenceType !== "FOTO_GRAFICA") && (
+                                    <button
+                                        onClick={() => setStep('text_input')}
+                                        className="flex flex-col items-center justify-center p-6 bg-slate-800 rounded-3xl border-4 border-dashed border-amber-500/50 hover:bg-slate-700 hover:border-amber-400 transition-colors group"
+                                    >
+                                        <PenTool className="w-12 h-12 text-amber-500 group-hover:text-amber-400 mb-2 transition-colors" />
+                                        <span className="text-white font-bold text-sm">Escribir Respuesta</span>
+                                    </button>
+                                )}
                             </div>
 
                             <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />

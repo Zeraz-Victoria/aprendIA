@@ -7,10 +7,16 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
     try {
-        const { imageBase64, mimeType, textEvidence, context, narrative, studentId, worldId, levelId } = await req.json();
+        const { imageBase64, mimeType, textEvidence, context, narrative, studentId, worldId, levelId, evidenceType } = await req.json();
 
-        if (!imageBase64 && !textEvidence) {
-            return NextResponse.json({ error: 'Debes enviar texto o una imagen como evidencia' }, { status: 400 });
+        if (!imageBase64 && (!textEvidence || textEvidence.trim() === '')) {
+            return NextResponse.json({
+                isCorrect: false,
+                extractedText: "¡Ups! No detecto tu evidencia. Por favor sube tu trabajo para continuar.",
+                topic: "Falta evidencia",
+                emotionDetected: "Indeciso",
+                confidenceScore: 0
+            });
         }
 
         if (!process.env.AI_API_KEY) {
@@ -39,6 +45,7 @@ ${imageBase64 ? "[ADJUNTO IMAGEN ESCANEADA DEL ALUMNO]" : `"""\n${textEvidence}\
 2. PROHIBICIÓN DE RESPUESTAS DIRECTAS: Si la evidencia es incorrecta o incompleta, está terminantemente PROHIBIDO dar la solución.
 3. RETROALIMENTACIÓN SOCRÁTICA: Genera una pista en forma de pregunta que obligue al alumno a releer la sección específica del 'ORÁCULO' para corregir su propio error.
 4. TONO: Usa un lenguaje motivador y profesional, dirigiéndote al alumno como [NOMBRE_DEL_ESTUDIANTE].
+5. TIPO DE EVIDENCIA REQUERIDA: El formato exigido es "${evidenceType || 'CUALQUIERA'}". Si se pide FOTO_DIBUJO o FOTO_GRAFICA y el alumno entrega puro texto sin adjuntar la imagen correcta, evalúa como INCORRECTO. Si se pide TEXTO_ENSAYO y la evidencia no contiene texto suficiente, evalúa como INCORRECTO.
 
 # FORMATO DE SALIDA (JSON CRUDO):
 {

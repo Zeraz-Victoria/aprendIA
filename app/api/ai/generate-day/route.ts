@@ -64,6 +64,7 @@ Utiliza exclusivamente la información contenida en este objeto:
   "oraculo_teoria": { "titulo": "...", "contenido_html": "...", "tip_clave": "..." },
   "reto_gameplay": {
     "tipo_ui": "LOGIC_PUZZLE|TEXT_MASTER|CONCEPT_SORT|TRIVIA_QUEST",
+    "tipo_evidencia_requerida": "FOTO_DIBUJO | FOTO_GRAFICA | TEXTO_ENSAYO | MULTIPLE_CHOICE",
     "instruccion_fiel": "...",
     "datos_config": { "pregunta": "...", "respuesta_correcta": "...", "pista_socratica": "..." }
   },
@@ -105,13 +106,15 @@ Utiliza exclusivamente la información contenida en este objeto:
                     practiceProblem: {
                         statement: `**INSTRUCCIÓN:** ${parsed.reto_gameplay?.instruccion_fiel}\n\n**RETO:** ${parsed.reto_gameplay?.datos_config?.pregunta}`,
                         correctValue: parsed.reto_gameplay?.datos_config?.respuesta_correcta || "Completado",
-                        hint: parsed.reto_gameplay?.datos_config?.pista_socratica || parsed.oraculo_teoria?.tip_clave || "Analiza los datos dados."
+                        hint: parsed.reto_gameplay?.datos_config?.pista_socratica || parsed.oraculo_teoria?.tip_clave || "Analiza los datos dados.",
+                        tipo_evidencia_requerida: parsed.reto_gameplay?.tipo_evidencia_requerida || "TEXTO_ENSAYO"
                     }
                 };
             } else if (day.type === "boss_fight") {
                 // Boss evaluation
                 legacyContent = {
                     originalProblemText: `**RETO FINAL:**\n${parsed.reto_gameplay?.instruccion_fiel}\n\n${parsed.reto_gameplay?.datos_config?.pregunta}\n\n*Nota de Cierre: ${parsed.cierre_metacognicion}*`,
+                    tipo_evidencia_requerida: parsed.reto_gameplay?.tipo_evidencia_requerida || "TEXTO_ENSAYO",
                     solvedVariations: []
                 };
             }
