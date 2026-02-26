@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Star, Volume2, Bot, Sparkles, ImageIcon, Heart, Diamond, Flame } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { DayContent } from "@/types/learning-world";
 import { useLearning } from "@/contexts/LearningContext";
@@ -403,6 +404,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                         <div className="prose prose-indigo dark:prose-invert prose-lg max-w-none">
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeRaw]}
                                 components={markdownComponents}
                             >
                                 {(statement || "Resuelve el siguiente acertijo.")
@@ -751,7 +753,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 <div className="space-y-6 prose prose-lg max-w-none mb-10">
                     {chunks.map((chunk, idx) => (
                         <div key={idx} className="mb-4">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                                 {(chunk || "")
                                     .replace(/\\[NOMBRE_DEL_ESTUDIANTE\\]/gi, studentName)
                                     .replace(/<br\s*\/?>/gi, '\n\n')
@@ -770,7 +772,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     {data.type === 'guided_practice' ? (
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
                             <div className="prose max-w-none">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                                     {(data.content?.practiceProblem?.statement || "")
                                         .replace(/\\[NOMBRE_DEL_ESTUDIANTE\\]/gi, studentName)
                                         .replace(/<br\s*\/?>/gi, '\n\n')

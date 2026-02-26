@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { ChevronRight, ChevronLeft, ChevronDown, CheckCircle, Bot, MessageCircle } from 'lucide-react';
 interface PedagogicalWrapperProps {
     content: string;
@@ -52,7 +53,7 @@ const FlashcardView = ({ paragraphs }: { paragraphs: string[] }) => {
                     {currentIndex + 1} / {paragraphs.length}
                 </div>
                 <div className="prose prose-lg dark:prose-invert text-center">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                         {paragraphs[currentIndex]}
                     </ReactMarkdown>
                 </div>
@@ -111,7 +112,7 @@ const ChatBubbleDialogue = ({ paragraphs }: { paragraphs: string[] }) => {
                                 : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-tl-sm shadow-md'
                                 }`}>
                                 <div className="prose prose-md dark:prose-invert">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                                         {paragraph}
                                     </ReactMarkdown>
                                 </div>
@@ -156,7 +157,7 @@ const StepByStepAccordion = ({ paragraphs }: { paragraphs: string[] }) => {
 
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                             <div className="p-6 bg-white dark:bg-slate-800 prose prose-lg dark:prose-invert max-w-none border-t border-slate-100 dark:border-slate-700/50">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                                     {paragraph}
                                 </ReactMarkdown>
                             </div>
@@ -181,7 +182,7 @@ export default function PedagogicalWrapper({ content, studentName, type = 'theor
         return (
             <div className={`bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border ${type === 'narrative' ? 'border-amber-200 bg-amber-50/50' : 'border-indigo-100'}`}>
                 <div className="prose prose-lg dark:prose-invert max-w-none leading-relaxed">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                         {formattedContent}
                     </ReactMarkdown>
                 </div>

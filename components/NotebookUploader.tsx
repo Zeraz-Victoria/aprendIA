@@ -5,6 +5,7 @@ import { Camera, RefreshCw, Upload, CheckCircle, AlertCircle, X, Mic } from "luc
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { ImageIcon, Sparkles } from "lucide-react";
 
 function fixImageUrl(src: string): string {
@@ -294,7 +295,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                     if (problemTextStr && typeof problemTextStr === 'string') {
                       return (
                         <div className="prose prose-slate dark:prose-invert max-w-none text-sm text-slate-700 dark:text-slate-300">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                             {problemTextStr.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
                           </ReactMarkdown>
                         </div>
@@ -324,7 +325,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                     } catch (e2) { }
                     return (
                       <div className="prose prose-slate dark:prose-invert max-w-none text-sm text-slate-700 dark:text-slate-300">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                           {rawText.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
                         </ReactMarkdown>
                       </div>

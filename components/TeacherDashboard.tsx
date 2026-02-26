@@ -2,6 +2,7 @@
 /* eslint-disable react/no-unescaped-entities */import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { useLearning, LearningWorld, Student, Grade, Classroom } from "@/contexts/LearningContext";
 import UploadEngine from "./UploadEngine";
 import VisualWorldBuilder from "./VisualWorldBuilder";
@@ -1586,7 +1587,7 @@ export default function TeacherDashboard() {
                                     </h4>
                                     {aiReport ? (
                                         <div className="prose prose-sm prose-indigo max-w-none">
-                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiReport}</ReactMarkdown>
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{aiReport}</ReactMarkdown>
                                         </div>
                                     ) : isGeneratingReport ? (
                                         <div className="flex items-center gap-3 p-4">

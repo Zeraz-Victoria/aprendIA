@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Camera, RefreshCw, Upload, CheckCircle, AlertCircle, X, Maximize2, ImageIcon, Sparkles, PenTool } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { BossDayContent } from "@/types/learning-world";
 
 function fixImageUrl(src: string): string {
@@ -216,7 +217,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                 {step !== 'camera' && step !== 'preview' && (
                     <div className="p-6 bg-slate-800 border-b border-slate-700 max-h-[45vh] overflow-y-auto">
                         <div className="bg-slate-700/50 p-4 rounded-xl border border-slate-600 text-slate-200 leading-relaxed prose prose-invert prose-sm max-w-none">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={bossMarkdownComponents}>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={bossMarkdownComponents}>
                                 {problemText.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
                             </ReactMarkdown>
                         </div>
