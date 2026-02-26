@@ -62,15 +62,14 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
 1. IDENTIFICACIÓN CURRICULAR: Extrae la Fase (1 a 6), el Campo Formativo, los PDA y la Metodología (ABP, STEAM, Proyectos Comunitarios o Servicio).
 2. SEGMENTACIÓN POR SESIÓN: Por cada sesión o día encontrado en el texto, extrae palabra por palabra:
    - TÍTULO: El nombre de la actividad.
-   - INICIO: La actividad de apertura o recuperación de saberes.
-   - DESARROLLO: La actividad técnica o práctica central.
-   - CIERRE: La actividad de evaluación o reflexión.
-3. PROHIBIDO RESUMIR: Si el documento describe una actividad de 3 párrafos, extrae los 3 párrafos. No interpretes, solo transcribe al JSON.
-4. ANONIMIZACIÓN: Sustituye nombres de docentes por "Docente" y nombres de escuelas por "Institución Educativa".
+   - TEXTO_BRUTO_SESION: Copia textualmente todo el contenido que pertenece a esa sesión (Inicio, Desarrollo y Cierre juntos), sin omitir detalles. Asegúrate de incluirlo en un solo string largo.
+71. PROHIBICIÓN DE RESUMEN O RELLENO: No incluyas descripciones largas. Usa textos concisos.
+72. CRÍTICO: Para evitar el truncamiento de datos, tu respuesta debe ser EXTREMADAMENTE MINIMALISTA. Genera solo el array de objetos con "id", "titulo" y "tipo". NO incluyas descripciones largas ni resúmenes en este paso. Asegúrate de cerrar correctamente el array "]" y la llave final "}" del JSON.
 
 # FORMATO DE SALIDA (JSON CRUDO):
 {
   "datos_generales": {
+    "titulo_proyecto": "",
     "fase": "",
     "metodologia": "",
     "campo_formativo": "",
@@ -80,9 +79,7 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
     {
       "numero": 1,
       "titulo": "",
-      "inicio_fiel": "",
-      "desarrollo_fiel": "",
-      "cierre_fiel": "",
+      "texto_bruto_sesion": "",
       "recursos_mencionados": []
     }
   ]
@@ -113,30 +110,44 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
     try {
       p = JSON.parse(responseText);
     } catch (e) {
-      console.error(e);
-      // Auto-Rescue Mechanism could go here, but for now just fallback
-      return NextResponse.json({ error: 'AI returned malformed JSON', raw: responseText }, { status: 500 });
+      console.error("Initial JSON parse failed, attempting strict extraction:", e);
+      try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          p = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("No JSON object found in response");
+        }
+      } catch (e2) {
+        console.error("Strict JSON extraction failed:", e2);
+        return NextResponse.json({ error: 'AI returned malformed JSON', raw: responseText }, { status: 500 });
+      }
     }
 
     console.log("Successfully parsed Data Analyst extraction.");
 
     // Map the new "sesiones_extraidas" format into what the frontend expects
-    const mappedDays = (p.sesiones_extraidas || []).map((s: any) => ({
-      dayNumber: s.numero,
-      type: s.cierre_fiel?.toLowerCase().includes("evaluaci") ? "boss_fight" : "guided_practice",
-      title: s.titulo,
-      session_start: s.inicio_fiel,
-      session_development: s.desarrollo_fiel,
-      session_end: s.cierre_fiel,
-      narrative: "(Pensando la historia...)",
-      content: { practiceProblem: { statement: "(Problema en construcción...)", correctValue: "", hint: "" } },
-      isGenerating: true // Custom flag so the frontend knows this day needs its content generated
-    }));
+    const extractedDays = p.sesiones_extraidas || [];
+    const mappedDays = extractedDays.map((s: any, index: number) => {
+      const isLast = index === extractedDays.length - 1; // Boss Fix: Only the last day is the boss
+      return {
+        dayNumber: s.numero,
+        type: isLast ? "boss_fight" : "guided_practice", // Determine type based on being actual last
+        title: s.titulo,
+        session_start: s.texto_bruto_sesion, // Store the entire raw text here temporarily to pass to Endpoint 2
+        session_development: "",
+        session_end: "",
+        narrative: "(Generando contenido con IA...)",
+        content: { practiceProblem: { statement: "(Problema en construcción...)", correctValue: "", hint: "" } },
+        isGenerating: true,
+        isFinalBoss: isLast
+      };
+    });
 
     return NextResponse.json({
       id: crypto.randomUUID(),
       theme: p.datos_generales?.metodologia || "aventura",
-      title: "Planeación Educativa",
+      title: p.datos_generales?.titulo_proyecto || "Aventura Generada",
       pedagogy: {
         topic: p.datos_generales?.campo_formativo || "General",
         pda: (p.datos_generales?.pda_listado || []).join(', '),

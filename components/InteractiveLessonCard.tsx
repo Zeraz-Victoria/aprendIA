@@ -24,8 +24,17 @@ function safeParsePromptText(text: string | undefined): string {
                 if (parsed.originalProblemText) return parsed.originalProblemText;
                 if (parsed.statement) return parsed.statement;
                 if (parsed.narrative) return parsed.narrative;
-                // If it's an array or just has random keys, try to stringify it prettier or just return it
-                return JSON.stringify(parsed, null, 2);
+
+                // CRITICAL FIX: Extract specific fields if present, NEVER show raw JSON that might contain the answer
+                let customText = "";
+                if (parsed.oraculo_teoria) customText += parsed.oraculo_teoria + "\n\n";
+                if (parsed.instruccion_fiel) customText += parsed.instruccion_fiel;
+                if (customText) return customText.trim();
+
+                // If no known fields, stringify but remove correct answer explicitly just in case
+                if (parsed.respuesta_correcta) delete parsed.respuesta_correcta;
+                if (parsed.correctValue) delete parsed.correctValue;
+                return typeof parsed === "string" ? parsed : JSON.stringify(parsed, null, 2);
             }
         }
     } catch (e) {

@@ -1312,6 +1312,15 @@ export default function TeacherDashboard() {
             {showBuilderModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-3xl w-full max-w-6xl max-h-[95vh] overflow-hidden relative shadow-2xl flex flex-col">
+                        <button
+                            onClick={() => {
+                                setShowBuilderModal(false);
+                                setEditingWorld(null);
+                            }}
+                            className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition z-[60]"
+                        >
+                            <X className="w-5 h-5 text-slate-600" />
+                        </button>
                         <VisualWorldBuilder
                             onClose={() => {
                                 setShowBuilderModal(false);

@@ -41,26 +41,25 @@ Actúa como un Diseñador Instruccional Senior y Arquitecto de Software Educativ
 # ENTRADA DE DATOS (FRAGMENTO SAGRADO):
 Utiliza exclusivamente la información contenida en este objeto:
 - TÍTULO: ${day.title || pedagogy.topic}
-- INICIO: ${day.session_start || documentText?.substring(0, 500) || "Sin inicio previo."}
-- DESARROLLO: ${day.session_development || pedagogy.pda || "Sin desarrollo previo."}
-- CIERRE: ${day.session_end || "Evaluación general del tema."}
+- CONTENIDO_DE_LA_SESION: ${day.session_start || documentText?.substring(0, 500) || "Sin contenido previo."}
 - FASE: ${pedagogy.grade || "Fase General"}
 - PDA: ${pedagogy.pda || "PDA General"}
 
 # INSTRUCCIONES DE CONSTRUCCIÓN (PROHIBIDO INVENTAR):
-1. NARRATIVA DE ENTRADA (MOMENTO 1): Transcribe el contenido de 'INICIO' para situar al alumno. Si el docente planteó un problema inicial o una pregunta detonadora, esa es la introducción del nivel.
-2. EL ORÁCULO (AULA INVERTIDA): Genera un bloque de teoría lúdica y técnica que explique el concepto necesario para resolver la actividad de 'DESARROLLO'. El alumno debe poder aprenderlo solo leyendo este bloque.
-3. DESAFÍO TÉCNICO (MOMENTO 2): Convierte la actividad de 'DESARROLLO' en el reto central. 
+1. NARRATIVA DE ENTRADA (MOMENTO 1): Usa la primera parte del 'CONTENIDO_DE_LA_SESION' para situar al alumno. Si el docente planteó un problema inicial o una pregunta detonadora, esa es la introducción del nivel.
+2. EL ORÁCULO (AULA INVERTIDA): Genera un bloque de teoría lúdica y técnica que explique el concepto necesario basándote en el 'CONTENIDO_DE_LA_SESION'. El alumno debe poder aprenderlo solo leyendo este bloque.
+3. DESAFÍO TÉCNICO (MOMENTO 2): Convierte la actividad principal del 'CONTENIDO_DE_LA_SESION' en el reto central. 
    - Si el docente pide resolver una operación, el reto es esa operación.
    - Si el docente pide redactar un texto, el reto es esa redacción.
    - Selecciona el componente UI: LOGIC_PUZZLE, TEXT_MASTER, CONCEPT_SORT o TRIVIA_QUEST.
-4. VALIDACIÓN Y CIERRE (MOMENTO 3): Usa el contenido de 'CIERRE' para la reflexión final o la pregunta de autoevaluación.
+4. VALIDACIÓN Y CIERRE (MOMENTO 3): Usa la parte final del 'CONTENIDO_DE_LA_SESION' para la reflexión final o la pregunta de autoevaluación.
 
 # REGLAS DE ORO:
 - Dirígete al estudiante como [NOMBRE_DEL_ESTUDIANTE].
 - FEEDBACK SOCRÁTICO: Si el alumno falla, genera una pregunta que lo guíe de vuelta a la teoría del Oráculo.
 - No agregues elementos de fantasía (piratas, magos) a menos que la planeación original los mencione.
 - GLOSARIO: Extrae entre 2 y 4 palabras complejas usadas en el oráculo y defínelas de forma simple.
+- PROHIBICIÓN DE HTML: Queda estrictamente prohibido usar etiquetas HTML como <br>, <b>, o <p>. Utiliza ÚNICAMENTE saltos de línea literales (\n\n) y Markdown estándar (** para negritas). Tu salida de texto debe ser limpia.
 ${adaptiveRescuePrompt}
 
 # FORMATO DE SALIDA (JSON CRUDO):
