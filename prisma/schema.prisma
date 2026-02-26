@@ -147,6 +147,8 @@ model EvidenceEntry {
   feedback        String   @db.Text
   topic           String?
   emotionDetected String?
+  status          String   @default("COMPLETED") // "COMPLETED", "PENDING_TEACHER_UPLOAD"
+  imageUrl        String?  @db.Text
   createdAt       DateTime @default(now())
 
   student User  @relation(fields: [studentId], references: [id], onDelete: Cascade)

@@ -76,6 +76,9 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
 
+  const [showTeacherAuth, setShowTeacherAuth] = useState(false);
+  const [teacherPassword, setTeacherPassword] = useState("");
+
   // STT State
   const [isListening, setIsListening] = useState(false);
   const [recognitionSupported, setRecognitionSupported] = useState(true);
@@ -215,6 +218,44 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
     }
   };
 
+  const handleTeacherOverride = async () => {
+    if (!teacherPassword.trim()) return;
+    setStep("analyzing");
+
+    try {
+      const response = await fetch('/api/evidence/bypass', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId,
+          worldId,
+          levelId,
+          password: teacherPassword,
+          context,
+          narrative,
+          evidenceType: requiredEvidenceType
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "API failed");
+      }
+
+      setFeedback({
+        correct: true,
+        message: "¡Validación del docente exitosa! Sigue adelante, tu maestro subirá la evidencia después.",
+      });
+
+      setStep("feedback");
+      setTimeout(() => onComplete(true), 2500);
+
+    } catch (e: any) {
+      alert("Error: " + e.message);
+      setStep("idle");
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
       <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border-4 border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
@@ -294,7 +335,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
             </div>
           )}
 
-          {step === "idle" && (
+          {step === "idle" && !showTeacherAuth && (
             <div className="w-full flex flex-col gap-6 items-center">
               <h4 className="text-xl font-bold text-slate-700 dark:text-slate-200 text-center">
                 {requiredEvidenceType === "TEXTO_ENSAYO" ? "¿Cómo quieres ingresar tu ensayo?" :
@@ -349,6 +390,50 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                 ref={fileInputRef}
                 onChange={handleFileSelect}
               />
+
+              <button
+                onClick={() => setShowTeacherAuth(true)}
+                className="mt-4 text-sm font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline underline-offset-4 transition-colors"
+              >
+                No tengo cámara, mi maestro subirá la foto
+              </button>
+            </div>
+          )}
+
+          {step === "idle" && showTeacherAuth && (
+            <div className="w-full flex flex-col items-center justify-center space-y-4 animate-fade-in-up">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-2">
+                <span className="text-3xl">👨‍🏫</span>
+              </div>
+              <h4 className="font-bold text-lg text-slate-700 dark:text-slate-200">Autorización Docente</h4>
+              <p className="text-sm text-center text-slate-500 max-w-[250px]">
+                Pide a tu maestro que ingrese su NIP para autorizarte continuar.
+              </p>
+
+              <input
+                type="password"
+                className="mt-4 p-3 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-center text-2xl tracking-[0.5em] focus:border-indigo-500 outline-none w-48 font-mono shadow-inner"
+                value={teacherPassword}
+                onChange={e => setTeacherPassword(e.target.value)}
+                placeholder="****"
+                onKeyDown={e => e.key === 'Enter' && handleTeacherOverride()}
+              />
+
+              <div className="flex gap-3 w-full mt-6">
+                <button
+                  onClick={() => setShowTeacherAuth(false)}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 transition-colors"
+                >
+                  Regresar
+                </button>
+                <button
+                  onClick={handleTeacherOverride}
+                  disabled={!teacherPassword.trim()}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-lg"
+                >
+                  Autorizar
+                </button>
+              </div>
             </div>
           )}
 
