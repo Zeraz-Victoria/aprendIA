@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Camera, RefreshCw, Upload, CheckCircle, AlertCircle, X, Mic } from "lucide-react";
+import { Camera, RefreshCw, Upload, CheckCircle, AlertCircle, X, Mic, ImageIcon, Sparkles } from "lucide-react";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import { ImageIcon, Sparkles } from "lucide-react";
+import TeacherUnlockModal from "./TeacherUnlockModal";
 
 function fixImageUrl(src: string): string {
   if (src.includes("pollinations.ai")) {
@@ -75,10 +75,14 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [textEvidence, setTextEvidence] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    correct: boolean;
+    canAdvance?: boolean;
+    grade?: number;
+    message: string
+  } | null>(null);
 
   const [showTeacherAuth, setShowTeacherAuth] = useState(false);
-  const [teacherPassword, setTeacherPassword] = useState("");
 
   // STT State
   const [isListening, setIsListening] = useState(false);
@@ -197,63 +201,32 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) throw new Error("API failed");
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.extractedText || "Error en la validación");
+      }
       const data = await response.json();
 
       setFeedback({
         correct: data.isCorrect,
+        canAdvance: data.canAdvance,
+        grade: data.grade,
         message: data.extractedText || "Revisión completada.",
       });
 
       setStep("feedback");
-      if (data.isCorrect) {
-        setTimeout(() => onComplete(true), 1500);
+      if (data.isCorrect && data.grade === 10) {
+        setTimeout(() => onComplete(true), 2500);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       setFeedback({
         correct: false,
-        message: "Hubo un error de conexión con la IA. Por favor intenta de nuevo.",
+        canAdvance: false,
+        grade: 0,
+        message: e.message || "Hubo un error de conexión con la IA. Por favor intenta de nuevo.",
       });
       setStep("feedback");
-    }
-  };
-
-  const handleTeacherOverride = async () => {
-    if (!teacherPassword.trim()) return;
-    setStep("analyzing");
-
-    try {
-      const response = await fetch('/api/evidence/bypass', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentId,
-          worldId,
-          levelId,
-          password: teacherPassword,
-          context,
-          narrative,
-          evidenceType: requiredEvidenceType
-        })
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || "API failed");
-      }
-
-      setFeedback({
-        correct: true,
-        message: "¡Validación del docente exitosa! Sigue adelante, tu maestro subirá la evidencia después.",
-      });
-
-      setStep("feedback");
-      setTimeout(() => onComplete(true), 2500);
-
-    } catch (e: any) {
-      alert("Error: " + e.message);
-      setStep("idle");
     }
   };
 
@@ -402,40 +375,24 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
           )}
 
           {step === "idle" && showTeacherAuth && (
-            <div className="w-full flex flex-col items-center justify-center space-y-4 animate-fade-in-up">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-2">
-                <span className="text-3xl">👨‍🏫</span>
-              </div>
-              <h4 className="font-bold text-lg text-slate-700 dark:text-slate-200">Autorización Docente</h4>
-              <p className="text-sm text-center text-slate-500 max-w-[250px]">
-                Pide a tu maestro que ingrese su NIP para autorizarte continuar.
-              </p>
-
-              <input
-                type="password"
-                className="mt-4 p-3 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-center text-2xl tracking-[0.5em] focus:border-indigo-500 outline-none w-48 font-mono shadow-inner"
-                value={teacherPassword}
-                onChange={e => setTeacherPassword(e.target.value)}
-                placeholder="****"
-                onKeyDown={e => e.key === 'Enter' && handleTeacherOverride()}
-              />
-
-              <div className="flex gap-3 w-full mt-6">
-                <button
-                  onClick={() => setShowTeacherAuth(false)}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 transition-colors"
-                >
-                  Regresar
-                </button>
-                <button
-                  onClick={handleTeacherOverride}
-                  disabled={!teacherPassword.trim()}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-lg"
-                >
-                  Autorizar
-                </button>
-              </div>
-            </div>
+            <TeacherUnlockModal
+              studentId={studentId || ""}
+              worldId={worldId || ""}
+              levelId={typeof levelId === 'string' ? parseInt(levelId, 10) : (levelId || 0)}
+              evidenceType={requiredEvidenceType}
+              context={context}
+              narrative={narrative}
+              onClose={() => setShowTeacherAuth(false)}
+              onSuccess={() => {
+                setShowTeacherAuth(false);
+                setFeedback({
+                  correct: true,
+                  message: "¡Validación del docente exitosa! Sigue adelante, tu maestro subirá la evidencia."
+                });
+                setStep("feedback");
+                setTimeout(() => onComplete(true), 2500);
+              }}
+            />
           )}
 
           {step === "text_input" && (
@@ -517,26 +474,62 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
 
           {step === "feedback" && feedback && (
             <div className="text-center space-y-6">
-              <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center ${feedback.correct ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>
-                {feedback.correct ? <CheckCircle className="w-12 h-12" /> : <AlertCircle className="w-12 h-12" />}
+              <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center ${feedback.correct ? 'bg-green-100 text-green-600' : (feedback.canAdvance ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600')}`}>
+                {feedback.correct ? <CheckCircle className="w-12 h-12" /> : (feedback.canAdvance ? <Sparkles className="w-12 h-12" /> : <AlertCircle className="w-12 h-12" />)}
               </div>
 
-              <div className="space-y-2">
-                <h4 className={`text-2xl font-bold ${feedback.correct ? 'text-green-700' : 'text-amber-700'}`}>
-                  {feedback.correct ? "¡Correcto!" : "Revisión necesaria"}
+              <div className="space-y-4">
+                {feedback.grade !== undefined && (
+                  <div className="inline-block px-4 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-lg border-2 border-slate-200 dark:border-slate-700 shadow-sm">
+                    Calificación: <span className={feedback.grade >= 6 ? 'text-green-500' : 'text-amber-500'}>{feedback.grade}/10</span>
+                  </div>
+                )}
+
+                <h4 className={`text-2xl font-bold ${feedback.correct ? 'text-green-700 dark:text-green-400' : (feedback.canAdvance ? 'text-blue-700 dark:text-blue-400' : 'text-amber-700 dark:text-amber-400')}`}>
+                  {feedback.correct ? "¡Excelente Trabajo!" : (feedback.canAdvance ? "¡Bien hecho, pero puedes mejorar!" : "Revisión necesaria")}
                 </h4>
-                <div className={`p-4 rounded-xl text-left text-sm ${feedback.correct ? 'bg-green-50 text-green-800' : 'bg-amber-50 text-amber-900 border border-amber-200'}`}>
-                  <p className="font-semibold mb-1">Feedback de la IA:</p>
-                  {feedback.message}
+
+                <div className={`p-4 rounded-xl text-left text-sm ${feedback.correct ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200' : (feedback.canAdvance ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800')}`}>
+                  <p className="font-semibold mb-2 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" /> Feedback de tu Tutor IA:
+                  </p>
+                  <p className="whitespace-pre-wrap leading-relaxed">{feedback.message}</p>
                 </div>
               </div>
 
-              <button
-                onClick={onClose}
-                className={`w-full py-3 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 ${feedback.correct ? 'bg-green-600 hover:bg-green-700 shadow-green-500/30' : 'bg-slate-800 hover:bg-slate-900'}`}
-              >
-                {feedback.correct ? "Continuar Aventura" : "Intentar de nuevo"}
-              </button>
+              <div className="flex flex-col gap-3">
+                {!feedback.canAdvance ? (
+                  <button
+                    onClick={() => {
+                      setFeedback(null);
+                      setStep("idle");
+                    }}
+                    className="w-full py-4 rounded-xl font-bold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw className="w-5 h-5" /> Intentar de nuevo
+                  </button>
+                ) : (
+                  <>
+                    {(!feedback.correct && feedback.canAdvance) && (
+                      <button
+                        onClick={() => {
+                          setFeedback(null);
+                          setStep("idle");
+                        }}
+                        className="w-full py-4 rounded-xl font-bold border-2 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/30 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <RefreshCw className="w-5 h-5" /> Corregir para sacar 10
+                      </button>
+                    )}
+                    <button
+                      onClick={() => onComplete(true)}
+                      className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 ${feedback.correct ? 'bg-green-600 hover:bg-green-700 shadow-green-500/30' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/30'} flex items-center justify-center gap-2`}
+                    >
+                      Avanzar Siguiente Reto
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           )}
 

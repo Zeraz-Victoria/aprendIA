@@ -149,6 +149,8 @@ model EvidenceEntry {
   emotionDetected String?
   status          String   @default("COMPLETED") // "COMPLETED", "PENDING_TEACHER_UPLOAD"
   imageUrl        String?  @db.Text
+  grade           Int?     // 0-10 formative evaluation
+  canAdvance      Boolean  @default(true)
   createdAt       DateTime @default(now())
 
   student User  @relation(fields: [studentId], references: [id], onDelete: Cascade)

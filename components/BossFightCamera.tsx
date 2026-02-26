@@ -75,7 +75,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [textEvidence, setTextEvidence] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [feedback, setFeedback] = useState<{ correct: boolean; hints: string[]; grade: number } | null>(null);
+    const [feedback, setFeedback] = useState<{ correct: boolean; canAdvance?: boolean; grade: number; hints: string[] } | null>(null);
 
     // Teacher Override State
     const [showTeacherAuth, setShowTeacherAuth] = useState(false);
@@ -140,14 +140,10 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
 
             const resultData = await response.json();
 
-            // Compute a 0-10 grade from the confidence score
-            const rawGrade = resultData.isCorrect
-                ? Math.round(resultData.confidenceScore * 10 * 10) / 10  // e.g. 0.85 → 8.5
-                : Math.round(resultData.confidenceScore * 4 * 10) / 10;  // max 4.0 if wrong
-
             setFeedback({
                 correct: resultData.isCorrect,
-                grade: Math.min(10, rawGrade),
+                canAdvance: resultData.canAdvance,
+                grade: resultData.grade || 0,
                 hints: [
                     resultData.extractedText,
                     resultData.emotionDetected ? `Emoción detectada: ${resultData.emotionDetected}` : "Análisis completado."
@@ -344,6 +340,14 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                         ¡Felicidades, <strong className="text-white">{studentName}</strong>! Has demostrado dominio total del tema.
                                     </p>
                                 </div>
+                            ) : feedback.canAdvance ? (
+                                <div className="text-center space-y-3">
+                                    <div className={`p-1 rounded-full w-20 h-20 mx-auto flex items-center justify-center bg-blue-500/20 text-blue-500`}>
+                                        <Sparkles className="w-10 h-10" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-blue-400">¡Victoria Parcial!</h3>
+                                    <p className="text-slate-400 text-sm">El jefe está débil, pero puedes mejorar tu ataque (Sacar 10) si corriges tu error.</p>
+                                </div>
                             ) : (
                                 <div className="text-center space-y-3">
                                     <div className={`p-1 rounded-full w-20 h-20 mx-auto flex items-center justify-center bg-amber-500/20 text-amber-500`}>
@@ -390,16 +394,24 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                 </div>
                             )}
 
-                            {/* Action Button */}
-                            <button onClick={() => {
-                                if (feedback.correct) onComplete(true);
-                                onClose();
-                            }} className={`w-full py-4 font-bold rounded-xl transition-colors ${feedback.correct
-                                ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-900/50'
-                                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                                }`}>
-                                {feedback.correct ? "🎉 ¡Misión Cumplida! — Continuar" : "Corregir y Reintentar"}
-                            </button>
+                            <div className="flex flex-col gap-3">
+                                {!feedback.canAdvance ? (
+                                    <button onClick={() => { setFeedback(null); setStep("text_input"); }} className="w-full py-4 font-bold rounded-xl transition-colors bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center gap-2">
+                                        <RefreshCw className="w-5 h-5" /> Intentar de nuevo
+                                    </button>
+                                ) : (
+                                    <>
+                                        {(!feedback.correct && feedback.canAdvance) && (
+                                            <button onClick={() => { setFeedback(null); setStep("text_input"); }} className="w-full py-4 font-bold rounded-xl transition-colors border-2 border-blue-500/50 text-blue-400 hover:bg-blue-900/30 flex items-center justify-center gap-2">
+                                                <RefreshCw className="w-5 h-5" /> Corregir para sacar 10
+                                            </button>
+                                        )}
+                                        <button onClick={() => { onComplete(true); onClose(); }} className={`w-full py-4 font-bold rounded-xl transition-colors shadow-lg shadow-indigo-900/50 text-white bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500`}>
+                                            Avanzar al Siguiente Mundo
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     )}
 

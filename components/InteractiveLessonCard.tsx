@@ -12,6 +12,7 @@ import MemoryMatch from "./minigames/MemoryMatch";
 import jsPDF from "jspdf";
 import { toCanvas } from "html-to-image";
 import PedagogicalWrapper from "./PedagogicalWrapper";
+import GlossaryWrapper from "./GlossaryWrapper";
 
 function safeParsePromptText(text: string | undefined): string {
     if (!text) return "";
@@ -753,8 +754,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 <div className="space-y-6 prose prose-lg max-w-none mb-10">
                     {chunks.map((chunk, idx) => (
                         <div key={idx} className="mb-4">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
-                                {(chunk || "")
+                            <GlossaryWrapper
+                                text={(chunk || "")
                                     .replace(/\\[NOMBRE_DEL_ESTUDIANTE\\]/gi, studentName)
                                     .replace(/<br\s*\/?>/gi, '\n\n')
                                     .replace(/<b>(.*?)<\/b>/gi, '**$1**')
@@ -762,7 +763,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                     .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
                                     .replace(/<em>(.*?)<\/em>/gi, '*$1*')
                                 }
-                            </ReactMarkdown>
+                                glossaryItems={(data as any).glosario || []}
+                            />
                         </div>
                     ))}
                 </div>

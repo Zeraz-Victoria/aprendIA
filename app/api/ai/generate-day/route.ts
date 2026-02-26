@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
     try {
-        const { day, pedagogy, theme, documentText } = await req.json();
+        const { day, pedagogy, theme, documentText, previousGrade, isFinalBoss } = await req.json();
 
         if (!day || !pedagogy) {
             return NextResponse.json({ error: 'Faltan datos requeridos (day, pedagogy)' }, { status: 400 });
@@ -26,6 +26,11 @@ export async function POST(req: Request) {
         });
 
         const isDemo = documentText === "DEMO_MODE";
+
+        // V2 Adaptive Difficulty: Inject warning if the previous grade was low
+        const adaptiveRescuePrompt = (previousGrade !== undefined && previousGrade <= 6)
+            ? `\n\n[ALERTA DE REZAGO: El alumno tuvo dificultades severas en el nivel anterior (Calificación: ${previousGrade}/10). Simplifica el vocabulario de esta sesión al máximo, explica con ejemplos muy cotidianos y reduce la complejidad cognitiva de la actividad de desarrollo un 30%].`
+            : "";
 
         // Custom prompt per day type
         const prompt = `
@@ -55,6 +60,8 @@ Utiliza exclusivamente la información contenida en este objeto:
 - Dirígete al estudiante como [NOMBRE_DEL_ESTUDIANTE].
 - FEEDBACK SOCRÁTICO: Si el alumno falla, genera una pregunta que lo guíe de vuelta a la teoría del Oráculo.
 - No agregues elementos de fantasía (piratas, magos) a menos que la planeación original los mencione.
+- GLOSARIO: Extrae entre 2 y 4 palabras complejas usadas en el oráculo y defínelas de forma simple.
+${adaptiveRescuePrompt}
 
 # FORMATO DE SALIDA (JSON CRUDO):
 {
@@ -68,7 +75,10 @@ Utiliza exclusivamente la información contenida en este objeto:
     "instruccion_fiel": "...",
     "datos_config": { "pregunta": "...", "respuesta_correcta": "...", "pista_socratica": "..." }
   },
-  "cierre_metacognicion": "..."
+  "cierre_metacognicion": "...",
+  "glosario": [
+    { "palabra": "concepto", "definicion": "definición fácil de entender" }
+  ]
 }
 `;
 
@@ -123,7 +133,9 @@ Utiliza exclusivamente la información contenida en este objeto:
                 narrative: `${parsed.historia_inicio}\n\n### ${parsed.oraculo_teoria?.titulo}\n\n${parsed.oraculo_teoria?.contenido_html}`,
                 content: legacyContent,
                 pda_objetivo: parsed.pda_objetivo,
-                cierre_metacognicion: parsed.cierre_metacognicion
+                cierre_metacognicion: parsed.cierre_metacognicion,
+                glosario: parsed.glosario || [],
+                isFinalBoss: isFinalBoss === true
             };
 
         } catch (parseError) {
