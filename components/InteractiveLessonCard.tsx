@@ -401,8 +401,18 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-indigo-100 dark:border-slate-700">
                     <div className="bg-indigo-50 dark:bg-slate-700 p-6 rounded-xl border border-indigo-100 dark:border-slate-600">
                         <div className="prose prose-indigo dark:prose-invert prose-lg max-w-none">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                                {(statement || "Resuelve el siguiente acertijo.").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={markdownComponents}
+                            >
+                                {(statement || "Resuelve el siguiente acertijo.")
+                                    .replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)
+                                    .replace(/<br\s*\/?>/gi, '\n\n')
+                                    .replace(/<b>(.*?)<\/b>/gi, '**$1**')
+                                    .replace(/<i>(.*?)<\/i>/gi, '*$1*')
+                                    .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+                                    .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+                                }
                             </ReactMarkdown>
                         </div>
 
@@ -677,8 +687,18 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-amber-100 relative">
                                 {data.type === 'guided_practice' && <span className="absolute -top-3 -right-3 bg-indigo-500 text-white text-xs px-2 py-1 rounded font-bold">Teoría</span>}
                                 <div className="prose prose-slate dark:prose-invert prose-lg max-w-none leading-relaxed font-handwriting">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                                        {(currentChunk || "").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}
+                                        components={markdownComponents}
+                                    >
+                                        {(currentChunk || "")
+                                            .replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)
+                                            .replace(/<br\s*\/?>/gi, '\n\n')
+                                            .replace(/<b>(.*?)<\/b>/gi, '**$1**')
+                                            .replace(/<i>(.*?)<\/i>/gi, '*$1*')
+                                            .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+                                            .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+                                        }
                                     </ReactMarkdown>
                                 </div>
                             </div>
@@ -742,7 +762,14 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     {chunks.map((chunk, idx) => (
                         <div key={idx} className="mb-4">
                             <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                                {(chunk || "").replace(/\\[NOMBRE_DEL_ESTUDIANTE\\]/gi, studentName)}
+                                {(chunk || "")
+                                    .replace(/\\[NOMBRE_DEL_ESTUDIANTE\\]/gi, studentName)
+                                    .replace(/<br\s*\/?>/gi, '\n\n')
+                                    .replace(/<b>(.*?)<\/b>/gi, '**$1**')
+                                    .replace(/<i>(.*?)<\/i>/gi, '*$1*')
+                                    .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+                                    .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+                                }
                             </ReactMarkdown>
                         </div>
                     ))}
@@ -754,7 +781,14 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
                             <div className="prose max-w-none">
                                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                                    {(data.content?.practiceProblem?.statement || "").replace(/\\[NOMBRE_DEL_ESTUDIANTE\\]/gi, studentName)}
+                                    {(data.content?.practiceProblem?.statement || "")
+                                        .replace(/\\[NOMBRE_DEL_ESTUDIANTE\\]/gi, studentName)
+                                        .replace(/<br\s*\/?>/gi, '\n\n')
+                                        .replace(/<b>(.*?)<\/b>/gi, '**$1**')
+                                        .replace(/<i>(.*?)<\/i>/gi, '*$1*')
+                                        .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+                                        .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+                                    }
                                 </ReactMarkdown>
                             </div>
                             <div className="mt-8">
