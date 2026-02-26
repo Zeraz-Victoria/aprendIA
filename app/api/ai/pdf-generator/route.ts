@@ -50,10 +50,16 @@ export async function POST(req: Request) {
 
     const isDemo = file.name === "examen_demo.pdf";
     const prompt = `
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM) y Gamificación de alta fidelidad.
-${isDemo ? "REGLA: Este es un archivo de DEMOSTRACIÓN. Invéntate tú mismo un JSON válido de 5 días de aventuras matemáticas básicas sobre 'Fracciones' para Jimena." :
+ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API.
+${isDemo ? "REGLA: Este es un archivo de DEMOSTRACIÓN. Invéntate tú mismo un esqueleto JSON." :
         (isWord ? `He extraído el siguiente texto de una planeación docente en Word:\n\n--- INICIO --- \n${extractedWordText.substring(0, 40000)}\n--- FIN ---\n\nCon base en TODA esta planeación, debes generar una aventura educativa interactiva de matemáticas para niños.`
-          : "He adjuntado a este mensaje un documento PDF con una planeación docente completa.\nCon base en TODA la planeación adjunta, debes generar una aventura educativa interactiva de matemáticas para niños.")}
+          : "He adjuntado a este mensaje un documento PDF con una planeación docente completa.\nCon base en TODA la planeación adjunta, debes generar el esqueleto de una aventura educativa interactiva de matemáticas para niños.")}
+
+REGLAS DE ORO DE EJECUCIÓN (PROHIBIDO OMITIR):
+1. FIDELIDAD INSTRUCCIONAL ABSOLUTA: Queda terminantemente prohibido inventar actividades si se proporciona una planeación docente. Debes identificar fielmente cuántas sesiones y de qué tipo hay.
+2. MARCO CURRICULAR Y METODOLÓGICO: Toda salida debe inferir y extraer los PDA (Procesos de Desarrollo de Aprendizaje).
 
 Usa tu mejor juicio para determinar el tema central establecido por el docente, el nivel de dificultad, los objetivos de aprendizaje (PDA, Ejes) y el GRADO ESCOLAR o edad de los alumnos.
 

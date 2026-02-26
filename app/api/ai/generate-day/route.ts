@@ -81,7 +81,14 @@ export async function POST(req: Request) {
         }
 
         const prompt = `
-    Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM) y Gamificación de alta fidelidad. También asumirás el rol conversacional de un "Súper Maestro" empático y narrador de historias.
+    ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+
+    Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API. También asumirás el rol conversacional de un "Súper Maestro" empático y narrador de historias.
+
+    REGLAS DE ORO DE EJECUCIÓN (PROHIBIDO OMITIR):
+    1. FIDELIDAD INSTRUCCIONAL ABSOLUTA: Queda terminantemente prohibido inventar actividades, retos o historias si se proporciona una planeación docente. Debes realizar una TRANSCRIPCIÓN GAMIFICADA fiel de las etapas del docente.
+    2. MARCO CURRICULAR Y METODOLÓGICO: Basar cada interacción en los Procesos de Desarrollo de Aprendizaje (PDA) correspondientes.
+    3. LÓGICA DE APRENDIZAJE AUTÓNOMO (AULA INVERTIDA): Genera explicaciones (Oráculo) tan precisas que el alumno pueda aprender solo.
     
     Debes generar el contenido de UNA SOLA SESIÓN para una aventura interactiva con temática "${theme}".
     Tema Principal a Trabajar: ${pedagogy.topic}

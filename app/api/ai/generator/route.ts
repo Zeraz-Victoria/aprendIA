@@ -61,75 +61,49 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM) y Gamificación de alta fidelidad. Tu misión es transformar una planeación o un tema educativo en un "Mapa de Aprendizaje" (JSON) para que el alumno aprenda de forma autónoma.
+ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
 
----
-REGLAS DE IDENTIFICACIÓN Y MARCO CURRICULAR (NEM):
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API, incluyendo análisis de evidencias, tutoría socrática, generación de reportes y creación de mapas.
 
-1. FASES DEL PROGRAMA SINTÉTICO: Clasifica el contenido estrictamente en las fases oficiales (1 a 6).
-2. METODOLOGÍAS SOCIOCRÍTICAS: Identifica o selecciona la metodología adecuada: ABP, Proyectos, STEAM, Comunitarios o Aprendizaje de Servicio.
-3. FIDELIDAD INSTRUCCIONAL (ESTRICTO): 
-   - INICIO de la sesión -> 'NARRATIVA_DE_ACTIVACIÓN'.
-   - DESARROLLO de la sesión -> 'DESAFÍO_INTERACTIVO_CENTRAL'.
-   - CIERRE de la sesión -> 'METACOGNICIÓN_Y_EVALUACIÓN'.
-   PROHIBIDO inventar retos si existe una planeación previa; transcríbela fielmente.
+REGLAS DE ORO DE EJECUCIÓN (PROHIBIDO OMITIR):
 
----
-ARQUITECTURA DEL CONTENIDO (JUEGO Y TEORÍA):
+1. FIDELIDAD INSTRUCCIONAL ABSOLUTA: 
+   - Queda terminantemente prohibido inventar actividades, retos o historias si se proporciona una planeación docente.
+   - El sistema debe realizar una TRANSCRIPCIÓN GAMIFICADA:
+     * INICIO del docente = Narrativa de Activación y Contexto.
+     * DESARROLLO del docente = Desafío Interactivo Central (Mecánica de Juego).
+     * CIERRE del docente = Actividad de Metacognición y Evaluación Formativa.
 
-- EL ORÁCULO (AULA INVERTIDA): Genera teoría lúdica basada en el 'Acervo Bibliográfico' de la planeación. El contenido debe ser suficiente para que el alumno resuelva el reto sin ayuda externa.
-- MOTOR DE UI (DETERMINÍSTICO): Selecciona un componente basado en el objetivo del PDA:
-    * 'LOGIC_PUZZLE': Algoritmos, lógica y matemáticas.
-    * 'TEXT_MASTER': Redacción, ortografía y gramática.
-    * 'CONCEPT_MAP': Clasificación, jerarquías y relación de ideas.
-    * 'TRIVIA_QUEST': Comprensión lectora y trivia con pistas socráticas.
-- FEEDBACK SOCRÁTICO: Ante errores, genera una pregunta guía que apunte directamente a la sección del 'Oráculo' que contiene la respuesta.
+2. MARCO CURRICULAR Y METODOLÓGICO:
+   - Toda salida debe clasificarse en las Fases 1 a 6 del Programa Sintético.
+   - Identificar o aplicar una Metodología Sociocrítica: ABP, Proyectos Comunitarios, STEAM o Aprendizaje de Servicio.
+   - Basar cada interacción en los PDA (Procesos de Desarrollo de Aprendizaje) extraídos del documento fuente.
 
----
-ESPECIFICACIÓN TÉCNICA DE SALIDA (JSON SCHEMA):
+3. LÓGICA DE APRENDIZAJE AUTÓNOMO (AULA INVERTIDA):
+   - Antes de cada reto, el sistema DEBE generar un "Oráculo de Sabiduría" con la teoría necesaria para que el alumno aprenda solo.
+   - FEEDBACK SOCRÁTICO: Ante un error, la IA no dará la respuesta; generará una pregunta guía que remita al alumno a la teoría explícita del Oráculo.
 
-{
-  "metadatos": {
-    "proyecto_titulo": "Título original",
-    "fase_sintetica": "1-6",
-    "metodologia": "ABP | Proyectos | STEAM | Comunitarios | Servicio",
-    "pda": "PDA_Extraído",
-    "diagnostico_situado": "Resumen del contexto socioeducativo"
-  },
-  "mapa_aprendizaje": [
-    {
-      "fase_metodologica": "Etapa (ej. Presentemos / Acción)",
-      "niveles": [
-        {
-          "id": "SESION_X",
-          "config_nivel": {
-            "titulo": "Título de la sesión",
-            "narrativa_inicio": "Transcripción de la actividad de Inicio",
-            "oraculo_teoria": {
-                "contenido_html": "Cuerpo teórico para aprendizaje autónomo",
-                "terminos_clave": ["Palabra 1", "Palabra 2"]
-            }
-          },
-          "interaccion_desarrollo": {
-            "componente_ui": "LOGIC_PUZZLE | TEXT_MASTER | CONCEPT_SORT | TRIVIA",
-            "instruccion_docente": "Transcripción exacta de la actividad de Desarrollo",
-            "validacion": {
-                "pregunta": "Reto central planteado por el docente",
-                "respuesta_esperada": "Valor correcto",
-                "pista_socratica": "Guía reflexiva ante el error"
-            }
-          },
-          "cierre_formativo": {
-            "actividad_reflexion": "Transcripción de la actividad de Cierre",
-            "instrumento_evaluacion": "Rúbrica o criterio de la planeación"
-          }
-        }
-      ]
-    }
-  ]
-}
+4. ESPECIFICACIÓN TÉCNICA (JSON SCHEMA):
+   Toda respuesta de generación de niveles debe seguir esta estructura estricta:
+   {
+     "metadatos_nem": { "fase": "1-6", "metodologia": "Seleccionada", "pda": "PDA_Original" },
+     "mapa_interactivo": [{
+       "sesion_id": "ID",
+       "paso_1_inicio": { 
+          "narrativa": "Actividad de Inicio transcrita",
+          "oraculo": "Teoría necesaria para el alumno (Aula Invertida)"
+       },
+       "paso_2_desarrollo": { 
+         "componente_ui": "LOGIC_PUZZLE|TEXT_MASTER|CONCEPT_SORT|TRIVIA",
+         "instruccion": "Actividad de Desarrollo transcrita",
+         "valor_correcto": "Dato_Docente",
+         "pista_socratica": "Pregunta guía ante un error"
+       },
+       "paso_3_cierre": { "metacognicion": "Actividad de Cierre transcrita" }
+     }]
+   }
 
-REGLA DE ORO: Si hay un archivo adjunto, prioriza la transcripción de sus actividades. Si solo hay un tema, genera la planeación completa siguiendo la estructura de la NEM antes de crear el JSON.
+Cualquier salida que ignore la planeación original o invente actividades creativas fuera del diseño del docente será rechazada por el sistema.
 Regresa el código JSON y NADA MÁS. SIN MARCADORES DE MARKDOWN COMO \`\`\`json.
 `;
 
@@ -200,27 +174,28 @@ Regresa el código JSON y NADA MÁS. SIN MARCADORES DE MARKDOWN COMO \`\`\`json.
     if (interactiveMap && Array.isArray(interactiveMap)) {
       let globalIndex = 1;
       interactiveMap.forEach((etapa: any) => {
-        if (etapa.niveles && Array.isArray(etapa.niveles)) {
-          etapa.niveles.forEach((nivel: any) => {
-            days.push({
-              dayNumber: globalIndex++,
-              type: "guided_practice", // Fallback for all items currently
-              title: nivel.config_nivel?.titulo || nivel.titulo_nivel || nivel.titulo_original || nivel.titulo || "Nivel",
-              narrative: nivel.config_nivel?.narrativa_inicio || nivel.paso_1_inicio?.narrativa_contexto || nivel.mecanica_gamificada?.introduccion || nivel.contexto_narrativo || nivel.narrativa_intro || "",
-              content: {
-                explanation: {
-                  chunks: [nivel.config_nivel?.oraculo_teoria?.contenido_html || nivel.paso_1_inicio?.oraculo_teoria || nivel.mecanica_gamificada?.oraculo_teoria || nivel.aula_invertida_teoria?.contenido || nivel.oraculo_teoria?.contenido_html || ""],
-                  analogy: nivel.cierre_formativo?.actividad_reflexion || nivel.paso_3_cierre?.metacognicion || nivel.mecanica_gamificada?.cierre_metacognicion || (nivel.config_nivel?.oraculo_teoria?.terminos_clave || []).join(' • ') || (nivel.aula_invertida_teoria?.puntos_clave || []).join(' • ') || nivel.oraculo_teoria?.analogia_clave || ""
-                },
-                practiceProblem: {
-                  statement: nivel.interaccion_desarrollo?.validacion?.pregunta || nivel.interaccion_desarrollo?.instruccion_docente || nivel.paso_2_desarrollo?.datos_juego?.pregunta || nivel.paso_2_desarrollo?.instruccion_fiel || nivel.mecanica_gamificada?.reto_jugable?.datos?.pregunta || nivel.mecanica_gamificada?.reto_jugable?.instruccion_docente || nivel.desafio_interactivo?.config?.reto || nivel.desafio?.datos_juego?.pregunta || "Pregunta no definida",
-                  correctValue: (nivel.interaccion_desarrollo?.validacion?.respuesta_esperada || nivel.paso_2_desarrollo?.datos_juego?.respuesta_correcta || nivel.mecanica_gamificada?.reto_jugable?.datos?.respuesta_correcta || nivel.desafio_interactivo?.config?.valor_correcto || nivel.desafio?.datos_juego?.respuesta_correcta) ?? "N/A",
-                  hint: nivel.interaccion_desarrollo?.validacion?.pista_socratica || nivel.paso_2_desarrollo?.datos_juego?.pista_socratica || nivel.mecanica_gamificada?.reto_jugable?.datos?.pista_socratica || nivel.desafio_interactivo?.config?.pista_socratica || nivel.desafio?.datos_juego?.pista_socratica || ""
-                }
+        // En V4 map_interactivo itera niveles directo. En V3 estaba anidado bajo "niveles:"
+        const arrToIterate = etapa.niveles && Array.isArray(etapa.niveles) ? etapa.niveles : [etapa];
+
+        arrToIterate.forEach((nivel: any) => {
+          days.push({
+            dayNumber: globalIndex++,
+            type: "guided_practice", // Fallback for all items currently
+            title: nivel.titulo_nivel || nivel.config_nivel?.titulo || nivel.sesion_id || "Nivel",
+            narrative: nivel.paso_1_inicio?.narrativa || nivel.config_nivel?.narrativa_inicio || nivel.paso_1_inicio?.narrativa_contexto || nivel.contexto_narrativo || "",
+            content: {
+              explanation: {
+                chunks: [nivel.paso_1_inicio?.oraculo || nivel.config_nivel?.oraculo_teoria?.contenido_html || nivel.paso_1_inicio?.oraculo_teoria || ""],
+                analogy: nivel.paso_3_cierre?.metacognicion || nivel.cierre_formativo?.actividad_reflexion || ""
+              },
+              practiceProblem: {
+                statement: nivel.paso_2_desarrollo?.instruccion || nivel.interaccion_desarrollo?.validacion?.pregunta || nivel.interaccion_desarrollo?.instruccion_docente || nivel.paso_2_desarrollo?.datos_juego?.pregunta || nivel.paso_2_desarrollo?.instruccion_fiel || "Pregunta no definida",
+                correctValue: (nivel.paso_2_desarrollo?.valor_correcto || nivel.interaccion_desarrollo?.validacion?.respuesta_esperada || nivel.paso_2_desarrollo?.datos_juego?.respuesta_correcta) ?? "N/A",
+                hint: nivel.paso_2_desarrollo?.pista_socratica || nivel.interaccion_desarrollo?.validacion?.pista_socratica || nivel.paso_2_desarrollo?.datos_juego?.pista_socratica || ""
               }
-            });
+            }
           });
-        }
+        });
       });
       // Mark the last element as Boss Fight
       if (days.length > 0) {

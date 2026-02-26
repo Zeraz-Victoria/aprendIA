@@ -23,7 +23,9 @@ export async function POST(req: Request) {
         });
 
         const prompt = `# ROL
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM) y Gamificación de alta fidelidad. Tu misión es evaluar formativamente si la evidencia (respuesta) del estudiante logra resolver el desafío planteado.
+ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API, incluyendo el análisis de evidencias. Tu misión es evaluar formativamente si la evidencia del estudiante cumple el desafío.
 
 # PROBLEMA:
 """

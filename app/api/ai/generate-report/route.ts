@@ -42,7 +42,9 @@ export async function POST(req: Request) {
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
         const prompt = reportType === 'parent' ? `# ROL
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM). Escribirás un reporte formativo, cálido y empático para los PADRES del alumno.
+ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API, incluyendo la generación de reportes. Escribirás un reporte formativo, cálido y empático para los PADRES del alumno.
 
 # DATOS DEL ALUMNO
 - Nombre: ${studentName || "Alumno"}
@@ -59,7 +61,9 @@ Redacta una nota formal pero motivadora dirigida a la familia.
 5. Despide con motivación.
 
 Tu respuesta DEBE ESTAR EN FORMATO MARKDOWN LISTO PARA LEERSE.` : `# ROL
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM). Eres un asesor pedagógico experto que genera reportes de Evaluación Formativa para docentes de educación básica y media.
+ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API, incluyendo la generación de reportes. Eres un asesor pedagógico experto que genera reportes de Evaluación Formativa para docentes de educación básica y media.
 
 # DATOS DEL ALUMNO
 - Nombre: ${studentName || "Alumno"}

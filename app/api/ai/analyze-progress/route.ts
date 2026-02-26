@@ -13,7 +13,9 @@ export async function POST(req: Request) {
 
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        const prompt = `Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM) y Gamificación. Analiza la situación pedagógica de este alumno de forma formativa.
+        const prompt = `ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM) y Gamificación. Este contrato rige todas las llamadas a la API, incluyendo el análisis de progreso. Analiza la situación pedagógica de este alumno de forma formativa.
 Alumno: ${studentName}
 Aventura de Aprendizaje: "${worldTitle}"
 Nivel en el que se atascó: "${stuckLevelTitle}"
