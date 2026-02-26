@@ -41,65 +41,73 @@ export async function POST(req: Request) {
         const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || "");
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-        const prompt = reportType === 'parent' ? `# ROL
+        const prompt = `# ROL Y DIRECTIVA SOBERANA
 ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+Actúa como un Asesor Pedagógico Senior especializado en Evaluación Formativa bajo el marco de la Nueva Escuela Mexicana (NEM). Tu misión es traducir las métricas de aprendizaje del estudiante en reportes accionables, empáticos y técnicos, sin inventar datos que no estén en el historial.
 
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API, incluyendo la generación de reportes. Escribirás un reporte formativo, cálido y empático para los PADRES del alumno.
+# DATOS DEL ESTUDIANTE (FUENTE DE VERDAD):
+- ALUMNO: ${studentName || "Alumno"}
+- FASE Y PDA: Fase NEM a inferir - Temas abordados: ${topics.join(', ') || 'Sin datos'}
+- MÉTRICAS DE DESEMPEÑO: ${correctCount} aciertos de ${entries.length} intentos (${Math.round(correctCount / (entries.length || 1) * 100)}%). Detalle: ${evidenceSummary}
+- EMOCIONES PREDOMINANTES: ${Object.entries(emotionSummary).map(([k, v]) => `${k}: ${v} veces`).join(', ') || 'Sin datos'}
+- TIPO DE REPORTE SOLICITADO: ${reportType === 'parent' ? 'PADRE' : 'DOCENTE'}
 
-# DATOS DEL ALUMNO
-- Nombre: ${studentName || "Alumno"}
-- Ejercicios intentados: ${entries.length}
-- Progreso de aciertos: ${Math.round(correctCount / entries.length * 100)}%
-- Temas practicados: ${topics.join(', ') || 'Sin datos'}
+# INSTRUCCIONES DE REDACCIÓN SEGÚN EL TIPO:
 
-# INSTRUCCIONES
-Redacta una nota formal pero motivadora dirigida a la familia.
-1. Saluda cordialmente.
-2. Destaca lo positivo (en qué temas le fue bien).
-3. Menciona sutilmente un área de oportunidad basada en sus errores, sin ser punitivo.
-4. Sugiere 1 actividad fácil para hacer en casa (juegos de mesa, leer juntos, contar monedas al comprar).
-5. Despide con motivación.
+SI EL TIPO ES "PADRE":
+1. TONO: Cálido, empático, motivador y sin jerga técnica.
+2. ESTRUCTURA:
+   - Saludo personalizado.
+   - Fortalezas: Qué hizo bien el alumno basándose en sus aciertos.
+   - Área de oportunidad: Menciona sutilmente dónde se le dificultó, sin usar la palabra "error" o "reprobado".
+   - Actividad en casa: Sugiere UNA actividad cotidiana (ej. contar el cambio en la tienda, leer un cartel) que refuerce el PDA.
+   - Cierre motivador.
 
-Tu respuesta DEBE ESTAR EN FORMATO MARKDOWN LISTO PARA LEERSE.` : `# ROL
-ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+SI EL TIPO ES "DOCENTE":
+1. TONO: Técnico, analítico, centrado en metodologías sociocríticas (ABP, Proyectos Comunitarios).
+2. ESTRUCTURA:
+   - Resumen de Progreso: Nivel de asimilación del PDA.
+   - Barreras de Aprendizaje: Análisis de los errores recurrentes basados en el historial.
+   - Recomendación Didáctica: Sugerencia de intervención pedagógica para la siguiente sesión (ej. "usar material concreto para explicar el valor posicional").
+   - Estado Emocional: Cómo influyó la emoción detectada en su desempeño.
 
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API, incluyendo la generación de reportes. Eres un asesor pedagógico experto que genera reportes de Evaluación Formativa para docentes de educación básica y media.
-
-# DATOS DEL ALUMNO
-- Nombre: ${studentName || "Alumno"}
-- Total de evidencias registradas: ${entries.length}
-- Respuestas correctas: ${correctCount} (${Math.round(correctCount / entries.length * 100)}%)
-- Respuestas incorrectas: ${incorrectCount}
-- Temas abordados: ${topics.join(', ') || 'Sin datos'}
-- Emociones detectadas: ${Object.entries(emotionSummary).map(([k, v]) => `${k}: ${v} veces`).join(', ') || 'Sin datos'}
-
-# DETALLE DE EVIDENCIAS (últimas ${Math.min(entries.length, 20)}):
-${evidenceSummary}
-
-# INSTRUCCIONES
-Genera un reporte pedagógico COMPLETO y ESTRUCTURADO en formato Markdown con las siguientes secciones:
-
-## 📊 Resumen de Rendimiento
-Un párrafo breve con datos duros (porcentaje de acierto, cantidad de intentos, tendencia).
-
-## 💪 Fortalezas Identificadas
-Lista de 2-4 fortalezas basadas en las evidencias reales del alumno.
-
-## ⚠️ Áreas de Oportunidad
-Lista de 2-4 áreas donde el alumno necesita refuerzo, basadas en sus errores reales.
-
-## 🎯 Recomendaciones para el Docente
-3-5 acciones concretas y prácticas que el docente puede implementar en clase.
-
-## 📝 Calificación Sugerida (0-10)
-Una calificación numérica con justificación breve.
-
-Sé específico, usa los datos reales del alumno, no inventes datos. Escribe en español.`;
+# FORMATO DE SALIDA (JSON CRUDO - SIN MARCADORES MARKDOWN):
+{
+  "destinatario": "${reportType === 'parent' ? 'PADRE' : 'DOCENTE'}",
+  "alumno": "${studentName || 'Alumno'}",
+  "reporte_formateado": {
+    "titulo": "...",
+    "cuerpo_texto": "...",
+    "sugerencia_accionable": "...",
+    "nivel_dominio_pda": "En desarrollo | Logrado | Requiere apoyo"
+  }
+}`;
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
 
-        return NextResponse.json({ report: text });
+        let finalReport = "";
+        try {
+            const cleanText = text.replace(/```json/gi, '').replace(/```/gi, '').trim();
+            const parsed = JSON.parse(cleanText);
+
+            // Reconstruct a beautiful Markdown string for the frontend
+            finalReport = `### ${parsed.reporte_formateado?.titulo || "Reporte de Evaluación Formativa"}\n\n`;
+
+            if (reportType === 'teacher') {
+                finalReport += `**Estado del PDA:** ${parsed.reporte_formateado?.nivel_dominio_pda || 'En proceso'}\n\n`;
+            }
+
+            finalReport += `${parsed.reporte_formateado?.cuerpo_texto || "El alumno ha completado sus actividades."}\n\n`;
+
+            finalReport += `${reportType === 'parent' ? '💡 **Para hacer en casa:**' : '📋 **Recomendación didáctica:**'} ${parsed.reporte_formateado?.sugerencia_accionable || "Sigue animándolo a aprender."}\n`;
+
+        } catch (e) {
+            console.error("Failed to parse report JSON, falling back to raw text:", e);
+            finalReport = text; // Fallback to raw output if parse fails
+        }
+
+        return NextResponse.json({ report: finalReport });
     } catch (error) {
         console.error("Report generation error:", error);
         return NextResponse.json({ error: "Failed to generate report" }, { status: 500 });
