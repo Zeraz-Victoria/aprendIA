@@ -165,11 +165,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
 
     const handleRevealAnswer = () => {
         if (teacherPassword === "1234") {
-            if (data.type === 'guided_practice') {
-                setRevealedAnswer(String(data.content.practiceProblem?.correctValue));
-            } else if (data.content?.miniGame) {
-                setRevealedAnswer(data.content.miniGame.correctAnswer || null);
-            }
+            // Log that the teacher revealed the answer
+            console.log("Teacher revealed answer for debugging purposes.");
             setShowTeacherAuth(false);
             setTeacherPassword("");
         } else {
@@ -444,19 +441,36 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 </div>
 
                 <div className="flex flex-col gap-4">
-                    <input
-                        type="text"
-                        value={studentInput}
-                        onChange={(e) => setStudentInput(e.target.value)}
-                        placeholder="Tu respuesta aquí..."
-                        className="w-full text-center text-2xl p-4 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all font-bold dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                    />
+                    {data.content?.practiceProblem?.tipo_evidencia_requerida === "MULTIPLE_CHOICE" ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {["A", "B", "C", "D"].map((opt) => (
+                                <button
+                                    key={opt}
+                                    type="button"
+                                    onClick={() => setStudentInput(opt)}
+                                    className={`p-4 rounded-xl text-lg font-bold border-2 transition-all
+                                        ${studentInput === opt ? 'bg-indigo-600 border-indigo-700 text-white shadow-lg' : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'}`}
+                                >
+                                    Opción {opt}
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <textarea
+                            value={studentInput}
+                            onChange={(e) => setStudentInput(e.target.value)}
+                            placeholder="Tu respuesta aquí..."
+                            rows={3}
+                            className="w-full text-center text-xl p-4 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all font-bold dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-none"
+                        />
+                    )}
 
                     <div className="flex gap-4">
                         <button
                             type="button"
                             onClick={handlePracticeCheck}
-                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-indigo-600/30 transition-transform active:scale-95"
+                            disabled={studentInput.trim().length === 0}
+                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-indigo-600/30 transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Verificar Respuesta
                         </button>
@@ -681,15 +695,6 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                         <button type="button" onClick={handleRevealAnswer} className="bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">
                             Revelar
                         </button>
-                    </div>
-                )}
-                {revealedAnswer && (
-                    <div className="bg-green-100 border-b border-green-200 p-3 text-center text-green-800 font-bold text-sm flex items-center justify-center gap-4 animate-fade-in-up">
-                        <span>💡 Respuesta Correcta: <span className="text-lg bg-green-200 px-2 py-0.5 rounded ml-2">{revealedAnswer}</span></span>
-                        <button type="button" onClick={handleDownloadPDF} disabled={isDownloading} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-sm transition-colors shadow-sm">
-                            {isDownloading ? "Generando..." : "Descargar PDF de Lección"}
-                        </button>
-                        <button type="button" onClick={() => setRevealedAnswer(null)} className="text-green-600 hover:text-green-900 text-xs bg-white/50 hover:bg-white px-2 py-1 rounded-full transition-colors">Ocultar</button>
                     </div>
                 )}
 

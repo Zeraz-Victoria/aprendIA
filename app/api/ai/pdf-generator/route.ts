@@ -110,17 +110,34 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
     try {
       p = JSON.parse(responseText);
     } catch (e) {
-      console.error("Initial JSON parse failed, attempting strict extraction:", e);
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          p = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("No JSON object found in response");
+      console.warn("Initial JSON parse failed, attempting strict extraction & rescue:", e);
+      // AI Truncation Resiliency: If Gemini cut off because of length, try to append closing brackets
+      let rescuedText = responseText;
+      if (rescuedText.lastIndexOf('}') < rescuedText.lastIndexOf(']')) {
+        // Array is cut off but object inside might be forming. Try to close string, object, array and root.
+        rescuedText += '"]}]}';
+        // That's a naive append, let's use a regex to grab the last valid complete object in the array instead.
+      }
+
+      const jsonMatch = rescuedText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        let matchedStr = jsonMatch[0];
+        // Tarea 5 Rescue Attempt: If finishReason was MAX_TOKENS or parsing failed, safely chop the last incomplete session and close the JSON
+        if (finishReason === 'MAX_TOKENS' || e instanceof SyntaxError) {
+          const lastCompleteSessionIdx = matchedStr.lastIndexOf('},{');
+          if (lastCompleteSessionIdx > 0 && !matchedStr.endsWith('}]}')) {
+            matchedStr = matchedStr.substring(0, lastCompleteSessionIdx + 1) + "]}";
+          }
         }
-      } catch (e2) {
-        console.error("Strict JSON extraction failed:", e2);
-        return NextResponse.json({ error: 'AI returned malformed JSON', raw: responseText }, { status: 500 });
+        try {
+          p = JSON.parse(matchedStr);
+        } catch (e2) {
+          console.error("Strict JSON extraction failed after rescue attempt:", e2);
+          return NextResponse.json({ error: 'AI returned malformed JSON even after rescue', raw: responseText }, { status: 500 });
+        }
+      } else {
+        console.error("No JSON object found in response after initial parse failure.");
+        return NextResponse.json({ error: 'AI returned malformed JSON, no object found', raw: responseText }, { status: 500 });
       }
     }
 

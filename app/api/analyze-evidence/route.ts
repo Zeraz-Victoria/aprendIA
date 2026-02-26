@@ -12,6 +12,11 @@ export async function POST(req: Request) {
     try {
         const { imageBase64, mimeType, textEvidence, context, narrative, studentId, worldId, levelId, evidenceType } = await req.json();
 
+        // Tarea 2: Bloqueo Real de Respuestas Vacías (Hard Stop)
+        if (!imageBase64 && (!textEvidence || textEvidence.trim().length === 0)) {
+            return NextResponse.json({ success: false, message: "No puedes avanzar sin enviar una respuesta válida." }, { status: 400 });
+        }
+
         if (!process.env.AI_API_KEY) {
             console.error("CRITICAL: AI_API_KEY is not defined in process.env");
             return NextResponse.json({ error: 'AI API Key not configured' }, { status: 500 });
