@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { theme, topic, difficulty = "Básico" } = await req.json();
+    const { theme, topic, difficulty = "Básico", session_title, session_start, session_development, session_end } = await req.json();
 
     if (!theme || !topic) {
       return NextResponse.json({ error: 'theme and topic are required' }, { status: 400 });
@@ -61,29 +61,28 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
+# ROL Y DIRECTIVA SOBERANA
 ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+Actúa como un Motor de Transpiler Pedagógico de alta fidelidad para la Nueva Escuela Mexicana (NEM). Tu única función es convertir DATOS CRUDOS de una planeación en un objeto JSON estructurado.
 
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API, incluyendo análisis de evidencias, tutoría socrática, generación de reportes y creación de mapas.
+# FUENTE DE VERDAD ABSOLUTA (SEGMENTO DE PLANEACIÓN):
+A continuación se presentan los fragmentos EXACTOS extraídos del PDF o planeación. Queda ESTRICTAMENTE PROHIBIDO usar información o temas que no estén en estos bloques:
 
-REGLAS DE ORO DE EJECUCIÓN (PROHIBIDO OMITIR):
+--- DATOS DE LA SESIÓN ---
+TÍTULO: ${session_title || topic}
+INICIO: """ ${session_start || `Basado en el tema original: ${topic}`} """
+DESARROLLO: """ ${session_development || `Desarrolla la temática educativa gamificada de: ${theme} con la NEM`} """
+CIERRE: """ ${session_end || `Validación metacognitiva del tema ${topic}`} """
+--- FIN DE DATOS ---
 
-1. FIDELIDAD INSTRUCCIONAL ABSOLUTA: 
-   - Queda terminantemente prohibido inventar actividades, retos o historias si se proporciona una planeación docente.
-   - El sistema debe realizar una TRANSCRIPCIÓN GAMIFICADA:
-     * INICIO del docente = Narrativa de Activación y Contexto.
-     * DESARROLLO del docente = Desafío Interactivo Central (Mecánica de Juego).
-     * CIERRE del docente = Actividad de Metacognición y Evaluación Formativa.
+# INSTRUCCIONES DE MAPEO OBLIGATORIO:
+1. NARRATIVA DE ENTRADA: Transcribe fielmente el contenido del bloque INICIO. Si el docente propone un "caso ficticio" o "lluvia de ideas", eso debe ser la introducción del nivel.
+2. DESAFÍO TÉCNICO: El reto jugable debe ser la actividad descrita en el bloque DESARROLLO. Si el docente pide "resolución de problemas de compra-venta" o "uso del ábaco", esa es la instrucción que el alumno debe ver.
+3. METACOGNICIÓN: Usa el bloque CIERRE para la validación final o reflexión del nivel.
+4. CUMPLIMIENTO NEM: Clasifica el nivel en la Fase correspondiente (1-6) y extrae el PDA mencionado en la planeación.
 
-2. MARCO CURRICULAR Y METODOLÓGICO:
-   - Toda salida debe clasificarse en las Fases 1 a 6 del Programa Sintético.
-   - Identificar o aplicar una Metodología Sociocrítica: ABP, Proyectos Comunitarios, STEAM o Aprendizaje de Servicio.
-   - Basar cada interacción en los PDA (Procesos de Desarrollo de Aprendizaje) extraídos del documento fuente.
-
-3. LÓGICA DE APRENDIZAJE AUTÓNOMO (AULA INVERTIDA):
-   - Antes de cada reto, el sistema DEBE generar un "Oráculo de Sabiduría" con la teoría necesaria para que el alumno aprenda solo.
-   - FEEDBACK SOCRÁTICO: Ante un error, la IA no dará la respuesta; generará una pregunta guía que remita al alumno a la teoría explícita del Oráculo.
-
-4. ESPECIFICACIÓN TÉCNICA (JSON SCHEMA):
+# FORMATO DE SALIDA (JSON ÚNICAMENTE):
+Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiquetas markdown.
    Toda respuesta de generación de niveles debe seguir esta estructura estricta:
    {
      "metadatos_nem": { "fase": "1-6", "metodologia": "Seleccionada", "pda": "PDA_Original" },
@@ -102,9 +101,6 @@ REGLAS DE ORO DE EJECUCIÓN (PROHIBIDO OMITIR):
        "paso_3_cierre": { "metacognicion": "Actividad de Cierre transcrita" }
      }]
    }
-
-Cualquier salida que ignore la planeación original o invente actividades creativas fuera del diseño del docente será rechazada por el sistema.
-Regresa el código JSON y NADA MÁS. SIN MARCADORES DE MARKDOWN COMO \`\`\`json.
 `;
 
     const result = await model.generateContent(prompt);
