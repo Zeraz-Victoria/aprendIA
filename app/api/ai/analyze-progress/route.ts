@@ -13,16 +13,16 @@ export async function POST(req: Request) {
 
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        const prompt = `Analiza la situación pedagógica de un alumno.
+        const prompt = `Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM) y Gamificación. Analiza la situación pedagógica de este alumno de forma formativa.
 Alumno: ${studentName}
 Aventura de Aprendizaje: "${worldTitle}"
 Nivel en el que se atascó: "${stuckLevelTitle}"
 Contenido del nivel: ${JSON.stringify(levelContent, null, 2)}
 
-Eres un Asesor Pedagógico Experto en Matemáticas. Basado en el nivel donde se ha atascado el alumno, proporciona:
-1. Un diagnóstico breve (2 líneas) sobre la posible causa del bloqueo.
-2. Dos recomendaciones didácticas puntuales y cortas.
-3. Un tema específico, en una línea, sugerido para crear una misión de refuerzo (ej. "Refuerzo visual de fracciones equivalentes").
+Basado en el nivel donde se ha atascado el alumno, proporciona:
+1. Un diagnóstico situado breve (2 líneas) sobre la posible barrera de aprendizaje o bloqueo conceptual.
+2. Dos recomendaciones didácticas puntuales, cortas y basadas en metodologías sociocríticas (ABP, Indagación, etc.) para que el docente pueda intervenir.
+3. Un tema específico, en una línea, sugerido para crear una misión de refuerzo gamificada (ej. "Refuerzo lúdico de fracciones equivalentes mediante el Oráculo").
 
 Devuelve la respuesta estrictamente en este formato JSON:
 {

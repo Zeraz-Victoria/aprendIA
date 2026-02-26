@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
     const isDemo = file.name === "examen_demo.pdf";
     const prompt = `
-Eres un experto en diseño instruccional y pedagogía, especializado en la Nueva Escuela Mexicana.
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM) y Gamificación de alta fidelidad.
 ${isDemo ? "REGLA: Este es un archivo de DEMOSTRACIÓN. Invéntate tú mismo un JSON válido de 5 días de aventuras matemáticas básicas sobre 'Fracciones' para Jimena." :
         (isWord ? `He extraído el siguiente texto de una planeación docente en Word:\n\n--- INICIO --- \n${extractedWordText.substring(0, 40000)}\n--- FIN ---\n\nCon base en TODA esta planeación, debes generar una aventura educativa interactiva de matemáticas para niños.`
           : "He adjuntado a este mensaje un documento PDF con una planeación docente completa.\nCon base en TODA la planeación adjunta, debes generar una aventura educativa interactiva de matemáticas para niños.")}

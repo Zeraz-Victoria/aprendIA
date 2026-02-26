@@ -23,7 +23,7 @@ export async function POST(req: Request) {
         });
 
         const prompt = `# ROL
-Eres un tutor amable y conciso. Evalúa si la respuesta del estudiante resuelve el problema.
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM) y Gamificación de alta fidelidad. Tu misión es evaluar formativamente si la evidencia (respuesta) del estudiante logra resolver el desafío planteado.
 
 # PROBLEMA:
 """
@@ -118,7 +118,7 @@ Devuelve SÓLO este JSON crudo:
                                 console.log(`🚀 [Adaptive AI] Student ${studentId} failed 3 times on level ${parsedLevelId}. Generating Rescue Mission...`);
 
                                 const rescuePrompt = `
-Eres un creador de contenido de aprendizaje gamificado. 
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM) y Gamificación de alta fidelidad.
 El estudiante falló en el siguiente concepto repetidamente:
 """
 ${context || 'Matemáticas o Lógica'}

@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
         const prompt = reportType === 'parent' ? `# ROL
-Eres un pedagogo cálido y empático. Escribirás un reporte breve para los PADRES del alumno.
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM). Escribirás un reporte formativo, cálido y empático para los PADRES del alumno.
 
 # DATOS DEL ALUMNO
 - Nombre: ${studentName || "Alumno"}
@@ -59,7 +59,7 @@ Redacta una nota formal pero motivadora dirigida a la familia.
 5. Despide con motivación.
 
 Tu respuesta DEBE ESTAR EN FORMATO MARKDOWN LISTO PARA LEERSE.` : `# ROL
-Eres un asesor pedagógico experto que genera reportes para docentes de primaria y secundaria.
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado en la Nueva Escuela Mexicana (NEM). Eres un asesor pedagógico experto que genera reportes de Evaluación Formativa para docentes de educación básica y media.
 
 # DATOS DEL ALUMNO
 - Nombre: ${studentName || "Alumno"}
