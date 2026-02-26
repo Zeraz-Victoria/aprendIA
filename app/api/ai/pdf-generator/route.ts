@@ -50,50 +50,40 @@ export async function POST(req: Request) {
 
     const isDemo = file.name === "examen_demo.pdf";
     const prompt = `
-ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+# ROL
+Actúa como un Analista de Datos Pedagógicos experto en la NEM. Tu función es desglosar documentos de planeación educativa en fragmentos técnicos sin alterar el contenido original.
 
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API.
-${isDemo ? "REGLA: Este es un archivo de DEMOSTRACIÓN. Invéntate tú mismo un esqueleto JSON." :
-        (isWord ? `He extraído el siguiente texto de una planeación docente en Word:\n\n--- INICIO --- \n${extractedWordText.substring(0, 40000)}\n--- FIN ---\n\nCon base en TODA esta planeación, debes generar una aventura educativa interactiva de matemáticas para niños.`
-          : "He adjuntado a este mensaje un documento PDF con una planeación docente completa.\nCon base en TODA la planeación adjunta, debes generar el esqueleto de una aventura educativa interactiva de matemáticas para niños.")}
+# OBJETIVO
+Extraer cada sesión detallada en el documento y organizarla en un esquema JSON. Debes anonimizar datos personales (nombres de docentes o escuelas) y usar etiquetas genéricas.
 
-REGLAS DE ORO DE EJECUCIÓN (PROHIBIDO OMITIR):
-1. FIDELIDAD INSTRUCCIONAL ABSOLUTA: Queda terminantemente prohibido inventar actividades si se proporciona una planeación docente. Debes identificar fielmente cuántas sesiones y de qué tipo hay.
-2. MARCO CURRICULAR Y METODOLÓGICO: Toda salida debe inferir y extraer los PDA (Procesos de Desarrollo de Aprendizaje).
+${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\n\n--- INICIO --- \n${extractedWordText.substring(0, 40000)}\n--- FIN ---\n` : "He adjuntado a este mensaje un documento PDF con una planeación docente completa.\n"}
 
-Usa tu mejor juicio para determinar el tema central establecido por el docente, el nivel de dificultad, los objetivos de aprendizaje (PDA, Ejes) y el GRADO ESCOLAR o edad de los alumnos.
+# REGLAS DE EXTRACCIÓN (FIDELIDAD TOTAL):
+1. IDENTIFICACIÓN CURRICULAR: Extrae la Fase (1 a 6), el Campo Formativo, los PDA y la Metodología (ABP, STEAM, Proyectos Comunitarios o Servicio).
+2. SEGMENTACIÓN POR SESIÓN: Por cada sesión o día encontrado en el texto, extrae palabra por palabra:
+   - TÍTULO: El nombre de la actividad.
+   - INICIO: La actividad de apertura o recuperación de saberes.
+   - DESARROLLO: La actividad técnica o práctica central.
+   - CIERRE: La actividad de evaluación o reflexión.
+3. PROHIBIDO RESUMIR: Si el documento describe una actividad de 3 párrafos, extrae los 3 párrafos. No interpretes, solo transcribe al JSON.
+4. ANONIMIZACIÓN: Sustituye nombres de docentes por "Docente" y nombres de escuelas por "Institución Educativa".
 
-REGLA DE ORO, ABSOLUTAMENTE CRÍTICA: La aventura DEBE tener TANTOS DÍAS como SESIONES O ACTIVIDADES vengan detalladas en la planeación.
-PROHIBIDO RESUMIR EN 2 O 3 DÍAS. Si la planeación tiene 5 sesiones, el arreglo "days" DEBE tener 5 objetos. Si la planeación tiene 15 sesiones, el arreglo "days" DEBE tener 15 objetos. Cuenta las sesiones antes de generar el JSON y no te detengas hasta incluirlas todas.
-
-Mapea cada sesión de la planeación según su tipo de actividad a uno de los siguientes formatos:
-1. "concept_story" para sesiones de "Inicio", teoría o introducción.
-2. "guided_practice" para sesiones de "Desarrollo", "Manos a la obra" o práctica.
-3. "boss_fight" para sesiones de "Cierre" o evaluación final.
-
-IMPORTANTE FINAL: Genera un objeto en el arreglo "days" por CADA sesión que encuentres en el documento. No te detengas en el día 2; si hay 15 sesiones, genera 15 días.
-¡ATENCIÓN! NO GENERES HISTORIAS NI CONTENIDO LARGO EN ESTE PASO. SOLO QUEREMOS EL ESQUELETO (Títulos y Tipos).
-
-La salida DEBE SER ESTRICTAMENTE UN OBJETO JSON VÁLIDO con la siguiente estructura, sin texto antes ni después, sin comentarios:
+# FORMATO DE SALIDA (JSON CRUDO):
 {
-  "title": "Un título genial para la aventura basado en la planeación completa",
-  "theme": "detective",
-  "pedagogy": {
-    "topic": "El tema principal matemático identificado",
-    "pda": "El PDA principal extraído o inferido",
-    "ejes": ["Eje 1", "Eje 2"],
-    "grade": "El grado escolar, nivel cognitivo o edad sugerida de los niños según el documento (ej. 3ro de Primaria)"
+  "datos_generales": {
+    "fase": "",
+    "metodologia": "",
+    "campo_formativo": "",
+    "pda_listado": []
   },
-  "days": [
+  "sesiones_extraidas": [
     {
-      "dayNumber": 1,
-      "type": "concept_story",
-      "title": "Primera sesión"
-    },
-    {
-      "dayNumber": 2, 
-      "type": "guided_practice",
-      "title": "Práctica central"
+      "numero": 1,
+      "titulo": "",
+      "inicio_fiel": "",
+      "desarrollo_fiel": "",
+      "cierre_fiel": "",
+      "recursos_mencionados": []
     }
   ]
 }
@@ -119,65 +109,40 @@ La salida DEBE SER ESTRICTAMENTE UN OBJETO JSON VÁLIDO con la siguiente estruct
     // Strict JSON stripping
     responseText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
 
-    let generatedData;
+    let p: any = {};
     try {
-      generatedData = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("Failed to parse Gemini JSON: Finish Reason", finishReason);
-
-      try {
-        require('fs').writeFileSync(process.cwd() + '/debug-failed-json.txt', `FINISH REASON: ${finishReason}\n\n` + responseText);
-      } catch (e) { }
-
-      // Auto-Rescue Mechanism: Sometimes Gemini stops generating exactly on the last string quote.
-      try {
-        console.log("Attempting to auto-close truncated JSON...");
-        let rescued = responseText;
-        if (rescued.lastIndexOf('"') > rescued.lastIndexOf('}')) {
-          rescued += '"'; // close open string
-        }
-        if (rescued.includes('"days": [')) {
-          rescued += '}]}'
-        } else {
-          rescued += '}'
-        }
-
-        // Final aggressive clean
-        rescued = rescued.replace(/,\s*([}\]])/g, '$1'); // remove trailing commas
-        generatedData = JSON.parse(rescued);
-        console.log("Successfully rescued JSON data automatically.");
-      } catch (e) {
-        throw new Error(`Estructura JSON inválida. El servidor de IA cortó la respuesta prematuramente (Motivo: ${finishReason}).`);
-      }
+      p = JSON.parse(responseText);
+    } catch (e) {
+      console.error(e);
+      // Auto-Rescue Mechanism could go here, but for now just fallback
+      return NextResponse.json({ error: 'AI returned malformed JSON', raw: responseText }, { status: 500 });
     }
 
-    console.log("Successfully parsed skeleton data.");
+    console.log("Successfully parsed Data Analyst extraction.");
 
-    // Fill the missing fields with temporary empty states so the frontend type checker doesn't panic
-    const skeletonDays = generatedData.days.map((day: any) => {
-      let emptyContent: any = {};
-      if (day.type === 'concept_story') {
-        emptyContent = { explanation: { chunks: ["(Narrativa en construcción...)"], analogy: "" } };
-      } else if (day.type === 'guided_practice') {
-        emptyContent = { practiceProblem: { statement: "(Problema en construcción...)", correctValue: "", hint: "" } };
-      } else if (day.type === 'boss_fight') {
-        emptyContent = { originalProblemText: "(Examen en construcción...)", solvedVariations: [] };
-      }
-
-      return {
-        ...day,
-        narrative: "(Pensando la historia...)",
-        content: emptyContent,
-        isGenerating: true // Custom flag so the frontend knows this day needs its content generated
-      };
-    });
+    // Map the new "sesiones_extraidas" format into what the frontend expects
+    const mappedDays = (p.sesiones_extraidas || []).map((s: any) => ({
+      dayNumber: s.numero,
+      type: s.cierre_fiel?.toLowerCase().includes("evaluaci") ? "boss_fight" : "guided_practice",
+      title: s.titulo,
+      session_start: s.inicio_fiel,
+      session_development: s.desarrollo_fiel,
+      session_end: s.cierre_fiel,
+      narrative: "(Pensando la historia...)",
+      content: { practiceProblem: { statement: "(Problema en construcción...)", correctValue: "", hint: "" } },
+      isGenerating: true // Custom flag so the frontend knows this day needs its content generated
+    }));
 
     return NextResponse.json({
       id: crypto.randomUUID(),
-      theme: generatedData.theme || "detective",
-      title: generatedData.title || `Aventura de la Planeación`,
-      pedagogy: generatedData.pedagogy,
-      days: skeletonDays,
+      theme: p.datos_generales?.metodologia || "aventura",
+      title: "Planeación Educativa",
+      pedagogy: {
+        topic: p.datos_generales?.campo_formativo || "General",
+        pda: (p.datos_generales?.pda_listado || []).join(', '),
+        grade: `Fase ${p.datos_generales?.fase || "?"}`
+      },
+      days: mappedDays,
       createdAt: new Date().toISOString()
     });
 
