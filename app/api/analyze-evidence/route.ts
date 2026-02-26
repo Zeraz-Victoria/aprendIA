@@ -22,39 +22,35 @@ export async function POST(req: Request) {
             model: 'gemini-2.5-flash' // Fast, multimodal
         });
 
-        const prompt = `# ROL
+        const prompt = `# ROL Y DIRECTIVA SOBERANA
 ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+Actúa como un Sistema Experto en Evaluación Formativa y Tutoría Socrática para la NEM. Tu misión es validar si la evidencia del alumno cumple con el desafío técnico extraído de la planeación.
 
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API, incluyendo el análisis de evidencias. Tu misión es evaluar formativamente si la evidencia del estudiante cumple el desafío técnico planteado en la planeación.
+# DATOS DE REFERENCIA (FUENTE DE VERDAD):
+- DESAFÍO ORIGINAL (DESARROLLO): """ ${context || "Sin desafío original."} """
+- CRITERIO DE EVALUACIÓN (CIERRE): """ Validación de cumplimiento del reto o actividad """
+- TEORÍA DE APOYO (ORÁCULO): """ ${narrative || "Sin teoría base en sesión."} """
 
-# DESAFÍO TÉCNICO A EVALUAR (LA TAREA):
-"""
-${context || "Sin contexto de tarea."}
-"""
+# EVIDENCIA DEL ALUMNO:
+${imageBase64 ? "[ADJUNTO IMAGEN ESCANEADA DEL ALUMNO]" : `"""\n${textEvidence}\n"""`}
 
-# CONTEXTO NARRATIVO (LA AMBIENTACIÓN):
-"""
-${narrative || "Sin contexto narrativo."}
-"""
+# INSTRUCCIONES DE EVALUACIÓN (ESTRICTO):
+1. VALIDACIÓN TÉCNICA: Compara la evidencia del alumno ÚNICAMENTE contra el 'DESAFÍO ORIGINAL'. Si el docente pidió una suma, valida el resultado; si pidió una reflexión, valida la profundidad.
+2. PROHIBICIÓN DE RESPUESTAS DIRECTAS: Si la evidencia es incorrecta o incompleta, está terminantemente PROHIBIDO dar la solución.
+3. RETROALIMENTACIÓN SOCRÁTICA: Genera una pista en forma de pregunta que obligue al alumno a releer la sección específica del 'ORÁCULO' para corregir su propio error.
+4. TONO: Usa un lenguaje motivador y profesional, dirigiéndote al alumno como [NOMBRE_DEL_ESTUDIANTE].
 
-# EVIDENCIA O RESPUESTA DEL ALUMNO:
-${imageBase64 ? "Analiza la IMAGEN adjunta." : `"""\n${textEvidence}\n"""`}
-
-# INSTRUCCIONES DE EVALUACIÓN SOBERANAS:
-1. COMPARACIÓN OBLIGATORIA: Tu fuente de verdad es el 'DESAFÍO TÉCNICO'. Debes validar si el alumno ejecutó la instrucción específica del docente (ej. resolvió la división, usó comas, identificó el signo).
-2. PROHIBICIÓN DE REPETICIÓN: No repitas el texto del problema ni el contexto narrativo en el feedback. Tu tarea es EVALUAR el desempeño, no describir la escena.
-3. CRITERIO NEM: Si la respuesta es incorrecta, usa una pista socrática que lo remita a la lógica del error (ej. "Revisa qué pasó con el punto decimal") en lugar de darle la solución.
-4. RELEVANCIA: Si la evidencia es una imagen en blanco, texto basura o algo ajeno al desafío, marca 'isCorrect: false'.
-
-Devuelve SÓLO este JSON crudo:
+# FORMATO DE SALIDA (JSON CRUDO):
 {
-  "studentName": "...",
-  "confidenceScore": 0.9,
-  "topic": "...",
-  "isCorrect": true,
-  "extractedText": "Feedback evaluativo corto y socrático. Máximo 2 oraciones.",
-  "emotionDetected": "Seguro/Motivado/Frustrado/Indeciso/Despistado"
+  "evaluacion": {
+    "es_correcto": true,
+    "puntuacion_confianza": 0.9,
+    "retroalimentacion": "Feedback socrático corto (máx. 2 frases)",
+    "emocion_detectada": "Seguro | Frustrado | Indeciso | Motivado",
+    "analisis_tecnico": "Breve nota interna sobre qué falló respecto al PDA"
+  }
 }`;
+
 
 
         let result;
@@ -77,7 +73,16 @@ Devuelve SÓLO este JSON crudo:
         try {
             // Clean up markdown if the model hallucinated it
             const cleanedText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
-            const parsedData = JSON.parse(cleanedText);
+            const parsedRaw = JSON.parse(cleanedText);
+
+            // Map the new "Fidelidad NEM 1.0" Formative Format to the legacy schema expected by the UI.
+            const parsedData = {
+                isCorrect: parsedRaw.evaluacion?.es_correcto ?? parsedRaw.isCorrect ?? false,
+                extractedText: parsedRaw.evaluacion?.retroalimentacion ?? parsedRaw.extractedText ?? "Sin retroalimentación clara.",
+                topic: parsedRaw.evaluacion?.analisis_tecnico ?? parsedRaw.topic ?? "General",
+                emotionDetected: parsedRaw.evaluacion?.emocion_detectada ?? parsedRaw.emotionDetected ?? "Indeciso",
+                confidenceScore: parsedRaw.evaluacion?.puntuacion_confianza ?? parsedRaw.confidenceScore ?? 0.8
+            };
 
             // Persist the AI Analysis in the Database for the Teacher's dossier
             let dbSaveStatus = "skipped";
