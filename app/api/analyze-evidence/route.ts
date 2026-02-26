@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
     try {
-        const { imageBase64, mimeType, textEvidence, context, studentId, worldId, levelId } = await req.json();
+        const { imageBase64, mimeType, textEvidence, context, narrative, studentId, worldId, levelId } = await req.json();
 
         if (!imageBase64 && !textEvidence) {
             return NextResponse.json({ error: 'Debes enviar texto o una imagen como evidencia' }, { status: 400 });
@@ -25,28 +25,34 @@ export async function POST(req: Request) {
         const prompt = `# ROL
 ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
 
-Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API, incluyendo el análisis de evidencias. Tu misión es evaluar formativamente si la evidencia del estudiante cumple el desafío.
+Actúa como un Sistema Experto en Ingeniería Pedagógica y Arquitecto de Software Educativo, especializado estrictamente en la Nueva Escuela Mexicana (NEM). Este contrato rige todas las llamadas a la API, incluyendo el análisis de evidencias. Tu misión es evaluar formativamente si la evidencia del estudiante cumple el desafío técnico planteado en la planeación.
 
-# PROBLEMA:
+# DESAFÍO TÉCNICO A EVALUAR (LA TAREA):
 """
-${context || "Sin contexto."}
+${context || "Sin contexto de tarea."}
+"""
+
+# CONTEXTO NARRATIVO (LA AMBIENTACIÓN):
+"""
+${narrative || "Sin contexto narrativo."}
 """
 
 # EVIDENCIA O RESPUESTA DEL ALUMNO:
-${imageBase64 ? "Analiza la IMAGEN." : `"""\n${textEvidence}\n"""`}
+${imageBase64 ? "Analiza la IMAGEN adjunta." : `"""\n${textEvidence}\n"""`}
 
-# INSTRUCCIONES RÁPIDAS:
-1. Relevancia: Si es irrelevante, basura, o no tiene sentido, es INCORRECTO.
-2. Calidad: ¿El razonamiento o resultado aborda correcta y sustancialmente el problema?
-3. Retroalimentación (CRÍTICO): Máximo 2 oraciones cortas.
+# INSTRUCCIONES DE EVALUACIÓN SOBERANAS:
+1. COMPARACIÓN OBLIGATORIA: Tu fuente de verdad es el 'DESAFÍO TÉCNICO'. Debes validar si el alumno ejecutó la instrucción específica del docente (ej. resolvió la división, usó comas, identificó el signo).
+2. PROHIBICIÓN DE REPETICIÓN: No repitas el texto del problema ni el contexto narrativo en el feedback. Tu tarea es EVALUAR el desempeño, no describir la escena.
+3. CRITERIO NEM: Si la respuesta es incorrecta, usa una pista socrática que lo remita a la lógica del error (ej. "Revisa qué pasó con el punto decimal") en lugar de darle la solución.
+4. RELEVANCIA: Si la evidencia es una imagen en blanco, texto basura o algo ajeno al desafío, marca 'isCorrect: false'.
 
 Devuelve SÓLO este JSON crudo:
 {
-  "studentName": "Nombre legible o null",
+  "studentName": "...",
   "confidenceScore": 0.9,
-  "topic": "Tema clave corto",
+  "topic": "...",
   "isCorrect": true,
-  "extractedText": "Feedback motivador y corto (máx 20 palabras).",
+  "extractedText": "Feedback evaluativo corto y socrático. Máximo 2 oraciones.",
   "emotionDetected": "Seguro/Motivado/Frustrado/Indeciso/Despistado"
 }`;
 

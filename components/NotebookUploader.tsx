@@ -60,6 +60,7 @@ type Step = "idle" | "preview" | "analyzing" | "feedback" | "text_input";
 
 interface NotebookUploaderProps {
   context?: string;
+  narrative?: string;
   studentName?: string;
   studentId?: string;
   worldId?: string;
@@ -68,7 +69,7 @@ interface NotebookUploaderProps {
   onClose: () => void;
 }
 
-export default function NotebookUploader({ context, studentName = "Aventurero", studentId, worldId, levelId, onComplete, onClose }: NotebookUploaderProps) {
+export default function NotebookUploader({ context, narrative, studentName = "Aventurero", studentId, worldId, levelId, onComplete, onClose }: NotebookUploaderProps) {
   const [step, setStep] = useState<Step>("idle");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [textEvidence, setTextEvidence] = useState("");
@@ -150,6 +151,7 @@ export default function NotebookUploader({ context, studentName = "Aventurero", 
     setStep("analyzing");
     try {
       const payload: any = { context };
+      if (narrative) payload.narrative = narrative;
       if (studentId) payload.studentId = studentId;
       if (worldId) payload.worldId = worldId;
       if (levelId !== undefined) payload.levelId = levelId;

@@ -114,6 +114,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
 
         try {
             const payload: any = { context: problemText };
+            if (data.narrative) payload.narrative = data.narrative;
             if (studentId) payload.studentId = studentId;
             if (worldId) payload.worldId = worldId;
             if (levelId !== undefined) payload.levelId = levelId;

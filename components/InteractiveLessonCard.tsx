@@ -308,6 +308,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 body: JSON.stringify({
                     studentId, worldId, levelId,
                     context: `Interactive Quiz: ${data.content.miniGame?.question}`,
+                    narrative: data.narrative,
                     textEvidence: option
                 })
             }).catch(e => console.error("Failed to sync minigame evidence", e));
@@ -347,6 +348,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 body: JSON.stringify({
                     studentId, worldId, levelId,
                     context: `Guided Practice: ${data.content.practiceProblem?.statement}`,
+                    narrative: data.narrative,
                     textEvidence: studentInput
                 })
             }).catch(e => console.error("Failed to sync practice evidence", e));

@@ -358,6 +358,7 @@ export default function AdventureMap() {
             {showUploader && selectedLevel && (
                 <NotebookUploader
                     context={JSON.stringify(getDayContent(selectedLevel.id))}
+                    narrative={getDayContent(selectedLevel.id)?.narrative}
                     studentName={currentUser?.name?.split(' ')[0] || "Aventurero"}
                     studentId={currentUser?.id}
                     worldId={activeWorldId || undefined}

@@ -36,6 +36,7 @@ export interface BossDayContent {
     dayNumber: number;
     type: "boss_fight";
     title: string;
+    narrative?: string;
     originalProblemImage?: string;
     originalProblemText: string;
     hints: string[];
