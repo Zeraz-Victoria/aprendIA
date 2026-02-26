@@ -52,7 +52,7 @@ const FlashcardView = ({ paragraphs }: { paragraphs: string[] }) => {
                 <div className="absolute top-0 right-0 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 px-3 py-1 rounded-bl-xl font-bold text-sm">
                     {currentIndex + 1} / {paragraphs.length}
                 </div>
-                <div className="prose prose-lg dark:prose-invert text-center">
+                <div className="prose prose-lg dark:prose-invert text-center max-w-full overflow-wrap-anywhere word-break-break-word break-words">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                         {paragraphs[currentIndex]}
                     </ReactMarkdown>
@@ -107,11 +107,11 @@ const ChatBubbleDialogue = ({ paragraphs }: { paragraphs: string[] }) => {
                             </div>
 
                             {/* Bubble */}
-                            <div className={`p-4 rounded-2xl shadow-sm ${isStudent
+                            <div className={`p-4 rounded-2xl shadow-sm overflow-hidden break-words ${isStudent
                                 ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-tr-sm'
                                 : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-tl-sm shadow-md'
                                 }`}>
-                                <div className="prose prose-md dark:prose-invert">
+                                <div className="prose prose-md dark:prose-invert max-w-full overflow-wrap-anywhere word-break-break-word">
                                     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                                         {paragraph}
                                     </ReactMarkdown>
@@ -156,7 +156,7 @@ const StepByStepAccordion = ({ paragraphs }: { paragraphs: string[] }) => {
                         </button>
 
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                            <div className="p-6 bg-white dark:bg-slate-800 prose prose-lg dark:prose-invert max-w-none border-t border-slate-100 dark:border-slate-700/50">
+                            <div className="p-6 bg-white dark:bg-slate-800 prose prose-lg dark:prose-invert max-w-full overflow-wrap-anywhere word-break-break-word break-words border-t border-slate-100 dark:border-slate-700/50">
                                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                                     {paragraph}
                                 </ReactMarkdown>
@@ -180,8 +180,8 @@ export default function PedagogicalWrapper({ content, studentName, type = 'theor
 
     if (rawParagraphs.length === 1) {
         return (
-            <div className={`bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border ${type === 'narrative' ? 'border-amber-200 bg-amber-50/50' : 'border-indigo-100'}`}>
-                <div className="prose prose-lg dark:prose-invert max-w-none leading-relaxed">
+            <div className={`bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border ${type === 'narrative' ? 'border-amber-200 bg-amber-50/50' : 'border-indigo-100'} overflow-hidden break-words`}>
+                <div className="prose prose-lg dark:prose-invert max-w-full overflow-wrap-anywhere word-break-break-word leading-relaxed">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                         {formattedContent}
                     </ReactMarkdown>

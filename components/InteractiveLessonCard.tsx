@@ -408,7 +408,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             <div className="space-y-6 animate-fade-in-up">
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-indigo-100 dark:border-slate-700">
                     <div className="bg-indigo-50 dark:bg-slate-700 p-6 rounded-xl border border-indigo-100 dark:border-slate-600">
-                        <div className="prose prose-indigo dark:prose-invert prose-lg max-w-none">
+                        <div className="prose prose-indigo dark:prose-invert prose-lg max-w-full overflow-wrap-anywhere word-break-break-word break-words overflow-hidden">
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 rehypePlugins={[rehypeRaw]}
