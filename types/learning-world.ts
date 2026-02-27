@@ -29,6 +29,7 @@ export interface DayContent {
             correctValue: number;
             hint: string;
             tipo_evidencia_requerida?: "FOTO_DIBUJO" | "FOTO_GRAFICA" | "TEXTO_ENSAYO" | "MULTIPLE_CHOICE";
+            options?: string[];
         };
     };
 }

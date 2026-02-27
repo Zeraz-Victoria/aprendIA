@@ -448,17 +448,19 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 <div className="flex flex-col gap-4">
                     {data.content?.practiceProblem?.tipo_evidencia_requerida === "MULTIPLE_CHOICE" ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {["A", "B", "C", "D"].map((opt) => (
-                                <button
-                                    key={opt}
-                                    type="button"
-                                    onClick={() => setStudentInput(opt)}
-                                    className={`p-4 rounded-xl text-lg font-bold border-2 transition-all
+                            {(data.content?.practiceProblem?.options && data.content.practiceProblem.options.length > 0
+                                ? data.content.practiceProblem.options
+                                : ["Opción A", "Opción B", "Opción C", "Opción D"]).map((opt: string, idx: number) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={() => setStudentInput(opt)}
+                                        className={`p-4 rounded-xl text-lg font-bold border-2 transition-all
                                         ${studentInput === opt ? 'bg-indigo-600 border-indigo-700 text-white shadow-lg' : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'}`}
-                                >
-                                    Opción {opt}
-                                </button>
-                            ))}
+                                    >
+                                        {opt}
+                                    </button>
+                                ))}
                         </div>
                     ) : (
                         <textarea
