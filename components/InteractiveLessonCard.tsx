@@ -158,22 +158,6 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     const [aiHint, setAiHint] = useState<string | null>(null);
     const [isGettingHint, setIsGettingHint] = useState(false);
 
-    // Teacher Reveal State
-    const [showTeacherAuth, setShowTeacherAuth] = useState(false);
-    const [teacherPassword, setTeacherPassword] = useState("");
-    const [revealedAnswer, setRevealedAnswer] = useState<string | null>(null);
-
-    const handleRevealAnswer = () => {
-        if (teacherPassword === "1234") {
-            // Log that the teacher revealed the answer
-            console.log("Teacher revealed answer for debugging purposes.");
-            setShowTeacherAuth(false);
-            setTeacherPassword("");
-        } else {
-            alert("Contraseña incorrecta");
-        }
-    };
-
     const handleDownloadPDF = async () => {
         setIsDownloading(true);
         try {
@@ -408,7 +392,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             <div className="space-y-6 animate-fade-in-up">
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-indigo-100 dark:border-slate-700">
                     <div className="bg-indigo-50 dark:bg-slate-700 p-6 rounded-xl border border-indigo-100 dark:border-slate-600">
-                        <div className="prose prose-indigo dark:prose-invert prose-lg max-w-full overflow-wrap-anywhere word-break-break-word break-words overflow-hidden">
+                        <div className="prose prose-indigo dark:prose-invert prose-lg max-w-full break-all min-w-0 overflow-hidden">
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 rehypePlugins={[rehypeRaw]}
@@ -670,33 +654,14 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 <span className="text-xs font-bold text-orange-600">{stats.streak}</span>
                             </div>
                         </div>
-                        {(data.type === 'guided_practice' || data.content?.miniGame) && showActivity && (
-                            <button type="button" onClick={() => setShowTeacherAuth(!showTeacherAuth)} className="text-slate-500 hover:text-slate-700 bg-white/50 px-3 py-1 rounded-full text-xs font-bold transition-colors">
-                                👁️ Docente
-                            </button>
-                        )}
+
                         <button type="button" onClick={onClose} className="text-amber-800 hover:text-amber-950 px-3 py-1 rounded-full bg-amber-200/50 hover:bg-amber-200 font-bold text-sm">
                             Salir
                         </button>
                     </div>
                 </div>
 
-                {showTeacherAuth && !revealedAnswer && (
-                    <div className="bg-slate-800 p-4 text-white flex gap-3 items-center justify-center animate-fade-in-up">
-                        <span className="text-sm font-bold text-slate-300">Contraseña Docente:</span>
-                        <input
-                            type="password"
-                            className="text-black px-3 py-1.5 rounded-lg text-sm w-32 outline-none focus:ring-2 focus:ring-indigo-500"
-                            value={teacherPassword}
-                            onChange={e => setTeacherPassword(e.target.value)}
-                            placeholder="****"
-                            onKeyDown={e => e.key === 'Enter' && handleRevealAnswer()}
-                        />
-                        <button type="button" onClick={handleRevealAnswer} className="bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">
-                            Revelar
-                        </button>
-                    </div>
-                )}
+
 
                 <div className="p-4 md:p-8 flex-1 overflow-y-auto bg-[url('https://www.transparenttextures.com/patterns/notebook.png')] bg-amber-50">
                     {!showActivity ? (
