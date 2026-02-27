@@ -312,33 +312,28 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
           {step === "idle" && !showTeacherAuth && (
             <div className="w-full flex flex-col gap-6 items-center">
               <h4 className="text-xl font-bold text-slate-700 dark:text-slate-200 text-center">
-                {requiredEvidenceType === "TEXTO_ENSAYO" ? "¿Cómo quieres ingresar tu ensayo?" :
-                  (requiredEvidenceType === "FOTO_DIBUJO" || requiredEvidenceType === "FOTO_GRAFICA") ? "Toma o sube una foto de tu trabajo" : "¿Cómo quieres enviar tu evidencia?"}
+                ¿Cómo quieres enviar tu evidencia?
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                {(requiredEvidenceType !== "TEXTO_ENSAYO") && (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border-4 border-dashed border-indigo-300 cursor-pointer hover:bg-indigo-50 transition-colors group"
-                  >
-                    <Camera className="w-12 h-12 text-indigo-400 group-hover:text-indigo-600 mb-4 transition-colors" />
-                    <span className="font-bold text-slate-600 text-center">Subir Foto</span>
-                  </div>
-                )}
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border-4 border-dashed border-indigo-300 cursor-pointer hover:bg-indigo-50 transition-colors group"
+                >
+                  <Camera className="w-12 h-12 text-indigo-400 group-hover:text-indigo-600 mb-4 transition-colors" />
+                  <span className="font-bold text-slate-600 text-center">Subir Foto</span>
+                </div>
 
-                {(requiredEvidenceType !== "FOTO_DIBUJO" && requiredEvidenceType !== "FOTO_GRAFICA") && (
-                  <div
-                    onClick={() => setStep("text_input")}
-                    className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border-4 border-dashed border-emerald-300 cursor-pointer hover:bg-emerald-50 transition-colors group"
-                  >
-                    <span className="text-5xl mb-3">📝</span>
-                    <span className="font-bold text-slate-600 text-center">Escribir</span>
-                  </div>
-                )}
+                <div
+                  onClick={() => setStep("text_input")}
+                  className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border-4 border-dashed border-emerald-300 cursor-pointer hover:bg-emerald-50 transition-colors group"
+                >
+                  <span className="text-5xl mb-3">📝</span>
+                  <span className="font-bold text-slate-600 text-center">Escribir</span>
+                </div>
               </div>
 
-              {(requiredEvidenceType !== "FOTO_DIBUJO" && requiredEvidenceType !== "FOTO_GRAFICA") && recognitionSupported && (
+              {recognitionSupported && (
                 <div
                   onClick={() => {
                     setStep("text_input");
