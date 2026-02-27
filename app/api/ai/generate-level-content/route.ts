@@ -69,7 +69,7 @@ REGLAS DE ORO:
 3. TIPO DE EVIDENCIA: Analiza qué producto físico o digital exige el docente y asigna uno de estos valores a 'tipo_evidencia_requerida': FOTO_FISICA, TEXTO_DIGITAL, MULTIPLE_CHOICE.
 4. FORMATO LIMPIO: Usa \\n\\n para saltos de línea. PROHIBIDO usar etiquetas HTML (<br>, <p>, <b>).
 
-FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
+FORMATO DE SALIDA ESPERADO (JSON ESTRICTO, SIN COMENTARIOS):
 {
   "historia_inicio": "Texto narrativo inmersivo...",
   "oraculo_teoria": { 
@@ -77,12 +77,17 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
     "contenido_markdown": "Explicación directa al alumno actuando como su tutor..." 
   },
   "reto_gameplay": {
-    "instruccion_fiel": "EJERCICIO NUEVO INVENTADO: Instrucción directa al alumno INCLUYENDO los materiales (ej. oraciones mudas, problemas matemáticos) que debe resolver en su libreta.",
-    "tipo_evidencia_requerida": "FOTO_FISICA | TEXTO_DIGITAL | MULTIPLE_CHOICE",
-    "opciones": ["Opción real 1", "Opción real 2", "Opción real 3", "Opción real 4"] // OBLIGATORIO: Generar 4 opciones lógicas SOLO si el tipo es MULTIPLE_CHOICE.
+    "instruccion_fiel": "EJERCICIO NUEVO INVENTADO...",
+    "respuesta_correcta": "LA RESPUESTA AL EJERCICIO INVENTADO...",
+    "tipo_evidencia_requerida": "FOTO_FISICA",
+    "opciones": ["Opcion 1", "Opcion 2", "Opcion 3", "Opcion 4"]
   },
   "cierre_metacognicion": "Pregunta de reflexión final."
 }
+
+INSTRUCCIÓN CRÍTICA PARA 'opciones': Esta llave DEBE contener un array de 4 strings con respuestas lógicas SOLO si 'tipo_evidencia_requerida' es 'MULTIPLE_CHOICE'. Si es otro tipo, devuelve un array vacío []. ¡ESTÁ ESTRICTAMENTE PROHIBIDO INCLUIR COMENTARIOS (//) EN TU RESPUESTA JSON!
+
+INSTRUCCIÓN PARA RESPUESTA CORRECTA: Este campo es la RÚBRICA DEL MAESTRO. Si el reto incluye tablas, conteos, o varios pasos, tu respuesta DEBE contener el desglose exacto (ej. 'Puntos: 10, Comas: 6. Por lo tanto, el mayor es el punto'). Está PROHIBIDO dar respuestas de una sola palabra si el ejercicio requiere análisis físico.
 `;
 
         const model = genAI.getGenerativeModel({
@@ -129,7 +134,7 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
                         aiData.reto_gameplay?.tipo_evidencia_requerida === "TEXTO_DIGITAL" ? "TEXTO_ENSAYO" :
                             aiData.reto_gameplay?.tipo_evidencia_requerida === "MULTIPLE_CHOICE" ? "MULTIPLE_CHOICE" : "TEXTO_ENSAYO",
                     options: aiData.reto_gameplay?.opciones || [],
-                    correctValue: 0,
+                    correctValue: aiData.reto_gameplay?.respuesta_correcta || "Respuesta de rúbrica no generada",
                     hint: ""
                 }
             },

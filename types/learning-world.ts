@@ -26,7 +26,7 @@ export interface DayContent {
         };
         practiceProblem?: {
             statement: string;
-            correctValue: number;
+            correctValue: number | string;
             hint: string;
             tipo_evidencia_requerida?: "FOTO_DIBUJO" | "FOTO_GRAFICA" | "TEXTO_ENSAYO" | "MULTIPLE_CHOICE";
             options?: string[];

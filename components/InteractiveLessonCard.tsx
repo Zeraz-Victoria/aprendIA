@@ -713,7 +713,11 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 <ShieldCheck className="w-5 h-5 mr-2" />
                                 Vista de Docente - Respuesta Esperada:
                             </p>
-                            <p className="mt-2 text-lg font-medium">{(data as any).reto_gameplay?.respuesta_correcta || data.content?.practiceProblem?.correctValue || data.content?.miniGame?.correctAnswer || "No definida"}</p>
+                            <div className="mt-2 text-lg font-medium prose prose-green max-w-none text-green-900">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                                    {String((data as any).reto_gameplay?.respuesta_correcta || data.content?.practiceProblem?.correctValue || data.content?.miniGame?.correctAnswer || "No definida")}
+                                </ReactMarkdown>
+                            </div>
                         </div>
                     )}
                     {!showActivity ? (
