@@ -37,12 +37,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required progress fields' }, { status: 400 });
         }
 
+        const parsedLevelId = parseInt(String(levelId), 10);
+        if (isNaN(parsedLevelId)) {
+            return NextResponse.json({ error: 'Invalid levelId' }, { status: 400 });
+        }
+
         // Upsert or Create since uniqueness is on [studentId, worldId, levelId]
         const newProgress = await prisma.progress.create({
             data: {
                 studentId,
                 worldId,
-                levelId
+                levelId: parsedLevelId
             }
         });
 

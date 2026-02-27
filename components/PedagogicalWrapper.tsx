@@ -32,7 +32,7 @@ const markdownComponents: any = {
 };
 
 const formatText = (text: string, studentName: string) => {
-    if (!text) return "";
+    if (!text || typeof text !== 'string') return text; // Return as-is if not a string
     return text
         .replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)
         // Clean up basic HTML tags that Gemini sometimes spits out
@@ -41,6 +41,17 @@ const formatText = (text: string, studentName: string) => {
         .replace(/<i>(.*?)<\/i>/gi, '*$1*')
         .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
         .replace(/<em>(.*?)<\/em>/gi, '*$1*');
+};
+
+const renderSafeContent = (content: any) => {
+    if (typeof content === 'object' && content !== null) {
+        return <pre className="whitespace-pre-wrap text-sm bg-slate-100 text-slate-800 p-4 rounded-xl overflow-x-auto my-4 border border-slate-200 shadow-inner max-w-full">{JSON.stringify(content, null, 2)}</pre>;
+    }
+    return (
+        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
+            {String(content || '')}
+        </ReactMarkdown>
+    );
 };
 
 const FlashcardView = ({ paragraphs }: { paragraphs: string[] }) => {
@@ -53,9 +64,7 @@ const FlashcardView = ({ paragraphs }: { paragraphs: string[] }) => {
                     {currentIndex + 1} / {paragraphs.length}
                 </div>
                 <div className="prose prose-lg dark:prose-invert text-center max-w-full break-all">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
-                        {paragraphs[currentIndex]}
-                    </ReactMarkdown>
+                    {renderSafeContent(paragraphs[currentIndex])}
                 </div>
             </div>
 
@@ -112,9 +121,7 @@ const ChatBubbleDialogue = ({ paragraphs }: { paragraphs: string[] }) => {
                                 : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-tl-sm shadow-md'
                                 }`}>
                                 <div className="prose prose-md dark:prose-invert max-w-full">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
-                                        {paragraph}
-                                    </ReactMarkdown>
+                                    {renderSafeContent(paragraph)}
                                 </div>
                             </div>
                         </div>
@@ -133,11 +140,13 @@ const StepByStepAccordion = ({ paragraphs }: { paragraphs: string[] }) => {
             {paragraphs.map((paragraph, index) => {
                 const isOpen = openIndex === index;
                 let title = `Paso ${index + 1}`;
-                const firstSentenceMatch = paragraph.match(/^.*?[.?!](?=\s|$)/);
-                if (firstSentenceMatch && firstSentenceMatch[0].length < 60) {
-                    title = firstSentenceMatch[0].replace(/\*\*/g, ''); // strip markdown bold
-                } else if (paragraph.startsWith('- ') || paragraph.startsWith('* ')) {
-                    title = `Punto ${index + 1}`;
+                if (typeof paragraph === 'string') {
+                    const firstSentenceMatch = paragraph.match(/^.*?[.?!](?=\s|$)/);
+                    if (firstSentenceMatch && firstSentenceMatch[0].length < 60) {
+                        title = firstSentenceMatch[0].replace(/\*\*/g, ''); // strip markdown bold
+                    } else if (paragraph.startsWith('- ') || paragraph.startsWith('* ')) {
+                        title = `Punto ${index + 1}`;
+                    }
                 }
 
                 return (
@@ -157,9 +166,7 @@ const StepByStepAccordion = ({ paragraphs }: { paragraphs: string[] }) => {
 
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                             <div className="p-6 bg-white dark:bg-slate-800 prose prose-lg dark:prose-invert max-w-full break-all border-t border-slate-100 dark:border-slate-700/50">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
-                                    {paragraph}
-                                </ReactMarkdown>
+                                {renderSafeContent(paragraph)}
                             </div>
                         </div>
                     </div>
@@ -182,9 +189,7 @@ export default function PedagogicalWrapper({ content, studentName, type = 'theor
         return (
             <div className={`bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border ${type === 'narrative' ? 'border-amber-200 bg-amber-50/50' : 'border-indigo-100'} overflow-hidden break-all`}>
                 <div className="prose prose-lg dark:prose-invert max-w-full leading-relaxed">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
-                        {formattedContent}
-                    </ReactMarkdown>
+                    {renderSafeContent(formattedContent)}
                 </div>
             </div>
         );

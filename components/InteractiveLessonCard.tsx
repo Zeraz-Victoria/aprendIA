@@ -40,8 +40,19 @@ function safeParsePromptText(text: string | undefined): string {
     } catch (e) {
         // Not JSON, return as is
     }
-    return text;
+    return typeof text === 'object' ? JSON.stringify(text, null, 2) : String(text || "");
 }
+
+const renderSafeContent = (content: any) => {
+    if (typeof content === 'object' && content !== null) {
+        return <pre className="whitespace-pre-wrap text-sm bg-gray-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-4 rounded-xl overflow-x-auto my-4 border border-slate-200 shadow-inner max-w-full">{JSON.stringify(content, null, 2)}</pre>;
+    }
+    return (
+        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
+            {String(content || '')}
+        </ReactMarkdown>
+    );
+};
 
 
 function fixImageUrl(src: string): string {
@@ -408,20 +419,15 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-indigo-100 dark:border-slate-700">
                     <div className="bg-indigo-50 dark:bg-slate-700 p-6 rounded-xl border border-indigo-100 dark:border-slate-600">
                         <div className="prose prose-indigo dark:prose-invert prose-lg max-w-full break-all min-w-0 overflow-hidden">
-                            <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                rehypePlugins={[rehypeRaw]}
-                                components={markdownComponents}
-                            >
-                                {(statement || "Resuelve el siguiente acertijo.")
+                            {renderSafeContent(
+                                (statement || "Resuelve el siguiente acertijo.")
                                     .replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)
                                     .replace(/<br\s*\/?>/gi, '\n\n')
                                     .replace(/<b>(.*?)<\/b>/gi, '**$1**')
                                     .replace(/<i>(.*?)<\/i>/gi, '*$1*')
                                     .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
                                     .replace(/<em>(.*?)<\/em>/gi, '*$1*')
-                                }
-                            </ReactMarkdown>
+                            )}
                         </div>
 
                         {speechSupported && (
