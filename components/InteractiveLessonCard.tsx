@@ -445,81 +445,63 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-4">
-                    {data.content?.practiceProblem?.tipo_evidencia_requerida === "MULTIPLE_CHOICE" ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {(data.content?.practiceProblem?.options && data.content.practiceProblem.options.length > 0
-                                ? data.content.practiceProblem.options
-                                : ["Opción A", "Opción B", "Opción C", "Opción D"]).map((opt: string, idx: number) => (
-                                    <button
-                                        key={idx}
-                                        type="button"
-                                        onClick={() => setStudentInput(opt)}
-                                        className={`p-4 rounded-xl text-lg font-bold border-2 transition-all
-                                        ${studentInput === opt ? 'bg-indigo-600 border-indigo-700 text-white shadow-lg' : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'}`}
-                                    >
-                                        {opt}
-                                    </button>
-                                ))}
-                        </div>
-                    ) : (
-                        <textarea
-                            value={studentInput}
-                            onChange={(e) => setStudentInput(e.target.value)}
-                            placeholder="Tu respuesta aquí..."
-                            rows={3}
-                            className="w-full text-center text-xl p-4 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all font-bold dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-none"
-                        />
-                    )}
+                {(() => {
+                    let ejemplosText = "";
+                    const rawStatement = data.content?.practiceProblem?.statement || (data.content as any)?.evidenceProblem?.statement;
+                    if (rawStatement && typeof rawStatement === "string") {
+                        try {
+                            const parsed = JSON.parse(rawStatement);
+                            if (parsed.ejemplos_resolucion) {
+                                ejemplosText = parsed.ejemplos_resolucion;
+                            } else if (parsed.reto_gameplay?.ejemplos_resolucion) {
+                                ejemplosText = parsed.reto_gameplay.ejemplos_resolucion;
+                            }
+                        } catch (e) { }
+                    }
+                    if (!ejemplosText) return null;
 
-                    <div className="flex gap-4">
-                        <button
-                            type="button"
-                            onClick={handlePracticeCheck}
-                            disabled={studentInput.trim().length === 0}
-                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-indigo-600/30 transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Verificar Respuesta
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleGetHint}
-                            disabled={isGettingHint}
-                            className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-70"
-                        >
-                            {isGettingHint ? <Sparkles className="animate-spin" /> : <Bot />}
-                            Tutor IA
-                        </button>
-                    </div>
+                    return (
+                        <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 p-6 rounded-r-xl shadow-sm my-6">
+                            <div className="flex items-center gap-2 font-bold text-blue-800 dark:text-blue-300 mb-2">
+                                <span className="text-xl">💡</span>
+                                <span className="uppercase tracking-wider text-sm">Ejemplo de Resolución</span>
+                            </div>
+                            <div className="prose prose-blue dark:prose-invert text-blue-900 dark:text-blue-200 font-medium">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                                    {ejemplosText}
+                                </ReactMarkdown>
+                            </div>
+                        </div>
+                    );
+                })()}
+
+                <div className="flex gap-4 mt-6">
+                    <button
+                        type="button"
+                        onClick={onComplete}
+                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-indigo-600/30 transition-transform active:scale-95"
+                    >
+                        📝 Subir Evidencia
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleGetHint}
+                        disabled={isGettingHint}
+                        className="bg-amber-500 hover:bg-amber-600 text-white px-6 rounded-xl font-bold text-lg shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-70"
+                    >
+                        {isGettingHint ? <Sparkles className="animate-spin" /> : <Bot />}
+                        <span className="hidden sm:inline">Tutor IA</span>
+                    </button>
                 </div>
 
                 {aiHint && (
-                    <div className="bg-amber-100 dark:bg-amber-900/30 border-l-4 border-amber-500 p-4 rounded-r-xl animate-fade-in-up">
+                    <div className="bg-amber-100 dark:bg-amber-900/30 border-l-4 border-amber-500 p-4 rounded-r-xl animate-fade-in-up mt-4">
                         <div className="flex items-start gap-3">
-                            <Bot className="text-amber-600 dark:text-amber-400 mt-1" />
+                            <Bot className="text-amber-600 dark:text-amber-400 mt-1 flex-shrink-0" />
                             <p className="text-amber-900 dark:text-amber-200 leading-relaxed font-medium">
                                 {aiHint}
                             </p>
                         </div>
-                    </div>
-                )}
-
-                {feedback === "success" && (
-                    <div className="text-center animate-bounce-slow">
-                        <span className="text-6xl">🎉</span>
-                        <p className="text-green-600 font-bold text-xl mt-2">¡Correcto! Excelente trabajo.</p>
-                        <button
-                            type="button"
-                            onClick={onComplete}
-                            className="mt-4 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-full font-bold shadow-md transition"
-                        >
-                            Subir Evidencia (Cuaderno)
-                        </button>
-                    </div>
-                )}
-                {feedback === "error" && (
-                    <div className="text-center animate-shake">
-                        <p className="text-red-500 font-bold text-lg mt-2">No es correcto. ¡Intenta de nuevo o pide ayuda a la IA! 🤖</p>
                     </div>
                 )}
             </div>
