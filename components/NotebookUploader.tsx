@@ -256,14 +256,45 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                     const parsed = parsedContext;
                     if (!parsed) throw new Error("Not JSON");
 
-                    const problemTextStr = parsed.originalProblemText ||
-                      (parsed.practiceProblem && parsed.practiceProblem.statement) ||
-                      (parsed.evidenceProblem && parsed.evidenceProblem.statement) ||
-                      (parsed.bossFight && parsed.bossFight.statement) ||
-                      parsed.statement ||
-                      parsed.narrative ||
-                      (parsed.content && parsed.content.practiceProblem && parsed.content.practiceProblem.statement) ||
-                      (typeof parsed === 'string' ? parsed : null);
+                    let problemTextStr = "";
+
+                    if (parsed.reto_gameplay?.instruccion_fiel) {
+                      problemTextStr = parsed.reto_gameplay.instruccion_fiel;
+                    } else if (parsed.nivel?.reto_gameplay?.instruccion_fiel) {
+                      problemTextStr = parsed.nivel.reto_gameplay.instruccion_fiel;
+                    } else {
+                      const stmt = parsed.content?.practiceProblem?.statement ||
+                        parsed.practiceProblem?.statement ||
+                        parsed.evidenceProblem?.statement ||
+                        parsed.bossFight?.statement ||
+                        parsed.statement;
+                      if (stmt && typeof stmt === 'string') {
+                        try {
+                          const parsedStmt = JSON.parse(stmt.trim());
+                          if (parsedStmt.instruccion_fiel) problemTextStr = parsedStmt.instruccion_fiel;
+                          else if (parsedStmt.reto_gameplay?.instruccion_fiel) problemTextStr = parsedStmt.reto_gameplay.instruccion_fiel;
+                        } catch (e) { }
+                      }
+                    }
+
+                    if (!problemTextStr) {
+                      problemTextStr = parsed.originalProblemText ||
+                        (parsed.practiceProblem && parsed.practiceProblem.statement) ||
+                        (parsed.evidenceProblem && parsed.evidenceProblem.statement) ||
+                        (parsed.bossFight && parsed.bossFight.statement) ||
+                        parsed.statement ||
+                        parsed.narrative ||
+                        (parsed.content && parsed.content.practiceProblem && parsed.content.practiceProblem.statement) ||
+                        (typeof parsed === 'string' ? parsed : null);
+                    }
+
+                    if (problemTextStr && typeof problemTextStr === 'string') {
+                      try {
+                        const parsedFallback = JSON.parse(problemTextStr.trim());
+                        if (parsedFallback.instruccion_fiel) problemTextStr = parsedFallback.instruccion_fiel;
+                        else if (parsedFallback.reto_gameplay?.instruccion_fiel) problemTextStr = parsedFallback.reto_gameplay.instruccion_fiel;
+                      } catch (e) { }
+                    }
 
                     if (problemTextStr && typeof problemTextStr === 'string') {
                       return (
