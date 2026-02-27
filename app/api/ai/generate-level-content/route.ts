@@ -65,8 +65,9 @@ REGLAS DE ORO:
    - Si la planeación dice 'El docente lee un cuento', TÚ redactas el cuento.
    - Si dice 'El docente entrega oraciones mudas', TÚ generas esas oraciones mudas y las pones en el reto.
    - Si dice 'El docente explica', TÚ asumes la voz y explicas el concepto en el 'oraculo_teoria'.
-2. TIPO DE EVIDENCIA: Analiza qué producto físico o digital exige el docente y asigna uno de estos valores a 'tipo_evidencia_requerida': FOTO_FISICA, TEXTO_DIGITAL, MULTIPLE_CHOICE.
-3. FORMATO LIMPIO: Usa \\n\\n para saltos de línea. PROHIBIDO usar etiquetas HTML (<br>, <p>, <b>).
+2. SEPARACIÓN ESTRICTA (CRÍTICO): El campo 'oraculo_teoria' es SOLO para explicar. El campo 'instruccion_fiel' TIENE PROHIBIDO repetir la teoría. Aquí DEBES INVENTAR un problema práctico, un ejercicio o una pregunta nueva para que el alumno lo resuelva y demuestre lo aprendido. NUNCA resumas la teoría aquí.
+3. TIPO DE EVIDENCIA: Analiza qué producto físico o digital exige el docente y asigna uno de estos valores a 'tipo_evidencia_requerida': FOTO_FISICA, TEXTO_DIGITAL, MULTIPLE_CHOICE.
+4. FORMATO LIMPIO: Usa \\n\\n para saltos de línea. PROHIBIDO usar etiquetas HTML (<br>, <p>, <b>).
 
 FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
 {
@@ -76,7 +77,7 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
     "contenido_markdown": "Explicación directa al alumno actuando como su tutor..." 
   },
   "reto_gameplay": {
-    "instruccion_fiel": "Instrucción directa al alumno INCLUYENDO los materiales (ej. las oraciones mudas) que debe resolver.",
+    "instruccion_fiel": "EJERCICIO NUEVO INVENTADO: Instrucción directa al alumno INCLUYENDO los materiales (ej. oraciones mudas, problemas matemáticos) que debe resolver en su libreta.",
     "tipo_evidencia_requerida": "..."
   },
   "cierre_metacognicion": "Pregunta de reflexión final."
