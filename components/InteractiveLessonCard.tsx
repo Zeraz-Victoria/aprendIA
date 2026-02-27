@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ChevronRight, ChevronLeft, Star, Volume2, Bot, Sparkles, ImageIcon, Heart, Diamond, Flame } from "lucide-react";
+import { ChevronRight, ChevronLeft, Star, Volume2, Bot, Sparkles, ImageIcon, Heart, Diamond, Flame, ShieldCheck } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
@@ -157,6 +157,21 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     const [studentInput, setStudentInput] = useState("");
     const [aiHint, setAiHint] = useState<string | null>(null);
     const [isGettingHint, setIsGettingHint] = useState(false);
+
+    // Teacher Reveal State
+    const [isTeacherUnlocked, setIsTeacherUnlocked] = useState(false);
+    const [showTeacherAuth, setShowTeacherAuth] = useState(false);
+    const [teacherPassword, setTeacherPassword] = useState("");
+
+    const handleRevealAnswer = () => {
+        if (teacherPassword === "1234") {
+            setIsTeacherUnlocked(true);
+            setShowTeacherAuth(false);
+            setTeacherPassword("");
+        } else {
+            alert("Contraseña incorrecta");
+        }
+    };
 
     const handleDownloadPDF = async () => {
         setIsDownloading(true);
@@ -655,15 +670,44 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             </div>
                         </div>
 
+                        {(data.type === 'guided_practice' || data.content?.miniGame) && showActivity && !isTeacherUnlocked && (
+                            <button type="button" onClick={() => setShowTeacherAuth(!showTeacherAuth)} className="text-slate-500 hover:text-slate-700 bg-white/50 px-3 py-1 rounded-full text-xs font-bold transition-colors">
+                                👁️ Docente
+                            </button>
+                        )}
                         <button type="button" onClick={onClose} className="text-amber-800 hover:text-amber-950 px-3 py-1 rounded-full bg-amber-200/50 hover:bg-amber-200 font-bold text-sm">
                             Salir
                         </button>
                     </div>
                 </div>
 
-
+                {showTeacherAuth && !isTeacherUnlocked && (
+                    <div className="bg-slate-800 p-4 text-white flex gap-3 items-center justify-center animate-fade-in-up">
+                        <span className="text-sm font-bold text-slate-300">Contraseña Docente:</span>
+                        <input
+                            type="password"
+                            className="text-black px-3 py-1.5 rounded-lg text-sm w-32 outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={teacherPassword}
+                            onChange={e => setTeacherPassword(e.target.value)}
+                            placeholder="****"
+                            onKeyDown={e => e.key === 'Enter' && handleRevealAnswer()}
+                        />
+                        <button type="button" onClick={handleRevealAnswer} className="bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                            Desbloquear
+                        </button>
+                    </div>
+                )}
 
                 <div className="p-4 md:p-8 flex-1 overflow-y-auto bg-[url('https://www.transparenttextures.com/patterns/notebook.png')] bg-amber-50">
+                    {isTeacherUnlocked && (
+                        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm animate-fade-in-up">
+                            <p className="font-bold flex items-center">
+                                <ShieldCheck className="w-5 h-5 mr-2" />
+                                Vista de Docente - Respuesta Esperada:
+                            </p>
+                            <p className="mt-2 text-lg font-medium">{(data as any).reto_gameplay?.respuesta_correcta || data.content?.practiceProblem?.correctValue || data.content?.miniGame?.correctAnswer || "No definida"}</p>
+                        </div>
+                    )}
                     {!showActivity ? (
                         <div className="space-y-6">
                             <div className="relative">
