@@ -256,55 +256,46 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                     const parsed = parsedContext;
                     if (!parsed) throw new Error("Not JSON");
 
-                    let problemTextStr = "";
+                    let instruccionFinal = "";
 
-                    if (parsed.reto_gameplay?.instruccion_fiel) {
-                      problemTextStr = parsed.reto_gameplay.instruccion_fiel;
-                    } else if (parsed.nivel?.reto_gameplay?.instruccion_fiel) {
-                      problemTextStr = parsed.nivel.reto_gameplay.instruccion_fiel;
-                    } else {
-                      const stmt = parsed.content?.practiceProblem?.statement ||
-                        parsed.practiceProblem?.statement ||
-                        parsed.evidenceProblem?.statement ||
-                        parsed.bossFight?.statement ||
-                        parsed.statement;
-                      if (stmt && typeof stmt === 'string') {
+                    // Helper para buscar "instruccion_fiel" de forma recursiva o en strings anidados
+                    const extractInstruccion = (obj: any): string => {
+                      if (!obj) return "";
+                      if (typeof obj === "string") {
                         try {
-                          const parsedStmt = JSON.parse(stmt.trim());
-                          if (parsedStmt.instruccion_fiel) problemTextStr = parsedStmt.instruccion_fiel;
-                          else if (parsedStmt.reto_gameplay?.instruccion_fiel) problemTextStr = parsedStmt.reto_gameplay.instruccion_fiel;
-                        } catch (e) { }
+                          const parsedStr = JSON.parse(obj.trim());
+                          return extractInstruccion(parsedStr);
+                        } catch {
+                          return ""; // Si es string pero no JSON, lo ignoramos para no filtrar teoría cruda.
+                        }
                       }
+                      if (typeof obj === "object") {
+                        if (obj.instruccion_fiel) return typeof obj.instruccion_fiel === "string" ? obj.instruccion_fiel : "";
+                        if (obj.reto_gameplay?.instruccion_fiel) return typeof obj.reto_gameplay.instruccion_fiel === "string" ? obj.reto_gameplay.instruccion_fiel : "";
+
+                        // Recursive search in values
+                        for (const key in obj) {
+                          const result = extractInstruccion(obj[key]);
+                          if (result) return result;
+                        }
+                      }
+                      return "";
+                    };
+
+                    instruccionFinal = extractInstruccion(parsed);
+
+                    // Fallback de Seguridad
+                    if (!instruccionFinal || instruccionFinal.trim() === "") {
+                      instruccionFinal = "Sube la imagen de tu libreta con el ejercicio resuelto.";
                     }
 
-                    if (!problemTextStr) {
-                      problemTextStr = parsed.originalProblemText ||
-                        (parsed.practiceProblem && parsed.practiceProblem.statement) ||
-                        (parsed.evidenceProblem && parsed.evidenceProblem.statement) ||
-                        (parsed.bossFight && parsed.bossFight.statement) ||
-                        parsed.statement ||
-                        parsed.narrative ||
-                        (parsed.content && parsed.content.practiceProblem && parsed.content.practiceProblem.statement) ||
-                        (typeof parsed === 'string' ? parsed : null);
-                    }
-
-                    if (problemTextStr && typeof problemTextStr === 'string') {
-                      try {
-                        const parsedFallback = JSON.parse(problemTextStr.trim());
-                        if (parsedFallback.instruccion_fiel) problemTextStr = parsedFallback.instruccion_fiel;
-                        else if (parsedFallback.reto_gameplay?.instruccion_fiel) problemTextStr = parsedFallback.reto_gameplay.instruccion_fiel;
-                      } catch (e) { }
-                    }
-
-                    if (problemTextStr && typeof problemTextStr === 'string') {
-                      return (
-                        <div className="prose prose-slate dark:prose-invert max-w-none text-sm text-slate-700 dark:text-slate-300">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
-                            {problemTextStr.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
-                          </ReactMarkdown>
-                        </div>
-                      );
-                    }
+                    return (
+                      <div className="prose prose-slate dark:prose-invert max-w-none text-sm text-slate-700 dark:text-slate-300">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
+                          {instruccionFinal.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
+                        </ReactMarkdown>
+                      </div>
+                    );
 
                     if (parsed.explanation || parsed.isBonus) {
                       return (
