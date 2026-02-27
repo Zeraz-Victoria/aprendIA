@@ -78,7 +78,8 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
   },
   "reto_gameplay": {
     "instruccion_fiel": "EJERCICIO NUEVO INVENTADO: Instrucción directa al alumno INCLUYENDO los materiales (ej. oraciones mudas, problemas matemáticos) que debe resolver en su libreta.",
-    "tipo_evidencia_requerida": "..."
+    "tipo_evidencia_requerida": "FOTO_FISICA | TEXTO_DIGITAL | MULTIPLE_CHOICE",
+    "opciones": ["Opción real 1", "Opción real 2", "Opción real 3", "Opción real 4"] // OBLIGATORIO: Generar 4 opciones lógicas SOLO si el tipo es MULTIPLE_CHOICE.
   },
   "cierre_metacognicion": "Pregunta de reflexión final."
 }
@@ -127,6 +128,7 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
                     tipo_evidencia_requerida: aiData.reto_gameplay?.tipo_evidencia_requerida === "FOTO_FISICA" ? "FOTO_DIBUJO" :
                         aiData.reto_gameplay?.tipo_evidencia_requerida === "TEXTO_DIGITAL" ? "TEXTO_ENSAYO" :
                             aiData.reto_gameplay?.tipo_evidencia_requerida === "MULTIPLE_CHOICE" ? "MULTIPLE_CHOICE" : "TEXTO_ENSAYO",
+                    options: aiData.reto_gameplay?.opciones || [],
                     correctValue: 0,
                     hint: ""
                 }

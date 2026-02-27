@@ -256,35 +256,34 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                     const parsed = parsedContext;
                     if (!parsed) throw new Error("Not JSON");
 
-                    let instruccionFinal = "";
+                    let instruccionFinal = "Sube la imagen de tu libreta con el ejercicio resuelto."; // Plan B por defecto
 
-                    // Helper para buscar "instruccion_fiel" de forma recursiva o en strings anidados
-                    const extractInstruccion = (obj: any): string => {
-                      if (!obj) return "";
-                      if (typeof obj === "string") {
-                        try {
-                          const parsedStr = JSON.parse(obj.trim());
-                          return extractInstruccion(parsedStr);
-                        } catch {
-                          return ""; // Si es string pero no JSON, lo ignoramos para no filtrar teoría cruda.
-                        }
+                    try {
+                      // Intento 1: Parseo normal (si el JSON está bien formado)
+                      const rawStatement = parsed?.content?.practiceProblem?.statement ||
+                        parsed?.practiceProblem?.statement ||
+                        parsed?.evidenceProblem?.statement ||
+                        parsed?.bossFight?.statement ||
+                        parsed?.statement || "{}";
+
+                      const parsedStmt = JSON.parse(rawStatement);
+                      if (parsedStmt.instruccion_fiel) instruccionFinal = parsedStmt.instruccion_fiel;
+                      else if (parsedStmt.reto_gameplay?.instruccion_fiel) instruccionFinal = parsedStmt.reto_gameplay.instruccion_fiel;
+                    } catch (e) {
+                      // Intento 2 (Rescate Plan A): Extracción con Regex si el JSON está malformado por saltos de línea
+                      const rawStatement = parsed?.content?.practiceProblem?.statement ||
+                        parsed?.practiceProblem?.statement ||
+                        parsed?.evidenceProblem?.statement ||
+                        parsed?.bossFight?.statement ||
+                        parsed?.statement || "";
+
+                      const match = rawStatement.match(/"instruccion_fiel"\s*:\s*"([\s\S]*?)"(?=\s*(?:,"|\}$))/);
+
+                      if (match && match[1]) {
+                        // Limpiamos los escapes básicos generados por la regex
+                        instruccionFinal = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
                       }
-                      if (typeof obj === "object") {
-                        if (obj.instruccion_fiel) return typeof obj.instruccion_fiel === "string" ? obj.instruccion_fiel : "";
-                        if (obj.reto_gameplay?.instruccion_fiel) return typeof obj.reto_gameplay.instruccion_fiel === "string" ? obj.reto_gameplay.instruccion_fiel : "";
-
-                        // Recursive search in values
-                        for (const key in obj) {
-                          const result = extractInstruccion(obj[key]);
-                          if (result) return result;
-                        }
-                      }
-                      return "";
-                    };
-
-                    instruccionFinal = extractInstruccion(parsed);
-
-                    // Fallback de Seguridad
+                    }
                     if (!instruccionFinal || instruccionFinal.trim() === "") {
                       instruccionFinal = "Sube la imagen de tu libreta con el ejercicio resuelto.";
                     }
