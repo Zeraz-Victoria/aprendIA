@@ -181,7 +181,10 @@ export default function AdventureMap() {
     };
 
     const handleLevelClick = (level: Level) => {
-        if (level.status === "locked" && level.type !== 'boss_fight' && level.type !== 'guided_practice') return;
+        if (level.status === "locked") {
+            alert("🔒 Debes aprobar el nivel anterior para desbloquear este nivel.");
+            return;
+        }
         if (level.isGenerating) {
             alert("🪄 La IA está tejiendo la historia de este nivel. ¡Espera un segundito!");
             return;
@@ -295,25 +298,23 @@ export default function AdventureMap() {
                 {levels.map((level) => (
                     <div
                         key={level.id}
-                        className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-110 z-10 flex flex-col items-center`}
+                        className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-transform z-10 flex flex-col items-center ${level.status === 'locked' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:scale-110'}`}
                         style={{ left: `${level.x}%`, top: `${level.y}%` }}
                         onClick={() => handleLevelClick(level)}
                     >
                         <div
                             className={`
                 w-16 h-16 rounded-full flex items-center justify-center shadow-lg border-4 transition-all duration-300
-                ${level.status === 'locked' && level.type !== 'boss_fight' && level.type !== 'guided_practice' ? 'bg-slate-800 border-slate-700 text-slate-500' : ''}
-                ${level.status === 'locked' && level.type === 'boss_fight' ? 'bg-slate-900 border-rose-900/50 text-rose-900/50' : ''}
-                ${level.status === 'locked' && level.type === 'guided_practice' ? 'bg-indigo-900/30 border-indigo-800/50 text-indigo-700' : ''}
+                ${level.status === 'locked' ? 'bg-slate-800 border-slate-700 text-slate-500' : ''}
                 ${level.status === 'active' && level.type === 'guided_practice' ? 'bg-indigo-600 border-white text-white animate-pulse shadow-[0_0_20px_rgba(79,70,229,0.5)]' : ''}
                 ${level.status === 'active' && level.type !== 'guided_practice' ? 'bg-blue-600 border-white text-white animate-pulse shadow-[0_0_20px_rgba(37,99,235,0.5)]' : ''}
                 ${level.status === 'completed' ? 'bg-emerald-500 border-emerald-300 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]' : ''}
               `}
                         >
-                            {level.status === 'locked' && level.type !== 'boss_fight' && level.type !== 'guided_practice' && <Lock className="w-6 h-6" />}
-                            {level.status === 'locked' && level.type === 'guided_practice' && !level.isGenerating && <div className="text-2xl">🎯</div>}
-                            {level.label === 'Jefe Final' && !level.isGenerating && <div className="text-2xl">👹</div>}
-                            {level.status === 'active' && !level.isGenerating && (
+                            {level.status === 'locked' && <Lock className="w-6 h-6" />}
+                            {level.status !== 'locked' && level.type === 'guided_practice' && !level.isGenerating && <div className="text-2xl">🎯</div>}
+                            {level.label === 'Jefe Final' && level.status !== 'locked' && !level.isGenerating && <div className="text-2xl">👹</div>}
+                            {level.status === 'active' && !level.isGenerating && level.label !== 'Jefe Final' && level.type !== 'guided_practice' && (
                                 <div className="text-4xl animate-bounce drop-shadow-lg z-20 absolute -top-4">
                                     {currentUser?.avatar || "🧑"}
                                 </div>

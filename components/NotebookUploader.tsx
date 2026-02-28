@@ -273,24 +273,6 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                 </div>
               </div>
 
-              {recognitionSupported && (
-                <div
-                  onClick={() => {
-                    setStep("text_input");
-                    setTimeout(() => {
-                      if (!isListening && recognitionRef.current) {
-                        recognitionRef.current.start();
-                      }
-                    }, 300);
-                  }}
-                  className="w-full flex items-center justify-center gap-3 p-4 bg-sky-50 dark:bg-sky-900/30 rounded-2xl border-2 border-sky-300 cursor-pointer hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors group"
-                >
-                  <div className="bg-sky-200 dark:bg-sky-800 p-2 rounded-full text-sky-600 dark:text-sky-300 group-hover:scale-110 transition-transform">
-                    <Mic className="w-6 h-6" />
-                  </div>
-                  <span className="font-bold text-sky-700 dark:text-sky-300 text-lg">Dictar por Voz</span>
-                </div>
-              )}
 
               <input
                 type="file"
@@ -340,15 +322,6 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                   value={textEvidence}
                   onChange={e => setTextEvidence(e.target.value)}
                 />
-                {recognitionSupported && (
-                  <button
-                    onClick={toggleListening}
-                    className={`absolute bottom-4 right-4 flex items-center gap-2 px-4 py-2 rounded-full font-bold shadow-md transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-sky-100 text-sky-700 hover:bg-sky-200 dark:bg-sky-900 dark:text-sky-300'}`}
-                  >
-                    <Mic className="w-5 h-5" />
-                    {isListening ? "Escuchando..." : "Dictar"}
-                  </button>
-                )}
               </div>
 
               <div className="flex gap-3">
