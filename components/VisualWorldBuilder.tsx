@@ -245,8 +245,8 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
     return (
         <div className="flex flex-col h-[90vh] bg-slate-50 relative">
             {/* Header */}
-            <header className="flex justify-between items-center p-6 bg-white border-b border-slate-200">
-                <div className="flex-1">
+            <header className="flex flex-wrap gap-4 justify-between items-center p-6 bg-white border-b border-slate-200">
+                <div className="flex-1 min-w-[300px]">
                     <input
                         type="text"
                         value={title}
@@ -254,22 +254,22 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                         className="text-2xl font-black text-slate-800 bg-transparent border-none outline-none hover:bg-slate-50 focus:bg-slate-100 rounded px-2 w-full max-w-md"
                     />
                     <div className="flex gap-4 mt-2 px-2 items-center">
-                        <label className="text-sm font-medium text-slate-500 whitespace-nowrap">Tema Visual:</label>
+                        <label className="text-sm font-medium text-slate-500 whitespace-nowrap shrink-0">Tema Visual:</label>
                         <select
                             value={theme}
                             onChange={(e) => setTheme(e.target.value)}
-                            className="text-sm bg-slate-100 border-none rounded px-2 py-1 text-indigo-700 font-bold outline-none cursor-pointer"
+                            className="text-sm bg-slate-100 border-none rounded px-2 py-1 text-indigo-700 font-bold outline-none cursor-pointer shrink-0"
                         >
                             <option value="detective">Detective / Misterio</option>
                             <option value="space">Aventura Espacial</option>
                             <option value="fantasy">Fantasía Épica</option>
                         </select>
-                        <div className="w-px h-6 bg-slate-200 mx-2"></div>
-                        <label className="text-sm font-medium text-slate-500 whitespace-nowrap">Asignar a:</label>
+                        <div className="w-px h-6 bg-slate-200 mx-2 shrink-0"></div>
+                        <label className="text-sm font-medium text-slate-500 whitespace-nowrap shrink-0">Asignar a:</label>
                         <div className="flex gap-2 flex-wrap items-center">
                             <button
                                 onClick={() => setSelectedClassrooms([])}
-                                className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all ${selectedClassrooms.length === 0 ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all whitespace-nowrap shrink-0 ${selectedClassrooms.length === 0 ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                             >
                                 Todos (Global)
                             </button>
@@ -283,7 +283,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                                             setSelectedClassrooms([...selectedClassrooms, c.id]);
                                         }
                                     }}
-                                    className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1.5 ${selectedClassrooms.includes(c.id) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white border hover:border-indigo-300 text-slate-600'}`}
+                                    className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${selectedClassrooms.includes(c.id) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white border hover:border-indigo-300 text-slate-600'}`}
                                 >
                                     <span>{c.emoji}</span> <span className="max-w-[100px] truncate">{c.name}</span>
                                 </button>
@@ -291,28 +291,28 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                         </div>
                     </div>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap items-center gap-3 shrink-0">
                     <button
                         onClick={handleDownloadCompleteMapPdf} disabled={isDownloadingPdf}
-                        className="bg-sky-100 hover:bg-sky-200 text-sky-900 border border-sky-300 px-4 py-2 rounded-full font-bold shadow-sm transition flex items-center gap-2 disabled:opacity-50"
+                        className="bg-sky-100 hover:bg-sky-200 text-sky-900 border border-sky-300 px-4 py-2 rounded-full font-bold shadow-sm transition flex items-center gap-2 disabled:opacity-50 whitespace-nowrap shrink-0"
                     >
-                        {isDownloadingPdf ? <Sparkles className="w-4 h-4 animate-spin text-sky-500" /> : <Download className="w-4 h-4 text-sky-500" />}
+                        {isDownloadingPdf ? <Sparkles className="w-4 h-4 animate-spin text-sky-500 shrink-0" /> : <Download className="w-4 h-4 text-sky-500 shrink-0" />}
                         {isDownloadingPdf ? "Generando..." : "Descargar Guía PDF"}
                     </button>
                     <button
                         onClick={() => setShowAIPrompt(true)}
-                        className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-4 py-2 rounded-full font-bold shadow-sm transition flex items-center gap-2"
+                        className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-4 py-2 rounded-full font-bold shadow-sm transition flex items-center gap-2 whitespace-nowrap shrink-0"
                     >
-                        <Sparkles className="w-4 h-4 text-amber-500" /> Auto-Generar con IA
+                        <Sparkles className="w-4 h-4 text-amber-500 shrink-0" /> Auto-Generar con IA
                     </button>
-                    <button onClick={onClose} className="text-slate-500 hover:text-slate-800 hover:bg-slate-100 px-5 py-2 rounded-full font-bold transition-colors flex items-center gap-2">
-                        <X className="w-5 h-5" /> Cerrar
+                    <button onClick={onClose} className="text-slate-500 hover:text-slate-800 hover:bg-slate-100 px-5 py-2 rounded-full font-bold transition-colors flex items-center gap-2 whitespace-nowrap shrink-0">
+                        <X className="w-5 h-5 shrink-0" /> Cerrar
                     </button>
                     <button
                         onClick={handleSaveWorld}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-indigo-200 transition flex items-center gap-2"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-indigo-200 transition flex items-center gap-2 whitespace-nowrap shrink-0"
                     >
-                        <Save className="w-4 h-4" /> Guardar Mundo
+                        <Save className="w-4 h-4 shrink-0" /> Guardar Mundo
                     </button>
                 </div>
             </header>
