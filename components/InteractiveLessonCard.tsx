@@ -78,21 +78,21 @@ function PollinationsImage({ src, alt }: { src?: string; alt?: string }) {
     const fixedSrc = src ? fixImageUrl(src) : "";
 
     return status === "error" || !fixedSrc ? (
-        <div className="w-full rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 border-2 border-dashed border-indigo-200 p-6 text-center my-4">
-            <ImageIcon className="w-12 h-12 text-indigo-300 mx-auto mb-3" />
-            <p className="text-indigo-600 font-medium text-sm italic">{alt || "Ilustración"}</p>
+        <div className="w-full rounded-xl bg-gradient-to-br from-teal-100 to-cyan-100 border-2 border-dashed border-teal-200 p-6 text-center my-4">
+            <ImageIcon className="w-12 h-12 text-teal-300 mx-auto mb-3" />
+            <p className="text-teal-600 font-medium text-sm italic">{alt || "Ilustración"}</p>
         </div>
     ) : (
         <div className="my-4 relative">
             {status === "loading" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-indigo-50 rounded-xl animate-pulse">
-                    <Sparkles className="w-8 h-8 text-indigo-300 animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center bg-teal-50 rounded-xl animate-pulse">
+                    <Sparkles className="w-8 h-8 text-teal-300 animate-spin" />
                 </div>
             )}
             <img
                 src={fixedSrc}
                 alt={alt || "Ilustración"}
-                className="w-full rounded-xl shadow-md border border-indigo-100"
+                className="w-full rounded-xl shadow-md border border-teal-100"
                 loading="lazy"
                 onLoad={() => setStatus("loaded")}
                 onError={() => setStatus("error")}
@@ -416,9 +416,9 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
 
         return (
             <div className="space-y-6 animate-fade-in-up">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-indigo-100 dark:border-slate-700">
-                    <div className="bg-indigo-50 dark:bg-slate-700 p-6 rounded-xl border border-indigo-100 dark:border-slate-600">
-                        <div className="prose prose-indigo dark:prose-invert prose-lg max-w-full break-all min-w-0 overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-teal-100 dark:border-slate-700">
+                    <div className="bg-teal-50 dark:bg-slate-700 p-6 rounded-xl border border-teal-100 dark:border-slate-600">
+                        <div className="prose prose-sky dark:prose-invert prose-lg max-w-full break-words min-w-0 overflow-hidden">
                             {renderSafeContent(
                                 (statement || "Resuelve el siguiente acertijo.")
                                     .replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)
@@ -434,7 +434,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             <div className="mt-4 flex justify-end">
                                 <button
                                     onClick={() => handleSpeak((statement || "Resuelve el siguiente acertijo.").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName))}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${isSpeaking ? 'bg-indigo-200 text-indigo-700 animate-pulse' : 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'}`}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${isSpeaking ? 'bg-teal-200 text-teal-700 animate-pulse' : 'bg-teal-100 text-teal-600 hover:bg-teal-200'}`}
                                     title="Leer en voz alta"
                                 >
                                     <Volume2 className="w-4 h-4" />
@@ -479,7 +479,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     <button
                         type="button"
                         onClick={onComplete}
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-indigo-600/30 transition-transform active:scale-95"
+                        className="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-600/30 transition-transform active:scale-95"
                     >
                         📝 Subir Evidencia
                     </button>
@@ -541,11 +541,11 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
 
         return (
             <div className="space-y-6 animate-fade-in-up">
-                <h2 className="text-2xl font-bold text-center text-indigo-900 mb-6 font-display">
+                <h2 className="text-2xl font-bold text-center text-slate-900 mb-6 font-display">
                     ¡Mini-Desafío! 🧠
                 </h2>
 
-                <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-indigo-100 text-center">
+                <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-teal-100 text-center">
                     <p className="text-xl text-slate-700 mb-8">{data.content?.miniGame?.question}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -558,7 +558,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             p-4 rounded-xl text-lg font-bold border-2 transition-all
                             ${feedback === 'success' && option === data.content?.miniGame?.correctAnswer
                                         ? 'bg-green-100 border-green-500 text-green-700 scale-105'
-                                        : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-400'}
+                                        : 'bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100 hover:border-teal-400'}
                             ${feedback === 'error' && option !== data.content?.miniGame?.correctAnswer ? 'opacity-50' : ''}
                         `}
                             >
@@ -616,7 +616,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 setGameOverTimer(30);
                             }}
                             disabled={stats.gems < 10}
-                            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-2xl font-black text-lg shadow-lg shadow-blue-500/30 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+                            className="bg-gradient-to-r from-blue-500 to-teal-600 text-white px-8 py-3 rounded-2xl font-black text-lg shadow-lg shadow-blue-500/30 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
                         >
                             <Diamond className="w-5 h-5" /> Revivir por 10 💎
                         </button>
@@ -635,28 +635,28 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             )}
 
             <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border-4 border-amber-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
-                <div className="bg-amber-100 dark:bg-slate-800 p-4 flex justify-between items-center border-b border-amber-200 dark:border-slate-700">
-                    <h3 className="font-bold text-xl text-amber-900 dark:text-amber-100 flex items-center gap-2">
-                        <span className="text-2xl">{data.type === 'guided_practice' ? '🎯' : (data.type === 'boss_fight' ? '👹' : '🎒')}</span> {data.title}
+                <div className="bg-amber-100 dark:bg-slate-800 p-3 sm:p-4 flex justify-between items-center border-b border-amber-200 dark:border-slate-700 gap-2">
+                    <h3 className="font-bold text-base sm:text-xl text-amber-900 dark:text-amber-100 flex items-center gap-2 truncate min-w-0">
+                        <span className="text-xl sm:text-2xl flex-shrink-0">{data.type === 'guided_practice' ? '🎯' : (data.type === 'boss_fight' ? '👹' : '🎒')}</span> <span className="truncate">{data.title}</span>
                     </h3>
                     <div className="flex gap-2 items-center">
                         {/* Inline Lives/Gems/Streak */}
-                        <div className="flex items-center gap-3 mr-2 bg-white/60 dark:bg-slate-700/60 px-3 py-1 rounded-full">
-                            <div className="flex gap-1 animate-fade-in-up">
+                        <div className="flex items-center gap-2 sm:gap-3 mr-1 sm:mr-2 bg-white/60 dark:bg-slate-700/60 px-2 sm:px-3 py-1 rounded-full">
+                            <div className="flex gap-0.5 sm:gap-1 animate-fade-in-up">
                                 {/* Painted hearts for current lives */}
                                 {Array.from({ length: Math.max(stats.lives, 0) }).map((_, i) => (
-                                    <Heart key={`full-${i}`} className="w-8 h-8 md:w-10 md:h-10 text-red-500 fill-red-500 drop-shadow-md animate-pulse" />
+                                    <Heart key={`full-${i}`} className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-red-500 fill-red-500 drop-shadow-md animate-pulse" />
                                 ))}
                                 {/* Empty hearts for lost lives */}
                                 {Array.from({ length: Math.max(0, 3 - stats.lives) }).map((_, i) => (
-                                    <Heart key={`empty-${i}`} className="w-8 h-8 md:w-10 md:h-10 text-slate-300 fill-slate-200" />
+                                    <Heart key={`empty-${i}`} className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-slate-300 fill-slate-200" />
                                 ))}
                             </div>
-                            <div className="flex items-center gap-0.5">
+                            <div className="hidden sm:flex items-center gap-0.5">
                                 <Diamond className="w-4 h-4 text-blue-500 fill-blue-400" />
                                 <span className="text-xs font-bold text-blue-600">{stats.gems}</span>
                             </div>
-                            <div className="flex items-center gap-0.5">
+                            <div className="hidden sm:flex items-center gap-0.5">
                                 <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
                                 <span className="text-xs font-bold text-orange-600">{stats.streak}</span>
                             </div>
@@ -678,13 +678,13 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                         <span className="text-sm font-bold text-slate-300">Contraseña Docente:</span>
                         <input
                             type="password"
-                            className="text-black px-3 py-1.5 rounded-lg text-sm w-32 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="text-black px-3 py-1.5 rounded-lg text-sm w-32 outline-none focus:ring-2 focus:ring-teal-500"
                             value={teacherPassword}
                             onChange={e => setTeacherPassword(e.target.value)}
                             placeholder="****"
                             onKeyDown={e => e.key === 'Enter' && handleRevealAnswer()}
                         />
-                        <button type="button" onClick={handleRevealAnswer} className="bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                        <button type="button" onClick={handleRevealAnswer} className="bg-teal-600 hover:bg-teal-500 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">
                             Desbloquear
                         </button>
                     </div>
@@ -707,7 +707,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     {!showActivity ? (
                         <div className="space-y-6">
                             <div className="relative">
-                                {data.type === 'guided_practice' && <span className="absolute -top-3 -right-3 z-10 bg-indigo-500 text-white text-xs px-2 py-1 rounded font-bold shadow-sm">Teoría</span>}
+                                {data.type === 'guided_practice' && <span className="absolute -top-3 -right-3 z-10 bg-teal-500 text-white text-xs px-2 py-1 rounded font-bold shadow-sm">Teoría</span>}
                                 <PedagogicalWrapper
                                     content={currentChunk || ""}
                                     studentName={studentName || "Aventurero"}
@@ -728,7 +728,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 <button
                                     type="button"
                                     onClick={handleNextChunk}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                                    className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg shadow-teal-200 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                                 >
                                     {currentChunkIndex < chunks.length - 1 ?
                                         "Continuar Leyendo" :
@@ -743,7 +743,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             <button
                                 type="button"
                                 onClick={() => { setShowActivity(false); setCurrentChunkIndex(0); }}
-                                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors"
+                                className="flex items-center gap-2 text-teal-600 hover:text-slate-800 font-bold text-sm transition-colors"
                             >
                                 <ChevronLeft className="w-4 h-4" /> Volver a la Lectura
                             </button>
@@ -768,7 +768,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 className="absolute top-[-9999px] left-[-9999px] bg-white w-[800px] p-8 text-black min-h-screen"
                 style={{ display: "none" }}
             >
-                <h1 className="text-3xl font-bold text-center mb-6 text-indigo-900 border-b-2 border-indigo-200 pb-4">{data.title}</h1>
+                <h1 className="text-3xl font-bold text-center mb-6 text-slate-900 border-b-2 border-teal-200 pb-4">{data.title}</h1>
 
                 <div className="space-y-6 prose prose-lg max-w-none mb-10">
                     {chunks.map((chunk, idx) => (
@@ -788,8 +788,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     ))}
                 </div>
 
-                <div className="border-t-4 border-indigo-500 pt-6 mt-8">
-                    <h2 className="text-2xl font-bold text-indigo-900 mb-4">Actividad Práctica</h2>
+                <div className="border-t-4 border-teal-500 pt-6 mt-8">
+                    <h2 className="text-2xl font-bold text-slate-900 mb-4">Actividad Práctica</h2>
                     {data.type === 'guided_practice' ? (
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
                             <div className="prose max-w-none">

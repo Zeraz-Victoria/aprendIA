@@ -78,7 +78,7 @@ export default function TeacherUnlockModal({
 
                 <input
                     type="password"
-                    className="mt-2 p-3 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-center text-3xl tracking-[0.5em] focus:border-indigo-500 outline-none w-full font-mono shadow-inner transition-colors"
+                    className="mt-2 p-3 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-center text-3xl tracking-[0.5em] focus:border-sky-500 outline-none w-full font-mono shadow-inner transition-colors"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="****"
@@ -99,7 +99,7 @@ export default function TeacherUnlockModal({
                     <button
                         onClick={handleSubmit}
                         disabled={!password.trim() || isLoading}
-                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-sky-600 hover:bg-sky-700 transition-colors shadow-lg shadow-sky-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {isLoading && <Clock className="w-5 h-5 animate-spin" />}
                         {isLoading ? "Validando..." : "Autorizar"}

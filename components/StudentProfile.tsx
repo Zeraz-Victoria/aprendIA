@@ -52,13 +52,13 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
         <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden relative shadow-2xl flex flex-col">
             <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 bg-indigo-100 rounded-full hover:bg-indigo-200 transition z-10 text-indigo-600"
+                className="absolute top-4 right-4 p-2 bg-sky-100 rounded-full hover:bg-sky-200 transition z-10 text-sky-600"
             >
                 <X className="w-5 h-5" />
             </button>
 
             {/* Header */}
-            <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
+            <div className="bg-sky-600 p-8 text-white relative overflow-hidden">
                 <div className="absolute -right-10 -bottom-10 opacity-10">
                     <Medal className="w-48 h-48" />
                 </div>
@@ -70,7 +70,7 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                         {!isEditingAvatar && (
                             <button
                                 onClick={() => setIsEditingAvatar(true)}
-                                className="absolute bottom-0 right-0 bg-white text-indigo-600 p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+                                className="absolute bottom-0 right-0 bg-white text-sky-600 p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
                                 title="Cambiar Avatar"
                             >
                                 <Edit3 className="w-4 h-4" />
@@ -79,7 +79,7 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                     </div>
                     <div>
                         <h2 className="text-3xl font-bold">{currentUser?.name}</h2>
-                        <p className="text-indigo-200 font-medium text-lg mt-1">Aventurero Matemático</p>
+                        <p className="text-sky-200 font-medium text-lg mt-1">Aventurero Matemático</p>
                     </div>
                 </div>
 
@@ -88,7 +88,7 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                     <div className="mt-8 bg-black/10 p-4 rounded-2xl relative z-10 animate-fade-in-up">
                         <div className="flex justify-between items-center mb-3">
                             <h3 className="text-sm border-b pb-2 border-white/20 font-bold uppercase tracking-wide">Elige tu nuevo estilo</h3>
-                            <button onClick={() => setIsEditingAvatar(false)} className="text-indigo-200 hover:text-white">
+                            <button onClick={() => setIsEditingAvatar(false)} className="text-sky-200 hover:text-white">
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
@@ -139,8 +139,8 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                                     <p className="text-slate-500 text-sm leading-snug">{ach.description}</p>
                                 </div>
                                 <div className="text-right flex flex-col items-end">
-                                    <span className="text-xs font-bold text-indigo-400 mb-1">RECOMPENSA</span>
-                                    <span className="bg-indigo-100 text-indigo-700 font-black px-3 py-1 rounded-full text-sm">
+                                    <span className="text-xs font-bold text-sky-400 mb-1">RECOMPENSA</span>
+                                    <span className="bg-sky-100 text-sky-700 font-black px-3 py-1 rounded-full text-sm">
                                         +{ach.xpReward} XP
                                     </span>
                                 </div>

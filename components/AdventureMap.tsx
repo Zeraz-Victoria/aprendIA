@@ -254,7 +254,7 @@ export default function AdventureMap() {
                     <div className="max-w-sm mx-auto bg-slate-900/80 backdrop-blur-md rounded-xl px-4 py-2.5 shadow-xl border border-slate-700 flex items-center gap-3">
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest bg-indigo-900/50 px-2 py-0.5 rounded-full whitespace-nowrap">{world.theme}</span>
+                                <span className="text-[10px] font-bold text-teal-400 uppercase tracking-widest bg-slate-900/50 px-2 py-0.5 rounded-full whitespace-nowrap">{world.theme}</span>
                             </div>
                             <h1 className="text-sm font-bold text-slate-100 leading-tight truncate">{world.title}</h1>
                         </div>
@@ -284,7 +284,7 @@ export default function AdventureMap() {
                             <path
                                 d={generatePathData(dynamicCoords.slice(0, highestCompleted + 1))}
                                 fill="none"
-                                stroke="#818cf8" // indigo-400
+                                stroke="#818cf8" // teal-400
                                 strokeWidth="4"
                                 strokeLinecap="round"
                                 vectorEffect="non-scaling-stroke"
@@ -306,7 +306,7 @@ export default function AdventureMap() {
                             className={`
                 w-16 h-16 rounded-full flex items-center justify-center shadow-lg border-4 transition-all duration-300
                 ${level.status === 'locked' ? 'bg-slate-800 border-slate-700 text-slate-500' : ''}
-                ${level.status === 'active' && level.type === 'guided_practice' ? 'bg-indigo-600 border-white text-white animate-pulse shadow-[0_0_20px_rgba(79,70,229,0.5)]' : ''}
+                ${level.status === 'active' && level.type === 'guided_practice' ? 'bg-teal-600 border-white text-white animate-pulse shadow-[0_0_20px_rgba(79,70,229,0.5)]' : ''}
                 ${level.status === 'active' && level.type !== 'guided_practice' ? 'bg-blue-600 border-white text-white animate-pulse shadow-[0_0_20px_rgba(37,99,235,0.5)]' : ''}
                 ${level.status === 'completed' ? 'bg-emerald-500 border-emerald-300 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]' : ''}
               `}
@@ -321,7 +321,7 @@ export default function AdventureMap() {
                             )}
                             {level.status === 'completed' && <Check className="w-8 h-8" />}
                             {level.isGenerating && (
-                                <svg className="animate-spin w-8 h-8 text-indigo-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <svg className="animate-spin w-8 h-8 text-teal-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>

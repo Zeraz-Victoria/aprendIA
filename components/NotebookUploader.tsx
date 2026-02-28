@@ -28,21 +28,21 @@ function PollinationsImage({ src, alt }: { src?: string; alt?: string }) {
   const fixedSrc = src ? fixImageUrl(src) : "";
 
   return status === "error" || !fixedSrc ? (
-    <div className="w-full rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 border-2 border-dashed border-indigo-200 p-6 text-center my-4">
-      <ImageIcon className="w-12 h-12 text-indigo-300 mx-auto mb-3" />
-      <p className="text-indigo-600 font-medium text-sm italic">{alt || "Ilustración"}</p>
+    <div className="w-full rounded-xl bg-gradient-to-br from-teal-100 to-cyan-100 border-2 border-dashed border-teal-200 p-6 text-center my-4">
+      <ImageIcon className="w-12 h-12 text-teal-300 mx-auto mb-3" />
+      <p className="text-teal-600 font-medium text-sm italic">{alt || "Ilustración"}</p>
     </div>
   ) : (
     <div className="my-4 relative">
       {status === "loading" && (
-        <div className="absolute inset-0 flex items-center justify-center bg-indigo-50 rounded-xl animate-pulse">
-          <Sparkles className="w-8 h-8 text-indigo-300 animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center bg-teal-50 rounded-xl animate-pulse">
+          <Sparkles className="w-8 h-8 text-teal-300 animate-spin" />
         </div>
       )}
       <img
         src={fixedSrc}
         alt={alt || "Ilustración"}
-        className="w-full rounded-xl shadow-md border border-indigo-100"
+        className="w-full rounded-xl shadow-md border border-teal-100"
         loading="lazy"
         onLoad={() => setStatus("loaded")}
         onError={() => setStatus("error")}
@@ -236,7 +236,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
         {/* Header */}
         <div className="bg-slate-100 dark:bg-slate-800 p-4 flex justify-between items-center border-b border-slate-200 dark:border-slate-700">
           <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <Camera className="w-5 h-5 text-indigo-500" />
+            <Camera className="w-5 h-5 text-teal-500" />
             Escanear Libreta
           </h3>
           <button onClick={onClose} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors">
@@ -258,9 +258,9 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border-4 border-dashed border-indigo-300 cursor-pointer hover:bg-indigo-50 transition-colors group"
+                  className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border-4 border-dashed border-teal-300 cursor-pointer hover:bg-teal-50 transition-colors group"
                 >
-                  <Camera className="w-12 h-12 text-indigo-400 group-hover:text-indigo-600 mb-4 transition-colors" />
+                  <Camera className="w-12 h-12 text-teal-400 group-hover:text-teal-600 mb-4 transition-colors" />
                   <span className="font-bold text-slate-600 text-center">Subir Foto</span>
                 </div>
 
@@ -377,7 +377,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
               <h4 className="font-bold text-slate-700">Escribe tu respuesta o razonamiento:</h4>
               <div className="relative flex-1">
                 <textarea
-                  className="w-full h-full p-4 pb-16 rounded-2xl border-2 border-indigo-100 focus:border-indigo-400 outline-none resize-none font-medium text-slate-700 bg-slate-50/50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
+                  className="w-full h-full p-4 pb-16 rounded-2xl border-2 border-teal-100 focus:border-teal-400 outline-none resize-none font-medium text-slate-700 bg-slate-50/50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
                   placeholder="Escribe o dicta tu respuesta..."
                   value={textEvidence}
                   onChange={e => setTextEvidence(e.target.value)}
@@ -394,7 +394,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                 <button
                   onClick={handleAnalyze}
                   disabled={!textEvidence.trim()}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg disabled:opacity-50"
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-lg disabled:opacity-50"
                 >
                   Enviar
                 </button>
@@ -416,7 +416,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                 </button>
                 <button
                   onClick={handleAnalyze}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-teal-600 hover:bg-teal-700 transition-colors shadow-lg shadow-teal-500/30 flex items-center justify-center gap-2"
                 >
                   <Upload className="w-4 h-4" /> Analizar
                 </button>
@@ -427,8 +427,8 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
           {step === "analyzing" && (
             <div className="flex flex-col items-center justify-center space-y-6">
               <div className="relative w-32 h-32">
-                <div className="absolute inset-0 border-4 border-indigo-200 rounded-full opacity-25"></div>
-                <div className="absolute inset-0 border-4 border-t-indigo-600 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 border-4 border-teal-200 rounded-full opacity-25"></div>
+                <div className="absolute inset-0 border-4 border-t-teal-600 rounded-full animate-spin"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-4xl">🤖</span>
                 </div>
@@ -491,7 +491,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                     )}
                     <button
                       onClick={() => onComplete(true)}
-                      className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 ${feedback.correct ? 'bg-green-600 hover:bg-green-700 shadow-green-500/30' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/30'} flex items-center justify-center gap-2`}
+                      className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 ${feedback.correct ? 'bg-green-600 hover:bg-green-700 shadow-green-500/30' : 'bg-teal-600 hover:bg-teal-700 shadow-teal-500/30'} flex items-center justify-center gap-2`}
                     >
                       Avanzar Siguiente Reto
                     </button>

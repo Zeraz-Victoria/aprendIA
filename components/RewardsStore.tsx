@@ -45,7 +45,7 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
             <header className="flex justify-between items-center mb-6">
                 <div>
                     <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800">
-                        <ShoppingBag className="text-indigo-600" />
+                        <ShoppingBag className="text-sky-600" />
                         Tienda de Recompensas
                     </h2>
                     <p className="text-slate-500 text-sm mt-1">Gasta tus gemas en objetos exclusivos.</p>
@@ -91,7 +91,7 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
                                 className={`w-full py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors ${isOwned
                                         ? "bg-slate-100 text-slate-400 cursor-not-allowed"
                                         : canAfford
-                                            ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200"
+                                            ? "bg-sky-600 hover:bg-sky-700 text-white shadow-md shadow-sky-200"
                                             : "bg-slate-100 text-slate-400 cursor-not-allowed"
                                     }`}
                             >

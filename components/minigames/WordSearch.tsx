@@ -165,17 +165,17 @@ export default function WordSearch({ words, onComplete }: WordSearchProps) {
         return getCellsInPath(selectionStart, hoverCell).map(p => `${p.r},${p.c}`);
     }, [selectionStart, hoverCell]);
 
-    if (grid.length === 0) return <div className="p-8 text-center text-indigo-500 font-bold animate-pulse">Generando juego...</div>;
+    if (grid.length === 0) return <div className="p-8 text-center text-teal-500 font-bold animate-pulse">Generando juego...</div>;
 
     return (
-        <div className="flex flex-col items-center bg-white p-6 rounded-2xl shadow-sm border-2 border-indigo-100">
-            <h2 className="text-2xl font-bold text-indigo-900 mb-2 font-display">Sopa de Letras</h2>
+        <div className="flex flex-col items-center bg-white p-6 rounded-2xl shadow-sm border-2 border-teal-100">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2 font-display">Sopa de Letras</h2>
             <p className="text-slate-500 text-sm mb-6 text-center max-w-sm">Toca la primera y la última letra de las palabras escondidas.</p>
 
             <div className="flex flex-col md:flex-row gap-8 items-center md:items-start w-full justify-center">
                 {/* Grid */}
                 <div
-                    className="grid gap-1.5 p-3 sm:p-4 bg-indigo-50 rounded-2xl shadow-inner border border-indigo-100"
+                    className="grid gap-1.5 p-3 sm:p-4 bg-teal-50 rounded-2xl shadow-inner border border-teal-100"
                     style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))` }}
                     onMouseLeave={() => setHoverCell(null)}
                 >
@@ -196,7 +196,7 @@ export default function WordSearch({ words, onComplete }: WordSearchProps) {
                                         ${isFound ? 'bg-green-400 text-white shadow-sm scale-[0.98]' :
                                             isSelected ? 'bg-amber-300 text-amber-900 shadow-md scale-105' :
                                                 isStart ? 'bg-amber-400 text-white shadow-md scale-110' :
-                                                    'bg-white text-slate-700 hover:bg-indigo-100 shadow-sm hover:-translate-y-0.5'}
+                                                    'bg-white text-slate-700 hover:bg-teal-100 shadow-sm hover:-translate-y-0.5'}
                                     `}
                                 >
                                     {char}

@@ -22,7 +22,7 @@ export default function TeacherPage() {
     if (!mounted || status === "loading") {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <div className="animate-pulse text-indigo-600 font-bold text-xl">Inicializando Portal Docente...</div>
+                <div className="animate-pulse text-sky-600 font-bold text-xl">Inicializando Portal Docente...</div>
             </div>
         );
     }
@@ -36,7 +36,7 @@ export default function TeacherPage() {
                 <p className="text-slate-600 mb-6">Solo los maestros pueden acceder a este panel.</p>
                 <button
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-bold transition-colors"
+                    className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-2 rounded-xl font-bold transition-colors"
                 >
                     Volver al Inicio
                 </button>

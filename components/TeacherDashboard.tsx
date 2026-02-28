@@ -257,7 +257,7 @@ export default function TeacherDashboard() {
         const loadingAlert = document.createElement('div');
         loadingAlert.id = 'mission-loading';
         loadingAlert.className = 'fixed inset-0 z-[100] bg-black/60 flex items-center justify-center';
-        loadingAlert.innerHTML = '<div class="bg-white p-8 rounded-3xl shadow-2xl text-center"><div class="animate-spin w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full mx-auto mb-4"></div><p class="text-slate-800 font-bold text-lg">Generando misión personalizada...</p><p class="text-slate-500 text-sm mt-1">Creando actividades de repaso para ' + studentCtx.student.name + '</p></div>';
+        loadingAlert.innerHTML = '<div class="bg-white p-8 rounded-3xl shadow-2xl text-center"><div class="animate-spin w-12 h-12 border-4 border-sky-200 border-t-sky-600 rounded-full mx-auto mb-4"></div><p class="text-slate-800 font-bold text-lg">Generando misión personalizada...</p><p class="text-slate-500 text-sm mt-1">Creando actividades de repaso para ' + studentCtx.student.name + '</p></div>';
         document.body.appendChild(loadingAlert);
 
         try {
@@ -628,43 +628,43 @@ export default function TeacherDashboard() {
             )}
 
             {/* Sidebar */}
-            <aside className="w-64 bg-white/80 backdrop-blur-sm border-r border-indigo-100 hidden md:flex flex-col">
-                <div className="p-6 border-b border-indigo-50">
-                    <h1 className="text-xl font-bold text-indigo-800 flex items-center gap-2">
-                        <BookOpen className="text-indigo-600" />
+            <aside className="w-64 bg-white/80 backdrop-blur-sm border-r border-sky-100 hidden md:flex flex-col">
+                <div className="p-6 border-b border-sky-50">
+                    <h1 className="text-xl font-bold text-sky-800 flex items-center gap-2">
+                        <BookOpen className="text-sky-600" />
                         Aula Virtual
                     </h1>
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
                     <button
                         onClick={() => setActiveTab("students")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'students' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-indigo-50/50 hover:text-indigo-600'}`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'students' ? 'bg-sky-50 text-sky-700 shadow-sm' : 'text-slate-500 hover:bg-sky-50/50 hover:text-sky-600'}`}
                     >
                         <Users className="w-4 h-4" /> Estudiantes
                     </button>
                     <button
                         onClick={() => setActiveTab("library")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'library' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-indigo-50/50 hover:text-indigo-600'}`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'library' ? 'bg-sky-50 text-sky-700 shadow-sm' : 'text-slate-500 hover:bg-sky-50/50 hover:text-sky-600'}`}
                     >
                         <Library className="w-4 h-4" /> Mi Biblioteca
                     </button>
                     <button
                         onClick={() => setActiveTab("insights")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'insights' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-indigo-50/50 hover:text-indigo-600'}`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'insights' ? 'bg-sky-50 text-sky-700 shadow-sm' : 'text-slate-500 hover:bg-sky-50/50 hover:text-sky-600'}`}
                     >
                         <BrainCircuit className="w-4 h-4" /> Análisis Inteligente
                     </button>
                     <button
                         onClick={() => setActiveTab("subscription")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'subscription' ? 'bg-purple-50 text-purple-700 shadow-sm' : 'text-slate-500 hover:bg-purple-50/50 hover:text-purple-600'}`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'subscription' ? 'bg-white text-slate-600 shadow-sm' : 'text-slate-500 hover:bg-white/50 hover:text-slate-500'}`}
                     >
                         <span>💳</span> Mi Suscripción
                     </button>
                 </nav>
-                <div className="p-4 border-t border-indigo-50">
+                <div className="p-4 border-t border-sky-50">
                     <button
                         onClick={() => signOut({ callbackUrl: "/" })}
-                        className="w-full text-left flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 p-2 rounded-lg transition-colors hover:bg-indigo-50"
+                        className="w-full text-left flex items-center gap-2 text-sm text-slate-500 hover:text-sky-600 p-2 rounded-lg transition-colors hover:bg-sky-50"
                     >
                         <LogOut className="w-4 h-4" /> Cerrar Sesión
                     </button>
@@ -675,19 +675,19 @@ export default function TeacherDashboard() {
             <main className="flex-1 p-4 pb-24 md:p-8 md:pb-8 overflow-y-auto w-full max-w-[100vw] overflow-x-hidden">
 
                 {activeTab === 'insights' && (
-                    <header className="flex justify-between items-center mb-8">
+                    <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
                         <div>
-                            <h2 className="text-2xl font-bold text-indigo-900">
+                            <h2 className="text-xl sm:text-2xl font-bold text-sky-900">
                                 Panel de Análisis
                             </h2>
-                            <p className="text-indigo-600/70">Progreso y alertas filtrados por mapa • Rendimiento global</p>
+                            <p className="text-sky-600/70 text-sm sm:text-base">Progreso y alertas filtrados por mapa • Rendimiento global</p>
                         </div>
-                        <div className="flex gap-2 items-center">
+                        <div className="flex flex-wrap gap-2 items-center">
                             {/* Map Selector for per-map filtering */}
                             <select
                                 value={effectiveInsightWorldId}
                                 onChange={e => setSelectedInsightWorldId(e.target.value)}
-                                className="bg-white/80 border border-indigo-200 rounded-xl px-3 py-2 text-sm font-medium text-indigo-700 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400"
+                                className="bg-white/80 border border-sky-200 rounded-xl px-3 py-2 text-sm font-medium text-sky-700 focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
                             >
                                 {worlds.map(w => (
                                     <option key={w.id} value={w.id}>
@@ -729,7 +729,7 @@ export default function TeacherDashboard() {
                                             alert("Error al conectar con pago");
                                         }
                                     }}
-                                    className="w-full py-3 bg-purple-100 text-purple-700 font-bold rounded-xl hover:bg-purple-200 transition-colors"
+                                    className="w-full py-3 bg-slate-50 text-slate-600 font-bold rounded-xl hover:bg-slate-100 transition-colors"
                                 >
                                     Elegir Plan Intermedio ($9/mes)
                                 </button>
@@ -772,7 +772,7 @@ export default function TeacherDashboard() {
                         <div className="flex flex-wrap gap-3">
                             <button
                                 onClick={() => setShowBulkModal(true)}
-                                className="bg-white/80 border border-indigo-200 hover:bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
+                                className="bg-white/80 border border-sky-200 hover:bg-sky-50 text-sky-700 px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
                             >
                                 <UploadCloud className="w-4 h-4" />
                                 Subir Evidencias
@@ -799,13 +799,13 @@ export default function TeacherDashboard() {
                                 </div>
                             ) : (
                                 worlds.map(w => (
-                                    <div key={w.id} className={`bg-white p-6 rounded-2xl border-2 transition-all relative ${activeWorldId === w.id ? 'border-indigo-500 ring-4 ring-indigo-50' : 'border-slate-100 hover:border-slate-300'}`}>
+                                    <div key={w.id} className={`bg-white p-6 rounded-2xl border-2 transition-all relative ${activeWorldId === w.id ? 'border-sky-500 ring-4 ring-sky-50' : 'border-slate-100 hover:border-slate-300'}`}>
                                         {activeWorldId === w.id && (
-                                            <span className="absolute top-4 right-4 bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full font-bold">
+                                            <span className="absolute top-4 right-4 bg-sky-100 text-sky-700 text-xs px-2 py-1 rounded-full font-bold">
                                                 Activa
                                             </span>
                                         )}
-                                        <h3 className="font-bold text-lg text-slate-800 mb-2">{w.title || "Aventura Sin Título"}</h3>
+                                        <h3 className="font-bold text-lg text-slate-800 mb-2 break-words line-clamp-3">{w.title || "Aventura Sin Título"}</h3>
                                         <div className="text-sm text-slate-500 mb-4">
                                             <p>Tema: {w.theme}</p>
                                             <p>Niveles: {w.days.length}</p>
@@ -851,7 +851,7 @@ export default function TeacherDashboard() {
                                     </button>
                                     <button
                                         onClick={() => setShowAddClassroomModal(true)}
-                                        className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+                                        className="text-xs bg-sky-50 hover:bg-sky-100 text-sky-600 font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
                                     >
                                         <Plus className="w-3 h-3" /> Nuevo Grupo
                                     </button>
@@ -862,8 +862,8 @@ export default function TeacherDashboard() {
                                 <button
                                     onClick={() => setSelectedClassroomId("all")}
                                     className={`px-4 py-2 rounded-xl border-2 transition-all whitespace-nowrap font-bold text-sm flex items-center gap-2 ${selectedClassroomId === "all"
-                                        ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200"
-                                        : "bg-white border-slate-100 text-slate-500 hover:border-indigo-200"
+                                        ? "bg-sky-600 border-sky-600 text-white shadow-md shadow-sky-200"
+                                        : "bg-white border-slate-100 text-slate-500 hover:border-sky-200"
                                         }`}
                                 >
                                     Todos los Grupos
@@ -877,7 +877,7 @@ export default function TeacherDashboard() {
                                                 {grade.description && <span className="text-[8px] text-slate-400 max-w-[60px] truncate leading-none mt-0.5" title={grade.description}>{grade.description}</span>}
                                             </div>
                                             <div className="absolute right-0 top-0 bottom-0 hidden group-hover:flex items-center bg-transparent z-10 gap-1">
-                                                <button onClick={() => { setEditingGrade(grade); setNewGradeName(grade.name); setNewGradeDescription(grade.description || ""); setShowAddGradeModal(true); }} className="p-0.5 text-slate-400 hover:text-indigo-600 transition-colors" title="Editar Grado"><span className="text-[10px]">✏️</span></button>
+                                                <button onClick={() => { setEditingGrade(grade); setNewGradeName(grade.name); setNewGradeDescription(grade.description || ""); setShowAddGradeModal(true); }} className="p-0.5 text-slate-400 hover:text-sky-600 transition-colors" title="Editar Grado"><span className="text-[10px]">✏️</span></button>
                                                 <button onClick={() => handleDeleteGrade(grade.id)} className="p-0.5 text-slate-400 hover:text-red-600 transition-colors" title="Borrar Grado"><span className="text-[10px]">❌</span></button>
                                             </div>
                                         </div>
@@ -887,7 +887,7 @@ export default function TeacherDashboard() {
                                                     <button
                                                         onClick={() => setSelectedClassroomId(cls.id)}
                                                         className={`px-3 py-1.5 rounded-lg border-2 transition-all font-bold text-xs flex flex-col items-start gap-0.5 ${selectedClassroomId === cls.id
-                                                            ? "bg-white border-indigo-500 text-indigo-700 shadow-sm"
+                                                            ? "bg-white border-sky-500 text-sky-700 shadow-sm"
                                                             : "bg-white border-white text-slate-500 hover:border-slate-200"
                                                             }`}
                                                     >
@@ -895,12 +895,12 @@ export default function TeacherDashboard() {
                                                             <span>{cls.emoji}</span> {cls.name}
                                                         </div>
                                                         <div className="flex items-center gap-1 opacity-80 mt-1">
-                                                            <span className="text-[9px] font-mono tracking-wider bg-slate-100 px-1.5 py-0.5 rounded text-indigo-700">Código: {cls.accessCode || 'N/A'}</span>
+                                                            <span className="text-[9px] font-mono tracking-wider bg-slate-100 px-1.5 py-0.5 rounded text-sky-700">Código: {cls.accessCode || 'N/A'}</span>
                                                         </div>
                                                         {cls.description && <span className="text-[9px] font-normal leading-none opacity-80 max-w-[80px] truncate mt-0.5" title={cls.description}>{cls.description}</span>}
                                                     </button>
                                                     <div className="absolute -top-6 right-0 hidden group-hover/cls:flex items-center bg-white shadow-lg border border-slate-100 rounded-lg p-1 z-10 transition-all gap-1">
-                                                        <button onClick={() => { setEditingClassroom(cls); setNewClassName(cls.name); setNewClassDescription(cls.description || ""); setNewClassEmoji(cls.emoji); setSelectedGradeIdInModal(cls.gradeId || ""); setShowAddClassroomModal(true); }} className="px-1.5 py-0.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md text-[10px] font-bold transition-colors">Editar</button>
+                                                        <button onClick={() => { setEditingClassroom(cls); setNewClassName(cls.name); setNewClassDescription(cls.description || ""); setNewClassEmoji(cls.emoji); setSelectedGradeIdInModal(cls.gradeId || ""); setShowAddClassroomModal(true); }} className="px-1.5 py-0.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-md text-[10px] font-bold transition-colors">Editar</button>
                                                         <button onClick={() => handleDeleteClassroom(cls.id)} className="px-1.5 py-0.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md text-[10px] font-bold transition-colors">Borrar</button>
                                                     </div>
                                                 </div>
@@ -922,7 +922,7 @@ export default function TeacherDashboard() {
                                                     <button
                                                         onClick={() => setSelectedClassroomId(cls.id)}
                                                         className={`px-3 py-1.5 rounded-lg border-2 transition-all font-bold text-xs flex flex-col items-start gap-0.5 ${selectedClassroomId === cls.id
-                                                            ? "bg-white border-indigo-500 text-indigo-700 shadow-sm"
+                                                            ? "bg-white border-sky-500 text-sky-700 shadow-sm"
                                                             : "bg-white border-white text-slate-500 hover:border-slate-200"
                                                             }`}
                                                     >
@@ -930,12 +930,12 @@ export default function TeacherDashboard() {
                                                             <span>{cls.emoji}</span> {cls.name}
                                                         </div>
                                                         <div className="flex items-center gap-1 opacity-80 mt-1">
-                                                            <span className="text-[9px] font-mono tracking-wider bg-slate-100 px-1.5 py-0.5 rounded text-indigo-700">Código: {cls.accessCode || 'N/A'}</span>
+                                                            <span className="text-[9px] font-mono tracking-wider bg-slate-100 px-1.5 py-0.5 rounded text-sky-700">Código: {cls.accessCode || 'N/A'}</span>
                                                         </div>
                                                         {cls.description && <span className="text-[9px] font-normal leading-none opacity-80 max-w-[80px] truncate mt-0.5" title={cls.description}>{cls.description}</span>}
                                                     </button>
                                                     <div className="absolute -top-6 right-0 hidden group-hover/cls:flex items-center bg-white shadow-lg border border-slate-100 rounded-lg p-1 z-10 transition-all gap-1">
-                                                        <button onClick={() => { setEditingClassroom(cls); setNewClassName(cls.name); setNewClassDescription(cls.description || ""); setNewClassEmoji(cls.emoji); setSelectedGradeIdInModal(cls.gradeId || ""); setShowAddClassroomModal(true); }} className="px-1.5 py-0.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md text-[10px] font-bold transition-colors">Editar</button>
+                                                        <button onClick={() => { setEditingClassroom(cls); setNewClassName(cls.name); setNewClassDescription(cls.description || ""); setNewClassEmoji(cls.emoji); setSelectedGradeIdInModal(cls.gradeId || ""); setShowAddClassroomModal(true); }} className="px-1.5 py-0.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-md text-[10px] font-bold transition-colors">Editar</button>
                                                         <button onClick={() => handleDeleteClassroom(cls.id)} className="px-1.5 py-0.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md text-[10px] font-bold transition-colors">Borrar</button>
                                                     </div>
                                                 </div>
@@ -948,14 +948,14 @@ export default function TeacherDashboard() {
 
                         {/* AI Insights Card */}
                         <div className="grid md:grid-cols-3 gap-6 mb-8">
-                            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg col-span-2">
+                            <div className="bg-gradient-to-br from-sky-500 to-slate-500 rounded-2xl p-6 text-white shadow-lg col-span-2">
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <h3 className="font-bold text-lg flex items-center gap-2 mb-2">
                                             <BrainCircuit className="w-5 h-5" /> Análisis de IA
                                         </h3>
                                         <div className="mb-4">
-                                            <label className="text-xs text-indigo-200 font-bold uppercase tracking-wider mb-1 block">Seleccionar Alumno</label>
+                                            <label className="text-xs text-sky-200 font-bold uppercase tracking-wider mb-1 block">Seleccionar Alumno</label>
                                             <select
                                                 value={selectedStudentId}
                                                 onChange={(e) => setSelectedStudentId(e.target.value)}
@@ -969,7 +969,7 @@ export default function TeacherDashboard() {
                                                 ))}
                                             </select>
                                         </div>
-                                        <p className="text-indigo-100 mb-4 text-sm leading-relaxed">
+                                        <p className="text-sky-100 mb-4 text-sm leading-relaxed">
                                             {activeStudentContext ? (
                                                 <>Se detecta que <strong>{activeStudentContext.student.name}</strong> se encuentra actualmente en el reto <strong>{activeStudentContext.level?.title || "desconocido"}</strong> del mapa actual.</>
                                             ) : (
@@ -1000,7 +1000,7 @@ export default function TeacherDashboard() {
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-slate-500">Completado</span>
-                                        <span className="font-bold text-indigo-600">{metrics.completion}%</span>
+                                        <span className="font-bold text-sky-600">{metrics.completion}%</span>
                                     </div>
                                 </div>
                             </div>
@@ -1018,7 +1018,7 @@ export default function TeacherDashboard() {
                                         setStudentAvatar("🧑🏻");
                                         setShowAddStudentModal(true);
                                     }}
-                                    className={`${isSuspended || studentsLimitReached ? 'bg-slate-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white px-4 py-2 rounded-full font-bold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2 text-sm`}
+                                    className={`${isSuspended || studentsLimitReached ? 'bg-slate-400' : 'bg-sky-600 hover:bg-sky-700'} text-white px-4 py-2 rounded-full font-bold shadow-lg shadow-sky-200 transition-all flex items-center gap-2 text-sm`}
                                 >
                                     <UserPlus className="w-4 h-4" />
                                     Agregar Alumno
@@ -1066,7 +1066,7 @@ export default function TeacherDashboard() {
                                                                 setStudentForAssignMap(student);
                                                                 setShowAssignMapModal(true);
                                                             }}
-                                                            className="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 hover:text-indigo-700 transition-colors flex gap-2 items-center text-xs"
+                                                            className="p-2 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-600 hover:text-sky-700 transition-colors flex gap-2 items-center text-xs"
                                                             title="Asignar mapa"
                                                         >
                                                             <Map className="w-4 h-4" /> Asignar Mapa
@@ -1078,7 +1078,7 @@ export default function TeacherDashboard() {
                                                                 setStudentAvatar(student.avatar);
                                                                 setSelectedClassroomInModal(student.classroomId || "");
                                                             }}
-                                                            className="p-2 rounded-lg bg-slate-100 hover:bg-indigo-100 text-slate-500 hover:text-indigo-600 transition-colors"
+                                                            className="p-2 rounded-lg bg-slate-100 hover:bg-sky-100 text-slate-500 hover:text-sky-600 transition-colors"
                                                             title="Editar alumno"
                                                         >
                                                             <Pencil className="w-4 h-4" />
@@ -1105,14 +1105,14 @@ export default function TeacherDashboard() {
                 {activeTab === 'insights' && (
                     <div className="space-y-6">
                         {/* Reports Generation Header */}
-                        <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-indigo-100 flex justify-between items-center">
+                        <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-sky-100 flex justify-between items-center">
                             <div>
-                                <h3 className="text-xl font-bold text-indigo-900">Reportes de Progreso</h3>
-                                <p className="text-indigo-600/70 text-sm mt-1">Genera reportes PDF detallados para padres o administración escolar.</p>
+                                <h3 className="text-xl font-bold text-sky-900">Reportes de Progreso</h3>
+                                <p className="text-sky-600/70 text-sm mt-1">Genera reportes PDF detallados para padres o administración escolar.</p>
                             </div>
                             <button
                                 onClick={handleDownloadPDF}
-                                className="bg-gradient-to-r from-indigo-500 to-emerald-500 hover:from-indigo-600 hover:to-emerald-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2">
+                                className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-sky-200 transition-all flex items-center gap-2">
                                 <FileText className="w-5 h-5" />
                                 Generar Reporte de Clase (PDF)
                             </button>
@@ -1120,7 +1120,7 @@ export default function TeacherDashboard() {
 
                         <div className="grid md:grid-cols-2 gap-6">
                             {/* Early Warning System */}
-                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-indigo-100 relative overflow-hidden">
+                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-sky-100 relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-2 h-full bg-red-500"></div>
                                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
                                     <AlertTriangle className="w-5 h-5 text-red-500" /> Sistema de Alerta Temprana
@@ -1185,7 +1185,7 @@ export default function TeacherDashboard() {
                                                                     e.stopPropagation(); // prevent modal opening if just sending hint
                                                                     setStudentForHintId(student.id);
                                                                 }}
-                                                                className="text-sm font-bold text-indigo-600 underline hover:text-indigo-800 transition-colors"
+                                                                className="text-sm font-bold text-sky-600 underline hover:text-sky-800 transition-colors"
                                                             >
                                                                 Enviar Pista por IA
                                                             </button>
@@ -1199,11 +1199,11 @@ export default function TeacherDashboard() {
                             </div>
 
                             {/* AI General Trends -> Dynamic Student Trends */}
-                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-indigo-100 flex flex-col">
+                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-sky-100 flex flex-col">
                                 <div className="flex justify-between items-center mb-4">
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
-                                            <TrendingUp className="w-5 h-5 text-indigo-500" /> Rendimiento y Emociones
+                                            <TrendingUp className="w-5 h-5 text-sky-500" /> Rendimiento y Emociones
                                         </h3>
                                         <p className="text-xs text-slate-400">🌐 Global — Todos los mapas activos</p>
                                     </div>
@@ -1262,11 +1262,11 @@ export default function TeacherDashboard() {
                                         })
                                     )}
 
-                                    <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100 mt-6">
-                                        <h4 className="font-bold text-indigo-800 mb-2 flex items-center gap-2">
+                                    <div className="p-4 bg-sky-50 rounded-xl border border-sky-100 mt-6">
+                                        <h4 className="font-bold text-sky-800 mb-2 flex items-center gap-2">
                                             <BrainCircuit className="w-4 h-4" /> Sugerencia del Tutor IA
                                         </h4>
-                                        <p className="text-sm text-indigo-700 leading-relaxed">
+                                        <p className="text-sm text-sky-700 leading-relaxed">
                                             Recuerda que puedes usar el <strong>Análisis de IA</strong> en la pestaña de estudiantes para generar misiones especiales de repaso para los alumnos marcados en "Requiere Práctica" o "En Riesgo".
                                         </p>
                                     </div>
@@ -1279,16 +1279,16 @@ export default function TeacherDashboard() {
             </main>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-indigo-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-between items-center px-6 py-3 z-50">
-                <button onClick={() => setActiveTab("students")} className={`flex flex-col items-center gap-1 ${activeTab === 'students' ? 'text-indigo-600' : 'text-slate-400'}`}>
+            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-sky-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-between items-center px-6 py-3 z-50">
+                <button onClick={() => setActiveTab("students")} className={`flex flex-col items-center gap-1 ${activeTab === 'students' ? 'text-sky-600' : 'text-slate-400'}`}>
                     <Users className="w-5 h-5" />
                     <span className="text-[10px] font-bold">Alumnos</span>
                 </button>
-                <button onClick={() => setActiveTab("library")} className={`flex flex-col items-center gap-1 ${activeTab === 'library' ? 'text-indigo-600' : 'text-slate-400'}`}>
+                <button onClick={() => setActiveTab("library")} className={`flex flex-col items-center gap-1 ${activeTab === 'library' ? 'text-sky-600' : 'text-slate-400'}`}>
                     <Library className="w-5 h-5" />
                     <span className="text-[10px] font-bold">Mapas</span>
                 </button>
-                <button onClick={() => setActiveTab("insights")} className={`flex flex-col items-center gap-1 ${activeTab === 'insights' ? 'text-indigo-600' : 'text-slate-400'}`}>
+                <button onClick={() => setActiveTab("insights")} className={`flex flex-col items-center gap-1 ${activeTab === 'insights' ? 'text-sky-600' : 'text-slate-400'}`}>
                     <BrainCircuit className="w-5 h-5" />
                     <span className="text-[10px] font-bold">Análisis</span>
                 </button>
@@ -1389,7 +1389,7 @@ export default function TeacherDashboard() {
                                     type="text"
                                     value={studentName}
                                     onChange={(e) => setStudentName(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition font-medium text-slate-800"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-medium text-slate-800"
                                     placeholder="Ej. María López"
                                     autoFocus
                                 />
@@ -1402,7 +1402,7 @@ export default function TeacherDashboard() {
                                             key={emoji}
                                             type="button"
                                             onClick={() => setStudentAvatar(emoji)}
-                                            className={`w-10 h-10 text-xl rounded-lg flex items-center justify-center transition-all ${studentAvatar === emoji ? 'bg-indigo-100 ring-2 ring-indigo-500 scale-110' : 'bg-slate-50 hover:bg-slate-100'}`}
+                                            className={`w-10 h-10 text-xl rounded-lg flex items-center justify-center transition-all ${studentAvatar === emoji ? 'bg-sky-100 ring-2 ring-sky-500 scale-110' : 'bg-slate-50 hover:bg-slate-100'}`}
                                         >
                                             {emoji}
                                         </button>
@@ -1414,7 +1414,7 @@ export default function TeacherDashboard() {
                                 <select
                                     value={selectedClassroomInModal}
                                     onChange={(e) => setSelectedClassroomInModal(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition font-medium text-slate-800"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none transition font-medium text-slate-800"
                                 >
                                     <option value="">Sin Grupo (General)</option>
                                     {classrooms.map(cls => (
@@ -1425,7 +1425,7 @@ export default function TeacherDashboard() {
                             <button
                                 onClick={handleSaveStudent}
                                 disabled={!studentName.trim() || savingStudent}
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
+                                className="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl shadow-lg shadow-sky-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
                             >
                                 {savingStudent ? "Guardando..." : (editingStudent ? "Guardar Cambios" : "Agregar Alumno")}
                             </button>
@@ -1492,18 +1492,18 @@ export default function TeacherDashboard() {
                                 worlds.map(w => {
                                     const isAssigned = studentForAssignMap.assignedWorlds?.some(aw => aw.id === w.id);
                                     return (
-                                        <div key={w.id} className={`p-4 border rounded-xl transition-colors flex items-center justify-between ${isAssigned ? 'border-indigo-500 bg-indigo-50/30' : 'border-slate-200 hover:border-indigo-300'}`}>
+                                        <div key={w.id} className={`p-4 border rounded-xl transition-colors flex items-center justify-between ${isAssigned ? 'border-sky-500 bg-sky-50/30' : 'border-slate-200 hover:border-sky-300'}`}>
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <h4 className={`font-bold ${isAssigned ? 'text-indigo-800' : 'text-slate-700'}`}>{w.title || "Aventura Sin Título"}</h4>
-                                                    {isAssigned && <span className="bg-indigo-100 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Asignado</span>}
+                                                    <h4 className={`font-bold ${isAssigned ? 'text-sky-800' : 'text-slate-700'}`}>{w.title || "Aventura Sin Título"}</h4>
+                                                    {isAssigned && <span className="bg-sky-100 text-sky-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Asignado</span>}
                                                 </div>
                                                 <p className="text-xs text-slate-500">Tema: {w.theme}</p>
                                             </div>
                                             <button
                                                 onClick={() => handleAssignMapToStudent(w.id)}
                                                 disabled={isAssigningMap}
-                                                className={`px-4 py-2 font-bold rounded-lg transition-colors text-sm disabled:opacity-50 ${isAssigned ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
+                                                className={`px-4 py-2 font-bold rounded-lg transition-colors text-sm disabled:opacity-50 ${isAssigned ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-sky-50 text-sky-700 hover:bg-sky-100'}`}
                                             >
                                                 {isAssigned ? "Desasignar" : "Asignar"}
                                             </button>
@@ -1528,7 +1528,7 @@ export default function TeacherDashboard() {
                         </button>
 
                         <div className="flex items-center gap-4 mb-8">
-                            <div className="bg-indigo-100 p-4 rounded-full text-indigo-600">
+                            <div className="bg-sky-100 p-4 rounded-full text-sky-600">
                                 <BrainCircuit className="w-10 h-10" />
                             </div>
                             <div>
@@ -1539,7 +1539,7 @@ export default function TeacherDashboard() {
 
                         {isAiThinking ? (
                             <div className="py-12 flex flex-col items-center justify-center space-y-4">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600"></div>
                                 <p className="text-slate-500 font-medium animate-pulse">Analizando evidencias y comportamiento de los alumnos...</p>
                             </div>
                         ) : (
@@ -1575,7 +1575,7 @@ export default function TeacherDashboard() {
                                             </button>
                                             <button
                                                 onClick={handleAiIntervention}
-                                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-transform active:scale-95 flex items-center gap-2"
+                                                className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-sky-200 transition-transform active:scale-95 flex items-center gap-2"
                                             >
                                                 <Map className="w-4 h-4" />
                                                 Crear Misión Autónoma
@@ -1613,8 +1613,8 @@ export default function TeacherDashboard() {
                             </div>
 
                             <div className="space-y-4">
-                                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
-                                    <div className="flex justify-between font-bold text-indigo-900 mb-2">
+                                <div className="p-4 bg-sky-50 border border-sky-100 rounded-xl">
+                                    <div className="flex justify-between font-bold text-sky-900 mb-2">
                                         <span>Progreso Global (Todos los Mapas)</span>
                                         <span>{globalProgress}%</span>
                                     </div>
@@ -1645,22 +1645,22 @@ export default function TeacherDashboard() {
                                 </div>
 
                                 {/* Análisis Pedagógico — Powered by AI */}
-                                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm mt-4">
-                                    <h4 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                                <div className="bg-sky-50 border border-sky-100 rounded-xl p-4 text-sm mt-4">
+                                    <h4 className="font-bold text-sky-900 mb-2 flex items-center gap-2">
                                         <BrainCircuit className="w-4 h-4" /> Reporte Pedagógico IA
                                     </h4>
                                     {aiReport ? (
-                                        <div className="prose prose-sm prose-indigo max-w-none">
+                                        <div className="prose prose-sm prose-sky max-w-none">
                                             <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{aiReport}</ReactMarkdown>
                                         </div>
                                     ) : isGeneratingReport ? (
                                         <div className="flex items-center gap-3 p-4">
-                                            <div className="animate-spin h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
-                                            <span className="text-indigo-700 font-medium">Generando reporte con IA...</span>
+                                            <div className="animate-spin h-5 w-5 border-2 border-sky-600 border-t-transparent rounded-full"></div>
+                                            <span className="text-sky-700 font-medium">Generando reporte con IA...</span>
                                         </div>
                                     ) : (
                                         <>
-                                            <p className="text-indigo-800 leading-relaxed italic mb-3">
+                                            <p className="text-sky-800 leading-relaxed italic mb-3">
                                                 {globalProgress >= 70 ? (
                                                     "El alumno demuestra un dominio sólido de los conceptos fundamentales."
                                                 ) : globalProgress >= 30 ? (
@@ -1686,7 +1686,7 @@ export default function TeacherDashboard() {
                                                         }
                                                         setIsGeneratingReport(false);
                                                     }}
-                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                                    className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
                                                 >
                                                     <BrainCircuit className="w-4 h-4" /> Generar Reporte para Docente (IA)
                                                 </button>
@@ -1742,7 +1742,7 @@ export default function TeacherDashboard() {
                                                         }
                                                         setIsGeneratingReport(false);
                                                     }}
-                                                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                                    className="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
                                                 >
                                                     <FileText className="w-4 h-4" /> Exportar Reporte para Padres (PDF)
                                                 </button>
@@ -1755,12 +1755,12 @@ export default function TeacherDashboard() {
                             {/* Expediente de Evidencias (AI Feedback Hub) */}
                             <div className="mt-6">
                                 <h3 className="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
-                                    <BookOpen className="w-5 h-5 text-indigo-500" />
+                                    <BookOpen className="w-5 h-5 text-sky-500" />
                                     Expediente de Evidencias IA
                                 </h3>
                                 {isFetchingEvidence ? (
                                     <div className="flex items-center justify-center p-8 bg-slate-50 rounded-xl">
-                                        <div className="animate-spin h-6 w-6 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
+                                        <div className="animate-spin h-6 w-6 border-2 border-sky-600 border-t-transparent rounded-full"></div>
                                     </div>
                                 ) : studentEvidence.length === 0 ? (
                                     <div className="p-6 bg-slate-50 border border-slate-100 rounded-xl text-center">
@@ -1786,7 +1786,7 @@ export default function TeacherDashboard() {
 
                                                 <div className="mt-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
                                                     <p className="text-xs text-slate-500 font-bold mb-1">Lo que escribió/escaneó el alumno:</p>
-                                                    <p className="text-sm text-slate-700 italic border-l-2 border-indigo-200 pl-3 py-1">
+                                                    <p className="text-sm text-slate-700 italic border-l-2 border-sky-200 pl-3 py-1">
                                                         "{entry.studentAnswer}"
                                                     </p>
                                                 </div>
@@ -1803,7 +1803,7 @@ export default function TeacherDashboard() {
                                                         {entry.emotionDetected && (
                                                             <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-white border border-slate-100 rounded-md shadow-sm">
                                                                 <span className="text-xs text-slate-500">Tono detectado:</span>
-                                                                <span className="text-xs font-bold text-indigo-600">{entry.emotionDetected}</span>
+                                                                <span className="text-xs font-bold text-sky-600">{entry.emotionDetected}</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1855,7 +1855,7 @@ export default function TeacherDashboard() {
                             </button>
 
                             <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                <BrainCircuit className="text-indigo-600 w-5 h-5" /> Generador de Pistas IA
+                                <BrainCircuit className="text-sky-600 w-5 h-5" /> Generador de Pistas IA
                             </h3>
                             <p className="text-slate-500 text-sm mb-6">Envía un mensaje de apoyo y una pista sutil a <strong>{s?.name}</strong>.</p>
 
@@ -1873,13 +1873,13 @@ export default function TeacherDashboard() {
                                         value={hintText}
                                         onChange={(e) => setHintText(e.target.value)}
                                         rows={4}
-                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 resize-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition"
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 resize-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none transition"
                                         placeholder="Escribe aquí la pista personalizada para el alumno..."
                                     />
                                     <button
                                         onClick={handleSendHint}
                                         disabled={isSendingHint}
-                                        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
+                                        className="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow-lg shadow-sky-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
                                     >
                                         {isSendingHint ? (
                                             <>
@@ -1900,8 +1900,8 @@ export default function TeacherDashboard() {
             {showAddGradeModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
                     <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-indigo-50">
-                            <h3 className="font-bold text-xl text-indigo-900 flex items-center gap-2">
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-sky-50">
+                            <h3 className="font-bold text-xl text-sky-900 flex items-center gap-2">
                                 <Plus className="w-5 h-5" /> {editingGrade ? "Editar Grado / Nivel" : "Nuevo Grado / Nivel"}
                             </h3>
                             <button onClick={() => { setShowAddGradeModal(false); setEditingGrade(null); setNewGradeName(""); setNewGradeDescription(""); }} className="text-slate-400 hover:text-slate-600">
@@ -1916,7 +1916,7 @@ export default function TeacherDashboard() {
                                     placeholder="Ej. 6to, 1, Primer Grado..."
                                     value={newGradeName}
                                     onChange={(e) => setNewGradeName(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-500 outline-none"
                                 />
                                 <p className="text-xs text-slate-400 mt-2 mb-4">Los grados sirven para agrupar aulas.</p>
 
@@ -1926,13 +1926,13 @@ export default function TeacherDashboard() {
                                     placeholder="Ej. Primaria Regular, Sabatino, Generación B..."
                                     value={newGradeDescription}
                                     onChange={(e) => setNewGradeDescription(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-500 outline-none"
                                 />
                             </div>
                             <button
                                 onClick={handleCreateGrade}
                                 disabled={savingStudent || !newGradeName.trim()}
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all disabled:opacity-50"
+                                className="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-sky-200 transition-all disabled:opacity-50"
                             >
                                 {savingStudent ? "Guardando..." : (editingGrade ? "Guardar Cambios" : "Crear Grado")}
                             </button>
@@ -1945,8 +1945,8 @@ export default function TeacherDashboard() {
             {showAddClassroomModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
                     <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-indigo-50">
-                            <h3 className="font-bold text-xl text-indigo-900 flex items-center gap-2">
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-sky-50">
+                            <h3 className="font-bold text-xl text-sky-900 flex items-center gap-2">
                                 <Plus className="w-5 h-5" /> {editingClassroom ? "Editar Grupo" : "Nuevo Grupo"}
                             </h3>
                             <button onClick={() => { setShowAddClassroomModal(false); setEditingClassroom(null); setNewClassName(""); setNewClassDescription(""); setNewClassEmoji("📚"); setSelectedGradeIdInModal(""); }} className="text-slate-400 hover:text-slate-600">
@@ -1961,7 +1961,7 @@ export default function TeacherDashboard() {
                                     placeholder="Ej. Grupo A, Sabatino, Avanzado..."
                                     value={newClassName}
                                     onChange={(e) => setNewClassName(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-500 outline-none"
                                 />
                             </div>
                             <div>
@@ -1971,7 +1971,7 @@ export default function TeacherDashboard() {
                                     placeholder="Ej. Club de Matemáticas, Los Leones..."
                                     value={newClassDescription}
                                     onChange={(e) => setNewClassDescription(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-500 outline-none"
                                 />
                             </div>
                             <div>
@@ -1979,7 +1979,7 @@ export default function TeacherDashboard() {
                                 <select
                                     value={selectedGradeIdInModal}
                                     onChange={(e) => setSelectedGradeIdInModal(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-sky-500 bg-white"
                                 >
                                     <option value="">Sin Grado (Independiente)</option>
                                     {grades.map(g => (
@@ -1994,7 +1994,7 @@ export default function TeacherDashboard() {
                                         <button
                                             key={emoji}
                                             onClick={() => setNewClassEmoji(emoji)}
-                                            className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all ${newClassEmoji === emoji ? "bg-indigo-600 text-white scale-110 shadow-md" : "bg-slate-50 hover:bg-slate-100"
+                                            className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all ${newClassEmoji === emoji ? "bg-sky-600 text-white scale-110 shadow-md" : "bg-slate-50 hover:bg-slate-100"
                                                 }`}
                                         >
                                             {emoji}
@@ -2005,7 +2005,7 @@ export default function TeacherDashboard() {
                             <button
                                 onClick={handleCreateClassroom}
                                 disabled={savingStudent || !newClassName.trim()}
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all disabled:opacity-50"
+                                className="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-sky-200 transition-all disabled:opacity-50"
                             >
                                 {savingStudent ? "Creando..." : "Crear Grupo"}
                             </button>

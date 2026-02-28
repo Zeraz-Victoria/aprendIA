@@ -96,7 +96,7 @@ export default function StudentHUD({
                             className="flex items-center gap-1 sm:gap-2 group cursor-pointer hover:scale-105 transition-transform"
                             onClick={handleOpenBuffs}
                         >
-                            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 fill-purple-400 group-hover:fill-purple-500" />
+                            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500 fill-cyan-400 group-hover:fill-cyan-500" />
                         </div>
 
                         {/* Leaderboard */}
@@ -136,10 +136,10 @@ export default function StudentHUD({
             {/* Incoming Buff Alert */}
             {incomingBuff && (
                 <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-bounce-in w-[90%] sm:w-auto">
-                    <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full py-3 px-6 shadow-[0_0_30px_rgba(147,51,234,0.5)] border-2 border-purple-400 flex items-center gap-4">
+                    <div className="bg-gradient-to-r from-cyan-600 to-teal-600 rounded-full py-3 px-6 shadow-[0_0_30px_rgba(147,51,234,0.5)] border-2 border-cyan-400 flex items-center gap-4">
                         <span className="text-4xl">{incomingBuff.fromAvatar}</span>
                         <div>
-                            <p className="text-purple-100 text-xs font-bold uppercase tracking-wider">{incomingBuff.fromName} te anima:</p>
+                            <p className="text-cyan-100 text-xs font-bold uppercase tracking-wider">{incomingBuff.fromName} te anima:</p>
                             <p className="text-white font-black text-lg">"{incomingBuff.message}"</p>
                         </div>
                         <Sparkles className="w-8 h-8 text-yellow-400 animate-spin-slow" />
@@ -158,7 +158,7 @@ export default function StudentHUD({
                             <X className="w-5 h-5 text-slate-600" />
                         </button>
                         <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-purple-500 text-xl" /> Enviar Energía
+                            <Sparkles className="w-5 h-5 text-cyan-500 text-xl" /> Enviar Energía
                         </h3>
                         <p className="text-slate-500 text-sm mb-6">Usa tus gemas para animar a tus compañeros de clase.</p>
 
@@ -179,10 +179,10 @@ export default function StudentHUD({
                                     <button
                                         onClick={() => handleSendBuff(c.id)}
                                         disabled={stats.gems < 10 || sendingBuffTo === c.id}
-                                        className="bg-purple-100 hover:bg-purple-200 text-purple-700 disabled:opacity-50 px-3 py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-transform active:scale-95"
+                                        className="bg-cyan-100 hover:bg-cyan-200 text-slate-700 disabled:opacity-50 px-3 py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-transform active:scale-95"
                                     >
                                         <span>Animar</span>
-                                        <span className="text-[10px] flex items-center gap-1 opacity-80"><Diamond className="w-3 h-3 fill-purple-700" /> 10</span>
+                                        <span className="text-[10px] flex items-center gap-1 opacity-80"><Diamond className="w-3 h-3 fill-slate-700" /> 10</span>
                                     </button>
                                 </div>
                             ))}

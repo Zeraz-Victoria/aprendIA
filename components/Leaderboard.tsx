@@ -74,7 +74,7 @@ export default function Leaderboard() {
                         </div>
 
                         <div className="text-right">
-                            <span className="font-black text-indigo-600 font-mono text-lg">{student.xp}</span>
+                            <span className="font-black text-sky-600 font-mono text-lg">{student.xp}</span>
                             <span className="text-xs text-slate-400 ml-1 font-bold">XP</span>
                         </div>
                     </div>

@@ -23,7 +23,7 @@ export default function LoginPage() {
     if (status === "loading") {
         return (
             <div className="min-h-screen bg-[#fdf6e3] flex items-center justify-center">
-                <div className="animate-pulse text-indigo-600 font-bold text-xl">Revisando credenciales...</div>
+                <div className="animate-pulse text-sky-600 font-bold text-xl">Revisando credenciales...</div>
             </div>
         );
     }

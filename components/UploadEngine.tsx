@@ -193,7 +193,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                 className={`
             relative group border-4 border-dashed rounded-3xl p-12 transition-all cursor-pointer
             flex flex-col items-center justify-center min-h-[400px]
-            ${isDragging ? 'border-indigo-500 bg-indigo-50 dark:bg-slate-800' : 'border-slate-300 dark:border-slate-700 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-900'}
+            ${isDragging ? 'border-sky-500 bg-sky-50 dark:bg-slate-800' : 'border-slate-300 dark:border-slate-700 hover:border-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900'}
             ${uploadSuccess ? 'border-green-500 bg-green-50' : ''}
         `}
                 onDragOver={handleDragOver}
@@ -232,13 +232,13 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                         {isUploading ? (
                             <div className="text-center space-y-6">
                                 <div className="relative w-24 h-24 mx-auto">
-                                    <div className="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
-                                    <div className="absolute inset-0 border-4 border-t-indigo-600 rounded-full animate-spin"></div>
-                                    <Loader2 className="absolute inset-0 m-auto w-10 h-10 text-indigo-600 animate-pulse" />
+                                    <div className="absolute inset-0 border-4 border-sky-200 rounded-full"></div>
+                                    <div className="absolute inset-0 border-4 border-t-sky-600 rounded-full animate-spin"></div>
+                                    <Loader2 className="absolute inset-0 m-auto w-10 h-10 text-sky-600 animate-pulse" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-indigo-900">{loadingStatus}</h3>
-                                    <p className="text-indigo-600 text-sm mt-1">{loadingSub}</p>
+                                    <h3 className="text-xl font-bold text-sky-900">{loadingStatus}</h3>
+                                    <p className="text-sky-600 text-sm mt-1">{loadingSub}</p>
                                 </div>
                             </div>
                         ) : (
@@ -246,7 +246,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                             <div className="text-center space-y-4">
                                 <div className={`
                             w-24 h-24 rounded-full flex items-center justify-center mx-auto transition-transform group-hover:scale-110
-                            ${file ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}
+                            ${file ? 'bg-sky-100 text-sky-600' : 'bg-slate-100 text-slate-400'}
                         `}>
                                     {file ? <FileText className="w-10 h-10" /> : <UploadCloud className="w-10 h-10" />}
                                 </div>
@@ -274,7 +274,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                 <div className="mt-8 flex justify-center">
                     <button
                         onClick={(e) => { e.stopPropagation(); handleUpload(); }}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-indigo-200 transition-transform hover:scale-105 active:scale-95 flex items-center gap-2"
+                        className="bg-sky-600 hover:bg-sky-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-sky-200 transition-transform hover:scale-105 active:scale-95 flex items-center gap-2"
                     >
                         <UploadCloud className="w-5 h-5" />
                         Generar Mapa de Aventura
@@ -289,7 +289,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                         onClick={() => {
                             setFile(new File(["dummy"], "examen_demo.pdf", { type: "application/pdf" }));
                         }}
-                        className="text-slate-400 hover:text-indigo-600 text-sm underline pb-2"
+                        className="text-slate-400 hover:text-sky-600 text-sm underline pb-2"
                     >
                         Modo Demo: Simular subida de PDF
                     </button>

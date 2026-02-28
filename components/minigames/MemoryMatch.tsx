@@ -86,11 +86,11 @@ export default function MemoryMatch({ pairs, onComplete }: MemoryMatchProps) {
         }
     };
 
-    if (cards.length === 0) return <div className="p-8 text-center text-indigo-500 font-bold animate-pulse">Generando juego...</div>;
+    if (cards.length === 0) return <div className="p-8 text-center text-teal-500 font-bold animate-pulse">Generando juego...</div>;
 
     return (
-        <div className="flex flex-col items-center bg-white p-6 rounded-2xl shadow-sm border-2 border-indigo-100">
-            <h2 className="text-2xl font-bold text-indigo-900 mb-2 font-display">Memorama de Conceptos</h2>
+        <div className="flex flex-col items-center bg-white p-6 rounded-2xl shadow-sm border-2 border-teal-100">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2 font-display">Memorama de Conceptos</h2>
             <p className="text-slate-500 text-sm mb-6 text-center max-w-sm">Encuentra los pares correctos relacionando el concepto con su significado.</p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
@@ -110,7 +110,7 @@ export default function MemoryMatch({ pairs, onComplete }: MemoryMatchProps) {
                             `}
                         >
                             {/* Card Front (Face Down conceptually, but backface logic requires this to be the initial face) */}
-                            <div className="absolute inset-0 [backface-visibility:hidden] bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl border-2 border-indigo-400 shadow-md flex items-center justify-center group z-10">
+                            <div className="absolute inset-0 [backface-visibility:hidden] bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl border-2 border-teal-400 shadow-md flex items-center justify-center group z-10">
                                 <Brain className="w-8 h-8 text-white/50 group-hover:text-white/80 transition-colors" />
                             </div>
 
@@ -119,7 +119,7 @@ export default function MemoryMatch({ pairs, onComplete }: MemoryMatchProps) {
                                 className={`
                                     absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-xl border-2 shadow-sm
                                     flex items-center justify-center p-2
-                                    ${card.isConcept ? 'bg-indigo-50 border-indigo-200 text-indigo-900 font-bold text-lg' : 'bg-slate-50 border-slate-200 text-slate-700 text-xs sm:text-sm font-medium'}
+                                    ${card.isConcept ? 'bg-teal-50 border-teal-200 text-slate-900 font-bold text-lg' : 'bg-slate-50 border-slate-200 text-slate-700 text-xs sm:text-sm font-medium'}
                                     ${isMatched ? '!bg-green-100 !border-green-300 opacity-80' : ''}
                                 `}
                             >

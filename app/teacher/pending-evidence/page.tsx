@@ -105,14 +105,14 @@ export default function PendingEvidencePage() {
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Header */}
-            <div className="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-10">
+            <div className="bg-sky-600 text-white p-4 shadow-md sticky top-0 z-10">
                 <div className="flex items-center gap-3">
-                    <Link href="/teacher" className="p-2 hover:bg-indigo-700 rounded-full transition-colors">
+                    <Link href="/teacher" className="p-2 hover:bg-sky-700 rounded-full transition-colors">
                         <ArrowLeft className="w-6 h-6" />
                     </Link>
                     <div>
                         <h1 className="font-bold text-xl leading-tight">Cámara Docente</h1>
-                        <p className="text-indigo-200 text-sm">Evidencias Pendientes ({pendingList.length})</p>
+                        <p className="text-sky-200 text-sm">Evidencias Pendientes ({pendingList.length})</p>
                     </div>
                 </div>
             </div>
@@ -140,7 +140,7 @@ export default function PendingEvidencePage() {
                                         <Clock className="w-3 h-3" />
                                         Mundo: {entry.world?.title} (Nivel {entry.levelId})
                                     </p>
-                                    <p className="text-xs text-indigo-500 mt-1 font-medium bg-indigo-50 inline-block px-2 py-0.5 rounded">
+                                    <p className="text-xs text-sky-500 mt-1 font-medium bg-sky-50 inline-block px-2 py-0.5 rounded">
                                         Físico Requerido
                                     </p>
                                 </div>
@@ -148,7 +148,7 @@ export default function PendingEvidencePage() {
 
                             <button
                                 onClick={() => setSelectedEntry(entry)}
-                                className="bg-indigo-100 text-indigo-700 p-4 rounded-xl hover:bg-indigo-200 transition-colors shrink-0 flex flex-col items-center justify-center gap-1"
+                                className="bg-sky-100 text-sky-700 p-4 rounded-xl hover:bg-sky-200 transition-colors shrink-0 flex flex-col items-center justify-center gap-1"
                             >
                                 <Camera className="w-6 h-6" />
                                 <span className="text-[10px] font-bold uppercase">Fotografiar</span>
@@ -177,7 +177,7 @@ export default function PendingEvidencePage() {
                                 <ImageIcon className="w-16 h-16 text-slate-500" />
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="px-8 py-4 bg-indigo-600 rounded-full text-white font-bold text-lg flex items-center gap-3 shadow-lg shadow-indigo-500/30"
+                                    className="px-8 py-4 bg-sky-600 rounded-full text-white font-bold text-lg flex items-center gap-3 shadow-lg shadow-sky-500/30"
                                 >
                                     <Camera className="w-6 h-6" /> Abrir Cámara
                                 </button>
@@ -191,7 +191,7 @@ export default function PendingEvidencePage() {
                                 />
                             </div>
                         ) : (
-                            <div className="w-full max-w-sm aspect-[3/4] relative rounded-3xl overflow-hidden bg-slate-900 border-2 border-indigo-500">
+                            <div className="w-full max-w-sm aspect-[3/4] relative rounded-3xl overflow-hidden bg-slate-900 border-2 border-sky-500">
                                 <img src={imagePreview} className="w-full h-full object-contain" alt="Preview" />
 
                                 <div className="absolute top-4 right-4 flex gap-2">

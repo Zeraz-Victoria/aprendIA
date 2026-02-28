@@ -80,7 +80,7 @@ export default function SuperadminPage() {
     if (loading || status === "loading") {
         return (
             <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-                <div className="animate-pulse text-indigo-400 font-bold">Cargando Panel...</div>
+                <div className="animate-pulse text-sky-400 font-bold">Cargando Panel...</div>
             </div>
         );
     }
@@ -90,12 +90,12 @@ export default function SuperadminPage() {
             {/* Header */}
             <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
                 <div className="flex items-center gap-3">
-                    <div className="bg-indigo-600 p-2 rounded-lg">
+                    <div className="bg-sky-600 p-2 rounded-lg">
                         <ShieldAlert className="w-6 h-6 text-white" />
                     </div>
                     <div>
                         <h1 className="text-xl font-bold text-white leading-tight">SaaS Portal</h1>
-                        <p className="text-xs text-indigo-300">Superadministrator</p>
+                        <p className="text-xs text-sky-300">Superadministrator</p>
                     </div>
                 </div>
 
@@ -118,12 +118,12 @@ export default function SuperadminPage() {
                             placeholder="Nombre del nuevo maestro..."
                             value={newTeacherName}
                             onChange={(e) => setNewTeacherName(e.target.value)}
-                            className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-64 text-white"
+                            className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none w-64 text-white"
                         />
                         <button
                             type="submit"
                             disabled={!newTeacherName.trim() || isCreating}
-                            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                            className="bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
                         >
                             <Plus className="w-4 h-4" />
                             {isCreating ? "Creando..." : "Crear Maestro"}
@@ -141,9 +141,9 @@ export default function SuperadminPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {teachers.map(teacher => (
-                            <div key={teacher.id} className="bg-slate-800 rounded-2xl p-6 border border-slate-700 hover:border-indigo-500/50 transition-colors group">
+                            <div key={teacher.id} className="bg-slate-800 rounded-2xl p-6 border border-slate-700 hover:border-sky-500/50 transition-colors group">
                                 <div className="flex items-baseline justify-between mb-4">
-                                    <h3 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-1" title={teacher.name}>
+                                    <h3 className="text-xl font-bold text-white group-hover:text-sky-400 transition-colors line-clamp-1" title={teacher.name}>
                                         {teacher.name}
                                     </h3>
                                 </div>
@@ -183,7 +183,7 @@ export default function SuperadminPage() {
                                         </div>
                                     </div>
                                     <div className="text-center border-l border-slate-700">
-                                        <div className="text-2xl font-black text-indigo-400">
+                                        <div className="text-2xl font-black text-sky-400">
                                             {teacher.studentsCount}
                                         </div>
                                         <div className="text-xs text-slate-400 flex items-center justify-center gap-1 mt-1">

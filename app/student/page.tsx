@@ -87,7 +87,7 @@ export default function StudentPage() {
     if (!mounted || status === "loading" || !currentUser) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <div className="animate-pulse text-indigo-600 font-bold text-xl">Cargando tu aventura...</div>
+                <div className="animate-pulse text-teal-600 font-bold text-xl">Cargando tu aventura...</div>
             </div>
         );
     }
@@ -95,7 +95,7 @@ export default function StudentPage() {
     // THE LOBBY VIEW
     if (!selectedMapId) {
         return (
-            <main className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
                 <div className="absolute top-4 left-4 z-40">
                     <button
                         onClick={() => signOut({ callbackUrl: "/" })}
@@ -108,8 +108,8 @@ export default function StudentPage() {
                 </div>
 
                 {/* Visual Background Elements */}
-                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/20 rounded-full blur-[120px] pointer-events-none"></div>
-                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-fuchsia-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-teal-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none"></div>
 
                 <div className="w-full max-w-5xl z-10 animate-fade-in-up">
                     <div className="text-center mb-12">
@@ -121,17 +121,17 @@ export default function StudentPage() {
                         <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-emerald-300 to-sky-300 mb-4 drop-shadow-sm">
                             Elige tu Destino
                         </h1>
-                        <p className="text-indigo-200 text-lg md:text-xl font-medium max-w-2xl mx-auto">
+                        <p className="text-teal-200 text-lg md:text-xl font-medium max-w-2xl mx-auto">
                             Tienes {currentUser.assignedWorlds?.length || 0} aventuras disponibles. ¿En cuál quieres adentrarte el día de hoy?
                         </p>
                     </div>
 
                     {!currentUser.assignedWorlds || currentUser.assignedWorlds.length === 0 ? (
-                        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-12 text-center max-w-2xl mx-auto shadow-2xl">
-                            <div className="text-6xl mb-4 opacity-50">🏝️</div>
-                            <h3 className="text-2xl font-bold text-white mb-2">Aún no tienes mundos asignados</h3>
-                            <p className="text-indigo-200 mb-6">Tu maestro debe asignarte una aventura para que puedas comenzar a jugar. ¡Pronto habrá retos increíbles!</p>
-                            <button onClick={() => window.location.reload()} className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-full transition-all active:scale-95 shadow-lg shadow-indigo-900/50">
+                        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 sm:p-12 text-center max-w-2xl mx-auto shadow-2xl">
+                            <div className="text-5xl sm:text-6xl mb-4 opacity-50">🏝️</div>
+                            <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Aún no tienes mundos asignados</h3>
+                            <p className="text-teal-200 mb-6 text-sm sm:text-base">Tu maestro debe asignarte una aventura para que puedas comenzar a jugar. ¡Pronto habrá retos increíbles!</p>
+                            <button onClick={() => window.location.reload()} className="bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-8 rounded-full transition-all active:scale-95 shadow-lg shadow-slate-900/50">
                                 Recargar
                             </button>
                         </div>
@@ -153,10 +153,10 @@ export default function StudentPage() {
                                         <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-lg shadow-teal-500/30 transform group-hover:rotate-12 transition-transform">
                                             🗺️
                                         </div>
-                                        <h3 className="text-2xl font-black text-white mb-2 leading-tight">
+                                        <h3 className="text-2xl font-black text-white mb-2 leading-tight break-words line-clamp-3">
                                             {world.title || `Mundo ${idx + 1}`}
                                         </h3>
-                                        <p className="text-indigo-200 font-medium text-sm mt-auto">
+                                        <p className="text-teal-200 font-medium text-sm mt-auto">
                                             Tema: {world.theme}
                                         </p>
                                     </div>
@@ -196,7 +196,7 @@ export default function StudentPage() {
                 {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
                     <button
                         onClick={() => setSelectedMapId(null)}
-                        className="bg-indigo-600/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-indigo-400 text-white hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 px-5 font-bold text-sm animate-fade-in-up"
+                        className="bg-teal-600/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-teal-400 text-white hover:bg-teal-700 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 px-5 font-bold text-sm animate-fade-in-up"
                     >
                         🗺️ Mis Mundos
                     </button>

@@ -86,7 +86,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
     return (
         <div className="p-8">
             <h2 className="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-                <UploadCloud className="text-indigo-600" /> Carga Masiva de Evidencias
+                <UploadCloud className="text-sky-600" /> Carga Masiva de Evidencias
             </h2>
             <p className="text-slate-500 mb-8">
                 Sube fotos de las libretas o exámenes. La IA las clasificará y asignará el puntaje a cada alumno.
@@ -98,7 +98,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                         <select
                             value={selectedWorldId}
                             onChange={(e) => { setSelectedWorldId(e.target.value); setSelectedLevelId(""); }}
-                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400"
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
                         >
                             <option value="">Selecciona un Mapa / Nivel</option>
                             {worlds.map(w => (
@@ -109,7 +109,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                             value={selectedLevelId}
                             onChange={(e) => setSelectedLevelId(e.target.value)}
                             disabled={!selectedWorldId}
-                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 disabled:opacity-50"
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-sky-400 focus:border-sky-400 disabled:opacity-50"
                         >
                             <option value="">Selecciona la Actividad</option>
                             {selectedWorldId && worlds.find(w => w.id === selectedWorldId)?.days.map(d => (
@@ -141,7 +141,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                         <button
                             onClick={handleProcess}
                             disabled={files.length === 0 || isProcessing || !selectedWorldId || !selectedLevelId}
-                            className={`px-6 py-2 rounded-xl font-bold font-bold shadow-lg flex items-center gap-2 transition-all ${isProcessing ? 'bg-indigo-300 text-indigo-800' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className={`px-6 py-2 rounded-xl font-bold font-bold shadow-lg flex items-center gap-2 transition-all ${isProcessing ? 'bg-sky-300 text-sky-800' : 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-200'} disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {isProcessing ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
                             {isProcessing ? `Evaluando ${processingProgress} de ${files.length} libretas...` : "Iniciar Evaluación Mágica"}
@@ -171,9 +171,9 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                                         <p className="font-bold text-slate-800">{res.file}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             {res.studentId ? (
-                                                <div className="bg-indigo-50 px-2 py-0.5 rounded flex items-center gap-1">
-                                                    <UserCheck className="w-3 h-3 text-indigo-600" />
-                                                    <span className="text-xs font-bold text-indigo-700">
+                                                <div className="bg-sky-50 px-2 py-0.5 rounded flex items-center gap-1">
+                                                    <UserCheck className="w-3 h-3 text-sky-600" />
+                                                    <span className="text-xs font-bold text-sky-700">
                                                         {res.studentName}
                                                     </span>
                                                 </div>

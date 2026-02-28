@@ -316,7 +316,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                         <div className="space-y-6 text-center">
                             <div className="relative w-32 h-32 mx-auto">
                                 <div className="absolute inset-0 border-t-4 border-red-500 rounded-full animate-spin"></div>
-                                <div className="absolute inset-2 border-b-4 border-indigo-500 rounded-full animate-spin-reverse"></div>
+                                <div className="absolute inset-2 border-b-4 border-teal-500 rounded-full animate-spin-reverse"></div>
                             </div>
                             <h3 className="text-xl text-white font-bold animate-pulse">Analizando Lógica...</h3>
                             <div className="space-y-1 text-sm text-slate-400">
@@ -376,7 +376,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                 <ul className="space-y-3">
                                     {feedback.hints.map((hint, i) => (
                                         <li key={i} className="flex gap-3 text-sm text-slate-200 leading-relaxed">
-                                            <span className="text-indigo-400 flex-shrink-0">•</span>
+                                            <span className="text-teal-400 flex-shrink-0">•</span>
                                             <span>{hint.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}</span>
                                         </li>
                                     ))}
@@ -406,7 +406,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                                 <RefreshCw className="w-5 h-5" /> Corregir para sacar 10
                                             </button>
                                         )}
-                                        <button onClick={() => { onComplete(true); onClose(); }} className={`w-full py-4 font-bold rounded-xl transition-colors shadow-lg shadow-indigo-900/50 text-white bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500`}>
+                                        <button onClick={() => { onComplete(true); onClose(); }} className={`w-full py-4 font-bold rounded-xl transition-colors shadow-lg shadow-slate-900/50 text-white bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500`}>
                                             Avanzar al Siguiente Mundo
                                         </button>
                                     </>
