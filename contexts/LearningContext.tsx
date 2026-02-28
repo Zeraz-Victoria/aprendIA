@@ -163,15 +163,16 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         await fetch('/api/users/seed', { method: 'POST' });
 
         // Fetch Users (Students)
+        let dbUsers: any[] = [];
         const usersRes = await fetch('/api/users');
         if (usersRes.ok) {
-          const dbUsers = await usersRes.json();
+          dbUsers = await usersRes.json();
           // Map them to the Student interface 
           const mappedStudents: Student[] = dbUsers.map((u: DBUser) => ({
             id: u.id,
             name: u.name,
             avatar: u.avatar || '🧑🏻',
-            status: u.status,
+            status: u.status as Student['status'],
             lastActivity: 'Activo recientemente', // Simplified
             progress: 0, // Mock overall progress for now
             lives: u.lives,
@@ -192,6 +193,25 @@ export function LearningProvider({ children }: { children: ReactNode }) {
           if (dbWorlds.length > 0 && !activeWorldId) {
             // Automatically select the most recently created world by default
             setActiveWorldId(dbWorlds[0].id);
+          }
+
+          // For students: override worlds with their assignedWorlds so AdventureMap works correctly
+          // assignedWorlds from the /api/users endpoint includes the full World DB objects
+          const role = (session?.user as any)?.role;
+          if (role === 'STUDENT') {
+            const currentUserId = (session?.user as any)?.id;
+            const userMatch = dbUsers?.find((u: any) => u.id === currentUserId || u.name === session?.user?.name);
+            if (userMatch?.assignedWorlds?.length > 0) {
+              const parsedAssignedWorlds = userMatch.assignedWorlds.map((w: any) => ({
+                ...w,
+                days: w.daysJson ? JSON.parse(w.daysJson) : (w.days || []),
+                pedagogy: w.pedagogyJson ? JSON.parse(w.pedagogyJson) : undefined
+              }));
+              setWorlds(parsedAssignedWorlds);
+              if (!activeWorldId && parsedAssignedWorlds.length > 0) {
+                setActiveWorldId(parsedAssignedWorlds[0].id);
+              }
+            }
           }
         }
 
