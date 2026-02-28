@@ -11,7 +11,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
     const [processingProgress, setProcessingProgress] = useState(0);
     const [selectedWorldId, setSelectedWorldId] = useState<string>("");
     const [selectedLevelId, setSelectedLevelId] = useState<string>("");
-    const [processedResults, setProcessedResults] = useState<{ file: string, studentId: string | null, studentName: string | null, confidence: number, topic?: string, isCorrect?: boolean, feedback?: string }[]>([]);
+    const [processedResults, setProcessedResults] = useState<{ file: string, studentId: string | null, studentName: string | null, calificacion: number, isCorrect?: boolean, feedback?: string }[]>([]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -62,8 +62,8 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                 results.push({
                     file: file.name,
                     studentId: data.studentId, // ID or null si no se reconoció
-                    studentName: data.nombreEncontradoEnImagen,
-                    confidence: 0.95,
+                    studentName: data.alumno || data.nombreEncontradoEnImagen || "Ilegible",
+                    calificacion: data.calificacion || 0,
                     isCorrect: data.puedeAvanzar,
                     feedback: data.feedback
                 });
@@ -139,7 +139,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                         <button
                             onClick={handleProcess}
                             disabled={files.length === 0 || isProcessing || !selectedWorldId || !selectedLevelId}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className={`px-6 py-2 rounded-xl font-bold font-bold shadow-lg flex items-center gap-2 transition-all ${isProcessing ? 'bg-indigo-300 text-indigo-800' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'} disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {isProcessing ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
                             {isProcessing ? `Evaluando ${processingProgress} de ${files.length} libretas...` : "Iniciar Evaluación Mágica"}
@@ -160,42 +160,38 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
 
                     <div className="grid gap-4 max-h-[400px] overflow-y-auto">
                         {processedResults.map((res, i) => (
-                            <div key={i} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl shadow-sm">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                                        <ImageIcon className="text-slate-400" />
+                            <div key={i} className={`flex items-start justify-between p-4 bg-white border rounded-xl shadow-sm ${res.studentId ? 'border-green-200' : 'border-red-200'}`}>
+                                <div className="flex items-start gap-4">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shrink-0 ${res.studentId ? (res.calificacion >= 8 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700') : 'bg-red-100 text-red-600'}`}>
+                                        {res.studentId ? res.calificacion : 'X'}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-700">{res.file}</p>
-                                        <div className="flex flex-col gap-1 text-xs mt-1">
-                                            <div className="flex items-center gap-1 text-green-600">
-                                                <CheckCircle2 className="w-3 h-3" />
-                                                {(res.confidence * 100).toFixed(0)}% Confianza
-                                            </div>
-                                            {res.topic && (
-                                                <div className="text-slate-500">
-                                                    Tema: <span className="font-medium">{res.topic}</span>
+                                        <p className="font-bold text-slate-800">{res.file}</p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            {res.studentId ? (
+                                                <div className="bg-indigo-50 px-2 py-0.5 rounded flex items-center gap-1">
+                                                    <UserCheck className="w-3 h-3 text-indigo-600" />
+                                                    <span className="text-xs font-bold text-indigo-700">
+                                                        {res.studentName}
+                                                    </span>
                                                 </div>
-                                            )}
-                                            {res.isCorrect !== undefined && (
-                                                <div className={res.isCorrect ? "text-emerald-600 font-medium" : "text-amber-600 font-medium"}>
-                                                    {res.isCorrect ? "✅ Ejercicio Correcto" : "⚠️ Ejercicio a Revisar"}
+                                            ) : (
+                                                <div className="bg-red-50 text-red-600 px-2 py-0.5 rounded flex items-center gap-1 text-xs font-bold">
+                                                    <X className="w-3 h-3" /> OCR falló: {res.studentName}
                                                 </div>
                                             )}
                                         </div>
+                                        {res.feedback && (
+                                            <p className="text-sm text-slate-500 mt-2 bg-slate-50 p-2 rounded-lg italic border border-slate-100">
+                                                "{res.feedback}"
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    {res.studentId ? (
-                                        <div className="bg-slate-50 px-3 py-1 rounded-full flex items-center gap-2">
-                                            <UserCheck className="w-4 h-4 text-indigo-500" />
-                                            <span className="text-sm font-bold text-slate-600">
-                                                {students.find(s => s.id === res.studentId)?.name || 'Alumno asignado'}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full flex items-center gap-2 text-sm font-bold">
-                                            <X className="w-4 h-4" /> Alumno no reconocido ({res.studentName || 'Ilegible'})
+                                <div className="flex flex-col items-end gap-1 ml-4 justify-start">
+                                    {res.isCorrect !== undefined && res.studentId && (
+                                        <div className={`text-xs px-2 py-1 rounded font-bold ${res.isCorrect ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                                            {res.isCorrect ? "Avanza" : "Repasa"}
                                         </div>
                                     )}
                                 </div>

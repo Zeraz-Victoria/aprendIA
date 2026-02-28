@@ -36,19 +36,15 @@ export async function POST(req: Request) {
         const rubrica = activity?.challenge?.rubric || activity?.pda || activity?.narrative || activity?.content || "Problema de matemáticas/Lógica";
 
         // 2. Preparar el prompt estricto
-        const systemPrompt = `Eres un asistente de evaluación OCR. 
+        const systemPrompt = `Eres un asistente de evaluación OCR estricto. 
 TAREAS:
-1. Analiza esta foto de una libreta escolar y EXTRAE el Nombre del Alumno que está escrito a mano (usualmente en la parte superior).
-2. EVALÚA el ejercicio comparándolo con la siguiente Rúbrica/Instrucción: [${rubrica}].
-3. Asigna una calificación (0-10) y un feedback socrático.
+1. Analiza de esta foto el Nombre del Alumno escrito a mano. Identifícalo de la mejor forma posible.
+2. EVALÚA el ejercicio comparándolo con la instrucción: [${rubrica}].
+3. Asigna una calificación (0-10) y un feedback.
 
-FORMATO RESPUESTA: DEBES responder ÚNICAMENTE con un JSON válido, sin delimitadores de markdown (\`\`\`json) ni texto extra. El formato exacto es:
-{
-  "nombreEncontradoEnImagen": "Nombre extraído o null si no se entiende",
-  "calificacion": <número_del_0_al_10>,
-  "feedback": "<feedback socrático para el alumno>",
-  "puedeAvanzar": <true o false>
-}`;
+CRÍTICO: TU ÚNICA SALIDA DEBE SER EXCLUSIVAMENTE UN RAW JSON VÁLIDO. SIN TEXTO ANTES NI DESPUÉS. SIN DELIMITADORES MARKDOWN COMO \`\`\`json.
+Ejemplo exacto de lo único que debes devolver:
+{"nombreAlumno": "Maria Lopez", "calificacion": 10, "feedback": "Excelente trabajo resolviendo las sumas.", "puedeAvanzar": true}`;
 
         // Limpiar el base64 prefix si existe
         let base64Data = imageBase64;
@@ -74,32 +70,47 @@ FORMATO RESPUESTA: DEBES responder ÚNICAMENTE con un JSON válido, sin delimita
 
         try {
             // Limpiar posibles bloques markdown si Gemini los devolvió a pesar de la instrucción
-            const cleanJsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+            let cleanJsonString = responseText.trim();
+            if (cleanJsonString.startsWith('```json')) {
+                cleanJsonString = cleanJsonString.substring(7);
+            }
+            if (cleanJsonString.startsWith('```')) {
+                cleanJsonString = cleanJsonString.substring(3);
+            }
+            if (cleanJsonString.endsWith('```')) {
+                cleanJsonString = cleanJsonString.substring(0, cleanJsonString.length - 3);
+            }
+            cleanJsonString = cleanJsonString.trim();
             evaluationData = JSON.parse(cleanJsonString);
         } catch (e) {
             console.error("Error parseando respuesta de Gemini", responseText);
-            return NextResponse.json({ error: "Error en el formato de respuesta de IA" }, { status: 500 });
+            return NextResponse.json({ error: "Error en el formato de respuesta de IA", raw: responseText }, { status: 500 });
         }
 
         // 4. Buscar estudiante en la BD por nombre (match flexible)
         let studentId = null;
         let finalGrade = evaluationData.calificacion || 0;
+        let matchedStudentName = null;
 
-        if (evaluationData.nombreEncontradoEnImagen) {
+        if (evaluationData.nombreAlumno) {
             const students = await prisma.user.findMany({
                 where: { role: 'STUDENT' }
             });
 
-            // Búsqueda LIKE (case insensitive)
-            const searchName = evaluationData.nombreEncontradoEnImagen.toLowerCase().trim();
+            // Función para normalizar texto (quitar acentos y pasar a minúsculas)
+            const normalizeStr = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            const searchName = normalizeStr(evaluationData.nombreAlumno);
+
             const matchedStudent = students.find(s => {
                 if (!s.name) return false;
-                const dbName = s.name.toLowerCase();
+                const dbName = normalizeStr(s.name);
+                // Búsqueda cruzada simple
                 return dbName.includes(searchName) || searchName.includes(dbName);
             });
 
             if (matchedStudent) {
                 studentId = matchedStudent.id;
+                matchedStudentName = matchedStudent.name;
             }
         }
 
@@ -180,8 +191,11 @@ FORMATO RESPUESTA: DEBES responder ÚNICAMENTE con un JSON válido, sin delimita
 
         return NextResponse.json({
             success: true,
+            archivo: fileName, // Retornar el nombre del archivo para feedback en UI
             studentId,
-            nombreEncontradoEnImagen: evaluationData.nombreEncontradoEnImagen,
+            status: studentId ? 'success' : 'not_found',
+            nombreEncontradoEnImagen: evaluationData.nombreAlumno,
+            alumno: matchedStudentName || evaluationData.nombreAlumno,
             calificacion: finalGrade,
             feedback: evaluationData.feedback,
             puedeAvanzar: evaluationData.puedeAvanzar
