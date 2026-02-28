@@ -3,13 +3,19 @@ import { PrismaClient } from '@prisma/client';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const prisma = new PrismaClient();
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
     try {
+        // Initialize Gemini inside the handler to ensure env vars are loaded in serverless context
+        const apiKey = process.env.GEMINI_API_KEY || '';
+        if (!apiKey) {
+            console.error("CRITICAL: GEMINI_API_KEY is not set in environment variables.");
+            return NextResponse.json({ error: "Configuración del servidor incompleta (API Key faltante)" }, { status: 500 });
+        }
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
         const body = await req.json();
         const { imageBase64, mimeType, worldId, levelId, fileName } = body;
 
@@ -81,7 +87,13 @@ Ejemplo exacto de lo único que debes devolver:
                 cleanJsonString = cleanJsonString.substring(0, cleanJsonString.length - 3);
             }
             cleanJsonString = cleanJsonString.trim();
+
+            console.log("------------------------");
+            console.log("GEMINI RAW RESPONSE:\n", responseText);
+            console.log("CLEANED JSON:\n", cleanJsonString);
+
             evaluationData = JSON.parse(cleanJsonString);
+            console.log("PARSED JSON OBJECT:\n", evaluationData);
         } catch (e) {
             console.error("Error parseando respuesta de Gemini", responseText);
             return NextResponse.json({ error: "Error en el formato de respuesta de IA", raw: responseText }, { status: 500 });
@@ -111,11 +123,17 @@ Ejemplo exacto de lo único que debes devolver:
             if (matchedStudent) {
                 studentId = matchedStudent.id;
                 matchedStudentName = matchedStudent.name;
+                console.log(`¡Match encontrado en DB! ID: ${studentId}, Nombre original: ${matchedStudentName}`);
+            } else {
+                console.log(`No se encontró estudiante para el nombre: ${evaluationData.nombreAlumno}`);
             }
+        } else {
+            console.log("Gemini no devolvió un nombreAlumno en el JSON.");
         }
 
         // 5. Guardar/Actualizar progreso y evidencia en BD si se encontró el estudiante
         if (studentId) {
+            console.log(`Procediendo a insertar evidencia para: studentId=${studentId}, worldId=${worldId}, levelId=${levelId}`);
             const numericLevelId = parseInt(levelId, 10);
 
             // Actualizar status de la evidencia (o crearla)
@@ -128,6 +146,7 @@ Ejemplo exacto de lo único que debes devolver:
             });
 
             if (existingEvidence) {
+                console.log(`Actualizando evidencia existente: ${existingEvidence.id}`);
                 await prisma.evidenceEntry.update({
                     where: { id: existingEvidence.id },
                     data: {
@@ -140,6 +159,7 @@ Ejemplo exacto de lo único que debes devolver:
                     }
                 });
             } else {
+                console.log(`Creando nueva evidencia...`);
                 await prisma.evidenceEntry.create({
                     data: {
                         studentId: studentId,
@@ -153,6 +173,7 @@ Ejemplo exacto de lo único que debes devolver:
                         canAdvance: evaluationData.puedeAvanzar
                     }
                 });
+                console.log('Evidencia insertada con éxito en EvidenceEntry.');
             }
 
             // Actualizar Progreso si avanzó
@@ -186,7 +207,10 @@ Ejemplo exacto de lo único que debes devolver:
                         gems: { increment: finalGrade > 8 ? 5 : 2 }
                     }
                 });
+                console.log('XP/Gemas incrementadas para el alumno exitosamente.');
             }
+        } else {
+            console.log('Alerta: No se pudo guardar la evidencia porque studentId es NULL.');
         }
 
         return NextResponse.json({
@@ -201,8 +225,12 @@ Ejemplo exacto de lo único que debes devolver:
             puedeAvanzar: evaluationData.puedeAvanzar
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error en bulk-evaluate:", error);
-        return NextResponse.json({ error: "Error procesando evaluación masiva" }, { status: 500 });
+        return NextResponse.json({
+            error: "Error procesando evaluación masiva",
+            details: error.message || String(error),
+            stack: error.stack
+        }, { status: 500 });
     }
 }

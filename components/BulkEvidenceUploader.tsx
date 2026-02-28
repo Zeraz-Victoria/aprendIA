@@ -54,7 +54,9 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                 });
 
                 if (!response.ok) {
-                    console.error("API Error", await response.text());
+                    const errorText = await response.text();
+                    console.error("API Error", errorText);
+                    alert(`Error evaluando ${file.name}: ${errorText}`);
                     continue;
                 }
 
