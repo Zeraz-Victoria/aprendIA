@@ -177,7 +177,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
             gems: u.gems,
             streak: u.streak,
             xp: u.xp,
-            classroomId: u.classroomId || null
+            classroomId: u.classroomId || null,
+            assignedWorlds: u.assignedWorlds
           }));
           setStudents(mappedStudents);
         }
