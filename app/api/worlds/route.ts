@@ -17,9 +17,6 @@ export async function GET(req: Request) {
 
         const baseWhere: any = schoolId ? { schoolId } : {};
 
-        // Check if user is a student (for post-fetch filtering)
-        const isStudent = session?.user && (session.user as any).role === 'STUDENT';
-
         const whereClause: any = classroomId
             ? {
                 ...baseWhere,
@@ -37,16 +34,11 @@ export async function GET(req: Request) {
         });
 
         // Parse daysJson back to objects for the frontend
-        let parsedWorlds = worlds.map(world => ({
+        const parsedWorlds = worlds.map(world => ({
             ...world,
             days: JSON.parse(world.daysJson),
             pedagogy: world.pedagogyJson ? JSON.parse(world.pedagogyJson) : undefined
         }));
-
-        // Students only see active worlds (filter in JS to be safe if column doesn't exist yet)
-        if (isStudent) {
-            parsedWorlds = parsedWorlds.filter((w: any) => w.isActive !== false);
-        }
 
         return NextResponse.json(parsedWorlds);
     } catch (error) {
@@ -110,31 +102,5 @@ export async function POST(req: Request) {
     } catch (error) {
         console.error('Error creating world:', error);
         return NextResponse.json({ error: 'Failed to create world' }, { status: 500 });
-    }
-}
-
-// PATCH - Toggle isActive for a world
-export async function PATCH(req: Request) {
-    try {
-        const body = await req.json();
-        const { worldId, isActive } = body;
-
-        if (!worldId || typeof isActive !== 'boolean') {
-            return NextResponse.json({ error: 'worldId and isActive (boolean) are required' }, { status: 400 });
-        }
-
-        const session = await getServerSession(authOptions);
-        const schoolId = (session?.user as any)?.schoolId;
-
-        await prisma.world.update({
-            where: { id: worldId },
-            // @ts-ignore - isActive field will exist after next deploy migration
-            data: { isActive }
-        });
-
-        return NextResponse.json({ success: true, worldId, isActive });
-    } catch (error) {
-        console.error('Error updating world isActive:', error);
-        return NextResponse.json({ error: 'Failed to update world' }, { status: 500 });
     }
 }

@@ -278,20 +278,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const setActiveWorld = async (id: string) => {
+  const setActiveWorld = (id: string) => {
     setActiveWorldId(id);
-    // Persist: deactivate all other worlds, activate the selected one
-    try {
-      for (const w of worlds) {
-        if (w.id === id) {
-          await fetch('/api/worlds', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ worldId: w.id, isActive: true }) });
-        } else {
-          await fetch('/api/worlds', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ worldId: w.id, isActive: false }) });
-        }
-      }
-    } catch (e) {
-      console.error('Error persisting active world:', e);
-    }
   };
 
   // Sync NextAuth session with LearningContext's currentUser
