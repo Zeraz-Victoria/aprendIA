@@ -17,11 +17,8 @@ export async function GET(req: Request) {
 
         const baseWhere: any = schoolId ? { schoolId } : {};
 
-        // Students only see active worlds
+        // Check if user is a student (for post-fetch filtering)
         const isStudent = session?.user && (session.user as any).role === 'STUDENT';
-        if (isStudent) {
-            baseWhere.isActive = true;
-        }
 
         const whereClause: any = classroomId
             ? {
@@ -40,11 +37,16 @@ export async function GET(req: Request) {
         });
 
         // Parse daysJson back to objects for the frontend
-        const parsedWorlds = worlds.map(world => ({
+        let parsedWorlds = worlds.map(world => ({
             ...world,
             days: JSON.parse(world.daysJson),
             pedagogy: world.pedagogyJson ? JSON.parse(world.pedagogyJson) : undefined
         }));
+
+        // Students only see active worlds (filter in JS to be safe if column doesn't exist yet)
+        if (isStudent) {
+            parsedWorlds = parsedWorlds.filter((w: any) => w.isActive !== false);
+        }
 
         return NextResponse.json(parsedWorlds);
     } catch (error) {
