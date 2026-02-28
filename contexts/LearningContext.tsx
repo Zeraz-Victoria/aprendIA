@@ -533,8 +533,14 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       });
       if (res.ok) {
         const data = await res.json();
-        setStudents(prev => prev.map(s => s.id === studentId ? { ...s, assignedWorlds: data.assignedWorlds } : s));
-        setCurrentUser(prev => prev && prev.id === studentId ? { ...prev, assignedWorlds: data.assignedWorlds } : prev);
+        // Parse daysJson/pedagogyJson from raw DB objects so they're usable as LearningWorld data
+        const parsedWorlds = (data.assignedWorlds || []).map((w: any) => ({
+          ...w,
+          days: w.daysJson ? JSON.parse(w.daysJson) : (w.days || []),
+          pedagogy: w.pedagogyJson ? JSON.parse(w.pedagogyJson) : undefined
+        }));
+        setStudents(prev => prev.map(s => s.id === studentId ? { ...s, assignedWorlds: parsedWorlds } : s));
+        setCurrentUser(prev => prev && prev.id === studentId ? { ...prev, assignedWorlds: parsedWorlds } : prev);
         return true;
       }
       return false;

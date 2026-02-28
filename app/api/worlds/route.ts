@@ -6,26 +6,21 @@ import { authOptions } from '../auth/[...nextauth]/route';
 export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
-        let classroomId = null;
-
-        if (session?.user && (session.user as any).role === 'STUDENT') {
-            const user = await prisma.user.findUnique({ where: { id: (session.user as any).id }, select: { classroomId: true } });
-            classroomId = user?.classroomId;
-        }
-
+        const role = (session?.user as any)?.role;
+        const userId = (session?.user as any)?.id;
         const schoolId = (session?.user as any)?.schoolId;
 
-        const baseWhere: any = schoolId ? { schoolId } : {};
+        let whereClause: any;
 
-        const whereClause: any = classroomId
-            ? {
-                ...baseWhere,
-                OR: [
-                    { classrooms: { some: { id: classroomId } } },
-                    { classrooms: { none: {} } }
-                ]
-            }
-            : baseWhere;
+        if (role === 'STUDENT' && userId) {
+            // Students only see worlds explicitly assigned to them
+            whereClause = {
+                assignedStudents: { some: { id: userId } }
+            };
+        } else {
+            // Teachers/admins see all worlds for their school
+            whereClause = schoolId ? { schoolId } : {};
+        }
 
         const worlds = await prisma.world.findMany({
             where: whereClause,
