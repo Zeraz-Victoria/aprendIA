@@ -5,11 +5,13 @@ import { X, Diamond, ShoppingBag, Sparkles, AlertCircle } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
 
 const STORE_ITEMS = [
-    { id: "avatar_ninja", name: "Ninja Matemático", type: "Avatar", description: "Un avatar exclusivo de las sombras.", cost: 150, icon: "🥷" },
-    { id: "avatar_robot", name: "Mecha-Calculador", type: "Avatar", description: "Precisión al 100%.", cost: 200, icon: "🤖" },
-    { id: "badge_gold", name: "Insignia Dorada", type: "Insignia", description: "Brilla en el salón de clases.", cost: 300, icon: "🥇" },
-    { id: "theme_dark", name: "Modo Nocturno", type: "Tema", description: "Para aventuras en la oscuridad.", cost: 500, icon: "🌙" },
-    { id: "potion_life", name: "Poción Extra", type: "Vida", description: "Una vida extra para tus misiones.", cost: 50, icon: "❤️" },
+    { id: "avatar_ninja", name: "Ninja Asesino", type: "Avatar", description: "Muévete entre los números con sigilo mortal.", cost: 150, icon: "🥷" },
+    { id: "avatar_alien", name: "Invasor Matemático", type: "Avatar", description: "Lógico, frío y del espacio exterior.", cost: 200, icon: "👽" },
+    { id: "avatar_wizard", name: "Hechicero Arcano", type: "Avatar", description: "Domina la magia de los algoritmos.", cost: 250, icon: "🧙‍♂️" },
+    { id: "frame_fire", name: "Aura de Fuego", type: "Marco", description: "Envuelve tu foto de perfil en llamas.", cost: 150, icon: "🔥" },
+    { id: "frame_ice", name: "Borde Glacial", type: "Marco", description: "Congela a tu competencia.", cost: 150, icon: "❄️" },
+    { id: "shield_protect", name: "Escudo Protector", type: "Equipamiento", description: "Te salva de perder una vida y mantiene tu racha.", cost: 100, icon: "🛡️" },
+    { id: "potion_life", name: "Poción Extra", type: "Vida", description: "Suma corazones extra al instante.", cost: 50, icon: "❤️" },
 ];
 
 export default function RewardsStore({ onClose }: { onClose: () => void }) {
@@ -89,10 +91,10 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
                                 onClick={() => handlePurchase(item)}
                                 disabled={isOwned || (!canAfford && !isOwned)}
                                 className={`w-full py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors ${isOwned
-                                        ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                                        : canAfford
-                                            ? "bg-sky-600 hover:bg-sky-700 text-white shadow-md shadow-sky-200"
-                                            : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                    : canAfford
+                                        ? "bg-sky-600 hover:bg-sky-700 text-white shadow-md shadow-sky-200"
+                                        : "bg-slate-100 text-slate-400 cursor-not-allowed"
                                     }`}
                             >
                                 {isOwned ? (

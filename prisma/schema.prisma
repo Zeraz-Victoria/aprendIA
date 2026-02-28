@@ -15,6 +15,7 @@ model User {
   image         String?
   role          Role      @default(STUDENT)
   avatar        String? // Emoji avatar for students
+  activeFrame   String? // Store cosmetic item from inventory (e.g. frame_fire)
   status        String    @default("active") // active, idle, needs_help
   lastActivity  DateTime  @default(now())
 
@@ -38,6 +39,7 @@ model User {
   achievements      UserAchievement[]
   raidContributions RaidContribution[]
   hints             Hint[]
+  buffsReceived     Buff[]
   studentMissions   StudentMission[]
   assignedWorlds    World[] @relation("StudentAssignedWorlds")
   evidenceEntries   EvidenceEntry[]
@@ -238,6 +240,18 @@ model Hint {
   createdAt DateTime @default(now())
 
   student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Buff {
+  id         String   @id @default(cuid())
+  targetId   String
+  fromName   String
+  fromAvatar String
+  message    String   @db.Text
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  target User @relation(fields: [targetId], references: [id], onDelete: Cascade)
 }
 
 model StudentMission {

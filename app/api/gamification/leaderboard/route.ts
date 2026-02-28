@@ -11,6 +11,7 @@ export async function GET() {
                 id: true,
                 name: true,
                 avatar: true,
+                activeFrame: true,
                 xp: true,
                 streak: true,
             },

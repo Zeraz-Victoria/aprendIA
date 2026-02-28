@@ -5,6 +5,7 @@ import { Lock, Check, Star, MapPin, AlertCircle } from "lucide-react";
 import NotebookUploader from "./NotebookUploader";
 import InteractiveLessonCard from "./InteractiveLessonCard";
 import BossFightCamera from "./BossFightCamera";
+import MapCompletionReport from "./MapCompletionReport";
 import { DayContent, BossDayContent } from "@/types/learning-world";
 import { useLearning } from "@/contexts/LearningContext";
 
@@ -21,12 +22,13 @@ interface Level {
     isStudentMission?: boolean;
 }
 
-export default function AdventureMap() {
-    const { worlds, activeWorldId, setActiveWorld, progress, currentUser, markLevelComplete } = useLearning();
+export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }) {
+    const { worlds, activeWorldId, setActiveWorld, progress, currentUser, markLevelComplete, stats } = useLearning();
     const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
     const [showLesson, setShowLesson] = useState(false);
     const [showBoss, setShowBoss] = useState(false);
     const [showUploader, setShowUploader] = useState(false);
+    const [showReport, setShowReport] = useState(false);
     const [studentMissions, setStudentMissions] = useState<any[]>([]);
 
     // Derive active world
@@ -186,6 +188,8 @@ export default function AdventureMap() {
             if (currentUser && activeWorldId && selectedLevel) {
                 markLevelComplete(currentUser.id, activeWorldId, selectedLevel.id, true);
             }
+            // Show the completion report instead of just closing
+            setShowReport(true);
         }
     };
 
@@ -331,6 +335,22 @@ export default function AdventureMap() {
                     levelId={selectedLevel?.id}
                     onComplete={(success) => handleBossComplete(success)}
                     onClose={() => setShowBoss(false)}
+                />
+            )}
+
+            {showReport && world && (
+                <MapCompletionReport
+                    worldTitle={world.title || "Mapa"}
+                    worldTheme={world.theme || "General"}
+                    totalDays={mergedDays.length}
+                    studentName={currentUser?.name?.split(' ')[0] || "Aventurero"}
+                    studentId={currentUser?.id}
+                    stats={stats}
+                    onClose={() => setShowReport(false)}
+                    onGoToRaid={() => {
+                        setShowReport(false);
+                        onOpenRaid?.();
+                    }}
                 />
             )}
         </div>

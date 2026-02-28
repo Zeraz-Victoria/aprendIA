@@ -45,6 +45,7 @@ export interface DBUser {
   streak: number;
   xp: number;
   classroomId: string | null;
+  activeFrame?: string | null;
   assignedWorlds?: { id: string, title?: string, theme: string }[];
 }
 
@@ -60,6 +61,7 @@ export interface Student {
   streak: number;
   xp: number;
   classroomId?: string | null;
+  activeFrame?: string | null;
   assignedWorlds?: { id: string, title?: string, theme: string }[];
 }
 
@@ -87,12 +89,14 @@ interface LearningContextType {
   inventory: Record<string, string[]>;
   markLevelComplete: (studentId: string, worldId: string, levelId: number, isBoss: boolean) => void;
   purchaseItem: (studentId: string, itemId: string, cost: number) => boolean;
+  consumeItem: (studentId: string, itemId: string) => Promise<boolean>;
 
   // Teacher Data
   students: Student[];
   addStudent: (name: string, avatar: string, classroomId?: string | null) => Promise<boolean>;
   updateStudent: (id: string, name: string, avatar: string, classroomId?: string | null) => Promise<boolean>;
   updateStudentAvatar: (newAvatar: string) => Promise<boolean>;
+  updateStudentFrame: (newFrame: string | null) => Promise<boolean>;
   deleteStudent: (id: string) => Promise<boolean>;
   grades: Grade[];
   addGrade: (name: string, description?: string) => Promise<boolean>;
@@ -164,7 +168,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
         // Fetch Users (Students)
         let dbUsers: any[] = [];
-        const usersRes = await fetch('/api/users');
+        const usersRes = await fetch(`/api/users?t=${Date.now()}`, { cache: 'no-store' });
         if (usersRes.ok) {
           dbUsers = await usersRes.json();
           // Map them to the Student interface 
@@ -180,6 +184,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
             streak: u.streak,
             xp: u.xp,
             classroomId: u.classroomId || null,
+            activeFrame: u.activeFrame,
             assignedWorlds: u.assignedWorlds
           }));
           setStudents(mappedStudents);
@@ -217,10 +222,10 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
         // Fetch Progress and Inventory for active session later or pre-fetch all
         // For teacher, we might need all progress. We'll just load maps.
-        const progRes = await fetch('/api/progress');
+        const progRes = await fetch(`/api/progress?t=${Date.now()}`, { cache: 'no-store' });
         if (progRes.ok) setProgress(await progRes.json());
 
-        const invRes = await fetch('/api/inventory');
+        const invRes = await fetch(`/api/inventory?t=${Date.now()}`, { cache: 'no-store' });
         if (invRes.ok) setInventory(await invRes.json());
       } catch (err) {
         console.error("Failed to load initial data from DB", err);
@@ -391,6 +396,23 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         setCurrentUser({ ...currentUser, avatar: newAvatar });
         setStudents(prev => prev.map(s => s.id === currentUser.id ? { ...s, avatar: newAvatar } : s));
+        return true;
+      }
+      return false;
+    } catch { return false; }
+  };
+
+  const updateStudentFrame = async (newFrame: string | null): Promise<boolean> => {
+    if (!currentUser) return false;
+    try {
+      const res = await fetch('/api/users/frame', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: currentUser.id, frame: newFrame })
+      });
+      if (res.ok) {
+        setCurrentUser({ ...currentUser, activeFrame: newFrame });
+        setStudents(prev => prev.map(s => s.id === currentUser.id ? { ...s, activeFrame: newFrame } : s));
         return true;
       }
       return false;
@@ -580,6 +602,21 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
   const purchaseItem = (studentId: string, itemId: string, cost: number) => {
     if (stats.gems >= cost) {
+      if (itemId === "potion_life") {
+        // Optimistic Life Potion
+        setStats(s => ({ ...s, gems: s.gems - cost, lives: s.lives + 1 }));
+
+        // Async DB Sync specifically for consumibles that modify stats
+        fetch('/api/users/sync-stats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId, gemsToAdd: -cost, livesToAdd: 1 })
+        }).catch(console.error);
+
+        return true;
+      }
+
+      // Standard Persistent Item (Avatar, Frame, Shield, etc)
       // Optimistic
       setStats(s => ({ ...s, gems: s.gems - cost }));
       setInventory(prev => ({
@@ -598,12 +635,38 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
+  const consumeItem = async (studentId: string, itemId: string) => {
+    // Optimistic removal from inventory
+    setInventory(prev => {
+      const userItems = prev[studentId] || [];
+      const index = userItems.indexOf(itemId);
+      if (index > -1) {
+        const newItems = [...userItems];
+        newItems.splice(index, 1);
+        return { ...prev, [studentId]: newItems };
+      }
+      return prev;
+    });
+
+    try {
+      const res = await fetch('/api/users/consume-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, itemId })
+      });
+      return res.ok;
+    } catch (e) {
+      console.error("Failed to consume item", e);
+      return false;
+    }
+  };
+
   return (
     <LearningContext.Provider value={{
       worlds, activeWorldId, addWorld, updateWorld, deleteWorld, setActiveWorld,
       currentUser, login, logout,
-      stats, setStats, progress, inventory, markLevelComplete, purchaseItem,
-      students, addStudent, updateStudent, updateStudentAvatar, deleteStudent, toggleWorldAssignment,
+      stats, setStats, progress, inventory, markLevelComplete, purchaseItem, consumeItem,
+      students, addStudent, updateStudent, updateStudentAvatar, updateStudentFrame, deleteStudent, toggleWorldAssignment,
       classrooms, addClassroom, updateClassroom, deleteClassroom, assignStudentToClassroom,
       grades, addGrade, updateGrade, deleteGrade
     }}>

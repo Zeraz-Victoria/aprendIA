@@ -25,6 +25,7 @@ export default function StudentPage() {
     const [showStore, setShowStore] = useState(false);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
+    const [showRaidModal, setShowRaidModal] = useState(false);
     const [hints, setHints] = useState<HintData[]>([]);
 
     // State to determine if we are in Lobby or inside a specific Map
@@ -182,8 +183,8 @@ export default function StudentPage() {
                 onOpenProfile={() => setShowProfile(true)}
             />
 
-            {/* Action Bar Superior Izquierda */}
-            <div className="fixed top-6 left-6 z-40 flex gap-3">
+            {/* Action Bar Superior Izquierda — debajo del HUD */}
+            <div className="fixed top-16 left-6 z-30 flex gap-3">
                 <button
                     onClick={() => signOut({ callbackUrl: "/" })}
                     className="bg-white/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all flex items-center justify-center w-12 h-12"
@@ -228,7 +229,7 @@ export default function StudentPage() {
                 </div>
             )}
 
-            <AdventureMap />
+            <AdventureMap onOpenRaid={() => setShowRaidModal(true)} />
 
             {showStore && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -258,7 +259,7 @@ export default function StudentPage() {
                 </div>
             )}
 
-            <RaidBossWidget />
+            <RaidBossWidget externalOpen={showRaidModal} onExternalClose={() => setShowRaidModal(false)} />
         </main>
     );
 }

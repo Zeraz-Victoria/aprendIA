@@ -20,21 +20,39 @@ export default function StudentHUD({
     const [classmates, setClassmates] = useState<any[]>([]);
     const [incomingBuff, setIncomingBuff] = useState<any | null>(null);
     const [sendingBuffTo, setSendingBuffTo] = useState<string | null>(null);
+    const [customMessage, setCustomMessage] = useState("");
+    const [includeHint, setIncludeHint] = useState(false);
 
     useEffect(() => {
         if (!currentUser?.id) return;
-        const pusher = getPusherClient();
-        const channel = pusher.subscribe('student-' + currentUser.id);
 
-        channel.bind('receive-buff', (data: any) => {
-            setIncomingBuff(data);
-            setTimeout(() => setIncomingBuff(null), 6000);
-        });
+        const checkPendingBuffs = async () => {
+            try {
+                const res = await fetch(`/api/gamification/buffs/pending?studentId=${currentUser.id}&t=${Date.now()}`, {
+                    cache: 'no-store'
+                });
+                const data = await res.json();
 
-        return () => {
-            channel.unbind_all();
-            channel.unsubscribe();
+                if (data && data.length > 0) {
+                    // Show the first unread buff
+                    setIncomingBuff(data[0]);
+                    setTimeout(() => setIncomingBuff(null), 6000);
+
+                    // Mark them all as read to prevent showing them again immediately
+                    await fetch('/api/gamification/buffs/pending', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ buffIds: data.map((b: any) => b.id) })
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to check pending buffs", e);
+            }
         };
+
+        checkPendingBuffs(); // Check immediately on mount
+        const interval = setInterval(checkPendingBuffs, 8000); // And then every 8 seconds
+        return () => clearInterval(interval);
     }, [currentUser?.id]);
 
     const fetchClassmates = async () => {
@@ -49,19 +67,27 @@ export default function StudentHUD({
     };
 
     const handleSendBuff = async (targetId: string) => {
-        if (!currentUser?.id || stats.gems < 10) return;
+        const cost = includeHint ? 15 : 10;
+        if (!currentUser?.id || stats.gems < cost) return;
         setSendingBuffTo(targetId);
 
         // Optimistic UI update
-        setStats(prev => ({ ...prev, gems: Math.max(0, prev.gems - 10) }));
+        setStats(prev => ({ ...prev, gems: Math.max(0, prev.gems - cost) }));
 
         try {
             await fetch('/api/gamification/buffs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ senderId: currentUser.id, targetId, buffMessage: '¡Tú puedes lograrlo!' })
+                body: JSON.stringify({
+                    senderId: currentUser.id,
+                    targetId,
+                    buffMessage: customMessage.trim() || '¡Tú puedes lograrlo!',
+                    includeHint
+                })
             });
             setShowBuffModal(false);
+            setCustomMessage("");
+            setIncludeHint(false);
         } catch (e) {
             console.error("Failed to send buff", e);
         } finally {
@@ -81,7 +107,11 @@ export default function StudentHUD({
 
                     {/* Left: Profile / Avatar */}
                     <div
-                        className="flex items-center gap-2 pointer-events-auto bg-slate-800/80 cursor-pointer hover:bg-slate-700/90 backdrop-blur rounded-full px-3 py-1 shadow-md border border-slate-600 transition-all hover:scale-105"
+                        className={`flex items-center gap-2 pointer-events-auto bg-slate-800/80 cursor-pointer hover:bg-slate-700/90 backdrop-blur rounded-full px-3 py-1 shadow-md border transition-all hover:scale-105
+                            ${currentUser?.activeFrame === 'frame_fire' ? 'border-orange-500 shadow-orange-500/50 animate-pulse' :
+                                currentUser?.activeFrame === 'frame_ice' ? 'border-cyan-400 shadow-cyan-400/50' :
+                                    'border-slate-600'}
+                        `}
                         onClick={onOpenProfile}
                     >
                         <span className="text-xl">{currentUser?.avatar || "🧑"}</span>
@@ -109,17 +139,18 @@ export default function StudentHUD({
 
                         {/* Streak */}
                         <div className="flex items-center gap-1 sm:gap-2 group cursor-pointer">
-                            <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 fill-orange-500 animate-pulse" />
-                            <span className="font-bold text-orange-500 text-sm sm:text-base">{stats.streak}</span>
+                            <Flame className={`w-5 h-5 sm:w-6 sm:h-6 ${stats.streak > 0 ? 'text-orange-500 fill-orange-500 animate-pulse' : 'text-slate-400 fill-slate-400'}`} />
+                            <span className={`font-bold text-sm sm:text-base ${stats.streak > 0 ? 'text-orange-500' : 'text-slate-400'}`}>{stats.streak}</span>
                         </div>
 
                         {/* Gems */}
                         <div
-                            className="flex items-center gap-1 sm:gap-2 group cursor-pointer hover:scale-105 transition-transform"
+                            className="flex items-center gap-1 sm:gap-2 group cursor-pointer hover:scale-105 transition-transform bg-black/20 px-2 py-0.5 rounded-full"
                             onClick={onOpenStore}
+                            title="Abrir Tienda"
                         >
                             <Diamond className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500 fill-blue-400 group-hover:fill-blue-500" />
-                            <span className="font-bold text-blue-500 text-sm sm:text-base">{stats.gems}</span>
+                            <span className="font-bold text-blue-500 text-sm sm:text-base group-hover:text-blue-400 transition-colors">{stats.gems}</span>
                         </div>
 
                         {/* Lives */}
@@ -135,14 +166,14 @@ export default function StudentHUD({
 
             {/* Incoming Buff Alert */}
             {incomingBuff && (
-                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-bounce-in w-[90%] sm:w-auto">
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-bounce w-[90%] sm:w-auto">
                     <div className="bg-gradient-to-r from-cyan-600 to-teal-600 rounded-full py-3 px-6 shadow-[0_0_30px_rgba(147,51,234,0.5)] border-2 border-cyan-400 flex items-center gap-4">
                         <span className="text-4xl">{incomingBuff.fromAvatar}</span>
                         <div>
                             <p className="text-cyan-100 text-xs font-bold uppercase tracking-wider">{incomingBuff.fromName} te anima:</p>
                             <p className="text-white font-black text-lg">"{incomingBuff.message}"</p>
                         </div>
-                        <Sparkles className="w-8 h-8 text-yellow-400 animate-spin-slow" />
+                        <Sparkles className="w-8 h-8 text-yellow-400 animate-spin" />
                     </div>
                 </div>
             )}
@@ -160,9 +191,34 @@ export default function StudentHUD({
                         <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
                             <Sparkles className="w-5 h-5 text-cyan-500 text-xl" /> Enviar Energía
                         </h3>
-                        <p className="text-slate-500 text-sm mb-6">Usa tus gemas para animar a tus compañeros de clase.</p>
+                        <p className="text-slate-500 text-sm mb-4">Usa tus gemas para animar a tus compañeros de clase.</p>
 
-                        <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="mb-4 space-y-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                            <div>
+                                <label className="text-xs font-bold text-slate-700 mb-1 block">Mensaje (opcional)</label>
+                                <input
+                                    type="text"
+                                    placeholder="¡Tú puedes lograrlo!"
+                                    value={customMessage}
+                                    onChange={(e) => setCustomMessage(e.target.value)}
+                                    maxLength={40}
+                                    className="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                                />
+                            </div>
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    checked={includeHint}
+                                    onChange={(e) => setIncludeHint(e.target.checked)}
+                                    className="w-4 h-4 text-cyan-600 rounded border-slate-300 focus:ring-cyan-500"
+                                />
+                                <span className="text-sm font-medium text-slate-700 select-none group-hover:text-slate-900 transition-colors">
+                                    Enviar una pista extra <span className="text-blue-500 font-bold ml-1 text-xs bg-blue-50 px-1.5 py-0.5 rounded-md border border-blue-100">+5 Gemas</span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div className="space-y-3 max-h-56 overflow-y-auto pr-2 custom-scrollbar">
                             {classmates.map(c => (
                                 <div key={c.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100">
                                     <div className="flex items-center gap-3">
@@ -178,11 +234,13 @@ export default function StudentHUD({
                                     </div>
                                     <button
                                         onClick={() => handleSendBuff(c.id)}
-                                        disabled={stats.gems < 10 || sendingBuffTo === c.id}
-                                        className="bg-cyan-100 hover:bg-cyan-200 text-slate-700 disabled:opacity-50 px-3 py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-transform active:scale-95"
+                                        disabled={stats.gems < (includeHint ? 15 : 10) || sendingBuffTo === c.id}
+                                        className="bg-cyan-100 hover:bg-cyan-200 text-slate-700 disabled:opacity-50 px-3 py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-transform active:scale-95 shrink-0 min-w-[70px]"
                                     >
                                         <span>Animar</span>
-                                        <span className="text-[10px] flex items-center gap-1 opacity-80"><Diamond className="w-3 h-3 fill-slate-700" /> 10</span>
+                                        <span className="text-[10px] flex items-center gap-1 opacity-80">
+                                            <Diamond className="w-3 h-3 fill-slate-700" /> {includeHint ? 15 : 10}
+                                        </span>
                                     </button>
                                 </div>
                             ))}

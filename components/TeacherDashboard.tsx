@@ -7,13 +7,13 @@ import { useLearning, LearningWorld, Student, Grade, Classroom } from "@/context
 import UploadEngine from "./UploadEngine";
 import VisualWorldBuilder from "./VisualWorldBuilder";
 import BulkEvidenceUploader from "./BulkEvidenceUploader";
-import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut } from "lucide-react";
+import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-type Tab = "students" | "insights" | "library" | "reports" | "subscription";
+type Tab = "students" | "insights" | "library" | "reports" | "subscription" | "raid";
 
 export default function TeacherDashboard() {
     const {
@@ -72,7 +72,15 @@ export default function TeacherDashboard() {
     const [currentRaidBoss, setCurrentRaidBoss] = useState<any>(null);
     const [isResettingBoss, setIsResettingBoss] = useState(false);
 
-    const MONSTER_EMOJIS = ["🐉", "🦑", "🐲", "👹", "👺", "🧛", "🧟", "🦖", "🐙", "🕷️", "🦂", "🐍", "💀", "👾", "🤖", "🔥", "🦇", "👻"];
+    const MONSTER_NAMES: Record<string, string> = {
+        "🐉": "Dragón del Caos", "🦑": "Kraken Abismal", "🐲": "Serpiente de Fuego",
+        "👹": "Ogro Feroz", "👺": "Demonio Rojo", "🧛": "Vampiro Oscuro",
+        "🧟": "Zombie Legendario", "🦖": "Rex Destroyer", "🐙": "Pulpo Titán",
+        "🕷️": "Araña Venenosa", "🦂": "Escorpión Mortal", "🐍": "Cobra Real",
+        "💀": "Esqueleto Maldito", "👾": "Alien Invasor", "🤖": "Robot Supremo",
+        "🔥": "Llama Eterna", "🦇": "Murciélago Nocturno", "👻": "Fantasma Siniestro"
+    };
+    const MONSTER_EMOJIS = Object.keys(MONSTER_NAMES);
     const HP_PRESETS = [
         { label: "Fácil", value: 1000 },
         { label: "Normal", value: 3000 },
@@ -84,7 +92,14 @@ export default function TeacherDashboard() {
     useEffect(() => {
         fetch('/api/gamification/raid')
             .then(r => r.json())
-            .then(data => { if (data && data.status === 'ACTIVE') setCurrentRaidBoss(data); })
+            .then(data => {
+                if (data && data.status === 'ACTIVE') {
+                    setCurrentRaidBoss(data);
+                    setRaidBossName(data.name || "Dragón del Caos");
+                    setRaidBossEmoji(data.imageUrl || "🐉");
+                    setRaidBossHP(data.maxHealth || 3000);
+                }
+            })
             .catch(() => { });
     }, []);
 
@@ -661,6 +676,12 @@ export default function TeacherDashboard() {
                         className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'subscription' ? 'bg-white text-slate-600 shadow-sm' : 'text-slate-500 hover:bg-white/50 hover:text-slate-500'}`}
                     >
                         <span>💳</span> Mi Suscripción
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("raid")}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'raid' ? 'bg-red-50 text-red-700 shadow-sm' : 'text-slate-500 hover:bg-red-50/50 hover:text-red-600'}`}
+                    >
+                        <Swords className="w-4 h-4" /> Jefe de Incursión
                     </button>
                 </nav>
                 <div className="p-4 border-t border-sky-50">
@@ -1303,6 +1324,10 @@ export default function TeacherDashboard() {
                 <button onClick={() => setActiveTab("insights")} className={`flex flex-col items-center gap-1 ${activeTab === 'insights' ? 'text-sky-600' : 'text-slate-400'}`}>
                     <BrainCircuit className="w-5 h-5" />
                     <span className="text-[10px] font-bold">Análisis</span>
+                </button>
+                <button onClick={() => setActiveTab("raid")} className={`flex flex-col items-center gap-1 ${activeTab === 'raid' ? 'text-red-600' : 'text-slate-400'}`}>
+                    <Swords className="w-5 h-5" />
+                    <span className="text-[10px] font-bold">Raid</span>
                 </button>
                 <button onClick={() => signOut({ callbackUrl: "/" })} className="flex flex-col items-center gap-1 text-slate-400">
                     <LogOut className="w-5 h-5" />
@@ -2027,6 +2052,99 @@ export default function TeacherDashboard() {
             )}
 
             {/* Visual World Builder Modal (View/Edit Map + Download Teacher Guide PDF) */}
+            {/* ════════════ JEFE DE INCURSIÓN (Raid Boss) ════════════ */}
+            {activeTab === 'raid' && (
+                <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-3xl shadow-xl border border-red-200 p-6">
+                    <h2 className="text-xl font-bold text-red-800 flex items-center gap-2 mb-4">
+                        ⚔️ Jefe de Incursión
+                    </h2>
+
+                    {/* Current Boss Status */}
+                    {currentRaidBoss && (
+                        <div className="bg-white rounded-2xl p-4 border border-red-200 mb-4 flex items-center gap-4">
+                            <div className="text-4xl bg-red-100 w-14 h-14 rounded-full flex items-center justify-center shadow-sm">{currentRaidBoss.imageUrl}</div>
+                            <div className="flex-1">
+                                <h3 className="font-bold text-slate-800">{currentRaidBoss.name}</h3>
+                                <div className="w-full bg-slate-200 rounded-full h-3 mt-1 overflow-hidden">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all"
+                                        style={{ width: `${Math.max(0, (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) * 100)}%` }}
+                                    />
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1">{currentRaidBoss.currentHealth.toLocaleString()} / {currentRaidBoss.maxHealth.toLocaleString()} HP</p>
+                            </div>
+                            <button
+                                onClick={handleResetBoss}
+                                disabled={isResettingBoss}
+                                className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
+                            >
+                                {isResettingBoss ? "Reiniciando..." : "🔄 Reiniciar Vida"}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Create / Configure Boss Form */}
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-sm font-bold text-slate-700 block mb-1">Nombre del Jefe</label>
+                            <input
+                                type="text"
+                                value={raidBossName}
+                                onChange={(e) => setRaidBossName(e.target.value)}
+                                className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm"
+                                placeholder="Ej: Dragón del Caos"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-bold text-slate-700 block mb-2">Avatar del Jefe</label>
+                            <div className="flex flex-wrap gap-2">
+                                {MONSTER_EMOJIS.map(emoji => (
+                                    <button
+                                        key={emoji}
+                                        onClick={() => { setRaidBossEmoji(emoji); setRaidBossName(MONSTER_NAMES[emoji] || emoji); }}
+                                        className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center border-2 transition-all hover:scale-110 ${raidBossEmoji === emoji ? 'border-red-500 bg-red-50 scale-110 shadow-md' : 'border-slate-200 bg-white'}`}
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-bold text-slate-700 block mb-2">Vida del Jefe (HP)</label>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {HP_PRESETS.map(preset => (
+                                    <button
+                                        key={preset.value}
+                                        onClick={() => setRaidBossHP(preset.value)}
+                                        className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${raidBossHP === preset.value ? 'border-red-500 bg-red-50 text-red-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}
+                                    >
+                                        {preset.label} ({preset.value.toLocaleString()})
+                                    </button>
+                                ))}
+                            </div>
+                            <input
+                                type="number"
+                                value={raidBossHP}
+                                onChange={(e) => setRaidBossHP(Number(e.target.value))}
+                                className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm"
+                                min={100}
+                                step={100}
+                            />
+                        </div>
+
+                        <button
+                            onClick={handleCreateBoss}
+                            disabled={isCreatingBoss || !raidBossName.trim()}
+                            className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold py-3 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        >
+                            {isCreatingBoss ? "Creando..." : currentRaidBoss ? "⚔️ Reemplazar con Nuevo Jefe" : "⚔️ Crear Jefe de Incursión"}
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {showBuilderModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-3xl w-full max-w-5xl max-h-[95vh] overflow-y-auto relative shadow-2xl">

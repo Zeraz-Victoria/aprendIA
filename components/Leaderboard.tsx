@@ -7,6 +7,7 @@ interface LeaderboardEntry {
     id: string;
     name: string;
     avatar: string;
+    activeFrame?: string | null;
     xp: number;
     streak: number;
 }
@@ -49,16 +50,20 @@ export default function Leaderboard() {
                     <div
                         key={student.id}
                         className={`flex items-center p-3 rounded-2xl border transition-all ${index === 0 ? "bg-amber-50 border-amber-200" :
-                                index === 1 ? "bg-slate-50 border-slate-200" :
-                                    index === 2 ? "bg-orange-50 border-orange-200" :
-                                        "border-transparent hover:bg-slate-50"
+                            index === 1 ? "bg-slate-50 border-slate-200" :
+                                index === 2 ? "bg-orange-50 border-orange-200" :
+                                    "border-transparent hover:bg-slate-50"
                             }`}
                     >
                         <div className="w-8 text-center font-bold text-slate-400 mr-2">
                             {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${index + 1}`}
                         </div>
 
-                        <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-xl mr-3 border border-slate-100">
+                        <div className={`w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-xl mr-3 border 
+                            ${student.activeFrame === 'frame_fire' ? 'border-orange-500 shadow-orange-500/50' :
+                                student.activeFrame === 'frame_ice' ? 'border-cyan-300 shadow-cyan-300/50' :
+                                    'border-slate-100'}
+                        `}>
                             {student.avatar || "🧑"}
                         </div>
 

@@ -15,7 +15,12 @@ interface RaidBoss {
     topContributors?: { name: string; avatar: string | null; totalDamage: number }[];
 }
 
-export default function RaidBossWidget() {
+interface RaidBossWidgetProps {
+    externalOpen?: boolean;
+    onExternalClose?: () => void;
+}
+
+export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBossWidgetProps) {
     const { currentUser, setStats, stats } = useLearning();
     const [boss, setBoss] = useState<RaidBoss | null>(null);
     const [showModal, setShowModal] = useState(false);
@@ -57,6 +62,19 @@ export default function RaidBossWidget() {
             channel.unsubscribe();
         };
     }, [currentUser]);
+
+    // React to external open trigger
+    useEffect(() => {
+        if (externalOpen) {
+            setShowModal(true);
+            fetchBoss();
+        }
+    }, [externalOpen]);
+
+    const closeModal = () => {
+        setShowModal(false);
+        onExternalClose?.();
+    };
 
     const handleAttack = async () => {
         if (!boss || !currentUser || stats.gems < 5) return;
@@ -114,7 +132,7 @@ export default function RaidBossWidget() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
                     <div className="bg-gradient-to-br from-red-900 to-slate-900 rounded-3xl w-full max-w-lg overflow-hidden relative shadow-2xl border-4 border-red-950 max-h-[90vh] overflow-y-auto">
                         <button
-                            onClick={() => setShowModal(false)}
+                            onClick={closeModal}
                             className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition z-10 text-white"
                         >
                             <X className="w-5 h-5" />

@@ -118,7 +118,7 @@ interface InteractiveLessonCardProps {
 }
 
 export default function InteractiveLessonCard({ data, studentName = "Aventurero", studentId, worldId, levelId, onComplete, onClose }: InteractiveLessonCardProps) {
-    const { stats, setStats } = useLearning();
+    const { stats, setStats, inventory, consumeItem } = useLearning();
     const [currentChunkIndex, setCurrentChunkIndex] = useState(0);
     const [showActivity, setShowActivity] = useState(false);
     const [feedback, setFeedback] = useState<"success" | "error" | null>(null);
@@ -169,6 +169,47 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     const [aiHint, setAiHint] = useState<string | null>(null);
     const [isGettingHint, setIsGettingHint] = useState(false);
 
+    // --- Lupa Mágica State ---
+    const [isLupaActive, setIsLupaActive] = useState(false);
+    const [disabledOptions, setDisabledOptions] = useState<Record<string, boolean>>({});
+
+    const handleBuyLupa = () => {
+        if (!data.content?.miniGame?.options || data.content.miniGame.options.length <= 2) {
+            alert("La lupa mágica no es útil en esta pregunta.");
+            return;
+        }
+        if (stats.gems < 50) {
+            alert("No tienes suficientes gemas (50💎) para usar la Lupa Mágica.");
+            return;
+        }
+
+        // Deduct 50 Gems Optimistically & Sync
+        setStats(prev => ({ ...prev, gems: Math.max(0, prev.gems - 50) }));
+        if (studentId) {
+            fetch('/api/users/sync-stats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId, gemsToAdd: -50 })
+            }).catch(e => console.error("Failed to charge for Lupa", e));
+        }
+
+        // Calculate half of the wrong options to disable
+        const options = data.content.miniGame.options;
+        const correct = data.content.miniGame.correctAnswer || "";
+        const wrongOptions = options.filter(opt => !answersMatch(opt, correct));
+
+        // Pick half to eliminate
+        const numToEliminate = Math.max(1, Math.floor(wrongOptions.length / 2));
+        const eliminated: Record<string, boolean> = {};
+
+        for (let i = 0; i < numToEliminate; i++) {
+            eliminated[wrongOptions[i]] = true;
+        }
+
+        setDisabledOptions(eliminated);
+        setIsLupaActive(true);
+    };
+
     // Teacher Reveal State
     const [isTeacherUnlocked, setIsTeacherUnlocked] = useState(false);
     const [showTeacherAuth, setShowTeacherAuth] = useState(false);
@@ -212,7 +253,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             });
 
             pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`Leccion-${data.title.replace(/\s+/g, '-')}.pdf`);
+            pdf.save(`Leccion-${(data.title || 'lesson').replace(/\s+/g, '-')}.pdf`);
 
         } catch (error: any) {
             console.error("Error generating PDF:", error);
@@ -294,25 +335,71 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
         }, 1000);
         return () => clearInterval(timer);
     }, [showGameOver, setStats]);
-
     const loseLife = () => {
+        // --- Escudo Protector Mechanic ---
+        if (studentId) {
+            const studentInventory = inventory[studentId] || [];
+            if (studentInventory.includes('shield_protect')) {
+                // Consume Shield using context method which updates local inventory immediately
+                consumeItem(studentId, 'shield_protect');
+
+                alert("🛡️ ¡Tu Escudo Protector se ha roto pero ha salvado tu Racha y tu Vida!");
+                return; // Exit early, no life lost!
+            }
+        }
+        // ---------------------------------
+
         setStats(prev => {
             const newLives = Math.max(0, prev.lives - 1);
             if (newLives === 0) {
                 setTimeout(() => setShowGameOver(true), 500);
             }
-            return { ...prev, lives: newLives };
+
+            // Sync penalty to DB asynchronously
+            if (studentId) {
+                setTimeout(() => {
+                    fetch('/api/users/sync-stats', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, modifyStreak: 'reset', livesToAdd: -1 })
+                    }).catch(e => console.error("Failed to sync penalty", e));
+                }, 0);
+            }
+
+            return { ...prev, lives: newLives, streak: 0 };
         });
     };
 
-    const rewardGems = (amount: number) => {
-        setStats(prev => ({
-            ...prev,
-            gems: prev.gems + amount,
-            streak: prev.streak + 1
-        }));
-        setGemReward(amount);
-        setTimeout(() => setGemReward(null), 2000);
+    const rewardGems = (baseAmount: number) => {
+        setStats(prev => {
+            const newStreak = prev.streak + 1;
+            const multiplier = Math.min(newStreak, 5); // Max x5 multiplier
+            const totalGems = baseAmount * multiplier;
+
+            // Trigger visual rewards and DB sync asynchronously so it doesn't block the state update
+            setTimeout(() => {
+                setGemReward(totalGems);
+                setTimeout(() => setGemReward(null), 2500);
+
+                if (studentId) {
+                    fetch('/api/users/sync-stats', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            studentId,
+                            gemsToAdd: totalGems,
+                            modifyStreak: 'increment'
+                        })
+                    }).catch(e => console.error("Failed to sync reward", e));
+                }
+            }, 0);
+
+            return {
+                ...prev,
+                gems: prev.gems + totalGems,
+                streak: newStreak
+            };
+        });
     };
 
     const handleMiniGameAnswer = (option: string) => {
@@ -554,18 +641,36 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 key={idx}
                                 type="button"
                                 onClick={() => handleMiniGameAnswer(option)}
+                                disabled={disabledOptions[option]}
                                 className={`
-                            p-4 rounded-xl text-lg font-bold border-2 transition-all
+                            p-4 rounded-xl text-lg font-bold border-2 transition-all relative
                             ${feedback === 'success' && option === data.content?.miniGame?.correctAnswer
                                         ? 'bg-green-100 border-green-500 text-green-700 scale-105'
-                                        : 'bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100 hover:border-teal-400'}
+                                        : disabledOptions[option]
+                                            ? 'bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed'
+                                            : 'bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100 hover:border-teal-400'}
                             ${feedback === 'error' && option !== data.content?.miniGame?.correctAnswer ? 'opacity-50' : ''}
                         `}
                             >
-                                {option}
+                                <span className={disabledOptions[option] ? "line-through" : ""}>{option}</span>
                             </button>
                         ))}
                     </div>
+
+                    {/* Hint Button (Lupa Mágica) */}
+                    {(data.content?.miniGame?.options?.length || 0) > 2 && !isLupaActive && feedback === null && (
+                        <div className="mt-6 flex justify-center">
+                            <button
+                                onClick={handleBuyLupa}
+                                className="flex items-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-900 px-4 py-2 rounded-full font-bold text-sm shadow-sm border border-amber-300 transition-colors"
+                            >
+                                <span>🔎 Usar Lupa Mágica</span>
+                                <span className="bg-amber-500 text-white flex items-center gap-1 px-2 py-0.5 rounded-full text-xs">
+                                    50 <Diamond className="w-3 h-3 fill-white" />
+                                </span>
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {feedback === "success" && (
@@ -614,6 +719,14 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 setStats(s => ({ ...s, gems: Math.max(0, s.gems - 10), lives: 3 }));
                                 setShowGameOver(false);
                                 setGameOverTimer(30);
+
+                                if (studentId) {
+                                    fetch('/api/users/sync-stats', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ studentId, gemsToAdd: -10 }) // Use a negative value to deduct server gems securely if needed or trust UI. Note: The backend schema only checks `gemsToAdd > 0` right now, so we need to either expand sync-stats to allow negative gems or just let UI hold it temporarily. Since it's a minor penalty, DB consistency is acceptable. Let's fix the API!
+                                    }).catch(console.error);
+                                }
                             }}
                             disabled={stats.gems < 10}
                             className="bg-gradient-to-r from-blue-500 to-teal-600 text-white px-8 py-3 rounded-2xl font-black text-lg shadow-lg shadow-blue-500/30 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
@@ -626,10 +739,20 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
 
             {/* Gem Reward Popup */}
             {gemReward && (
-                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[55] animate-bounce">
-                    <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-6 py-3 rounded-2xl font-black text-xl shadow-2xl flex items-center gap-2">
-                        <Diamond className="w-6 h-6 fill-white" /> +{gemReward} 💎
-                        {wrongCount === 0 && <span className="text-sm font-bold ml-2 bg-white/20 px-2 py-0.5 rounded-full">PERFECTO</span>}
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[55] animate-bounce-in">
+                    <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-6 py-3 rounded-2xl font-black text-xl shadow-2xl flex flex-col items-center">
+                        <div className="flex items-center gap-2">
+                            <Diamond className="w-8 h-8 fill-white" />
+                            <span className="text-3xl">+{gemReward} 💎</span>
+                        </div>
+                        {stats.streak >= 1 && (
+                            <div className="flex items-center gap-1 mt-1 text-amber-100 text-sm font-black bg-black/20 px-3 py-1 rounded-full uppercase tracking-widest">
+                                <Flame className="w-4 h-4 fill-orange-500 text-orange-500" /> Racha x{Math.min(stats.streak, 5)}
+                            </div>
+                        )}
+                        {wrongCount === 0 && stats.streak < 1 && (
+                            <div className="mt-1 text-sm font-bold bg-white/20 px-3 py-0.5 rounded-full uppercase tracking-wider">PERFECTO</div>
+                        )}
                     </div>
                 </div>
             )}

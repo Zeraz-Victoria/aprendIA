@@ -48,32 +48,45 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
-        const { senderId, targetId, buffMessage } = await req.json();
+        const { senderId, targetId, buffMessage, includeHint } = await req.json();
 
         if (!senderId || !targetId) {
             return NextResponse.json({ error: "Missing params" }, { status: 400 });
         }
 
+        const cost = includeHint ? 15 : 10;
         const sender = await prisma.user.findUnique({ where: { id: senderId }, select: { gems: true, name: true, avatar: true } });
-        if (!sender || sender.gems < 10) return NextResponse.json({ error: "Not enough gems" }, { status: 400 });
+        if (!sender || sender.gems < cost) return NextResponse.json({ error: "Not enough gems" }, { status: 400 });
 
-        // Deduct 10 gems
+        // Deduct gems
         await prisma.user.update({
             where: { id: senderId },
-            data: { gems: { decrement: 10 } }
+            data: { gems: { decrement: cost } }
         });
 
-        try {
-            await pusherServer.trigger(`student-${targetId}`, 'receive-buff', {
-                fromName: sender.name || 'Un compañero',
-                fromAvatar: sender.avatar || '🧑',
-                message: buffMessage || '¡Sigue así, tú puedes!'
+        if (includeHint) {
+            await prisma.hint.create({
+                data: {
+                    studentId: targetId,
+                    message: `Tu compañero ${sender.name || ''} ha usado sus gemas para enviarte una pista extra: ¡Lee el problema dos veces en voz alta y busca los datos clave!`
+                }
             });
-        } catch (e) {
-            console.error("Pusher trigger error:", e);
         }
 
-        return NextResponse.json({ success: true, remainingGems: sender.gems - 10 });
+        try {
+            await prisma.buff.create({
+                data: {
+                    targetId,
+                    fromName: sender.name || 'Un compañero',
+                    fromAvatar: sender.avatar || '🧑',
+                    message: buffMessage || '¡Sigue así, tú puedes!'
+                }
+            });
+        } catch (e) {
+            console.error("Buff db creation error:", e);
+        }
+
+        return NextResponse.json({ success: true, remainingGems: sender.gems - cost });
     } catch (e) {
         console.error("Buff send error:", e);
         return NextResponse.json({ error: "Error sending buff" }, { status: 500 });

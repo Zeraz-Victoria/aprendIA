@@ -141,7 +141,7 @@ export async function PUT(req: Request) {
 // PATCH — Reset boss HP or update boss (Teacher action)
 export async function PATCH(req: Request) {
     try {
-        const { action, maxHealth } = await req.json();
+        const { action, maxHealth, name, imageUrl } = await req.json();
 
         const activeBoss = await prisma.raidBoss.findFirst({
             where: { status: "ACTIVE" },
@@ -157,6 +157,21 @@ export async function PATCH(req: Request) {
             const updated = await prisma.raidBoss.update({
                 where: { id: activeBoss.id },
                 data: { currentHealth: hp, maxHealth: hp, status: "ACTIVE" }
+            });
+            return NextResponse.json(updated);
+        }
+
+        if (action === "update") {
+            const dataToUpdate: any = {};
+            if (name) dataToUpdate.name = name;
+            if (imageUrl) dataToUpdate.imageUrl = imageUrl;
+            if (maxHealth) {
+                dataToUpdate.maxHealth = parseInt(maxHealth);
+                dataToUpdate.currentHealth = parseInt(maxHealth);
+            }
+            const updated = await prisma.raidBoss.update({
+                where: { id: activeBoss.id },
+                data: dataToUpdate
             });
             return NextResponse.json(updated);
         }

@@ -16,7 +16,7 @@ interface Achievement {
 }
 
 export default function StudentProfile({ onClose }: { onClose: () => void }) {
-    const { currentUser, updateStudentAvatar } = useLearning();
+    const { currentUser, inventory, updateStudentAvatar, updateStudentFrame } = useLearning();
     const [achievements, setAchievements] = useState<Achievement[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditingAvatar, setIsEditingAvatar] = useState(false);
@@ -64,14 +64,18 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                 </div>
                 <div className="flex items-center gap-6 relative z-10">
                     <div className="relative group">
-                        <div className="w-24 h-24 bg-white/20 backdrop-blur rounded-full flex items-center justify-center text-5xl border-4 border-white/30 shadow-xl transition-transform group-hover:scale-105">
+                        <div className={`w-24 h-24 bg-white/20 backdrop-blur rounded-full flex items-center justify-center text-5xl border-4 shadow-xl transition-transform group-hover:scale-105
+                            ${currentUser?.activeFrame === 'frame_fire' ? 'border-orange-500 shadow-orange-500/50 animate-pulse' :
+                                currentUser?.activeFrame === 'frame_ice' ? 'border-cyan-300 shadow-cyan-300/50' :
+                                    'border-white/30'}
+                        `}>
                             {isSavingAvatar ? "⏳" : (currentUser?.avatar || "🧑")}
                         </div>
                         {!isEditingAvatar && (
                             <button
                                 onClick={() => setIsEditingAvatar(true)}
                                 className="absolute bottom-0 right-0 bg-white text-sky-600 p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
-                                title="Cambiar Avatar"
+                                title="Editar Apariencia"
                             >
                                 <Edit3 className="w-4 h-4" />
                             </button>
@@ -83,7 +87,7 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                     </div>
                 </div>
 
-                {/* Avatar Selection Grid */}
+                {/* Appearance Editing */}
                 {isEditingAvatar && (
                     <div className="mt-8 bg-black/10 p-4 rounded-2xl relative z-10 animate-fade-in-up">
                         <div className="flex justify-between items-center mb-3">
@@ -92,22 +96,75 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {AVATAR_OPTIONS.map((emoji) => (
-                                <button
-                                    key={emoji}
-                                    disabled={isSavingAvatar}
-                                    onClick={() => handleAvatarSelect(emoji)}
-                                    className={`w-12 h-12 text-2xl rounded-xl flex items-center justify-center transition-all outline-none
-                                        ${currentUser?.avatar === emoji
-                                            ? 'bg-white ring-4 ring-white/50 scale-110'
-                                            : 'bg-white/10 hover:bg-white/30 hover:scale-110'
-                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                >
-                                    {emoji}
-                                </button>
-                            ))}
+
+                        {/* Avatars */}
+                        <div className="mb-4">
+                            <h4 className="text-xs font-bold text-sky-200 mb-2">AVATARES</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {/* Base Avatars + Store Avatars in Inventory */}
+                                {(() => {
+                                    const storeAvatars = [
+                                        { id: "avatar_ninja", icon: "🥷" },
+                                        { id: "avatar_alien", icon: "👽" },
+                                        { id: "avatar_wizard", icon: "🧙‍♂️" }
+                                    ];
+                                    const ownedStoreIcons = storeAvatars
+                                        .filter(sa => inventory[currentUser?.id || ""]?.includes(sa.id))
+                                        .map(sa => sa.icon);
+
+                                    const combinedAvatars = [...AVATAR_OPTIONS, ...ownedStoreIcons];
+
+                                    return combinedAvatars.map((emoji) => (
+                                        <button
+                                            key={emoji}
+                                            disabled={isSavingAvatar}
+                                            onClick={() => handleAvatarSelect(emoji)}
+                                            className={`w-12 h-12 text-2xl rounded-xl flex items-center justify-center transition-all outline-none
+                                                ${currentUser?.avatar === emoji
+                                                    ? 'bg-white ring-4 ring-white/50 scale-110'
+                                                    : 'bg-white/10 hover:bg-white/30 hover:scale-110'
+                                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        >
+                                            {emoji}
+                                        </button>
+                                    ));
+                                })()}
+                            </div>
                         </div>
+
+                        {/* Frames */}
+                        {inventory[currentUser?.id || ""]?.some(id => id.startsWith('frame_')) && (
+                            <div>
+                                <h4 className="text-xs font-bold text-sky-200 mb-2">MARCOS DE PERFIL</h4>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => updateStudentFrame(null)}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${!currentUser?.activeFrame ? 'bg-white text-sky-600' : 'bg-white/10 text-white hover:bg-white/30'}`}
+                                    >
+                                        Ninguno
+                                    </button>
+
+                                    {inventory[currentUser?.id || ""]?.includes('frame_fire') && (
+                                        <button
+                                            onClick={() => updateStudentFrame('frame_fire')}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1 transition-colors ${currentUser?.activeFrame === 'frame_fire' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/50 border-2 border-white' : 'bg-white/10 text-orange-300 hover:bg-orange-500/40 border-2 border-transparent'}`}
+                                        >
+                                            🔥 Fuego
+                                        </button>
+                                    )}
+
+                                    {inventory[currentUser?.id || ""]?.includes('frame_ice') && (
+                                        <button
+                                            onClick={() => updateStudentFrame('frame_ice')}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1 transition-colors ${currentUser?.activeFrame === 'frame_ice' ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50 border-2 border-white' : 'bg-white/10 text-cyan-300 hover:bg-cyan-500/40 border-2 border-transparent'}`}
+                                        >
+                                            ❄️ Hielo
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                     </div>
                 )}
             </div>
