@@ -103,6 +103,7 @@ interface LearningContextType {
   updateClassroom: (id: string, name: string, emoji: string, gradeId?: string | null, description?: string) => Promise<boolean>;
   deleteClassroom: (id: string) => Promise<boolean>;
   assignStudentToClassroom: (studentId: string, classroomId: string | null) => Promise<boolean>;
+  toggleWorldAssignment: (studentId: string, worldId: string, action: 'assign' | 'unassign') => Promise<boolean>;
 }
 
 export interface Grade {
@@ -503,6 +504,23 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     } catch { return false; }
   };
 
+  const toggleWorldAssignment = async (studentId: string, worldId: string, action: 'assign' | 'unassign'): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/teacher/assign-world', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, worldId, action })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStudents(prev => prev.map(s => s.id === studentId ? { ...s, assignedWorlds: data.assignedWorlds } : s));
+        setCurrentUser(prev => prev && prev.id === studentId ? { ...prev, assignedWorlds: data.assignedWorlds } : prev);
+        return true;
+      }
+      return false;
+    } catch { return false; }
+  };
+
   const markLevelComplete = async (studentId: string, worldId: string, levelId: number, isBoss: boolean) => {
     // Optimistic Update
     const xpReward = isBoss ? 100 : 50;
@@ -559,7 +577,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       worlds, activeWorldId, addWorld, updateWorld, deleteWorld, setActiveWorld,
       currentUser, login, logout,
       stats, setStats, progress, inventory, markLevelComplete, purchaseItem,
-      students, addStudent, updateStudent, updateStudentAvatar, deleteStudent,
+      students, addStudent, updateStudent, updateStudentAvatar, deleteStudent, toggleWorldAssignment,
       classrooms, addClassroom, updateClassroom, deleteClassroom, assignStudentToClassroom,
       grades, addGrade, updateGrade, deleteGrade
     }}>

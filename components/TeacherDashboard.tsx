@@ -18,7 +18,7 @@ type Tab = "students" | "insights" | "library" | "reports" | "subscription";
 export default function TeacherDashboard() {
     const {
         students, worlds, activeWorldId, setActiveWorld, deleteWorld,
-        addStudent, updateStudent, deleteStudent, progress,
+        addStudent, updateStudent, deleteStudent, progress, toggleWorldAssignment,
         classrooms, addClassroom, updateClassroom, deleteClassroom, assignStudentToClassroom,
         grades, addGrade, updateGrade, deleteGrade
     } = useLearning();
@@ -145,24 +145,29 @@ export default function TeacherDashboard() {
         if (!studentForAssignMap) return;
         setIsAssigningMap(true);
         try {
-            const res = await fetch('/api/teacher/assign-world', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ studentId: studentForAssignMap.id, worldId })
-            });
+            const isAssigned = studentForAssignMap.assignedWorlds?.some(aw => aw.id === worldId);
+            const action = isAssigned ? 'unassign' : 'assign';
 
-            if (res.ok) {
-                alert(`¡Mapa asignado excitósamente a ${studentForAssignMap.name}!`);
-                setShowAssignMapModal(false);
+            const success = await toggleWorldAssignment(studentForAssignMap.id, worldId, action);
+
+            if (success) {
+                // Actualizar estado local del modal para respuesta inmediata visual
+                setStudentForAssignMap(prev => {
+                    if (!prev) return prev;
+                    const currentWorlds = prev.assignedWorlds || [];
+                    const updatedWorlds = action === 'assign'
+                        ? [...currentWorlds, worlds.find(w => w.id === worldId)!]
+                        : currentWorlds.filter(w => w.id !== worldId);
+                    return { ...prev, assignedWorlds: updatedWorlds };
+                });
             } else {
-                alert("Hubo un error asignando el mapa.");
+                alert("Hubo un error modificando la asignación del mapa.");
             }
         } catch (err) {
             console.error("Error assigning map:", err);
-            alert("Error de red asignando el mapa.");
+            alert("Error de red modificando la asignación del mapa.");
         } finally {
             setIsAssigningMap(false);
-            setStudentForAssignMap(null);
         }
     };
 
@@ -1525,21 +1530,27 @@ export default function TeacherDashboard() {
                             {worlds.length === 0 ? (
                                 <p className="text-slate-500 text-center py-4">No has creado ningún mapa todavía.</p>
                             ) : (
-                                worlds.map(w => (
-                                    <div key={w.id} className="p-4 border border-slate-200 rounded-xl hover:border-indigo-300 transition-colors flex items-center justify-between">
-                                        <div>
-                                            <h4 className="font-bold text-slate-700">{w.title || "Aventura Sin Título"}</h4>
-                                            <p className="text-xs text-slate-500">Tema: {w.theme}</p>
+                                worlds.map(w => {
+                                    const isAssigned = studentForAssignMap.assignedWorlds?.some(aw => aw.id === w.id);
+                                    return (
+                                        <div key={w.id} className={`p-4 border rounded-xl transition-colors flex items-center justify-between ${isAssigned ? 'border-indigo-500 bg-indigo-50/30' : 'border-slate-200 hover:border-indigo-300'}`}>
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h4 className={`font-bold ${isAssigned ? 'text-indigo-800' : 'text-slate-700'}`}>{w.title || "Aventura Sin Título"}</h4>
+                                                    {isAssigned && <span className="bg-indigo-100 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Asignado</span>}
+                                                </div>
+                                                <p className="text-xs text-slate-500">Tema: {w.theme}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => handleAssignMapToStudent(w.id)}
+                                                disabled={isAssigningMap}
+                                                className={`px-4 py-2 font-bold rounded-lg transition-colors text-sm disabled:opacity-50 ${isAssigned ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
+                                            >
+                                                {isAssigned ? "Desasignar" : "Asignar"}
+                                            </button>
                                         </div>
-                                        <button
-                                            onClick={() => handleAssignMapToStudent(w.id)}
-                                            disabled={isAssigningMap}
-                                            className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors text-sm disabled:opacity-50"
-                                        >
-                                            Seleccionar
-                                        </button>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     </div>

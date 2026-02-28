@@ -13,7 +13,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { studentId, worldId } = await req.json();
+        const { studentId, worldId, action = 'assign' } = await req.json();
 
         if (!studentId || !worldId) {
             return NextResponse.json({ error: 'Missing studentId or worldId' }, { status: 400 });
@@ -28,13 +28,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'World not found' }, { status: 404 });
         }
 
-        // Connect the specific world to the specific student
+        // Connect or Disconnect the specific world to/from the specific student
         const updatedStudent = await prisma.user.update({
             where: { id: studentId },
             data: {
-                assignedWorlds: {
-                    connect: { id: worldId }
-                }
+                assignedWorlds: action === 'unassign'
+                    ? { disconnect: { id: worldId } }
+                    : { connect: { id: worldId } }
             },
             include: {
                 assignedWorlds: true

@@ -182,25 +182,28 @@ export default function StudentPage() {
                 onOpenProfile={() => setShowProfile(true)}
             />
 
-            {/* Action Bar */}
-            <div className="fixed top-24 left-4 z-40 flex flex-col gap-3">
+            {/* Action Bar Superior Izquierda */}
+            <div className="fixed top-6 left-6 z-40 flex gap-3">
                 <button
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="bg-white/80 backdrop-blur p-2 rounded-full shadow-lg border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all flex items-center gap-2 px-4 font-bold text-sm"
+                    className="bg-white/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all flex items-center justify-center w-12 h-12"
+                    title="Salir de la cuenta"
                 >
-                    <ArrowLeft className="w-4 h-4" /> Salir
+                    <ArrowLeft className="w-5 h-5" />
                 </button>
 
-                {/* If student has multiple maps, show button to return to Lobby */}
+                {/* Si el estudiante tiene múltiples mapas, mostrar botón para regresar al Lobby */}
                 {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
                     <button
                         onClick={() => setSelectedMapId(null)}
-                        className="bg-indigo-600/90 backdrop-blur p-2 rounded-full shadow-lg border border-indigo-400 text-white hover:bg-indigo-700 transition-all flex items-center gap-2 px-4 font-bold text-sm animate-fade-in-up"
+                        className="bg-indigo-600/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-indigo-400 text-white hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 px-5 font-bold text-sm animate-fade-in-up"
                     >
-                        🗺️ Cambiar Mapa
+                        🗺️ Mis Mundos
                     </button>
                 )}
             </div>
+
+
 
             {/* AI Hints from Teacher */}
             {hints.length > 0 && (
