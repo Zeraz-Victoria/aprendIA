@@ -57,7 +57,7 @@ const markdownComponents: any = {
   ),
 };
 
-type Step = "idle" | "preview" | "analyzing" | "feedback" | "text_input";
+type Step = "idle" | "preview" | "analyzing" | "feedback" | "text_input" | "manual_upload";
 
 interface NotebookUploaderProps {
   context?: string;
@@ -283,11 +283,71 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
               />
 
               <button
-                onClick={() => setShowTeacherAuth(true)}
+                onClick={() => setStep("manual_upload")}
                 className="mt-4 text-sm font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline underline-offset-4 transition-colors"
               >
                 No tengo cámara, mi maestro subirá la foto
               </button>
+            </div>
+          )}
+
+          {step === "manual_upload" && (
+            <div className="w-full flex flex-col items-center text-center space-y-6">
+              <div className="bg-amber-100 text-amber-600 p-4 rounded-full">
+                <AlertCircle className="w-12 h-12" />
+              </div>
+              <div>
+                <h4 className="text-2xl font-black text-amber-600 mb-2">¡Aviso Importante!</h4>
+                <p className="text-slate-600 dark:text-slate-300 font-medium">
+                  Pídele a tu maestro que tome la foto, pero <strong className="text-slate-800 dark:text-slate-100">antes asegúrate de ESCRIBIR TU NOMBRE COMPLETO en grande hasta arriba de tu hoja de la libreta</strong> para que la IA pueda reconocerte.
+                </p>
+              </div>
+              <div className="flex gap-3 w-full mt-4">
+                <button
+                  onClick={() => setStep("idle")}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200"
+                >
+                  Regresar
+                </button>
+                <button
+                  onClick={async () => {
+                    setStep("analyzing");
+                    try {
+                      const res = await fetch('/api/teacher/request-manual-evaluation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          studentId,
+                          worldId,
+                          levelId,
+                          evidenceType: requiredEvidenceType
+                        })
+                      });
+                      if (res.ok) {
+                        setFeedback({
+                          correct: true,
+                          message: "¡Listo! Tu solicitud fue enviada. Tu maestro subirá la foto pronto."
+                        });
+                        setStep("feedback");
+                        setTimeout(() => onComplete(true), 3000);
+                      } else {
+                        throw new Error("Error en la solicitud");
+                      }
+                    } catch (e) {
+                      console.error(e);
+                      setFeedback({
+                        correct: false,
+                        canAdvance: false,
+                        message: "Hubo un error al enviar la solicitud. Intenta de nuevo."
+                      });
+                      setStep("feedback");
+                    }
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-lg"
+                >
+                  Entendido, ya lo escribí
+                </button>
+              </div>
             </div>
           )}
 

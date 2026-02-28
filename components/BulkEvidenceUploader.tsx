@@ -5,10 +5,13 @@ import { UploadCloud, Image as ImageIcon, CheckCircle2, Loader2, UserCheck, X } 
 import { useLearning } from "@/contexts/LearningContext";
 
 export default function BulkEvidenceUploader({ onClose }: { onClose: () => void }) {
-    const { students } = useLearning();
+    const { students, worlds } = useLearning();
     const [files, setFiles] = useState<File[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [processedResults, setProcessedResults] = useState<{ file: string, studentId: string, confidence: number, topic?: string, isCorrect?: boolean }[]>([]);
+    const [processingProgress, setProcessingProgress] = useState(0);
+    const [selectedWorldId, setSelectedWorldId] = useState<string>("");
+    const [selectedLevelId, setSelectedLevelId] = useState<string>("");
+    const [processedResults, setProcessedResults] = useState<{ file: string, studentId: string | null, studentName: string | null, confidence: number, topic?: string, isCorrect?: boolean, feedback?: string }[]>([]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -17,11 +20,18 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
     };
 
     const handleProcess = async () => {
+        if (!selectedWorldId || !selectedLevelId) {
+            alert("Por favor selecciona un mapa y un nivel antes de evaluar.");
+            return;
+        }
+
         setIsProcessing(true);
+        setProcessingProgress(0);
         const results = [];
 
         try {
-            for (const file of files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
                 // Convert file to Base64
                 const base64: string = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -30,40 +40,35 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                     reader.onerror = error => reject(error);
                 });
 
-                // Call Gemini API
-                const response = await fetch('/api/analyze-evidence', {
+                // Llama al nuevo endpoint de bulk-evaluate
+                const response = await fetch('/api/teacher/bulk-evaluate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         imageBase64: base64,
-                        mimeType: file.type
+                        mimeType: file.type,
+                        worldId: selectedWorldId,
+                        levelId: selectedLevelId,
+                        fileName: file.name
                     })
                 });
 
                 if (!response.ok) {
                     console.error("API Error", await response.text());
-                    continue; // Skip this file on error
+                    continue;
                 }
 
                 const data = await response.json();
-
-                // Try to match the found name with a real student
-                let matchedStudentId = students[Math.floor(Math.random() * students.length)].id; // Fallback
-
-                if (data.studentName) {
-                    const match = students.find(s => s.name.toLowerCase().includes(data.studentName.toLowerCase()) || data.studentName.toLowerCase().includes(s.name.toLowerCase()));
-                    if (match) {
-                        matchedStudentId = match.id;
-                    }
-                }
-
                 results.push({
                     file: file.name,
-                    studentId: matchedStudentId,
-                    confidence: data.confidenceScore || 0.9,
-                    topic: data.topic,
-                    isCorrect: data.isCorrect
+                    studentId: data.studentId, // ID or null si no se reconoció
+                    studentName: data.nombreEncontradoEnImagen,
+                    confidence: 0.95,
+                    isCorrect: data.puedeAvanzar,
+                    feedback: data.feedback
                 });
+
+                setProcessingProgress(i + 1);
             }
 
             setProcessedResults(results);
@@ -87,6 +92,30 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
 
             {!processedResults.length ? (
                 <div className="space-y-6">
+                    <div className="flex gap-4 mb-4">
+                        <select
+                            value={selectedWorldId}
+                            onChange={(e) => { setSelectedWorldId(e.target.value); setSelectedLevelId(""); }}
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400"
+                        >
+                            <option value="">Selecciona un Mapa / Nivel</option>
+                            {worlds.map(w => (
+                                <option key={w.id} value={w.id}>🗺️ {w.title || w.theme}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={selectedLevelId}
+                            onChange={(e) => setSelectedLevelId(e.target.value)}
+                            disabled={!selectedWorldId}
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 disabled:opacity-50"
+                        >
+                            <option value="">Selecciona la Actividad</option>
+                            {selectedWorldId && worlds.find(w => w.id === selectedWorldId)?.days.map(d => (
+                                <option key={d.dayNumber} value={d.dayNumber.toString()}> Nivel {d.dayNumber}: {d.title || 'Actividad'}</option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="border-4 border-dashed border-slate-200 rounded-3xl p-12 text-center hover:bg-slate-50 transition cursor-pointer relative">
                         <input type="file" multiple accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleFileSelect} />
                         <ImageIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
@@ -109,11 +138,11 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                         </button>
                         <button
                             onClick={handleProcess}
-                            disabled={files.length === 0 || isProcessing}
+                            disabled={files.length === 0 || isProcessing || !selectedWorldId || !selectedLevelId}
                             className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             {isProcessing ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
-                            {isProcessing ? "Analizando Imágenes..." : "Procesar con IA"}
+                            {isProcessing ? `Evaluando ${processingProgress} de ${files.length} libretas...` : "Iniciar Evaluación Mágica"}
                         </button>
                     </div>
                 </div>
@@ -156,11 +185,19 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 bg-slate-50 px-3 py-1 rounded-full">
-                                    <UserCheck className="w-4 h-4 text-indigo-500" />
-                                    <span className="text-sm font-bold text-slate-600">
-                                        {students.find(s => s.id === res.studentId)?.name}
-                                    </span>
+                                <div className="flex items-center gap-3">
+                                    {res.studentId ? (
+                                        <div className="bg-slate-50 px-3 py-1 rounded-full flex items-center gap-2">
+                                            <UserCheck className="w-4 h-4 text-indigo-500" />
+                                            <span className="text-sm font-bold text-slate-600">
+                                                {students.find(s => s.id === res.studentId)?.name || 'Alumno asignado'}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full flex items-center gap-2 text-sm font-bold">
+                                            <X className="w-4 h-4" /> Alumno no reconocido ({res.studentName || 'Ilegible'})
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}

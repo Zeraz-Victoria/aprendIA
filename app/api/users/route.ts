@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
@@ -14,13 +16,8 @@ export async function GET() {
                 ...(schoolId ? { schoolId } : {})
             },
             orderBy: { name: 'asc' },
-            select: {
-                id: true, name: true, email: true, avatar: true, role: true,
-                status: true, lastActivity: true, lives: true, gems: true,
-                streak: true, xp: true, classroomId: true,
-                assignedWorlds: {
-                    select: { id: true, title: true, theme: true }
-                }
+            include: {
+                assignedWorlds: true
             }
         });
 
