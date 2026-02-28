@@ -17,6 +17,12 @@ export async function GET(req: Request) {
 
         const baseWhere: any = schoolId ? { schoolId } : {};
 
+        // Students only see active worlds
+        const isStudent = session?.user && (session.user as any).role === 'STUDENT';
+        if (isStudent) {
+            baseWhere.isActive = true;
+        }
+
         const whereClause: any = classroomId
             ? {
                 ...baseWhere,
@@ -102,5 +108,31 @@ export async function POST(req: Request) {
     } catch (error) {
         console.error('Error creating world:', error);
         return NextResponse.json({ error: 'Failed to create world' }, { status: 500 });
+    }
+}
+
+// PATCH - Toggle isActive for a world
+export async function PATCH(req: Request) {
+    try {
+        const body = await req.json();
+        const { worldId, isActive } = body;
+
+        if (!worldId || typeof isActive !== 'boolean') {
+            return NextResponse.json({ error: 'worldId and isActive (boolean) are required' }, { status: 400 });
+        }
+
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        await prisma.world.update({
+            where: { id: worldId },
+            // @ts-ignore - isActive field will exist after next deploy migration
+            data: { isActive }
+        });
+
+        return NextResponse.json({ success: true, worldId, isActive });
+    } catch (error) {
+        console.error('Error updating world isActive:', error);
+        return NextResponse.json({ error: 'Failed to update world' }, { status: 500 });
     }
 }

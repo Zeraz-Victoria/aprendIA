@@ -125,6 +125,7 @@ model World {
   theme        String // e.g., "detective", "explorer"
   daysJson     String // Store the complex LevelContent array as JSON string for now
   pedagogyJson String? // Store the pedagogy metadata as JSON string
+  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
 
   // Multi-tenant
