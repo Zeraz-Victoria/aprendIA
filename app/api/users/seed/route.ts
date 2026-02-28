@@ -7,10 +7,10 @@ export async function POST() {
         const studentExist = await prisma.user.count({ where: { role: 'STUDENT' } });
         if (studentExist === 0) {
             const studentsToSeed = [
-                { name: "Jimena", avatar: "👩🏻‍🎓", status: "active", lives: 5, gems: 450, streak: 12, xp: 1250 },
+                { name: "Jimena", avatar: "👩🏻‍🎓", status: "active", lives: 3, gems: 450, streak: 12, xp: 1250 },
                 { name: "Mateo", avatar: "👦🏽", status: "needs_help", lives: 2, gems: 120, streak: 2, xp: 400 },
-                { name: "Sofia", avatar: "👧🏼", status: "active", lives: 5, gems: 900, streak: 25, xp: 3200 },
-                { name: "Lucas", avatar: "🧑🏻", status: "idle", lives: 4, gems: 50, streak: 0, xp: 100 },
+                { name: "Sofia", avatar: "👧🏼", status: "active", lives: 3, gems: 900, streak: 25, xp: 3200 },
+                { name: "Lucas", avatar: "🧑🏻", status: "idle", lives: 3, gems: 50, streak: 0, xp: 100 },
             ];
 
             await prisma.user.createMany({

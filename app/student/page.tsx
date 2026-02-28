@@ -19,13 +19,16 @@ interface HintData {
 }
 
 export default function StudentPage() {
-    const { currentUser } = useLearning();
+    const { currentUser, setActiveWorld } = useLearning();
     const { status } = useSession();
     const router = useRouter();
     const [showStore, setShowStore] = useState(false);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
     const [hints, setHints] = useState<HintData[]>([]);
+
+    // State to determine if we are in Lobby or inside a specific Map
+    const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
 
     const fetchHints = useCallback(async () => {
         if (!currentUser?.id) return;
@@ -69,29 +72,134 @@ export default function StudentPage() {
         }
     }, [mounted, status, router]);
 
+    // Auto-select map logic if only one is assigned
+    useEffect(() => {
+        if (currentUser && currentUser.assignedWorlds) {
+            if (currentUser.assignedWorlds.length === 1 && !selectedMapId) {
+                const soleMapId = currentUser.assignedWorlds[0].id;
+                setSelectedMapId(soleMapId);
+                setActiveWorld(soleMapId);
+            }
+        }
+    }, [currentUser, selectedMapId, setActiveWorld]);
+
     // Consistent loading for SSR + client
     if (!mounted || status === "loading" || !currentUser) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50 flex items-center justify-center">
-                <div className="animate-pulse text-teal-600 font-bold text-xl">Cargando tu aventura...</div>
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <div className="animate-pulse text-indigo-600 font-bold text-xl">Cargando tu aventura...</div>
             </div>
         );
     }
 
+    // THE LOBBY VIEW
+    if (!selectedMapId) {
+        return (
+            <main className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+                <div className="absolute top-4 left-4 z-40">
+                    <button
+                        onClick={() => signOut({ callbackUrl: "/" })}
+                        className="bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-white/20 transition-all flex flex-col items-center justify-center w-12 h-12 rounded-full font-bold shadow-2xl"
+                        title="Cerrar Sesión"
+                    >
+                        <ArrowLeft className="w-5 h-5 mb-0.5" />
+                        <span className="text-[8px] uppercase tracking-wider">Salir</span>
+                    </button>
+                </div>
+
+                {/* Visual Background Elements */}
+                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-fuchsia-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+
+                <div className="w-full max-w-5xl z-10 animate-fade-in-up">
+                    <div className="text-center mb-12">
+                        <div className="inline-block bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-2 mb-6 shadow-2xl">
+                            <h2 className="text-white font-bold tracking-widest text-sm uppercase flex items-center gap-2">
+                                <span className="text-2xl">{currentUser.avatar}</span> Hola, {currentUser.name}
+                            </h2>
+                        </div>
+                        <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-emerald-300 to-sky-300 mb-4 drop-shadow-sm">
+                            Elige tu Destino
+                        </h1>
+                        <p className="text-indigo-200 text-lg md:text-xl font-medium max-w-2xl mx-auto">
+                            Tienes {currentUser.assignedWorlds?.length || 0} aventuras disponibles. ¿En cuál quieres adentrarte el día de hoy?
+                        </p>
+                    </div>
+
+                    {!currentUser.assignedWorlds || currentUser.assignedWorlds.length === 0 ? (
+                        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-12 text-center max-w-2xl mx-auto shadow-2xl">
+                            <div className="text-6xl mb-4 opacity-50">🏝️</div>
+                            <h3 className="text-2xl font-bold text-white mb-2">Aún no tienes mundos asignados</h3>
+                            <p className="text-indigo-200 mb-6">Tu maestro debe asignarte una aventura para que puedas comenzar a jugar. ¡Pronto habrá retos increíbles!</p>
+                            <button onClick={() => window.location.reload()} className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-full transition-all active:scale-95 shadow-lg shadow-indigo-900/50">
+                                Recargar
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
+                            {currentUser.assignedWorlds.map((world, idx) => (
+                                <button
+                                    key={world.id}
+                                    onClick={() => {
+                                        setSelectedMapId(world.id);
+                                        setActiveWorld(world.id);
+                                    }}
+                                    className="group text-left relative bg-white/10 backdrop-blur-md border object-cover border-white/20 rounded-3xl p-8 hover:bg-white/20 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(45,212,191,0.3)] hover:-translate-y-2 overflow-hidden flex flex-col h-full min-h-[250px]"
+                                >
+                                    {/* Map Card Background Glow */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                                    <div className="relative z-10 flex-1 flex flex-col">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-lg shadow-teal-500/30 transform group-hover:rotate-12 transition-transform">
+                                            🗺️
+                                        </div>
+                                        <h3 className="text-2xl font-black text-white mb-2 leading-tight">
+                                            {world.title || `Mundo ${idx + 1}`}
+                                        </h3>
+                                        <p className="text-indigo-200 font-medium text-sm mt-auto">
+                                            Tema: {world.theme}
+                                        </p>
+                                    </div>
+
+                                    <div className="relative z-10 mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-teal-300 font-bold text-sm uppercase tracking-wider group-hover:text-teal-200">
+                                        <span>Entrar al Mapa</span>
+                                        <span className="transform group-hover:translate-x-1 transition-transform">→</span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </main>
+        );
+    }
+
     return (
-        <main className="min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50">
+        <main className="min-h-screen bg-slate-50">
             <StudentHUD
                 onOpenStore={() => setShowStore(true)}
                 onOpenLeaderboard={() => setShowLeaderboard(true)}
                 onOpenProfile={() => setShowProfile(true)}
             />
-            <div className="fixed top-24 left-4 z-40">
+
+            {/* Action Bar */}
+            <div className="fixed top-24 left-4 z-40 flex flex-col gap-3">
                 <button
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="bg-white/80 backdrop-blur p-2 rounded-full shadow-lg border border-teal-100 text-teal-700 hover:bg-teal-50 hover:text-teal-900 transition-all flex items-center gap-2 px-4 font-bold text-sm"
+                    className="bg-white/80 backdrop-blur p-2 rounded-full shadow-lg border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all flex items-center gap-2 px-4 font-bold text-sm"
                 >
                     <ArrowLeft className="w-4 h-4" /> Salir
                 </button>
+
+                {/* If student has multiple maps, show button to return to Lobby */}
+                {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
+                    <button
+                        onClick={() => setSelectedMapId(null)}
+                        className="bg-indigo-600/90 backdrop-blur p-2 rounded-full shadow-lg border border-indigo-400 text-white hover:bg-indigo-700 transition-all flex items-center gap-2 px-4 font-bold text-sm animate-fade-in-up"
+                    >
+                        🗺️ Cambiar Mapa
+                    </button>
+                )}
             </div>
 
             {/* AI Hints from Teacher */}

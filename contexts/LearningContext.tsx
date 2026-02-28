@@ -45,6 +45,7 @@ export interface DBUser {
   streak: number;
   xp: number;
   classroomId: string | null;
+  assignedWorlds?: { id: string, title?: string, theme: string }[];
 }
 
 export interface Student {
@@ -59,6 +60,7 @@ export interface Student {
   streak: number;
   xp: number;
   classroomId?: string | null;
+  assignedWorlds?: { id: string, title?: string, theme: string }[];
 }
 
 // Progress Map: studentId -> worldId -> completedLevels[]
@@ -139,7 +141,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
   // Gamification Session & Students
   const [students, setStudents] = useState<Student[]>([]);
   const [stats, setStats] = useState<StudentStats>({
-    lives: 5,
+    lives: 3,
     gems: 0,
     streak: 0,
     xp: 0

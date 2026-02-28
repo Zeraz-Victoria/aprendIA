@@ -19,7 +19,7 @@ model User {
   lastActivity  DateTime  @default(now())
 
   // Gamification Stats
-  lives  Int @default(5)
+  lives  Int @default(3)
   gems   Int @default(0)
   streak Int @default(0)
   xp     Int @default(0)
@@ -39,6 +39,7 @@ model User {
   raidContributions RaidContribution[]
   hints             Hint[]
   studentMissions   StudentMission[]
+  assignedWorlds    World[] @relation("StudentAssignedWorlds")
   evidenceEntries   EvidenceEntry[]
 
   // Classroom relations
@@ -134,6 +135,7 @@ model World {
   progress        Progress[]
   classrooms      Classroom[]
   studentMissions StudentMission[]
+  assignedStudents User[] @relation("StudentAssignedWorlds")
   evidenceEntries EvidenceEntry[]
 }
 

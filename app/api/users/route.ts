@@ -17,7 +17,10 @@ export async function GET() {
             select: {
                 id: true, name: true, email: true, avatar: true, role: true,
                 status: true, lastActivity: true, lives: true, gems: true,
-                streak: true, xp: true, classroomId: true
+                streak: true, xp: true, classroomId: true,
+                assignedWorlds: {
+                    select: { id: true, title: true, theme: true }
+                }
             }
         });
 
@@ -62,7 +65,7 @@ export async function POST(req: NextRequest) {
                 avatar: avatar || '🧑🏻',
                 role: 'STUDENT',
                 status: 'active',
-                lives: 5,
+                lives: 3,
                 gems: 0,
                 streak: 0,
                 xp: 0,

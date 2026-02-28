@@ -28,8 +28,8 @@ export default function Home() {
   // Show a consistent loading state for both server and client
   if (!mounted || status === "loading" || (status === "authenticated" && session?.user)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50 flex items-center justify-center">
-        <div className="animate-pulse text-teal-600 font-bold text-xl">Cargando...</div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="animate-pulse text-indigo-600 font-bold text-xl">Cargando...</div>
       </div>
     );
   }
@@ -58,30 +58,30 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50 relative overflow-hidden">
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-slate-50 relative overflow-hidden">
       {/* Background Decor */}
       <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] pointer-events-none"></div>
-      <div className="absolute bottom-10 right-10 text-teal-900/10 animate-bounce-slow pointer-events-none">
+      <div className="absolute bottom-10 right-10 text-indigo-900/10 animate-bounce-slow pointer-events-none">
         <Sparkles className="w-32 h-32" />
       </div>
 
       <div className="z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-black font-serif text-teal-900 mb-2 tracking-tight drop-shadow-sm">
-            Edu<span className="text-teal-600">Quest</span>
+          <h1 className="text-4xl md:text-5xl font-black font-serif text-slate-800 mb-2 tracking-tight drop-shadow-sm">
+            Edu<span className="text-indigo-600">Quest</span>
           </h1>
-          <p className="text-teal-800/70 font-medium">
+          <p className="text-slate-500 font-medium">
             Ingresa a tu aula virtual
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-teal-100">
-          <div className="bg-gradient-to-r from-teal-600 to-emerald-600 p-8 text-center">
-            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur">
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+          <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-8 text-center shadow-inner">
+            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur shadow-sm">
               <BookOpen className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white">¡Bienvenido!</h2>
-            <p className="text-teal-100 text-sm mt-1">Alumnos, Docentes y Admin</p>
+            <p className="text-indigo-100 text-sm mt-1">Alumnos, Docentes y Admin</p>
           </div>
 
           <div className="p-8">
@@ -96,7 +96,7 @@ export default function Home() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition font-medium text-slate-800"
+                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition font-medium text-slate-800"
                     placeholder="Ej. Sofía, Profe..."
                     autoFocus
                     disabled={isLoggingIn}
@@ -114,7 +114,7 @@ export default function Home() {
                     type="text"
                     value={accessCode}
                     onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase"
+                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase"
                     placeholder="Ej. X7P9K"
                     disabled={isLoggingIn}
                     maxLength={10}
@@ -123,7 +123,7 @@ export default function Home() {
               </div>
 
               {error && (
-                <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg text-center">
+                <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg text-center border border-red-100">
                   {error}
                 </p>
               )}
@@ -131,7 +131,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={!name.trim() || isLoggingIn}
-                className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
               >
                 {isLoggingIn ? "Ingresando..." : <>Ingresar <ArrowRight className="w-5 h-5" /></>}
               </button>
@@ -146,7 +146,7 @@ export default function Home() {
         </div>
       </div>
 
-      <footer className="absolute bottom-4 text-center text-teal-900/40 text-sm font-semibold">
+      <footer className="absolute bottom-4 text-center text-slate-400 text-sm font-semibold">
         © 2024 EduQuest • Learning Engine
       </footer>
     </main>

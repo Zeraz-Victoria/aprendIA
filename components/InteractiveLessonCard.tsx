@@ -642,12 +642,14 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     <div className="flex gap-2 items-center">
                         {/* Inline Lives/Gems/Streak */}
                         <div className="flex items-center gap-3 mr-2 bg-white/60 dark:bg-slate-700/60 px-3 py-1 rounded-full">
-                            <div className="flex items-center gap-0.5">
+                            <div className="flex gap-1 animate-fade-in-up">
+                                {/* Painted hearts for current lives */}
                                 {Array.from({ length: Math.max(stats.lives, 0) }).map((_, i) => (
-                                    <Heart key={i} className="w-4 h-4 text-red-500 fill-red-500" />
+                                    <Heart key={`full-${i}`} className="w-8 h-8 md:w-10 md:h-10 text-red-500 fill-red-500 drop-shadow-md animate-pulse" />
                                 ))}
-                                {Array.from({ length: Math.max(0, 5 - stats.lives) }).map((_, i) => (
-                                    <Heart key={`empty-${i}`} className="w-4 h-4 text-slate-300" />
+                                {/* Empty hearts for lost lives */}
+                                {Array.from({ length: Math.max(0, 3 - stats.lives) }).map((_, i) => (
+                                    <Heart key={`empty-${i}`} className="w-8 h-8 md:w-10 md:h-10 text-slate-300 fill-slate-200" />
                                 ))}
                             </div>
                             <div className="flex items-center gap-0.5">

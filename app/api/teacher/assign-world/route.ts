@@ -1,0 +1,54 @@
+// Force Editor cache refresh
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+
+export async function POST(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        const user = session?.user as any;
+
+        if (!session || (user.role !== 'TEACHER' && user.role !== 'SUPERADMIN')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { studentId, worldId } = await req.json();
+
+        if (!studentId || !worldId) {
+            return NextResponse.json({ error: 'Missing studentId or worldId' }, { status: 400 });
+        }
+
+        // Verify that the world actually exists
+        const world = await prisma.world.findUnique({
+            where: { id: worldId }
+        });
+
+        if (!world) {
+            return NextResponse.json({ error: 'World not found' }, { status: 404 });
+        }
+
+        // Connect the specific world to the specific student
+        const updatedStudent = await prisma.user.update({
+            where: { id: studentId },
+            data: {
+                assignedWorlds: {
+                    connect: { id: worldId }
+                }
+            },
+            include: {
+                assignedWorlds: true
+            }
+        }) as any;
+
+        return NextResponse.json({
+            success: true,
+            message: `Mapa ${world.title} asignado exitosamente al alumno.`,
+            assignedWorlds: updatedStudent.assignedWorlds
+        });
+
+    } catch (error) {
+        console.error('Error assigning world:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

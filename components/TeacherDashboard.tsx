@@ -57,6 +57,11 @@ export default function TeacherDashboard() {
     const [aiReport, setAiReport] = useState<string | null>(null);
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
+    // Multi-Map Assignment State
+    const [showAssignMapModal, setShowAssignMapModal] = useState(false);
+    const [studentForAssignMap, setStudentForAssignMap] = useState<Student | null>(null);
+    const [isAssigningMap, setIsAssigningMap] = useState(false);
+
     // Raid Boss Management State
     const [raidBossName, setRaidBossName] = useState("Dragón del Caos");
     const [raidBossEmoji, setRaidBossEmoji] = useState("🐉");
@@ -135,6 +140,31 @@ export default function TeacherDashboard() {
     const [selectedClassroomInModal, setSelectedClassroomInModal] = useState<string>("");
     const [savingStudent, setSavingStudent] = useState(false);
     const AVATAR_OPTIONS = ["🧑🏻", "👦🏽", "👧🏼", "👩🏻‍🎓", "👨🏽‍🎓", "🧒🏾", "👦🏻", "👧🏽", "🧑🏿", "👩🏼", "👨🏻", "🧑🏽", "👧🏻", "👦🏾", "👩🏽", "🧒🏻"];
+
+    const handleAssignMapToStudent = async (worldId: string) => {
+        if (!studentForAssignMap) return;
+        setIsAssigningMap(true);
+        try {
+            const res = await fetch('/api/teacher/assign-world', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: studentForAssignMap.id, worldId })
+            });
+
+            if (res.ok) {
+                alert(`¡Mapa asignado excitósamente a ${studentForAssignMap.name}!`);
+                setShowAssignMapModal(false);
+            } else {
+                alert("Hubo un error asignando el mapa.");
+            }
+        } catch (err) {
+            console.error("Error assigning map:", err);
+            alert("Error de red asignando el mapa.");
+        } finally {
+            setIsAssigningMap(false);
+            setStudentForAssignMap(null);
+        }
+    };
 
     const handleSaveStudent = async () => {
         if (!studentName.trim()) return;
@@ -584,7 +614,7 @@ export default function TeacherDashboard() {
     // Metrics already calculated above handler
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50 flex">
+        <div className="min-h-screen bg-slate-50 flex">
             {isSuspended && (
                 <div className="fixed top-0 left-0 w-full z-[100] bg-red-600 text-white text-center py-3 font-bold shadow-lg flex items-center justify-center gap-2">
                     <AlertTriangle className="w-5 h-5" />
@@ -593,29 +623,29 @@ export default function TeacherDashboard() {
             )}
 
             {/* Sidebar */}
-            <aside className="w-64 bg-white/80 backdrop-blur-sm border-r border-teal-100 hidden md:flex flex-col">
-                <div className="p-6 border-b border-teal-50">
-                    <h1 className="text-xl font-bold text-teal-800 flex items-center gap-2">
-                        <BookOpen className="text-teal-600" />
+            <aside className="w-64 bg-white/80 backdrop-blur-sm border-r border-indigo-100 hidden md:flex flex-col">
+                <div className="p-6 border-b border-indigo-50">
+                    <h1 className="text-xl font-bold text-indigo-800 flex items-center gap-2">
+                        <BookOpen className="text-indigo-600" />
                         Aula Virtual
                     </h1>
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
                     <button
                         onClick={() => setActiveTab("students")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'students' ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-500 hover:bg-teal-50/50 hover:text-teal-600'}`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'students' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-indigo-50/50 hover:text-indigo-600'}`}
                     >
                         <Users className="w-4 h-4" /> Estudiantes
                     </button>
                     <button
                         onClick={() => setActiveTab("library")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'library' ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-500 hover:bg-teal-50/50 hover:text-teal-600'}`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'library' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-indigo-50/50 hover:text-indigo-600'}`}
                     >
                         <Library className="w-4 h-4" /> Mi Biblioteca
                     </button>
                     <button
                         onClick={() => setActiveTab("insights")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'insights' ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-500 hover:bg-teal-50/50 hover:text-teal-600'}`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'insights' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-indigo-50/50 hover:text-indigo-600'}`}
                     >
                         <BrainCircuit className="w-4 h-4" /> Análisis Inteligente
                     </button>
@@ -626,10 +656,10 @@ export default function TeacherDashboard() {
                         <span>💳</span> Mi Suscripción
                     </button>
                 </nav>
-                <div className="p-4 border-t border-teal-50">
+                <div className="p-4 border-t border-indigo-50">
                     <button
                         onClick={() => signOut({ callbackUrl: "/" })}
-                        className="w-full text-left flex items-center gap-2 text-sm text-slate-500 hover:text-teal-600 p-2 rounded-lg transition-colors hover:bg-teal-50"
+                        className="w-full text-left flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 p-2 rounded-lg transition-colors hover:bg-indigo-50"
                     >
                         <LogOut className="w-4 h-4" /> Cerrar Sesión
                     </button>
@@ -642,17 +672,17 @@ export default function TeacherDashboard() {
                 {activeTab === 'insights' && (
                     <header className="flex justify-between items-center mb-8">
                         <div>
-                            <h2 className="text-2xl font-bold text-teal-900">
+                            <h2 className="text-2xl font-bold text-indigo-900">
                                 Panel de Análisis
                             </h2>
-                            <p className="text-teal-600/70">Progreso y alertas filtrados por mapa • Rendimiento global</p>
+                            <p className="text-indigo-600/70">Progreso y alertas filtrados por mapa • Rendimiento global</p>
                         </div>
                         <div className="flex gap-2 items-center">
                             {/* Map Selector for per-map filtering */}
                             <select
                                 value={effectiveInsightWorldId}
                                 onChange={e => setSelectedInsightWorldId(e.target.value)}
-                                className="bg-white/80 border border-teal-200 rounded-xl px-3 py-2 text-sm font-medium text-teal-700 focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+                                className="bg-white/80 border border-indigo-200 rounded-xl px-3 py-2 text-sm font-medium text-indigo-700 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400"
                             >
                                 {worlds.map(w => (
                                     <option key={w.id} value={w.id}>
@@ -737,7 +767,7 @@ export default function TeacherDashboard() {
                         <div className="flex flex-wrap gap-3">
                             <button
                                 onClick={() => setShowBulkModal(true)}
-                                className="bg-white/80 border border-teal-200 hover:bg-teal-50 text-teal-700 px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
+                                className="bg-white/80 border border-indigo-200 hover:bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
                             >
                                 <UploadCloud className="w-4 h-4" />
                                 Subir Evidencias
@@ -749,7 +779,7 @@ export default function TeacherDashboard() {
                                     setEditingWorld(null);
                                     setShowBuilderModal(true);
                                 }}
-                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-teal-600 hover:bg-teal-700'} text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-teal-200 transition-all flex items-center gap-2`}
+                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2`}
                             >
                                 <Map className="w-4 h-4" />
                                 Constructor Manual
@@ -775,9 +805,9 @@ export default function TeacherDashboard() {
                                 </div>
                             ) : (
                                 worlds.map(w => (
-                                    <div key={w.id} className={`bg-white p-6 rounded-2xl border-2 transition-all relative ${activeWorldId === w.id ? 'border-teal-500 ring-4 ring-teal-50' : 'border-slate-100 hover:border-slate-300'}`}>
+                                    <div key={w.id} className={`bg-white p-6 rounded-2xl border-2 transition-all relative ${activeWorldId === w.id ? 'border-indigo-500 ring-4 ring-indigo-50' : 'border-slate-100 hover:border-slate-300'}`}>
                                         {activeWorldId === w.id && (
-                                            <span className="absolute top-4 right-4 bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full font-bold">
+                                            <span className="absolute top-4 right-4 bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full font-bold">
                                                 Activa
                                             </span>
                                         )}
@@ -846,8 +876,8 @@ export default function TeacherDashboard() {
                                 <button
                                     onClick={() => setSelectedClassroomId("all")}
                                     className={`px-4 py-2 rounded-xl border-2 transition-all whitespace-nowrap font-bold text-sm flex items-center gap-2 ${selectedClassroomId === "all"
-                                        ? "bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-200"
-                                        : "bg-white border-slate-100 text-slate-500 hover:border-teal-200"
+                                        ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200"
+                                        : "bg-white border-slate-100 text-slate-500 hover:border-indigo-200"
                                         }`}
                                 >
                                     Todos los Grupos
@@ -1002,7 +1032,7 @@ export default function TeacherDashboard() {
                                         setStudentAvatar("🧑🏻");
                                         setShowAddStudentModal(true);
                                     }}
-                                    className={`${isSuspended || studentsLimitReached ? 'bg-slate-400' : 'bg-teal-600 hover:bg-teal-700'} text-white px-4 py-2 rounded-full font-bold shadow-lg shadow-teal-200 transition-all flex items-center gap-2 text-sm`}
+                                    className={`${isSuspended || studentsLimitReached ? 'bg-slate-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white px-4 py-2 rounded-full font-bold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2 text-sm`}
                                 >
                                     <UserPlus className="w-4 h-4" />
                                     Agregar Alumno
@@ -1041,10 +1071,20 @@ export default function TeacherDashboard() {
                                                             ></div>
                                                         </div>
                                                     </div>
-                                                    <div className="col-span-2 text-right font-bold text-slate-600">
+                                                    <div className="col-span-2 flex justify-end gap-2 text-right font-bold text-slate-600">
                                                         {calculatedProgress}%
                                                     </div>
-                                                    <div className="col-span-2 flex justify-end gap-2">
+                                                    <div className="col-span-3 flex justify-end gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setStudentForAssignMap(student);
+                                                                setShowAssignMapModal(true);
+                                                            }}
+                                                            className="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 hover:text-indigo-700 transition-colors flex gap-2 items-center text-xs"
+                                                            title="Asignar mapa"
+                                                        >
+                                                            <Map className="w-4 h-4" /> Asignar Mapa
+                                                        </button>
                                                         <button
                                                             onClick={() => {
                                                                 setEditingStudent(student);
@@ -1079,14 +1119,14 @@ export default function TeacherDashboard() {
                 {activeTab === 'insights' && (
                     <div className="space-y-6">
                         {/* Reports Generation Header */}
-                        <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-teal-100 flex justify-between items-center">
+                        <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-indigo-100 flex justify-between items-center">
                             <div>
-                                <h3 className="text-xl font-bold text-teal-900">Reportes de Progreso</h3>
-                                <p className="text-teal-600/70 text-sm mt-1">Genera reportes PDF detallados para padres o administración escolar.</p>
+                                <h3 className="text-xl font-bold text-indigo-900">Reportes de Progreso</h3>
+                                <p className="text-indigo-600/70 text-sm mt-1">Genera reportes PDF detallados para padres o administración escolar.</p>
                             </div>
                             <button
                                 onClick={handleDownloadPDF}
-                                className="bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-teal-200 transition-all flex items-center gap-2">
+                                className="bg-gradient-to-r from-indigo-500 to-emerald-500 hover:from-indigo-600 hover:to-emerald-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2">
                                 <FileText className="w-5 h-5" />
                                 Generar Reporte de Clase (PDF)
                             </button>
@@ -1094,7 +1134,7 @@ export default function TeacherDashboard() {
 
                         <div className="grid md:grid-cols-2 gap-6">
                             {/* Early Warning System */}
-                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-teal-100 relative overflow-hidden">
+                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-indigo-100 relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-2 h-full bg-red-500"></div>
                                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
                                     <AlertTriangle className="w-5 h-5 text-red-500" /> Sistema de Alerta Temprana
@@ -1173,11 +1213,11 @@ export default function TeacherDashboard() {
                             </div>
 
                             {/* AI General Trends -> Dynamic Student Trends */}
-                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-teal-100 flex flex-col">
+                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-indigo-100 flex flex-col">
                                 <div className="flex justify-between items-center mb-4">
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
-                                            <TrendingUp className="w-5 h-5 text-teal-500" /> Rendimiento y Emociones
+                                            <TrendingUp className="w-5 h-5 text-indigo-500" /> Rendimiento y Emociones
                                         </h3>
                                         <p className="text-xs text-slate-400">🌐 Global — Todos los mapas activos</p>
                                     </div>
@@ -1253,16 +1293,16 @@ export default function TeacherDashboard() {
             </main>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-teal-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-between items-center px-6 py-3 z-50">
-                <button onClick={() => setActiveTab("students")} className={`flex flex-col items-center gap-1 ${activeTab === 'students' ? 'text-teal-600' : 'text-slate-400'}`}>
+            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-indigo-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-between items-center px-6 py-3 z-50">
+                <button onClick={() => setActiveTab("students")} className={`flex flex-col items-center gap-1 ${activeTab === 'students' ? 'text-indigo-600' : 'text-slate-400'}`}>
                     <Users className="w-5 h-5" />
                     <span className="text-[10px] font-bold">Alumnos</span>
                 </button>
-                <button onClick={() => setActiveTab("library")} className={`flex flex-col items-center gap-1 ${activeTab === 'library' ? 'text-teal-600' : 'text-slate-400'}`}>
+                <button onClick={() => setActiveTab("library")} className={`flex flex-col items-center gap-1 ${activeTab === 'library' ? 'text-indigo-600' : 'text-slate-400'}`}>
                     <Library className="w-5 h-5" />
                     <span className="text-[10px] font-bold">Mapas</span>
                 </button>
-                <button onClick={() => setActiveTab("insights")} className={`flex flex-col items-center gap-1 ${activeTab === 'insights' ? 'text-teal-600' : 'text-slate-400'}`}>
+                <button onClick={() => setActiveTab("insights")} className={`flex flex-col items-center gap-1 ${activeTab === 'insights' ? 'text-indigo-600' : 'text-slate-400'}`}>
                     <BrainCircuit className="w-5 h-5" />
                     <span className="text-[10px] font-bold">Análisis</span>
                 </button>
@@ -1421,7 +1461,7 @@ export default function TeacherDashboard() {
                             <button
                                 onClick={handleSaveStudent}
                                 disabled={!studentName.trim() || savingStudent}
-                                className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl shadow-lg shadow-teal-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
                             >
                                 {savingStudent ? "Guardando..." : (editingStudent ? "Guardar Cambios" : "Agregar Alumno")}
                             </button>
@@ -1456,6 +1496,51 @@ export default function TeacherDashboard() {
                             >
                                 {savingStudent ? "Eliminando..." : "Sí, Eliminar"}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Assign Map Modal */}
+            {showAssignMapModal && studentForAssignMap && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-lg p-6 md:p-8 relative shadow-2xl">
+                        <button
+                            onClick={() => { setShowAssignMapModal(false); setStudentForAssignMap(null); }}
+                            className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition"
+                        >
+                            <X className="w-5 h-5 text-slate-600" />
+                        </button>
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="text-4xl">{studentForAssignMap.avatar}</div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-800">
+                                    Asignar Mapa a {studentForAssignMap.name}
+                                </h3>
+                                <p className="text-sm text-slate-500">Selecciona el mapa al que tendrá acceso.</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                            {worlds.length === 0 ? (
+                                <p className="text-slate-500 text-center py-4">No has creado ningún mapa todavía.</p>
+                            ) : (
+                                worlds.map(w => (
+                                    <div key={w.id} className="p-4 border border-slate-200 rounded-xl hover:border-indigo-300 transition-colors flex items-center justify-between">
+                                        <div>
+                                            <h4 className="font-bold text-slate-700">{w.title || "Aventura Sin Título"}</h4>
+                                            <p className="text-xs text-slate-500">Tema: {w.theme}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => handleAssignMapToStudent(w.id)}
+                                            disabled={isAssigningMap}
+                                            className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors text-sm disabled:opacity-50"
+                                        >
+                                            Seleccionar
+                                        </button>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1520,7 +1605,7 @@ export default function TeacherDashboard() {
                                             </button>
                                             <button
                                                 onClick={handleAiIntervention}
-                                                className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-teal-200 transition-transform active:scale-95 flex items-center gap-2"
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-transform active:scale-95 flex items-center gap-2"
                                             >
                                                 <Map className="w-4 h-4" />
                                                 Crear Misión Autónoma
@@ -1631,7 +1716,7 @@ export default function TeacherDashboard() {
                                                         }
                                                         setIsGeneratingReport(false);
                                                     }}
-                                                    className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
                                                 >
                                                     <BrainCircuit className="w-4 h-4" /> Generar Reporte para Docente (IA)
                                                 </button>
@@ -1824,7 +1909,7 @@ export default function TeacherDashboard() {
                                     <button
                                         onClick={handleSendHint}
                                         disabled={isSendingHint}
-                                        className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow-lg shadow-teal-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
+                                        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
                                     >
                                         {isSendingHint ? (
                                             <>
@@ -1877,7 +1962,7 @@ export default function TeacherDashboard() {
                             <button
                                 onClick={handleCreateGrade}
                                 disabled={savingStudent || !newGradeName.trim()}
-                                className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-teal-200 transition-all disabled:opacity-50"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all disabled:opacity-50"
                             >
                                 {savingStudent ? "Guardando..." : (editingGrade ? "Guardar Cambios" : "Crear Grado")}
                             </button>
@@ -1950,7 +2035,7 @@ export default function TeacherDashboard() {
                             <button
                                 onClick={handleCreateClassroom}
                                 disabled={savingStudent || !newClassName.trim()}
-                                className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-teal-200 transition-all disabled:opacity-50"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all disabled:opacity-50"
                             >
                                 {savingStudent ? "Creando..." : "Crear Grupo"}
                             </button>

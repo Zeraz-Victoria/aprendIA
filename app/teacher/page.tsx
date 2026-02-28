@@ -21,8 +21,8 @@ export default function TeacherPage() {
     // Consistent loading for SSR + client
     if (!mounted || status === "loading") {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50 flex items-center justify-center">
-                <div className="animate-pulse text-teal-600 font-bold text-xl">Inicializando Portal Docente...</div>
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <div className="animate-pulse text-indigo-600 font-bold text-xl">Inicializando Portal Docente...</div>
             </div>
         );
     }
@@ -31,12 +31,12 @@ export default function TeacherPage() {
 
     if (!session || (session.user as any)?.role !== 'TEACHER') {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50 flex flex-col items-center justify-center p-4 text-center">
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center">
                 <h1 className="text-2xl font-bold text-red-600 mb-4">Acceso Denegado</h1>
                 <p className="text-slate-600 mb-6">Solo los maestros pueden acceder a este panel.</p>
                 <button
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="bg-teal-600 text-white px-6 py-2 rounded-xl font-bold"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-bold transition-colors"
                 >
                     Volver al Inicio
                 </button>
@@ -45,7 +45,7 @@ export default function TeacherPage() {
     }
 
     return (
-        <main className="min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-50">
+        <main className="min-h-screen bg-slate-50">
             <TeacherDashboard />
         </main>
     );
