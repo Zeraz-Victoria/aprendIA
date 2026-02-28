@@ -27,7 +27,6 @@ export default function AdventureMap() {
     const [showLesson, setShowLesson] = useState(false);
     const [showBoss, setShowBoss] = useState(false);
     const [showUploader, setShowUploader] = useState(false);
-    const [isSelectingMap, setIsSelectingMap] = useState(false);
     const [studentMissions, setStudentMissions] = useState<any[]>([]);
 
     // Derive active world
@@ -99,49 +98,9 @@ export default function AdventureMap() {
     }, [numLevels]);
 
     // If no world is generated yet, show empty state
-    if (!world || isSelectingMap) {
-        if (worlds.length > 0) {
-            return (
-                <div className="w-full h-screen bg-[#fdf6e3] flex flex-col items-center p-8 pt-32">
-                    <h2 className="text-3xl font-black text-amber-900 mb-8 font-serif">Elige tu Aventura</h2>
-                    <div className="grid md:grid-cols-2 gap-6 max-w-4xl w-full">
-                        {worlds.map(w => (
-                            <button
-                                key={w.id}
-                                onClick={() => {
-                                    setActiveWorld(w.id);
-                                    setIsSelectingMap(false);
-                                }}
-                                className="bg-white p-6 rounded-3xl border-4 border-amber-200 hover:border-amber-400 shadow-xl transition-all transform hover:-translate-y-2 flex flex-col items-center text-center group"
-                            >
-                                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 mb-4 group-hover:scale-110 transition-transform">
-                                    <MapPin className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-xl font-bold text-slate-800">{w.title}</h3>
-                                <p className="text-slate-500 mt-2">Tema: {w.theme}</p>
-                                <span className="mt-4 bg-amber-100 text-amber-800 font-bold px-4 py-1 rounded-full text-sm">
-                                    Jugar Ahora
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            );
-        }
-
-        return (
-            <div className="w-full h-screen bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
-                <div className="max-w-md space-y-6">
-                    <div className="w-24 h-24 bg-slate-800 rounded-full mx-auto flex items-center justify-center text-slate-500">
-                        <MapPin className="w-10 h-10" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-slate-200">Mapa no disponible</h2>
-                    <p className="text-slate-400">
-                        Aún no hay ninguna aventura activa. Pide a tu profesor que suba un nuevo desafío.
-                    </p>
-                </div>
-            </div>
-        );
+    // If no world is selected yet, let the parent component (student lobby) handle it
+    if (!world) {
+        return null;
     }
 
     const levels: Level[] = mergedDays.map((day, index) => {
@@ -258,12 +217,6 @@ export default function AdventureMap() {
                             </div>
                             <h1 className="text-sm font-bold text-slate-100 leading-tight truncate">{world.title}</h1>
                         </div>
-                        <button
-                            onClick={() => setIsSelectingMap(true)}
-                            className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 px-3 py-1 rounded-full text-[10px] font-bold transition-all pointer-events-auto whitespace-nowrap flex-shrink-0"
-                        >
-                            Cambiar
-                        </button>
                     </div>
                 </div>
 
