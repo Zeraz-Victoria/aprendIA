@@ -8,9 +8,9 @@ export const maxDuration = 60;
 export async function POST(req: Request) {
     try {
         // Initialize Gemini inside the handler to ensure env vars are loaded in serverless context
-        const apiKey = process.env.GEMINI_API_KEY || '';
+        const apiKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || '';
         if (!apiKey) {
-            console.error("CRITICAL: GEMINI_API_KEY is not set in environment variables.");
+            console.error("CRITICAL: GEMINI_API_KEY or AI_API_KEY is not set in environment variables.");
             return NextResponse.json({ error: "Configuración del servidor incompleta (API Key faltante)" }, { status: 500 });
         }
         const genAI = new GoogleGenerativeAI(apiKey);
