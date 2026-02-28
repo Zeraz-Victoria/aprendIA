@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const prisma = new PrismaClient();
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
@@ -14,7 +12,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Configuración del servidor incompleta (API Key faltante)" }, { status: 500 });
         }
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const body = await req.json();
         const { imageBase64, mimeType, worldId, levelId, fileName } = body;
