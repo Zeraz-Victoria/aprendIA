@@ -123,11 +123,11 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
         if (char === '"' && prevChar !== '\\\\') {
           // Look behind for : { [ , or look ahead for : } ] , to detect structural boundaries
           const prevNonSpace = jsonStr.substring(0, i).trim().slice(-1);
-          const nextNonSpaceIndex = jsonStr.substring(i + 1).search(/[^\\s]/);
+          const nextNonSpaceIndex = jsonStr.substring(i + 1).search(/[^\s]/);
           const nextNonSpace = nextNonSpaceIndex !== -1 ? jsonStr[i + 1 + nextNonSpaceIndex] : '';
 
           const isStartOfString = /[:\\[\\{,]/.test(prevNonSpace);
-          const isEndOfString = /[:\\]\\},]/.test(nextNonSpace);
+          const isEndOfString = /[:\\}\\]\,]/.test(nextNonSpace);
 
           if (isStartOfString || isEndOfString) {
             isInsideString = !isInsideString;
@@ -143,11 +143,23 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
       return result;
     };
 
-    responseText = escapeUnsafeQuotes(responseText);
-
     let parsedResponse;
     try {
+      // Intentar primero el JSON puro que generó la IA (suele venir perfecto con Gemini 2.5 Flash)
       parsedResponse = JSON.parse(responseText);
+    } catch (initialError) {
+      console.log("JSON Parse inicial falló, intentando sanear comillas...");
+      responseText = escapeUnsafeQuotes(responseText);
+      try {
+        parsedResponse = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Failed to parse AI JSON after escaping:", parseError);
+        console.error("Attempted to parse:", responseText);
+        return NextResponse.json({ error: 'AI returned malformed JSON structure', raw: responseText }, { status: 500 });
+      }
+    }
+
+    try {
       // If Gemini wrapped the whole response in an array despite instructions:
       if (Array.isArray(parsedResponse) && parsedResponse.length > 0 && parsedResponse[0].mapa_interactivo) {
         parsedResponse = parsedResponse[0];
@@ -157,15 +169,17 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
       if (parsedResponse.response && parsedResponse.response.mapa_interactivo) {
         parsedResponse = parsedResponse.response;
       }
-    } catch (parseError) {
-      console.error("Failed to parse AI JSON:", parseError);
-      console.error("Attempted to parse:", responseText);
-      return NextResponse.json({ error: 'AI returned malformed JSON structure', raw: responseText }, { status: 500 });
+    } catch (wrapperError) {
+      console.error("Error un-wrapping AI response:", wrapperError);
     }
 
     // Adapt new JSON format to old Data Schema to avoid frontend breakage
     let days: any[] = [];
     const interactiveMap = parsedResponse.mapa_aprendizaje || parsedResponse.mapa_de_juego || parsedResponse.mapa_interactivo || (Array.isArray(parsedResponse) ? parsedResponse : []);
+
+    console.log("=== DEBUG GENERATOR ===");
+    console.log("IS ARRAY?", Array.isArray(interactiveMap));
+    console.log("INTERACTIVE MAP DUMP:", JSON.stringify(interactiveMap, null, 2));
 
     if (interactiveMap && Array.isArray(interactiveMap)) {
       let globalIndex = 1;

@@ -179,7 +179,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                                                 </div>
                                             ) : (
                                                 <div className="bg-red-50 text-red-600 px-2 py-0.5 rounded flex items-center gap-1 text-xs font-bold">
-                                                    <X className="w-3 h-3" /> OCR falló: {res.studentName}
+                                                    <X className="w-3 h-3" /> Sin coincidencia en libreta: {res.studentName}
                                                 </div>
                                             )}
                                         </div>
