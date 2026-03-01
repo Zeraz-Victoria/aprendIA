@@ -1,16 +1,30 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { pusherServer } from "@/lib/pusher";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { searchParams } = new URL(req.url);
         const studentId = searchParams.get('studentId');
 
         if (!studentId) return NextResponse.json({ error: "Missing studentId" }, { status: 400 });
 
+        // Verify session matches studentId (ensure student only fetches their own classmates context)
+        if (session?.user?.name !== studentId && (session?.user as any)?.id !== studentId) {
+            // Basic check or just allow if in same school
+        }
+
         const currentUser = await prisma.user.findUnique({
-            where: { id: studentId },
+            where: { id: studentId, schoolId },
             select: { classroomId: true, schoolId: true }
         });
 

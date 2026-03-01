@@ -1,11 +1,21 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET() {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json([], { status: 200 });
+        }
+
         const topStudents = await prisma.user.findMany({
             where: {
-                role: "STUDENT"
+                role: "STUDENT",
+                schoolId
             },
             select: {
                 id: true,
@@ -18,7 +28,7 @@ export async function GET() {
             orderBy: {
                 xp: "desc"
             },
-            take: 10 // Top 10 Leaderboard
+            take: 20
         });
 
         return NextResponse.json(topStudents);
