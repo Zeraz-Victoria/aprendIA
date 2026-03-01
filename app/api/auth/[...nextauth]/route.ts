@@ -2,6 +2,7 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
+import crypto from "crypto";
 
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(prisma),
@@ -44,10 +45,14 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 if (user) {
-                    // Any object returned will be saved in `user` property of the JWT
-                    return user as any;
+                    // Generate a unique session token for single-device enforcement
+                    const sessionToken = crypto.randomUUID();
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: { activeSessionToken: sessionToken }
+                    });
+                    return { ...user, activeSessionToken: sessionToken } as any;
                 } else {
-                    // If you return null then an error will be displayed advising the user to check their details.
                     return null;
                 }
             }
@@ -62,6 +67,7 @@ export const authOptions: NextAuthOptions = {
                 token.id = user.id;
                 token.role = (user as any).role;
                 token.schoolId = (user as any).schoolId;
+                token.sessionToken = (user as any).activeSessionToken;
             }
             return token;
         },
@@ -70,6 +76,7 @@ export const authOptions: NextAuthOptions = {
                 (session.user as any).id = token.id as string;
                 (session.user as any).role = token.role as string;
                 (session.user as any).schoolId = token.schoolId as string | undefined;
+                (session.user as any).sessionToken = token.sessionToken as string | undefined;
             }
             return session;
         }

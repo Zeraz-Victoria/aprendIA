@@ -1,13 +1,30 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 export async function GET(req: Request) {
+    const session = await getServerSession(authOptions);
+    const schoolId = (session?.user as any)?.schoolId;
+
+    if (!schoolId) {
+        return NextResponse.json({});
+    }
+
     const { searchParams } = new URL(req.url);
     const studentId = searchParams.get('studentId');
 
     try {
-        const query = studentId ? { where: { studentId } } : undefined;
-        const inventoryList = await prisma.inventory.findMany(query);
+        const whereClause: any = {
+            student: { schoolId }
+        };
+        if (studentId) {
+            whereClause.studentId = studentId;
+        }
+
+        const inventoryList = await prisma.inventory.findMany({
+            where: whereClause
+        });
 
         // Map list to Record<studentId, itemId[]>
         const inventoryMap: Record<string, string[]> = {};

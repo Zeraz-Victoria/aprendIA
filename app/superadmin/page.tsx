@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { School, Users, ShieldAlert, Plus, Power, Map } from "lucide-react";
+import { School, Users, ShieldAlert, Plus, Power, Map, Trash2 } from "lucide-react";
 
 export default function SuperadminPage() {
     const { data: session, status } = useSession();
@@ -12,6 +12,7 @@ export default function SuperadminPage() {
     const [teachers, setTeachers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [newTeacherName, setNewTeacherName] = useState("");
+    const [newTeacherPlan, setNewTeacherPlan] = useState("BASIC");
     const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
@@ -50,7 +51,7 @@ export default function SuperadminPage() {
             const res = await fetch("/api/superadmin/teachers", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: newTeacherName })
+                body: JSON.stringify({ name: newTeacherName, plan: newTeacherPlan })
             });
 
             if (res.ok) {
@@ -72,6 +73,20 @@ export default function SuperadminPage() {
                 body: JSON.stringify({ schoolId, subscriptionPlan: plan, subscriptionStatus: status })
             });
             if (res.ok) fetchTeachers();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleDeleteTeacher = async (teacherId: string, teacherName: string) => {
+        if (!confirm(`¿Estás seguro de que deseas eliminar al maestro "${teacherName}"? Se borrarán TODOS sus datos (alumnos, grupos, mapas). Esta acción NO se puede deshacer.`)) return;
+
+        try {
+            const res = await fetch(`/api/superadmin/teachers?teacherId=${teacherId}`, {
+                method: "DELETE"
+            });
+            if (res.ok) fetchTeachers();
+            else alert("Error al eliminar el maestro.");
         } catch (error) {
             console.error(error);
         }
@@ -112,14 +127,23 @@ export default function SuperadminPage() {
                 <div className="flex items-center justify-between mb-8">
                     <h2 className="text-3xl font-bold">Maestros Registrados ({teachers.length})</h2>
 
-                    <form onSubmit={handleCreateTeacher} className="flex gap-2">
+                    <form onSubmit={handleCreateTeacher} className="flex gap-2 items-end">
                         <input
                             type="text"
                             placeholder="Nombre del nuevo maestro..."
                             value={newTeacherName}
                             onChange={(e) => setNewTeacherName(e.target.value)}
-                            className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none w-64 text-white"
+                            className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none w-52 text-white"
                         />
+                        <select
+                            value={newTeacherPlan}
+                            onChange={(e) => setNewTeacherPlan(e.target.value)}
+                            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300 outline-none"
+                        >
+                            <option value="BASIC">Básico (1 mapa, 25 alumnos)</option>
+                            <option value="INTERMEDIATE">Medio (5 mapas, 50 alumnos)</option>
+                            <option value="PREMIUM">Premium (10 mapas, 80 alumnos)</option>
+                        </select>
                         <button
                             type="submit"
                             disabled={!newTeacherName.trim() || isCreating}
@@ -160,11 +184,11 @@ export default function SuperadminPage() {
                                         onChange={(e) => handleUpdateSubscription(teacher.schoolId, e.target.value, teacher.subscriptionStatus)}
                                         className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded px-2 py-1 outline-none w-full"
                                     >
-                                        <option value="BASIC">Básico (1 Mapa)</option>
-                                        <option value="INTERMEDIATE">Medio (5 Mapas)</option>
-                                        <option value="PREMIUM">Premium (10 Mapas)</option>
+                                        <option value="BASIC">Básico (1 mapa, 25 alumnos)</option>
+                                        <option value="INTERMEDIATE">Medio (5 mapas, 50 alumnos)</option>
+                                        <option value="PREMIUM">Premium (10 mapas, 80 alumnos)</option>
                                     </select>
-                                    
+
                                     <button
                                         onClick={() => handleUpdateSubscription(teacher.schoolId, teacher.subscriptionPlan, teacher.subscriptionStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE')}
                                         className={`px-3 py-1 text-xs rounded font-bold transition-colors whitespace-nowrap ${teacher.subscriptionStatus === 'ACTIVE' ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'}`}
@@ -190,6 +214,16 @@ export default function SuperadminPage() {
                                             <Users className="w-3 h-3" /> Alumnos
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* Delete button */}
+                                <div className="mt-4 pt-4 border-t border-slate-700">
+                                    <button
+                                        onClick={() => handleDeleteTeacher(teacher.id, teacher.name)}
+                                        className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-red-400 bg-red-500/5 border border-red-500/20 rounded-lg hover:bg-red-500/15 transition-colors"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" /> Eliminar Maestro
+                                    </button>
                                 </div>
                             </div>
                         ))}

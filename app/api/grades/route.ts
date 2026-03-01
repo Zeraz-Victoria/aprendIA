@@ -9,6 +9,10 @@ export async function GET(req: Request) {
         const session = await getServerSession(authOptions);
         const schoolId = (session?.user as any)?.schoolId;
 
+        if (!schoolId) {
+            return NextResponse.json([]);
+        }
+
         const { searchParams } = new URL(req.url);
         const teacherId = searchParams.get("teacherId");
 
@@ -16,10 +20,7 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "teacherId required" }, { status: 400 });
         }
 
-        const whereClause: any = { teacherId };
-        if (schoolId) {
-            whereClause.schoolId = schoolId;
-        }
+        const whereClause: any = { teacherId, schoolId };
 
         const grades = await prisma.grade.findMany({
             where: whereClause,

@@ -11,6 +11,7 @@ import StudentProfile from "@/components/StudentProfile";
 import RaidBossWidget from "@/components/RaidBossWidget";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useSessionGuard } from "@/hooks/useSessionGuard";
 
 interface HintData {
     id: string;
@@ -22,6 +23,7 @@ export default function StudentPage() {
     const { currentUser, setActiveWorld } = useLearning();
     const { status } = useSession();
     const router = useRouter();
+    useSessionGuard();
     const [showStore, setShowStore] = useState(false);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [showProfile, setShowProfile] = useState(false);

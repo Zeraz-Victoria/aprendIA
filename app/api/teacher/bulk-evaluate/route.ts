@@ -1,10 +1,19 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../auth/[...nextauth]/route";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         // Initialize Gemini inside the handler to ensure env vars are loaded in serverless context
         const apiKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || '';
         if (!apiKey) {
@@ -24,9 +33,9 @@ export async function POST(req: Request) {
         }
 
         // 1. Obtener la rúbrica/contenido del nivel de la BD
-        const world = await prisma.world.findUnique({ where: { id: worldId } });
+        const world = await prisma.world.findUnique({ where: { id: worldId, schoolId } });
         if (!world) {
-            return NextResponse.json({ error: "Mundo no encontrado" }, { status: 404 });
+            return NextResponse.json({ error: "Mundo no encontrado o acceso denegado" }, { status: 404 });
         }
 
         let days = [];
@@ -104,7 +113,7 @@ Ejemplo exacto de lo único que debes devolver:
 
         if (evaluationData.nombreAlumno) {
             const students = await prisma.user.findMany({
-                where: { role: 'STUDENT' }
+                where: { role: 'STUDENT', schoolId }
             });
 
             // Función para normalizar texto (quitar acentos y pasar a minúsculas)

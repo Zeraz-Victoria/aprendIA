@@ -13,10 +13,14 @@ export async function GET(req: Request) {
         const session = await getServerSession(authOptions);
         const schoolId = (session?.user as any)?.schoolId;
 
+        if (!schoolId) {
+            return NextResponse.json([]);
+        }
+
         const { searchParams } = new URL(req.url);
         const teacherId = searchParams.get("teacherId");
 
-        const whereClause: any = schoolId ? { schoolId } : {};
+        const whereClause: any = { schoolId };
         if (teacherId) {
             whereClause.teacherId = teacherId;
         }

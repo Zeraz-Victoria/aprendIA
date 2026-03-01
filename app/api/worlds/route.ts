@@ -17,9 +17,12 @@ export async function GET(req: Request) {
             whereClause = {
                 assignedStudents: { some: { id: userId } }
             };
+        } else if (schoolId) {
+            // Teachers/admins see all worlds for their specific school
+            whereClause = { schoolId };
         } else {
-            // Teachers/admins see all worlds for their school
-            whereClause = schoolId ? { schoolId } : {};
+            // No schoolId in session, return nothing for safety
+            return NextResponse.json([]);
         }
 
         const worlds = await prisma.world.findMany({

@@ -14,18 +14,28 @@ export async function POST(req: Request) {
         }
 
         const { studentId, worldId, action = 'assign' } = await req.json();
+        const schoolId = user.schoolId;
 
         if (!studentId || !worldId) {
             return NextResponse.json({ error: 'Missing studentId or worldId' }, { status: 400 });
         }
 
-        // Verify that the world actually exists
+        // Verify that the world actually exists AND belongs to the teacher's school
         const world = await prisma.world.findUnique({
-            where: { id: worldId }
+            where: { id: worldId, schoolId }
         });
 
         if (!world) {
-            return NextResponse.json({ error: 'World not found' }, { status: 404 });
+            return NextResponse.json({ error: 'World not found or unauthorized' }, { status: 404 });
+        }
+
+        // Verify the student belongs to the same school
+        const targetStudent = await prisma.user.findUnique({
+            where: { id: studentId, schoolId, role: 'STUDENT' }
+        });
+
+        if (!targetStudent) {
+            return NextResponse.json({ error: 'Student not found in your school' }, { status: 404 });
         }
 
         // Connect or Disconnect the specific world to/from the specific student

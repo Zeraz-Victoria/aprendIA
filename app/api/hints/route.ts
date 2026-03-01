@@ -1,15 +1,28 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 // GET /api/hints?studentId=xxx — fetch unread hints for a student
 export async function GET(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { searchParams } = new URL(req.url);
         const studentId = searchParams.get('studentId');
 
         if (!studentId) {
             return NextResponse.json({ error: 'Missing studentId' }, { status: 400 });
         }
+
+        // Verify student belongs to school
+        const student = await prisma.user.findUnique({ where: { id: studentId, schoolId } });
+        if (!student) return NextResponse.json({ error: "Unauthorized access to student" }, { status: 403 });
 
         const hints = await prisma.hint.findMany({
             where: { studentId, read: false },
@@ -26,12 +39,23 @@ export async function GET(req: Request) {
 // POST /api/hints — create a new hint from the teacher
 export async function POST(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await req.json();
         const { studentId, message } = body;
 
         if (!studentId || !message) {
             return NextResponse.json({ error: 'Missing studentId or message' }, { status: 400 });
         }
+
+        // Verify student belongs to school
+        const student = await prisma.user.findUnique({ where: { id: studentId, schoolId } });
+        if (!student) return NextResponse.json({ error: "Unauthorized student target" }, { status: 403 });
 
         const hint = await prisma.hint.create({
             data: { studentId, message },

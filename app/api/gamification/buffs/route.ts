@@ -21,7 +21,8 @@ export async function GET(req: Request) {
             where: {
                 id: { not: studentId },
                 role: "STUDENT",
-                ...(currentUser.classroomId ? { classroomId: currentUser.classroomId } : { schoolId: currentUser.schoolId })
+                schoolId: currentUser.schoolId, // Strictly within school
+                ...(currentUser.classroomId ? { classroomId: currentUser.classroomId } : {})
             },
             select: {
                 id: true,
@@ -55,8 +56,14 @@ export async function POST(req: Request) {
         }
 
         const cost = includeHint ? 15 : 10;
-        const sender = await prisma.user.findUnique({ where: { id: senderId }, select: { gems: true, name: true, avatar: true } });
-        if (!sender || sender.gems < cost) return NextResponse.json({ error: "Not enough gems" }, { status: 400 });
+        const sender = await prisma.user.findUnique({ where: { id: senderId }, select: { gems: true, name: true, avatar: true, schoolId: true } });
+        if (!sender) return NextResponse.json({ error: "Sender not found" }, { status: 404 });
+
+        // Verify target belongs to same school
+        const target = await prisma.user.findUnique({ where: { id: targetId, schoolId: sender.schoolId } });
+        if (!target) return NextResponse.json({ error: "Target not found in same school" }, { status: 403 });
+
+        if (sender.gems < cost) return NextResponse.json({ error: "Not enough gems" }, { status: 400 });
 
         // Deduct gems
         await prisma.user.update({

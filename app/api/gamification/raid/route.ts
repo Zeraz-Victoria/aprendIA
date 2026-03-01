@@ -1,11 +1,18 @@
-import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { pusherServer } from "@/lib/pusher";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../auth/[...nextauth]/route";
 
 export async function GET() {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json(null);
+        }
+
         const activeBoss = await prisma.raidBoss.findFirst({
-            where: { status: "ACTIVE" },
+            where: { status: "ACTIVE", schoolId },
             orderBy: { createdAt: "desc" },
             include: {
                 contributions: {
@@ -40,8 +47,18 @@ export async function GET() {
     }
 }
 
+import prisma from "@/lib/prisma";
+import { pusherServer } from "@/lib/pusher";
+
 export async function POST(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { studentId, damage } = await req.json();
 
         if (!studentId || !damage) {
@@ -49,7 +66,7 @@ export async function POST(req: Request) {
         }
 
         const activeBoss = await prisma.raidBoss.findFirst({
-            where: { status: "ACTIVE" },
+            where: { status: "ACTIVE", schoolId },
             orderBy: { createdAt: "desc" }
         });
 
@@ -108,15 +125,22 @@ export async function POST(req: Request) {
 // PUT — Create a new Raid Boss (Teacher action)
 export async function PUT(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { name, imageUrl, maxHealth } = await req.json();
 
         if (!name || !imageUrl || !maxHealth) {
             return NextResponse.json({ error: "Missing name, imageUrl, or maxHealth" }, { status: 400 });
         }
 
-        // Deactivate any current active boss
+        // Deactivate any current active boss for THIS school
         await prisma.raidBoss.updateMany({
-            where: { status: "ACTIVE" },
+            where: { status: "ACTIVE", schoolId },
             data: { status: "DEFEATED" }
         });
 
@@ -127,7 +151,8 @@ export async function PUT(req: Request) {
                 imageUrl,
                 maxHealth: parseInt(maxHealth),
                 currentHealth: parseInt(maxHealth),
-                status: "ACTIVE"
+                status: "ACTIVE",
+                schoolId
             }
         });
 
@@ -141,10 +166,17 @@ export async function PUT(req: Request) {
 // PATCH — Reset boss HP or update boss (Teacher action)
 export async function PATCH(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { action, maxHealth, name, imageUrl } = await req.json();
 
         const activeBoss = await prisma.raidBoss.findFirst({
-            where: { status: "ACTIVE" },
+            where: { status: "ACTIVE", schoolId },
             orderBy: { createdAt: "desc" }
         });
 

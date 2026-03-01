@@ -1,13 +1,30 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 export async function GET(req: Request) {
+    const session = await getServerSession(authOptions);
+    const schoolId = (session?.user as any)?.schoolId;
+
+    if (!schoolId) {
+        return NextResponse.json({});
+    }
+
     const { searchParams } = new URL(req.url);
     const studentId = searchParams.get('studentId');
 
     try {
-        const query = studentId ? { where: { studentId } } : undefined;
-        const progressList = await prisma.progress.findMany(query);
+        const whereClause: any = {
+            student: { schoolId }
+        };
+        if (studentId) {
+            whereClause.studentId = studentId;
+        }
+
+        const progressList = await prisma.progress.findMany({
+            where: whereClause
+        });
 
         // Convert flat list into ProgressMap format: { studentId: { worldId: [levelId] } }
         const progressMap: Record<string, Record<string, number[]>> = {};

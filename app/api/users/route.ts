@@ -10,10 +10,14 @@ export async function GET() {
         const session = await getServerSession(authOptions);
         const schoolId = (session?.user as any)?.schoolId;
 
+        if (!schoolId) {
+            return NextResponse.json([]);
+        }
+
         const students = await prisma.user.findMany({
             where: {
                 role: 'STUDENT',
-                ...(schoolId ? { schoolId } : {})
+                schoolId: schoolId
             },
             orderBy: { name: 'asc' },
             include: {

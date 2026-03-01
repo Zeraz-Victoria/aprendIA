@@ -10,12 +10,14 @@ import BulkEvidenceUploader from "./BulkEvidenceUploader";
 import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import { useSessionGuard } from "@/hooks/useSessionGuard";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 type Tab = "students" | "insights" | "library" | "reports" | "subscription" | "raid";
 
 export default function TeacherDashboard() {
+    useSessionGuard();
     const {
         students, worlds, activeWorldId, setActiveWorld, deleteWorld,
         addStudent, updateStudent, deleteStudent, progress, toggleWorldAssignment,

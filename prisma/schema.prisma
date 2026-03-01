@@ -16,6 +16,7 @@ model User {
   role          Role      @default(STUDENT)
   avatar        String? // Emoji avatar for students
   activeFrame   String? // Store cosmetic item from inventory (e.g. frame_fire)
+  activeSessionToken String? // Single-device enforcement: only the latest login token is valid
   status        String    @default("active") // active, idle, needs_help
   lastActivity  DateTime  @default(now())
 
@@ -119,6 +120,7 @@ model School {
   worlds     World[]
   grades     Grade[]
   classrooms Classroom[]
+  raidBosses RaidBoss[]
 }
 
 model World {
@@ -217,6 +219,10 @@ model RaidBoss {
   currentHealth Int
   status        String   @default("ACTIVE") // ACTIVE, DEFEATED
   createdAt     DateTime @default(now())
+
+  // Multi-tenant
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id])
 
   contributions RaidContribution[]
 }

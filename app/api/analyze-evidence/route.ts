@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import prisma from '@/lib/prisma';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../auth/[...nextauth]/route";
 
 // Initialize the Gemini API
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
@@ -10,7 +12,25 @@ export async function POST(req: Request) {
     let responseText = ""; // Initialize responseText here for broader scope
 
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { imageBase64, mimeType, textEvidence, context, narrative, studentId, worldId, levelId, evidenceType } = await req.json();
+
+        // Verify student and world belong to the school
+        if (studentId) {
+            const student = await prisma.user.findUnique({ where: { id: studentId, schoolId } });
+            if (!student) return NextResponse.json({ error: "Student not found in your school" }, { status: 404 });
+        }
+
+        if (worldId) {
+            const world = await prisma.world.findUnique({ where: { id: worldId, schoolId } });
+            if (!world) return NextResponse.json({ error: "World not found in your school" }, { status: 404 });
+        }
 
         // Tarea 2: Bloqueo Real de Respuestas Vacías (Hard Stop)
         if (!imageBase64 && (!textEvidence || textEvidence.trim().length === 0)) {
@@ -23,7 +43,7 @@ export async function POST(req: Request) {
         }
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash' // Fast, multimodal
+            model: 'gemini-1.5-flash' // Fast, multimodal
         });
 
         let instruccionFiel = "Sin desafío original.";

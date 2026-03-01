@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 // GET /api/student-missions?studentId=xxx&worldId=yyy
 export async function GET(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { searchParams } = new URL(req.url);
         const studentId = searchParams.get('studentId');
         const worldId = searchParams.get('worldId');
@@ -11,6 +20,13 @@ export async function GET(req: Request) {
         if (!studentId || !worldId) {
             return NextResponse.json({ error: 'Missing studentId or worldId' }, { status: 400 });
         }
+
+        // Verify student and world belong to the school
+        const student = await prisma.user.findUnique({ where: { id: studentId, schoolId } });
+        if (!student) return NextResponse.json({ error: "Student not found" }, { status: 404 });
+
+        const world = await prisma.world.findUnique({ where: { id: worldId, schoolId } });
+        if (!world) return NextResponse.json({ error: "World not found" }, { status: 404 });
 
         const mission = await prisma.studentMission.findUnique({
             where: { studentId_worldId: { studentId, worldId } }
@@ -30,12 +46,26 @@ export async function GET(req: Request) {
 // POST /api/student-missions — create or append missions for a student
 export async function POST(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const schoolId = (session?.user as any)?.schoolId;
+
+        if (!schoolId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await req.json();
         const { studentId, worldId, days, replace } = body;
 
         if (!studentId || !worldId || !days || !Array.isArray(days)) {
             return NextResponse.json({ error: 'Missing studentId, worldId, or days array' }, { status: 400 });
         }
+
+        // Verify student and world belong to the school
+        const student = await prisma.user.findUnique({ where: { id: studentId, schoolId } });
+        if (!student) return NextResponse.json({ error: "Student not found" }, { status: 404 });
+
+        const world = await prisma.world.findUnique({ where: { id: worldId, schoolId } });
+        if (!world) return NextResponse.json({ error: "World not found" }, { status: 404 });
 
         // Check if there's already a mission record for this student+world
         const existing = await prisma.studentMission.findUnique({

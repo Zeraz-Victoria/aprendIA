@@ -1,0 +1,45 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { useSession, signOut } from "next-auth/react";
+
+/**
+ * Hook that periodically validates the session token against the database.
+ * If another device logs in with the same user, this device gets kicked out.
+ */
+export function useSessionGuard() {
+    const { data: session } = useSession();
+    const hasShownAlert = useRef(false);
+
+    useEffect(() => {
+        const userId = (session?.user as any)?.id;
+        const sessionToken = (session?.user as any)?.sessionToken;
+
+        if (!userId || !sessionToken) return;
+
+        const validateSession = async () => {
+            try {
+                const res = await fetch("/api/auth/validate-session", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId, sessionToken })
+                });
+                const data = await res.json();
+
+                if (!data.valid && !hasShownAlert.current) {
+                    hasShownAlert.current = true;
+                    alert("⚠️ Tu sesión se cerró porque alguien inició sesión con tu cuenta en otro dispositivo.");
+                    signOut({ callbackUrl: "/" });
+                }
+            } catch (e) {
+                // Network error — don't kick them out, just skip
+                console.error("Session validation failed:", e);
+            }
+        };
+
+        // Check immediately and then every 8 seconds
+        validateSession();
+        const interval = setInterval(validateSession, 8000);
+        return () => clearInterval(interval);
+    }, [session]);
+}

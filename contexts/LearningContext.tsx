@@ -159,17 +159,17 @@ export function LearningProvider({ children }: { children: ReactNode }) {
   // -- Persistence via Prisma APIs --
   // -- Persistence via Prisma APIs --
   useEffect(() => {
-    let hasLoaded = false;
+    let isMounted = true;
+    const role = (session?.user as any)?.role;
 
     const loadData = async () => {
-      try {
-        // Seed students if empty (Dev convenience)
-        await fetch('/api/users/seed', { method: 'POST' });
+      if (status !== 'authenticated' || !isMounted) return;
 
+      try {
         // Fetch Users (Students)
         let dbUsers: any[] = [];
         const usersRes = await fetch(`/api/users?t=${Date.now()}`, { cache: 'no-store' });
-        if (usersRes.ok) {
+        if (usersRes.ok && isMounted) {
           dbUsers = await usersRes.json();
           // Map them to the Student interface 
           const mappedStudents: Student[] = dbUsers.map((u: DBUser) => ({
@@ -177,8 +177,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
             name: u.name,
             avatar: u.avatar || '🧑🏻',
             status: u.status as Student['status'],
-            lastActivity: 'Activo recientemente', // Simplified
-            progress: 0, // Mock overall progress for now
+            lastActivity: 'Activo recientemente',
+            progress: 0,
             lives: u.lives,
             gems: u.gems,
             streak: u.streak,
@@ -192,17 +192,13 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
         // Fetch Worlds
         const worldsRes = await fetch('/api/worlds');
-        if (worldsRes.ok) {
+        if (worldsRes.ok && isMounted) {
           const dbWorlds = await worldsRes.json();
           setWorlds(dbWorlds);
           if (dbWorlds.length > 0 && !activeWorldId) {
-            // Automatically select the most recently created world by default
             setActiveWorldId(dbWorlds[0].id);
           }
 
-          // For students: override worlds with their assignedWorlds so AdventureMap works correctly
-          // assignedWorlds from the /api/users endpoint includes the full World DB objects
-          const role = (session?.user as any)?.role;
           if (role === 'STUDENT') {
             const currentUserId = (session?.user as any)?.id;
             const userMatch = dbUsers?.find((u: any) => u.id === currentUserId || u.name === session?.user?.name);
@@ -220,24 +216,23 @@ export function LearningProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // Fetch Progress and Inventory for active session later or pre-fetch all
-        // For teacher, we might need all progress. We'll just load maps.
+        // Fetch Progress and Inventory
         const progRes = await fetch(`/api/progress?t=${Date.now()}`, { cache: 'no-store' });
-        if (progRes.ok) setProgress(await progRes.json());
+        if (progRes.ok && isMounted) setProgress(await progRes.json());
 
         const invRes = await fetch(`/api/inventory?t=${Date.now()}`, { cache: 'no-store' });
-        if (invRes.ok) setInventory(await invRes.json());
+        if (invRes.ok && isMounted) setInventory(await invRes.json());
       } catch (err) {
         console.error("Failed to load initial data from DB", err);
       }
     };
 
-    if (!hasLoaded) {
+    if (status === 'authenticated') {
       loadData();
-      hasLoaded = true;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    return () => { isMounted = false; };
+  }, [status, session]);
 
   // Fetch Teacher specific data once authenticated
   useEffect(() => {
