@@ -46,12 +46,12 @@ export default function Home() {
 
     const res = await signIn("credentials", {
       name: name.trim(),
-      accessCode: accessCode.trim().toUpperCase(),
+      studentCode: accessCode.trim().toUpperCase(),
       redirect: false,
     });
 
     if (res?.error) {
-      setError("Usuario no encontrado. Verifica tu nombre o pide ayuda a tu profesor.");
+      setError("Usuario no encontrado. Verifica tu nombre y tu código secreto, o pide ayuda a tu profesor.");
       setIsLoggingIn(false);
     }
     // On success, useSession will update and the redirect logic above fires
@@ -106,7 +106,7 @@ export default function Home() {
 
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">
-                  Código de Clase <span className="text-xs font-normal text-slate-400">(Solo alumnos)</span>
+                  Código Secreto <span className="text-xs font-normal text-slate-400">(Solo alumnos)</span>
                 </label>
                 <div className="relative">
                   <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
@@ -115,9 +115,9 @@ export default function Home() {
                     value={accessCode}
                     onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
                     className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase"
-                    placeholder="Ej. X7P9K"
+                    placeholder="Ej. DA8AXE"
                     disabled={isLoggingIn}
-                    maxLength={10}
+                    maxLength={6}
                   />
                 </div>
               </div>
