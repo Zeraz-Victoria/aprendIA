@@ -70,7 +70,7 @@ export default function Home() {
       <div className="z-10 w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-black font-serif text-slate-800 mb-2 tracking-tight drop-shadow-sm">
-            Edu<span className="text-sky-600">Quest</span>
+            Aprend<span className="text-sky-600">IA</span>
           </h1>
           <p className="text-slate-500 font-medium">
             Ingresa a tu aula virtual
@@ -169,7 +169,7 @@ export default function Home() {
       </div>
 
       <footer className="absolute bottom-4 text-center text-slate-400 text-sm font-semibold">
-        © 2024 EduQuest • Learning Engine
+        © 2024 AprendIA • Learning Engine
       </footer>
     </main>
   );
