@@ -170,8 +170,39 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-        setStep("preview");
+        // Create an image object to resize it
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          // Max dimensions
+          const MAX_DIM = 1200;
+          if (width > height && width > MAX_DIM) {
+            height *= MAX_DIM / width;
+            width = MAX_DIM;
+          } else if (height > MAX_DIM) {
+            width *= MAX_DIM / height;
+            height = MAX_DIM;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            // Compress to JPEG with 0.8 quality
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+            setImagePreview(dataUrl);
+            setStep("preview");
+          } else {
+            // Fallback if canvas fails
+            setImagePreview(reader.result as string);
+            setStep("preview");
+          }
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -188,7 +219,9 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
 
       if (imagePreview) {
         payload.imageBase64 = imagePreview;
-        payload.mimeType = "image/jpeg";
+        // Extract the actual mime type from the data URI (e.g., data:image/png;base64,...)
+        const match = imagePreview.match(/^data:([^;]+);/);
+        payload.mimeType = match ? match[1] : "image/jpeg";
       } else if (textEvidence) {
         payload.textEvidence = textEvidence;
       }
@@ -203,7 +236,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
 
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.extractedText || "Error en la validación");
+        throw new Error(errData.error || errData.message || errData.extractedText || "Error en la validación");
       }
       const data = await response.json();
 
