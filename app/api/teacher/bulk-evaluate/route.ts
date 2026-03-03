@@ -49,15 +49,23 @@ export async function POST(req: Request) {
         const rubrica = activity?.challenge?.rubric || activity?.pda || activity?.narrative || activity?.content || "Problema de matemáticas/Lógica";
 
         // 2. Preparar el prompt estricto
-        const systemPrompt = `Eres un asistente de evaluación OCR estricto. 
+        const systemPrompt = `Eres un maestro evaluador estricto, analítico y empático. 
 TAREAS:
-1. Analiza de esta foto el Nombre del Alumno escrito a mano. Identifícalo de la mejor forma posible.
+1. Analiza la imagen y extrae el Nombre del Alumno escrito a mano.
 2. EVALÚA el ejercicio comparándolo con la instrucción: [${rubrica}].
-3. Asigna una calificación (0-10) y un feedback.
+3. Asigna una calificación (0-10).
+4. Da un feedback DETALLADO que explique:
+   - ¿Qué hizo bien el alumno? (sé específico)
+   - ¿En qué se equivocó exactamente? (menciona el error concreto)
+   - ¿Cómo puede corregirlo? (sin dar la respuesta directa, pero guíalo)
+5. Asigna una CATEGORÍA según la calificación:
+   - Si calificación >= 8: "Lo hiciste bien"
+   - Si calificación >= 6 y < 8: "Puedes mejorar"
+   - Si calificación < 6: "Necesitas volver a hacerlo"
 
-CRÍTICO: TU ÚNICA SALIDA DEBE SER EXCLUSIVAMENTE UN RAW JSON VÁLIDO. SIN TEXTO ANTES NI DESPUÉS. SIN DELIMITADORES MARKDOWN COMO \`\`\`json.
-Ejemplo exacto de lo único que debes devolver:
-{"nombreAlumno": "Maria Lopez", "calificacion": 10, "feedback": "Excelente trabajo resolviendo las sumas.", "puedeAvanzar": true}`;
+CRÍTICO: TU ÚNICA SALIDA DEBE SER EXCLUSIVAMENTE UN RAW JSON VÁLIDO. SIN TEXTO ANTES NI DESPUÉS. SIN DELIMITADORES MARKDOWN.
+Ejemplo exacto:
+{"nombreAlumno": "Maria Lopez", "calificacion": 7, "categoria": "Puedes mejorar", "feedback": "Identificaste correctamente la operación de suma, pero al sumar 45 + 38 escribiste 73 en lugar de 83. Revisa el acarreo de la decena: 5 + 8 = 13, escribes 3 y llevas 1.", "puedeAvanzar": true}`;
 
         // Limpiar el base64 prefix si existe
         let base64Data = imageBase64;
@@ -160,7 +168,7 @@ Ejemplo exacto de lo único que debes devolver:
                         status: 'COMPLETED',
                         studentAnswer: "Evidencia revisada por maestro/IA",
                         grade: finalGrade,
-                        feedback: evaluationData.feedback || "Revisado",
+                        feedback: `${evaluationData.categoria || 'Evaluado'}\n\nCalificación: ${finalGrade}/10\n\n${evaluationData.feedback || 'Revisado'}`,
                         isCorrect: evaluationData.puedeAvanzar,
                         canAdvance: evaluationData.puedeAvanzar
                     }
@@ -175,7 +183,7 @@ Ejemplo exacto de lo único que debes devolver:
                         status: 'COMPLETED',
                         studentAnswer: "Evidencia revisada por maestro/IA",
                         grade: finalGrade,
-                        feedback: evaluationData.feedback || "Revisado",
+                        feedback: `${evaluationData.categoria || 'Evaluado'}\n\nCalificación: ${finalGrade}/10\n\n${evaluationData.feedback || 'Revisado'}`,
                         isCorrect: evaluationData.puedeAvanzar,
                         canAdvance: evaluationData.puedeAvanzar
                     }
@@ -215,6 +223,16 @@ Ejemplo exacto de lo único que debes devolver:
                     }
                 });
                 console.log('XP/Gemas incrementadas para el alumno exitosamente.');
+            } else if (finalGrade < 6) {
+                // Student failed: deduct 1 life
+                const student = await prisma.user.findUnique({ where: { id: studentId }, select: { lives: true } });
+                if (student && student.lives > 0) {
+                    await prisma.user.update({
+                        where: { id: studentId },
+                        data: { lives: { decrement: 1 } }
+                    });
+                    console.log(`💔 Vida descontada al alumno ${studentId}. Calificación: ${finalGrade}`);
+                }
             }
         } else {
             console.log('Alerta: No se pudo guardar la evidencia porque studentId es NULL.');

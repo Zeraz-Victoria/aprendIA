@@ -2,7 +2,7 @@
 
 import AdventureMap from "@/components/AdventureMap";
 import StudentHUD from "@/components/StudentHUD";
-import { ArrowLeft, X, BrainCircuit } from "lucide-react";
+import { ArrowLeft, X, BrainCircuit, ClipboardList } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
 import { useState, useEffect, useCallback } from "react";
 import RewardsStore from "@/components/RewardsStore";
@@ -19,6 +19,17 @@ interface HintData {
     createdAt: string;
 }
 
+interface EvidenceData {
+    id: string;
+    feedback: string;
+    grade: number | null;
+    isCorrect: boolean;
+    canAdvance: boolean;
+    createdAt: string;
+    topic?: string;
+    world?: { title: string; theme: string };
+}
+
 export default function StudentPage() {
     const { currentUser, setActiveWorld } = useLearning();
     const { status } = useSession();
@@ -28,7 +39,9 @@ export default function StudentPage() {
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
     const [showRaidModal, setShowRaidModal] = useState(false);
+    const [showEvaluations, setShowEvaluations] = useState(false);
     const [hints, setHints] = useState<HintData[]>([]);
+    const [evaluations, setEvaluations] = useState<EvidenceData[]>([]);
 
     // State to determine if we are in Lobby or inside a specific Map
     const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
@@ -51,6 +64,26 @@ export default function StudentPage() {
         const interval = setInterval(fetchHints, 10000); // Poll every 10 seconds
         return () => clearInterval(interval);
     }, [fetchHints]);
+
+    // Fetch evaluations for this student
+    const fetchEvaluations = useCallback(async () => {
+        if (!currentUser?.id) return;
+        try {
+            const res = await fetch(`/api/evidence?t=${Date.now()}`, { cache: 'no-store' });
+            if (res.ok) {
+                const data = await res.json();
+                setEvaluations(data);
+            }
+        } catch (e) {
+            console.error("Failed to fetch evaluations", e);
+        }
+    }, [currentUser?.id]);
+
+    useEffect(() => {
+        fetchEvaluations();
+        const interval = setInterval(fetchEvaluations, 30000);
+        return () => clearInterval(interval);
+    }, [fetchEvaluations]);
 
     const dismissHint = async (hintId: string) => {
         setHints(prev => prev.filter(h => h.id !== hintId));
@@ -204,6 +237,19 @@ export default function StudentPage() {
                         🗺️ Mis Mundos
                     </button>
                 )}
+
+                {/* Evaluaciones Button */}
+                <button
+                    onClick={() => setShowEvaluations(true)}
+                    className="bg-amber-500/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-amber-400 text-white hover:bg-amber-600 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 px-5 font-bold text-sm animate-fade-in-up relative"
+                >
+                    <ClipboardList className="w-4 h-4" /> Mis Evaluaciones
+                    {evaluations.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-black">
+                            {evaluations.length}
+                        </span>
+                    )}
+                </button>
             </div>
 
 
@@ -262,6 +308,83 @@ export default function StudentPage() {
             )}
 
             <RaidBossWidget externalOpen={showRaidModal} onExternalClose={() => setShowRaidModal(false)} />
+
+            {/* Evaluaciones Panel */}
+            {showEvaluations && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-lg max-h-[85vh] overflow-hidden relative shadow-2xl flex flex-col">
+                        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white">
+                            <button onClick={() => setShowEvaluations(false)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 transition z-10">
+                                <X className="w-5 h-5 text-white" />
+                            </button>
+                            <h2 className="text-2xl font-black flex items-center gap-2"><ClipboardList className="w-6 h-6" /> Mis Evaluaciones</h2>
+                            <p className="text-amber-100 text-sm mt-1">Aquí puedes ver la retroalimentación de tu maestro</p>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            {evaluations.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <div className="text-5xl mb-4">📋</div>
+                                    <h3 className="text-lg font-bold text-slate-700">Sin evaluaciones aún</h3>
+                                    <p className="text-slate-400 text-sm">Cuando tu maestro revise tu trabajo, aparecerá aquí.</p>
+                                </div>
+                            ) : (
+                                evaluations.map((ev) => {
+                                    const feedbackLines = ev.feedback.split('\n').filter(l => l.trim());
+                                    const category = feedbackLines[0] || 'Evaluado';
+                                    const detailedFeedback = feedbackLines.slice(1).join('\n').trim();
+                                    const grade = ev.grade ?? 0;
+
+                                    let badgeColor = 'bg-green-100 text-green-700 border-green-200';
+                                    let cardBorder = 'border-green-200';
+                                    let emoji = '✅';
+                                    if (grade < 6) {
+                                        badgeColor = 'bg-red-100 text-red-700 border-red-200';
+                                        cardBorder = 'border-red-200';
+                                        emoji = '❌';
+                                    } else if (grade < 8) {
+                                        badgeColor = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+                                        cardBorder = 'border-yellow-200';
+                                        emoji = '⚠️';
+                                    }
+
+                                    return (
+                                        <div key={ev.id} className={`p-4 rounded-2xl border-2 ${cardBorder} bg-white shadow-sm`}>
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-black border ${badgeColor}`}>
+                                                    {emoji} {category}
+                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`text-2xl font-black ${grade >= 8 ? 'text-green-600' : grade >= 6 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                                        {grade}/10
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {ev.world && (
+                                                <p className="text-xs text-slate-400 font-medium mb-2">
+                                                    {ev.world.title} • {new Date(ev.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
+                                                </p>
+                                            )}
+
+                                            <div className="bg-slate-50 rounded-xl p-3 text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                                                {detailedFeedback || ev.feedback}
+                                            </div>
+
+                                            {grade < 6 && (
+                                                <div className="mt-3 bg-red-50 border border-red-100 rounded-xl p-3 flex items-center gap-2">
+                                                    <span className="text-lg">💔</span>
+                                                    <p className="text-xs text-red-600 font-bold">Perdiste una vida. ¡Inténtalo de nuevo!</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }

@@ -7,13 +7,20 @@ export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         const schoolId = (session?.user as any)?.schoolId;
+        const role = (session?.user as any)?.role;
+        const userId = (session?.user as any)?.id;
 
         if (!schoolId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { searchParams } = new URL(req.url);
-        const studentId = searchParams.get('studentId');
+        let studentId = searchParams.get('studentId');
+
+        // If student is logged in, they can only see their own evidence
+        if (role === 'STUDENT') {
+            studentId = userId;
+        }
 
         if (!studentId) {
             return NextResponse.json({ error: 'Missing studentId' }, { status: 400 });

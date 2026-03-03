@@ -74,16 +74,24 @@ REGLAS DE EVALUACIÓN (INQUEBRANTABLES):
    - 10: Perfecto.
    - 6 a 9: Aceptable, pero con errores o áreas de mejora.
    - 0 a 5: Incorrecto, incompleto, irrelevante o imagen borrosa/vacía.
-3. FEEDBACK SOCRÁTICO: Tu retroalimentación debe mencionar exactamente qué hizo bien y en qué falló. Si reprobó (< 6), dale una pista clara de su error para que lo intente de nuevo, pero NO le des la respuesta directa.
-4. ESTRICTAMENTE PROHIBIDO dar 10 si falta información pedida en el reto o si la respuesta es puro texto sin sentido.
+3. FEEDBACK DETALLADO: Tu retroalimentación DEBE:
+   - Mencionar exactamente qué hizo bien el alumno (sé específico).
+   - Explicar con claridad en qué se equivocó (el error concreto).
+   - Si reprobó (< 6), darle una pista clara de cómo corregirlo sin dar la respuesta directa.
+4. CATEGORÍA: Asigna según la calificación:
+   - >= 8: "Lo hiciste bien"
+   - >= 6 y < 8: "Puedes mejorar"
+   - < 6: "Necesitas volver a hacerlo"
+5. ESTRICTAMENTE PROHIBIDO dar 10 si falta información pedida en el reto o si la respuesta es puro texto sin sentido.
 
 # EVIDENCIA DEL ALUMNO:
 ${imageBase64 ? "[ADJUNTO IMAGEN ESCANEADA DEL ALUMNO]" : `"""\n${textEvidence}\n"""`}
 
 FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
 {
-  "calificacion": 10,
-  "feedback": "Tu explicación analítica...",
+  "calificacion": 7,
+  "categoria": "Puedes mejorar",
+  "feedback": "Identificaste correctamente la operación, pero cometiste un error en el acarreo...",
   "puedeAvanzar": true
 }`;
 
@@ -140,7 +148,7 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
                             isCorrect: isLegacyCorrect,
                             grade: parsedData.grade,
                             canAdvance: parsedData.canAdvance,
-                            feedback: `Calificación: ${parsedData.grade}/10.\n${parsedData.extractedText}`,
+                            feedback: `${parsedRaw.categoria || 'Evaluado'}\n\nCalificación: ${parsedData.grade}/10\n\n${parsedData.extractedText}`,
                             topic: parsedData.topic,
                             emotionDetected: parsedData.emotionDetected
                         }
@@ -229,6 +237,22 @@ Tu respuesta DEBE ser un JSON válido como este:
                 }
             } else {
                 console.log("⏭️ Skipping DB save: Missing studentId, worldId, or levelId:", { studentId, worldId, levelId });
+            }
+
+            // Life deduction for low grades (applies regardless of DB save path)
+            if (studentId && parsedData.grade < 6) {
+                try {
+                    const student = await prisma.user.findUnique({ where: { id: studentId }, select: { lives: true } });
+                    if (student && student.lives > 0) {
+                        await prisma.user.update({
+                            where: { id: studentId },
+                            data: { lives: { decrement: 1 } }
+                        });
+                        console.log(`💔 Vida descontada al alumno ${studentId}. Calificación: ${parsedData.grade}`);
+                    }
+                } catch (lifeErr) {
+                    console.error('Error deducting life:', lifeErr);
+                }
             }
 
             return NextResponse.json(parsedData);
