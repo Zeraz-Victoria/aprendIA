@@ -194,7 +194,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         }
 
         // Fetch Worlds
-        const worldsRes = await fetch('/api/worlds');
+        const worldsRes = await fetch(`/api/worlds?t=${Date.now()}`, { cache: 'no-store' });
         if (worldsRes.ok && isMounted) {
           const dbWorlds = await worldsRes.json();
           setWorlds(dbWorlds);
@@ -230,11 +230,11 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    if (status === 'authenticated') {
-      loadData();
-    }
+    loadData();
 
-    return () => { isMounted = false; };
+    // Poll for fresh data every 30 seconds so students see map changes without refresh
+    const interval = setInterval(loadData, 30000);
+    return () => { isMounted = false; clearInterval(interval); };
   }, [status, session]);
 
   // Fetch Teacher specific data once authenticated
