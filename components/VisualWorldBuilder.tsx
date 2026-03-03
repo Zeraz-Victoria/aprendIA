@@ -192,18 +192,22 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             const element = document.getElementById("full-map-pdf-container");
             if (!element) return;
 
-            // Show element behind loading overlay but physically in the viewport at the top
+            // Show element for capture — position it absolutely off-screen but unconstrained
             element.style.display = "block";
-            element.classList.remove("top-[-9999px]", "left-[-9999px]", "z-[-50]");
-            element.classList.add("fixed", "top-0", "left-0", "z-[9990]");
+            element.style.position = "absolute";
+            element.style.top = "0";
+            element.style.left = "0";
+            element.style.width = "900px";
+            element.style.zIndex = "9990";
+            element.style.overflow = "visible";
 
             // Wait for React and the browser to paint the DOM element
             await new Promise(resolve => setTimeout(resolve, 500));
 
             // Lowered scale to 1.5 to avoid hitting canvas max-size limits on long maps
             // Safari workaround: First call warms up the internal SVG/font cache, second call captures
-            await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false }).catch(() => { });
-            const canvas = await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false });
+            await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false, width: 900 }).catch(() => { });
+            const canvas = await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false, width: 900 });
             const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
             const pdfWidth = 210; // 210mm is A4 width
@@ -226,8 +230,10 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             const element = document.getElementById("full-map-pdf-container");
             if (element) {
                 element.style.display = "none";
-                element.classList.add("top-[-9999px]", "left-[-9999px]");
-                element.classList.remove("fixed", "top-0", "left-0", "z-[9990]");
+                element.style.position = "absolute";
+                element.style.top = "-9999px";
+                element.style.left = "-9999px";
+                element.style.zIndex = "";
             }
             setIsDownloadingPdf(false);
         }
@@ -458,8 +464,8 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             {/* Hidden Container for PDF Download (Complete Map / Teacher Guide) */}
             <div
                 id="full-map-pdf-container"
-                className="absolute top-[-9999px] left-[-9999px] bg-white w-[900px] p-10 text-black min-h-screen"
-                style={{ display: "none" }}
+                className="bg-white p-10 text-black"
+                style={{ display: "none", position: "absolute", top: "-9999px", left: "-9999px", width: "900px", minHeight: "100vh" }}
             >
                 <div className="border-b-4 border-indigo-600 pb-6 mb-8 text-center">
                     <h1 className="text-4xl font-black text-indigo-900 mb-2">{title}</h1>
