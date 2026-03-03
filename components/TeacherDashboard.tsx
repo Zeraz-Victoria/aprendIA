@@ -7,7 +7,7 @@ import { useLearning, LearningWorld, Student, Grade, Classroom } from "@/context
 import UploadEngine from "./UploadEngine";
 import VisualWorldBuilder from "./VisualWorldBuilder";
 import BulkEvidenceUploader from "./BulkEvidenceUploader";
-import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare } from "lucide-react";
+import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useSessionGuard } from "@/hooks/useSessionGuard";
@@ -116,6 +116,42 @@ export default function TeacherDashboard() {
             alert('Error de conexión');
         } finally {
             setIsSendingMessage(false);
+        }
+    };
+
+    // Progress Reset State
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [resetStudentIds, setResetStudentIds] = useState<string[]>([]);
+    const [isResetAll, setIsResetAll] = useState(true);
+    const [isResettingProgress, setIsResettingProgress] = useState(false);
+    const [resetDone, setResetDone] = useState(false);
+
+    const handleResetProgress = async () => {
+        const ids = isResetAll ? students.map(s => s.id) : resetStudentIds;
+        if (ids.length === 0) return;
+        if (!confirm(`¿Estás seguro de reiniciar el progreso de ${ids.length} alumno(s)? Esta acción no se puede deshacer.`)) return;
+
+        setIsResettingProgress(true);
+        try {
+            const res = await fetch('/api/progress/reset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentIds: ids })
+            });
+            if (res.ok) {
+                setResetDone(true);
+                setTimeout(() => {
+                    setResetDone(false);
+                    setShowResetModal(false);
+                    window.location.reload();
+                }, 2000);
+            } else {
+                alert('Error al reiniciar progreso');
+            }
+        } catch (e) {
+            alert('Error de conexión');
+        } finally {
+            setIsResettingProgress(false);
         }
     };
 
@@ -1221,6 +1257,12 @@ export default function TeacherDashboard() {
                                 className="bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-violet-200 transition-all flex items-center gap-2">
                                 <MessageSquare className="w-5 h-5" />
                                 Enviar Mensaje a Alumnos
+                            </button>
+                            <button
+                                onClick={() => setShowResetModal(true)}
+                                className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-red-200 transition-all flex items-center gap-2">
+                                <RotateCcw className="w-5 h-5" />
+                                Reiniciar Progreso
                             </button>
                         </div>
 
@@ -2372,6 +2414,93 @@ export default function TeacherDashboard() {
                                             <><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> Enviando...</>
                                         ) : (
                                             <><Send className="w-4 h-4" /> Enviar Mensaje</>
+                                        )}
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Progress Reset Modal */}
+            {showResetModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
+                        <div className="bg-gradient-to-r from-red-500 to-orange-500 p-6 text-white relative">
+                            <button onClick={() => setShowResetModal(false)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 transition">
+                                <X className="w-5 h-5 text-white" />
+                            </button>
+                            <h2 className="text-2xl font-black flex items-center gap-2">
+                                <RotateCcw className="w-6 h-6" /> Reiniciar Progreso
+                            </h2>
+                            <p className="text-red-100 text-sm mt-1">Reinicia el avance, XP, gemas y evidencias de los alumnos</p>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            {resetDone ? (
+                                <div className="text-center py-8">
+                                    <div className="text-5xl mb-4">✅</div>
+                                    <h3 className="text-xl font-black text-green-600">¡Progreso reiniciado!</h3>
+                                    <p className="text-slate-500 text-sm mt-1">La página se recargará en un momento...</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                                        <p className="text-red-700 text-sm font-bold flex items-center gap-2">
+                                            <AlertTriangle className="w-4 h-4" /> ¡Atención! Esta acción elimina todo el progreso, XP, gemas y evidencias. No se puede deshacer.
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-2">¿Quiénes?</label>
+                                        <div className="flex gap-2 mb-3">
+                                            <button
+                                                onClick={() => { setIsResetAll(true); setResetStudentIds([]); }}
+                                                className={`px-4 py-2 rounded-full text-sm font-bold transition ${isResetAll ? 'bg-red-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                            >
+                                                👥 Todos los alumnos
+                                            </button>
+                                            <button
+                                                onClick={() => setIsResetAll(false)}
+                                                className={`px-4 py-2 rounded-full text-sm font-bold transition ${!isResetAll ? 'bg-red-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                            >
+                                                👤 Seleccionar alumnos
+                                            </button>
+                                        </div>
+
+                                        {!isResetAll && (
+                                            <div className="max-h-40 overflow-y-auto bg-slate-50 rounded-xl border border-slate-200 p-2 space-y-1">
+                                                {students.map(s => (
+                                                    <label key={s.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white cursor-pointer transition">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={resetStudentIds.includes(s.id)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setResetStudentIds([...resetStudentIds, s.id]);
+                                                                } else {
+                                                                    setResetStudentIds(resetStudentIds.filter(id => id !== s.id));
+                                                                }
+                                                            }}
+                                                            className="rounded border-slate-300 text-red-600 focus:ring-red-500"
+                                                        />
+                                                        <span className="text-sm font-medium text-slate-700">{s.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        onClick={handleResetProgress}
+                                        disabled={isResettingProgress || (!isResetAll && resetStudentIds.length === 0)}
+                                        className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-red-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isResettingProgress ? (
+                                            <><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> Reiniciando...</>
+                                        ) : (
+                                            <><RotateCcw className="w-4 h-4" /> Reiniciar Progreso</>
                                         )}
                                     </button>
                                 </>

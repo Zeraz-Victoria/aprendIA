@@ -12,7 +12,7 @@ export async function GET() {
         }
 
         const activeBoss = await prisma.raidBoss.findFirst({
-            where: { status: "ACTIVE", schoolId },
+            where: { schoolId },
             orderBy: { createdAt: "desc" },
             include: {
                 contributions: {

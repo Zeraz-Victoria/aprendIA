@@ -31,7 +31,7 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
         fetch("/api/gamification/raid")
             .then(res => res.json())
             .then(data => {
-                if (data && data.status === "ACTIVE") setBoss(data);
+                if (data && data.id) setBoss(data);
                 else setBoss(null);
             })
             .catch(err => console.error("Error fetching raid boss:", err));
@@ -116,12 +116,12 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
             {/* Floating Widget Icon */}
             {!showModal && (
                 <div
-                    className="fixed bottom-6 right-6 z-40 bg-red-600 border-4 border-red-800 rounded-full w-20 h-20 shadow-[0_0_20px_rgba(220,38,38,0.5)] cursor-pointer hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center animate-bounce"
+                    className={`fixed bottom-6 right-6 z-40 ${boss.status === 'DEFEATED' ? 'bg-slate-500 border-slate-600' : 'bg-red-600 border-red-800'} border-4 rounded-full w-20 h-20 shadow-[0_0_20px_rgba(220,38,38,0.5)] cursor-pointer hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center ${boss.status === 'DEFEATED' ? '' : 'animate-bounce'}`}
                     onClick={() => setShowModal(true)}
                 >
-                    <span className="text-4xl absolute z-10">{boss.imageUrl}</span>
-                    <div className="absolute -top-2 -right-2 bg-yellow-400 text-red-900 text-xs font-black px-2 py-1 rounded-full border-2 border-red-800 shadow-md transform rotate-12">
-                        RAID!
+                    <span className={`text-4xl absolute z-10 ${boss.status === 'DEFEATED' ? 'grayscale opacity-50' : ''}`}>{boss.imageUrl}</span>
+                    <div className={`absolute -top-2 -right-2 ${boss.status === 'DEFEATED' ? 'bg-slate-400 text-slate-800' : 'bg-yellow-400 text-red-900'} text-xs font-black px-2 py-1 rounded-full border-2 ${boss.status === 'DEFEATED' ? 'border-slate-600' : 'border-red-800'} shadow-md transform rotate-12`}>
+                        {boss.status === 'DEFEATED' ? 'K.O.' : 'RAID!'}
                     </div>
                     <div className="absolute inset-1 rounded-full border-[6px] border-red-900/40"></div>
                 </div>
