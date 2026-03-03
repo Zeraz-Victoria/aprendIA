@@ -34,9 +34,15 @@ export async function POST(req: Request) {
             return acc;
         }, {});
 
-        const evidenceSummary = entries.slice(0, 20).map((e, i) => (
-            `${i + 1}. [${e.isCorrect ? 'CORRECTO' : 'INCORRECTO'}] Tema: ${e.topic || 'Desconocido'} | Respuesta: "${(e.studentAnswer || '').substring(0, 100)}" | Feedback IA: "${(e.feedback || '').substring(0, 150)}" | Emoción: ${e.emotionDetected || 'N/A'}`
-        )).join('\n');
+        // Calculate average grade from evidence
+        const gradesArr = entries.map(e => e.grade).filter((g): g is number => g !== null && g !== undefined);
+        const avgGrade = gradesArr.length > 0 ? (gradesArr.reduce((s, g) => s + g, 0) / gradesArr.length).toFixed(1) : 'N/A';
+
+        const evidenceSummary = entries.slice(0, 20).map((e, i) => {
+            const feedbackLines = (e.feedback || '').split('\n').filter(l => l.trim());
+            const category = feedbackLines[0] || 'Sin categoría';
+            return `${i + 1}. [Calificación: ${e.grade ?? 'N/A'}/10 - ${category}] Tema: ${e.topic || 'Desconocido'} | Feedback: "${(e.feedback || '').substring(0, 200)}"`;
+        }).join('\n');
 
         const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || "");
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
@@ -48,7 +54,7 @@ Actúa como un Asesor Pedagógico Senior especializado en Evaluación Formativa 
 # DATOS DEL ESTUDIANTE (FUENTE DE VERDAD):
 - ALUMNO: ${studentName || "Alumno"}
 - FASE Y PDA: Fase NEM a inferir - Temas abordados: ${topics.join(', ') || 'Sin datos'}
-- MÉTRICAS DE DESEMPEÑO: ${correctCount} aciertos de ${entries.length} intentos (${Math.round(correctCount / (entries.length || 1) * 100)}%). Detalle: ${evidenceSummary}
+- MÉTRICAS DE DESEMPEÑO: ${correctCount} aciertos de ${entries.length} intentos (${Math.round(correctCount / (entries.length || 1) * 100)}%). Promedio de calificación: ${avgGrade}/10. Detalle: ${evidenceSummary}
 - EMOCIONES PREDOMINANTES: ${Object.entries(emotionSummary).map(([k, v]) => `${k}: ${v} veces`).join(', ') || 'Sin datos'}
 - TIPO DE REPORTE SOLICITADO: ${reportType === 'parent' ? 'PADRE' : 'DOCENTE'}
 

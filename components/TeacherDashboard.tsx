@@ -382,7 +382,7 @@ export default function TeacherDashboard() {
 
     const metrics = calculateClassMetrics();
 
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
         const doc = new jsPDF();
 
         // Constants for layout
@@ -418,10 +418,29 @@ export default function TeacherDashboard() {
             }
         };
 
+        // Fetch all evidence for all students in one batch
+        const allEvidence: Record<string, any[]> = {};
+        for (const student of students) {
+            try {
+                const res = await fetch(`/api/evidence?studentId=${student.id}&t=${Date.now()}`, { cache: 'no-store' });
+                if (res.ok) {
+                    allEvidence[student.id] = await res.json();
+                }
+            } catch (e) {
+                allEvidence[student.id] = [];
+            }
+        }
+
         // Students Loop
         students.forEach((student, index) => {
             const p = calculateStudentProgress(student.id, progress, worlds);
             const context = getStudentContext(student.id);
+            const evidence = allEvidence[student.id] || [];
+
+            // Calculate evidence metrics
+            const evidGrades = evidence.map((e: any) => e.grade).filter((g: any) => g !== null && g !== undefined);
+            const avgEvidGrade = evidGrades.length > 0 ? (evidGrades.reduce((s: number, g: number) => s + g, 0) / evidGrades.length).toFixed(1) : 'N/A';
+            const recentEvidence = evidence.slice(0, 3); // Last 3 evaluations
 
             let status = "Buen Ritmo";
             let statusColor: [number, number, number] = [34, 197, 94]; // Green 500
@@ -449,7 +468,19 @@ export default function TeacherDashboard() {
             const taskLines = doc.splitTextToSize(`Contexto actual: ${currentTask}`, 170);
             const analysisLines = doc.splitTextToSize(analysis, 170);
 
-            const cardHeight = 35 + pedagogyOffset + (taskLines.length * 4) + (analysisLines.length * 4) + 12;
+            // Evidence summary lines
+            let evidenceLines: string[] = [];
+            if (recentEvidence.length > 0) {
+                const evidenceSummary = recentEvidence.map((e: any) => {
+                    const lines = (e.feedback || '').split('\n').filter((l: string) => l.trim());
+                    const cat = lines[0] || 'Evaluado';
+                    return `• ${cat} (${e.grade ?? 0}/10)`;
+                }).join('  ');
+                evidenceLines = doc.splitTextToSize(`Evaluaciones recientes: ${evidenceSummary}`, 170);
+            }
+
+            const evidenceOffset = evidenceLines.length > 0 ? 8 + (evidenceLines.length * 4) : 0;
+            const cardHeight = 35 + pedagogyOffset + (taskLines.length * 4) + (analysisLines.length * 4) + evidenceOffset + 12;
 
             checkPageBreak(cardHeight + 10);
 
@@ -469,11 +500,11 @@ export default function TeacherDashboard() {
             doc.setTextColor(...statusColor);
             doc.text(`${p}% - ${status}`, 190 - marginX, currentY + 10, { align: 'right' });
 
-            // Stats (Gems & XP)
+            // Stats (Gems & XP & Evidence Grade)
             doc.setFontSize(10);
             doc.setTextColor(100, 116, 139); // slate-500
             doc.setFont('helvetica', 'normal');
-            doc.text(`Tesoros: ${student.gems || 0} Gemas  |  Experiencia: ${student.xp || 0} XP`, marginX + 5, currentY + 18);
+            doc.text(`Gemas: ${student.gems || 0}  |  XP: ${student.xp || 0}  |  Promedio Evidencias: ${avgEvidGrade}/10`, marginX + 5, currentY + 18);
 
             let textY = currentY + 28;
 
@@ -496,6 +527,20 @@ export default function TeacherDashboard() {
             doc.setTextColor(71, 85, 105); // slate-600
             doc.text(taskLines, marginX + 5, textY);
             textY += (taskLines.length * 4) + 6;
+
+            // Evidence Block
+            if (evidenceLines.length > 0) {
+                doc.setFontSize(9);
+                doc.setTextColor(30, 41, 59);
+                doc.setFont('helvetica', 'bold');
+                doc.text("Historial de Evaluaciones:", marginX + 5, textY);
+                textY += 5;
+
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(71, 85, 105);
+                doc.text(evidenceLines, marginX + 5, textY);
+                textY += (evidenceLines.length * 4) + 4;
+            }
 
             // Analysis Block
             doc.setFontSize(10);
