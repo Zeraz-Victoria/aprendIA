@@ -9,7 +9,8 @@ export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [name, setName] = useState("");
-  const [accessCode, setAccessCode] = useState("");
+  const [classCode, setClassCode] = useState("");
+  const [studentCode, setStudentCode] = useState("");
   const [error, setError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -46,7 +47,8 @@ export default function Home() {
 
     const res = await signIn("credentials", {
       name: name.trim(),
-      studentCode: accessCode.trim().toUpperCase(),
+      classCode: classCode.trim().toUpperCase(),
+      studentCode: studentCode.trim().toUpperCase(),
       redirect: false,
     });
 
@@ -104,23 +106,43 @@ export default function Home() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">
-                  Código Secreto <span className="text-xs font-normal text-slate-400">(Solo alumnos)</span>
-                </label>
-                <div className="relative">
-                  <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    value={accessCode}
-                    onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase"
-                    placeholder="Ej. DA8AXE"
-                    disabled={isLoggingIn}
-                    maxLength={6}
-                  />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">
+                    Código de Clase
+                  </label>
+                  <div className="relative">
+                    <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      value={classCode}
+                      onChange={(e) => setClassCode(e.target.value.toUpperCase())}
+                      className="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase text-sm"
+                      placeholder="Ej. X7P9K"
+                      disabled={isLoggingIn}
+                      maxLength={10}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">
+                    Código Secreto
+                  </label>
+                  <div className="relative">
+                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      value={studentCode}
+                      onChange={(e) => setStudentCode(e.target.value.toUpperCase())}
+                      className="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase text-sm"
+                      placeholder="Ej. DA8AXE"
+                      disabled={isLoggingIn}
+                      maxLength={6}
+                    />
+                  </div>
                 </div>
               </div>
+              <p className="text-[10px] text-slate-400 -mt-4">Alumnos: pide ambos códigos a tu maestro. Docentes: deja vacío.</p>
 
               {error && (
                 <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg text-center border border-red-100">

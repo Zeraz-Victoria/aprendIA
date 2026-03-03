@@ -11,25 +11,36 @@ export const authOptions: NextAuthOptions = {
             name: "Student Name",
             credentials: {
                 name: { label: "Nombre", type: "text", placeholder: "Tu nombre (ej. Sofia)" },
-                studentCode: { label: "Código Secreto", type: "text", placeholder: "Ej. X7P9K (Opcional para Maestros)" }
+                classCode: { label: "Código de Clase", type: "text", placeholder: "Ej. X7P9K" },
+                studentCode: { label: "Código Secreto", type: "text", placeholder: "Ej. DA8AXE" }
             },
             async authorize(credentials) {
-                const { name, studentCode } = credentials as any;
+                const { name, classCode, studentCode } = credentials as any;
                 if (!name) return null;
 
                 let user;
 
                 if (studentCode && studentCode.trim() !== '') {
-                    // Student login requires a valid unique student code + exact matched name
-                    user = await prisma.user.findFirst({
-                        where: {
-                            name: { equals: name.trim(), mode: 'insensitive' },
-                            studentCode: studentCode.trim().toUpperCase(),
-                            role: 'STUDENT'
+                    // Student login: requires name + studentCode, optionally also classCode
+                    const whereClause: any = {
+                        name: { equals: name.trim(), mode: 'insensitive' },
+                        studentCode: studentCode.trim().toUpperCase(),
+                        role: 'STUDENT'
+                    };
+
+                    // If classCode is provided, also verify classroom membership
+                    if (classCode && classCode.trim() !== '') {
+                        const classroom = await prisma.classroom.findUnique({
+                            where: { accessCode: classCode.trim().toUpperCase() }
+                        });
+                        if (classroom) {
+                            whereClause.classroomId = classroom.id;
                         }
-                    });
+                    }
+
+                    user = await prisma.user.findFirst({ where: whereClause });
                 } else {
-                    // Teacher or Superadmin login (they don't use class codes currently)
+                    // Teacher or Superadmin login (no codes needed)
                     user = await prisma.user.findFirst({
                         where: {
                             name: { equals: name.trim(), mode: 'insensitive' },
