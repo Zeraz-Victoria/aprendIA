@@ -1042,7 +1042,13 @@ export default function TeacherDashboard() {
                                                 <div className="flex-1 grid grid-cols-12 gap-4 items-center">
                                                     <div className="col-span-3">
                                                         <h4 className="font-bold text-slate-700">{student.name}</h4>
-                                                        <span className="text-xs text-slate-400">{student.lastActivity}</span>
+                                                        <div className="flex items-center gap-1 mt-0.5">
+                                                            <span className="text-xs text-slate-400">{student.lastActivity}</span>
+                                                            <span className="text-slate-300">•</span>
+                                                            <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-mono tracking-wider font-bold" title="Código de Acceso del Alumno">
+                                                                {student.studentCode || 'X7P9K2'}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                     <div className="col-span-1">
                                                         {student.status === 'needs_help' && (

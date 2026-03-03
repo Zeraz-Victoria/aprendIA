@@ -8,6 +8,7 @@ import { useLearning } from "@/contexts/LearningContext";
 export default function StudentLogin() {
     const { login } = useLearning();
     const [name, setName] = useState("");
+    const [studentCode, setStudentCode] = useState("");
     const [error, setError] = useState("");
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -18,11 +19,12 @@ export default function StudentLogin() {
 
         const res = await signIn("credentials", {
             name,
+            studentCode,
             redirect: false,
         });
 
         if (res?.error) {
-            setError("Credenciales incorrectas. Verifica tu nombre o pide ayuda a tu profesor.");
+            setError("Credenciales incorrectas. Verifica tu nombre o pide tu código secreto a tu profesor.");
         } else {
             setError("");
         }
@@ -36,14 +38,14 @@ export default function StudentLogin() {
                         <BookOpen className="w-10 h-10 text-white" />
                     </div>
                     <h1 className="text-2xl font-bold text-white">¡Bienvenido a la Aventura!</h1>
-                    <p className="text-teal-200">Ingresa tu nombre para continuar tu viaje.</p>
+                    <p className="text-teal-200">Ingresa a tu cuenta para continuar tu viaje.</p>
                 </div>
 
                 <div className="p-8">
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-2">
-                                Tu Nombre o Código
+                                Tu Nombre de Aventura
                             </label>
                             <div className="relative">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
@@ -52,7 +54,26 @@ export default function StudentLogin() {
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition font-medium text-slate-800"
-                                    placeholder="Ej. Jimena"
+                                    placeholder="Ej. Sofia"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">
+                                Tu Código Secreto (6 letras)
+                            </label>
+                            <div className="relative">
+                                <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                                <input
+                                    type="text"
+                                    value={studentCode}
+                                    onChange={(e) => setStudentCode(e.target.value)}
+                                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition font-medium text-slate-800 uppercase tracking-widest"
+                                    placeholder="Ej. X7P9K2"
+                                    maxLength={6}
+                                    required
                                 />
                             </div>
                         </div>

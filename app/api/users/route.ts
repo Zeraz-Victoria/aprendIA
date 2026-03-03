@@ -69,12 +69,35 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        // Logic logic logic logic logic logic logic logic logic logic logic logic logic
+
+        // Generate a 6-character unique student code
+        const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluded confusing chars like I, O, 1, 0
+        let newStudentCode = '';
+        let isUnique = false;
+
+        while (!isUnique) {
+            newStudentCode = '';
+            for (let i = 0; i < 6; i++) {
+                newStudentCode += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+
+            // Check if it's truly unique in the DB
+            const existingUser = await prisma.user.findUnique({
+                where: { studentCode: newStudentCode }
+            });
+            if (!existingUser) {
+                isUnique = true;
+            }
+        }
+
         const student = await prisma.user.create({
             data: {
                 name: name.trim(),
                 avatar: avatar || '🧑🏻',
                 role: 'STUDENT',
                 status: 'active',
+                studentCode: newStudentCode,
                 lives: 3,
                 gems: 0,
                 streak: 0,

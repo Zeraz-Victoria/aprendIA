@@ -11,26 +11,20 @@ export const authOptions: NextAuthOptions = {
             name: "Student Name",
             credentials: {
                 name: { label: "Nombre", type: "text", placeholder: "Tu nombre (ej. Sofia)" },
-                accessCode: { label: "Código de Clase", type: "text", placeholder: "Ej. X7P9K (Opcional para Maestros)" }
+                studentCode: { label: "Código Secreto", type: "text", placeholder: "Ej. X7P9K (Opcional para Maestros)" }
             },
             async authorize(credentials) {
-                const { name, accessCode } = credentials as any;
+                const { name, studentCode } = credentials as any;
                 if (!name) return null;
 
                 let user;
 
-                if (accessCode && accessCode.trim() !== '') {
-                    // Student login requires a valid class code
-                    const classroom = await prisma.classroom.findUnique({
-                        where: { accessCode: accessCode.trim().toUpperCase() }
-                    });
-
-                    if (!classroom) return null; // Invalid code
-
+                if (studentCode && studentCode.trim() !== '') {
+                    // Student login requires a valid unique student code + exact matched name
                     user = await prisma.user.findFirst({
                         where: {
                             name: { equals: name.trim(), mode: 'insensitive' },
-                            classroomId: classroom.id,
+                            studentCode: studentCode.trim().toUpperCase(),
                             role: 'STUDENT'
                         }
                     });

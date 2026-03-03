@@ -46,6 +46,7 @@ export interface DBUser {
   xp: number;
   classroomId: string | null;
   activeFrame?: string | null;
+  studentCode?: string | null;
   assignedWorlds?: { id: string, title?: string, theme: string }[];
 }
 
@@ -62,6 +63,7 @@ export interface Student {
   xp: number;
   classroomId?: string | null;
   activeFrame?: string | null;
+  studentCode?: string | null;
   assignedWorlds?: { id: string, title?: string, theme: string }[];
 }
 
@@ -185,6 +187,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
             xp: u.xp,
             classroomId: u.classroomId || null,
             activeFrame: u.activeFrame,
+            studentCode: u.studentCode,
             assignedWorlds: u.assignedWorlds
           }));
           setStudents(mappedStudents);
