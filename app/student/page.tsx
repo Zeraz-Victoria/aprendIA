@@ -2,7 +2,7 @@
 
 import AdventureMap from "@/components/AdventureMap";
 import StudentHUD from "@/components/StudentHUD";
-import { ArrowLeft, X, BrainCircuit, ClipboardList } from "lucide-react";
+import { ArrowLeft, X, BrainCircuit, ClipboardList, MessageSquare } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
 import { useState, useEffect, useCallback } from "react";
 import RewardsStore from "@/components/RewardsStore";
@@ -30,6 +30,14 @@ interface EvidenceData {
     world?: { title: string; theme: string };
 }
 
+interface TeacherMsg {
+    id: string;
+    message: string;
+    isGlobal: boolean;
+    createdAt: string;
+    sender?: { name: string };
+}
+
 export default function StudentPage() {
     const { currentUser, setActiveWorld } = useLearning();
     const { status } = useSession();
@@ -40,8 +48,10 @@ export default function StudentPage() {
     const [showProfile, setShowProfile] = useState(false);
     const [showRaidModal, setShowRaidModal] = useState(false);
     const [showEvaluations, setShowEvaluations] = useState(false);
+    const [showMessages, setShowMessages] = useState(false);
     const [hints, setHints] = useState<HintData[]>([]);
     const [evaluations, setEvaluations] = useState<EvidenceData[]>([]);
+    const [teacherMessages, setTeacherMessages] = useState<TeacherMsg[]>([]);
 
     // State to determine if we are in Lobby or inside a specific Map
     const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
@@ -84,6 +94,26 @@ export default function StudentPage() {
         const interval = setInterval(fetchEvaluations, 30000);
         return () => clearInterval(interval);
     }, [fetchEvaluations]);
+
+    // Fetch teacher messages
+    const fetchMessages = useCallback(async () => {
+        if (!currentUser?.id) return;
+        try {
+            const res = await fetch(`/api/messages?t=${Date.now()}`, { cache: 'no-store' });
+            if (res.ok) {
+                const data = await res.json();
+                setTeacherMessages(data);
+            }
+        } catch (e) {
+            console.error("Failed to fetch messages", e);
+        }
+    }, [currentUser?.id]);
+
+    useEffect(() => {
+        fetchMessages();
+        const interval = setInterval(fetchMessages, 15000);
+        return () => clearInterval(interval);
+    }, [fetchMessages]);
 
     const dismissHint = async (hintId: string) => {
         setHints(prev => prev.filter(h => h.id !== hintId));
@@ -250,6 +280,19 @@ export default function StudentPage() {
                         </span>
                     )}
                 </button>
+
+                {/* Messages Button */}
+                <button
+                    onClick={() => setShowMessages(true)}
+                    className="bg-violet-500/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-violet-400 text-white hover:bg-violet-600 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 px-5 font-bold text-sm animate-fade-in-up relative"
+                >
+                    <MessageSquare className="w-4 h-4" /> Mensajes
+                    {teacherMessages.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-black">
+                            {teacherMessages.length}
+                        </span>
+                    )}
+                </button>
             </div>
 
 
@@ -380,6 +423,50 @@ export default function StudentPage() {
                                         </div>
                                     );
                                 })
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Messages Panel */}
+            {showMessages && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-lg max-h-[85vh] overflow-hidden relative shadow-2xl flex flex-col">
+                        <div className="bg-gradient-to-r from-violet-500 to-fuchsia-500 p-6 text-white">
+                            <button onClick={() => setShowMessages(false)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 transition z-10">
+                                <X className="w-5 h-5 text-white" />
+                            </button>
+                            <h2 className="text-2xl font-black flex items-center gap-2"><MessageSquare className="w-6 h-6" /> Mensajes del Maestro</h2>
+                            <p className="text-violet-100 text-sm mt-1">Avisos y comunicados de tu profesor</p>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            {teacherMessages.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <div className="text-5xl mb-4">✉️</div>
+                                    <h3 className="text-lg font-bold text-slate-700">Sin mensajes aún</h3>
+                                    <p className="text-slate-400 text-sm">Cuando tu maestro te envíe un mensaje, aparecerá aquí.</p>
+                                </div>
+                            ) : (
+                                teacherMessages.map((msg) => (
+                                    <div key={msg.id} className="p-4 rounded-2xl border-2 border-violet-100 bg-white shadow-sm">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-sm">👨‍🏫</span>
+                                                <span className="text-sm font-bold text-violet-700">{msg.sender?.name || 'Maestro'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {msg.isGlobal && (
+                                                    <span className="text-xs bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full font-bold">📢 Para todos</span>
+                                                )}
+                                                <span className="text-xs text-slate-400">
+                                                    {new Date(msg.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{msg.message}</p>
+                                    </div>
+                                ))
                             )}
                         </div>
                     </div>

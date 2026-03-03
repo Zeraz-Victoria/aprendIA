@@ -51,6 +51,8 @@ model User {
   studentMissions   StudentMission[]
   assignedWorlds    World[] @relation("StudentAssignedWorlds")
   evidenceEntries   EvidenceEntry[]
+  receivedMessages  TeacherMessage[] @relation("MessageRecipients")
+  sentMessages      TeacherMessage[] @relation("SentMessages")
 
   // Classroom relations
   classroomId     String?
@@ -128,6 +130,7 @@ model School {
   grades     Grade[]
   classrooms Classroom[]
   raidBosses RaidBoss[]
+  messages   TeacherMessage[]
 }
 
 model World {
@@ -332,4 +335,17 @@ model AIPromptCache {
 
   @@unique([topic, theme])
   @@index([topic, theme])
+}
+
+model TeacherMessage {
+  id         String   @id @default(cuid())
+  senderId   String
+  schoolId   String
+  message    String   @db.Text
+  isGlobal   Boolean  @default(false)   // true = sent to all students
+  createdAt  DateTime @default(now())
+
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  school     School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  recipients User[]   @relation("MessageRecipients")
 }
