@@ -9,16 +9,23 @@ export async function GET() {
     try {
         const session = await getServerSession(authOptions);
         const schoolId = (session?.user as any)?.schoolId;
+        const role = (session?.user as any)?.role;
+        const teacherId = (session?.user as any)?.id;
 
-        if (!schoolId) {
+        if (!schoolId && role !== 'TEACHER') {
             return NextResponse.json([]);
         }
 
+        let whereClause: any = { role: 'STUDENT' };
+
+        if (role === 'TEACHER') {
+            whereClause.teacherOwnerId = teacherId;
+        } else if (schoolId) {
+            whereClause.schoolId = schoolId;
+        }
+
         const students = await prisma.user.findMany({
-            where: {
-                role: 'STUDENT',
-                schoolId: schoolId
-            },
+            where: whereClause,
             orderBy: { name: 'asc' },
             include: {
                 assignedWorlds: true
@@ -36,6 +43,8 @@ export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
         const schoolId = (session?.user as any)?.schoolId;
+        const teacherId = (session?.user as any)?.id;
+        const role = (session?.user as any)?.role;
 
         const body = await req.json();
         const { name, avatar, classroomId } = body;
@@ -72,6 +81,7 @@ export async function POST(req: NextRequest) {
                 xp: 0,
                 classroomId: classroomId || null,
                 schoolId: schoolId || null,
+                teacherOwnerId: role === 'TEACHER' ? teacherId : null,
             }
         });
 

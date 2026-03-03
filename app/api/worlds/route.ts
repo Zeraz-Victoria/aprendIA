@@ -17,8 +17,10 @@ export async function GET(req: Request) {
             whereClause = {
                 assignedStudents: { some: { id: userId } }
             };
+        } else if (role === 'TEACHER') {
+            whereClause = { teacherId: userId };
         } else if (schoolId) {
-            // Teachers/admins see all worlds for their specific school
+            // Admins see all worlds for their specific school
             whereClause = { schoolId };
         } else {
             // No schoolId in session, return nothing for safety
@@ -56,6 +58,8 @@ export async function POST(req: Request) {
 
         const session = await getServerSession(authOptions);
         const schoolId = (session?.user as any)?.schoolId;
+        const teacherId = (session?.user as any)?.id;
+        const role = (session?.user as any)?.role;
 
         if (schoolId) {
             const school = await prisma.school.findUnique({
@@ -79,6 +83,7 @@ export async function POST(req: Request) {
                 title,
                 theme,
                 schoolId,
+                teacherId: role === 'TEACHER' ? teacherId : null,
                 daysJson: JSON.stringify(days),
                 pedagogyJson: pedagogy ? JSON.stringify(pedagogy) : null,
                 ...(classroomIds && classroomIds.length > 0 && {

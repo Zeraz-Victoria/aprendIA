@@ -45,6 +45,7 @@ export async function POST(req: Request) {
       generationConfig: {
         maxOutputTokens: 8192,
         temperature: 0.1, // Low temperature for consistent formatting
+        responseMimeType: "application/json",
       }
     });
 
@@ -54,17 +55,14 @@ export async function POST(req: Request) {
 Actúa como un Analista de Datos Pedagógicos experto en la NEM. Tu función es desglosar documentos de planeación educativa en fragmentos técnicos sin alterar el contenido original.
 
 # OBJETIVO
-Extraer cada sesión detallada en el documento y organizarla en un esquema JSON. Debes anonimizar datos personales (nombres de docentes o escuelas) y usar etiquetas genéricas.
+Extraer cada sesión detallada en el documento y organizarla en un esquema JSON estricto. Debes anonimizar datos personales (nombres de docentes o escuelas) y usar etiquetas genéricas.
 
 ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\n\n--- INICIO --- \n${extractedWordText.substring(0, 40000)}\n--- FIN ---\n` : "He adjuntado a este mensaje un documento PDF con una planeación docente completa.\n"}
 
 # REGLAS DE EXTRACCIÓN (FIDELIDAD TOTAL):
-1. IDENTIFICACIÓN CURRICULAR: Extrae la Fase (1 a 6), el Campo Formativo, los PDA y la Metodología (ABP, STEAM, Proyectos Comunitarios o Servicio).
-2. SEGMENTACIÓN POR SESIÓN: Por cada sesión o día encontrado en el texto, extrae palabra por palabra:
-   - TÍTULO: El nombre de la actividad.
-   - TEXTO_BRUTO_SESION: Copia textualmente todo el contenido que pertenece a esa sesión (Inicio, Desarrollo y Cierre juntos), sin omitir detalles. Asegúrate de incluirlo en un solo string largo.
-71. PROHIBICIÓN DE RESUMEN O RELLENO: No incluyas descripciones largas. Usa textos concisos.
-72. CRÍTICO: Para evitar el truncamiento de datos, tu respuesta debe ser EXTREMADAMENTE MINIMALISTA. Genera solo el array de objetos con "id", "titulo" y "tipo". NO incluyas descripciones largas ni resúmenes en este paso. Asegúrate de cerrar correctamente el array "]" y la llave final "}" del JSON.
+1. IDENTIFICACIÓN CURRICULAR: Extrae la Fase (1 a 6), el Campo Formativo, los PDA y la Metodología (ABP, STEAM, Proyectos Comunitarios o Servicio). Asegúrate de llenar estas propiedades en "datos_generales".
+2. SEGMENTACIÓN DE SESIONES: Extrae TODOS los detalles del desarrollo, incluyendo Inicio, Desarrollo y Cierre, textualmente sin omitir pasos ni resumir en el campo "texto_bruto_sesion".
+3. GARANTÍA JSON: Retorna absolutamente un JSON puro sin bloque markdown. Respeta TODAS las propiedades y estructura enviadas. No recortes ni trunques la respuesta.
 
 # FORMATO DE SALIDA (JSON CRUDO):
 {
