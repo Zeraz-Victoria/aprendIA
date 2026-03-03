@@ -75,11 +75,12 @@ DESARROLLO: """ ${session_development || `Desarrolla la temática educativa gami
 CIERRE: """ ${session_end || `Validación metacognitiva del tema ${topic}`} """
 --- FIN DE DATOS ---
 
-# INSTRUCCIONES DE MAPEO OBLIGATORIO:
-1. NARRATIVA DE ENTRADA: Transcribe fielmente el contenido del bloque INICIO. Si el docente propone un "caso ficticio" o "lluvia de ideas", eso debe ser la introducción del nivel.
-2. DESAFÍO TÉCNICO: El reto jugable debe ser la actividad descrita en el bloque DESARROLLO. Si el docente pide "resolución de problemas de compra-venta" o "uso del ábaco", esa es la instrucción que el alumno debe ver.
-3. METACOGNICIÓN: Usa el bloque CIERRE para la validación final o reflexión del nivel.
-4. CUMPLIMIENTO NEM: Clasifica el nivel en la Fase correspondiente (1-6) y extrae el PDA mencionado en la planeación.
+# INSTRUCCIONES DE Y CREACIÓN Y EXPANSIÓN:
+El texto anterior es un resumen didáctico extremadamente conciso. Tu tarea es INVENTAR y EXPANDIR este concepto en un nivel de juego completo.
+1. NARRATIVA DE ENTRADA: Crea una historia envolvente de aventura basada en el resumen didáctico. Transforma el concepto aburrido en una intro emocionante.
+2. DESAFÍO TÉCNICO: Diseña un problema matemático o lógico jugable que evalúe directamente el concepto del resumen. Asegúrate de incluir la respuesta correcta y una pista socrática para ayudar al alumno si se equivoca.
+3. METACOGNICIÓN: Inventa una reflexión de cierre motivadora relacionada al desarrollo.
+4. CUMPLIMIENTO NEM: Clasifica el nivel en la Fase correspondiente (1-6) y extrae o inventa el PDA directamente relacionado al tema.
 
 # FORMATO DE SALIDA (JSON ÚNICAMENTE):
 Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiquetas markdown.

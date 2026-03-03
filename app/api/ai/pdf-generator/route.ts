@@ -61,7 +61,7 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
 
 # REGLAS DE EXTRACCIÓN (FIDELIDAD TOTAL):
 1. IDENTIFICACIÓN CURRICULAR: Extrae la Fase (1 a 6), el Campo Formativo, los PDA y la Metodología (ABP, STEAM, Proyectos Comunitarios o Servicio). Asegúrate de llenar estas propiedades en "datos_generales".
-2. SEGMENTACIÓN DE SESIONES: Extrae TODOS los detalles del desarrollo, incluyendo Inicio, Desarrollo y Cierre, textualmente sin omitir pasos ni resumir en el campo "texto_bruto_sesion".
+2. SEGMENTACIÓN DE SESIONES (LAZY LOADING): Analiza cada sesión. Extrae su título y redacta un **resumen extremadamente corto (máximo 2 oraciones)** describiendo el concepto matemático central o la dinámica de aprendizaje en el campo "resumen_didactico". NO copies el texto original completo.
 3. GARANTÍA JSON: Retorna absolutamente un JSON puro sin bloque markdown. Respeta TODAS las propiedades y estructura enviadas. No recortes ni trunques la respuesta.
 
 # FORMATO DE SALIDA (JSON CRUDO):
@@ -77,7 +77,7 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
     {
       "numero": 1,
       "titulo": "",
-      "texto_bruto_sesion": "",
+      "resumen_didactico": "",
       "recursos_mencionados": []
     }
   ]
@@ -178,7 +178,7 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
         dayNumber: s.numero,
         type: isLast ? "boss_fight" : "guided_practice", // Determine type based on being actual last
         title: s.titulo,
-        session_start: s.texto_bruto_sesion, // Store the entire raw text here temporarily to pass to Endpoint 2
+        session_start: s.resumen_didactico || s.texto_bruto_sesion || "", // Store the short summary to pass to the Lazy Loader Level Generator
         session_development: "",
         session_end: "",
         narrative: "(Generando contenido con IA...)",
