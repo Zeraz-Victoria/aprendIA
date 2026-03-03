@@ -15,6 +15,14 @@ export default function SuperadminPage() {
     const [newTeacherPlan, setNewTeacherPlan] = useState("BASIC");
     const [isCreating, setIsCreating] = useState(false);
 
+    // Edit Teacher State
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingTeacher, setEditingTeacher] = useState<any>(null);
+    const [editTeacherName, setEditTeacherName] = useState("");
+    const [editMaxStudents, setEditMaxStudents] = useState(25);
+    const [editMaxMaps, setEditMaxMaps] = useState(1);
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
+
     useEffect(() => {
         if (status === "unauthenticated") {
             router.push("/");
@@ -75,6 +83,36 @@ export default function SuperadminPage() {
             if (res.ok) fetchTeachers();
         } catch (error) {
             console.error(error);
+        }
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingTeacher || !editTeacherName.trim()) return;
+
+        setIsSavingEdit(true);
+        try {
+            const res = await fetch("/api/superadmin/teachers", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    schoolId: editingTeacher.schoolId,
+                    teacherId: editingTeacher.id,
+                    newName: editTeacherName,
+                    maxStudents: editMaxStudents,
+                    maxMaps: editMaxMaps
+                })
+            });
+            if (res.ok) {
+                setShowEditModal(false);
+                setEditingTeacher(null);
+                fetchTeachers(); // Refresh list to reflect changes
+            } else {
+                alert("Error al guardar los cambios del maestro.");
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsSavingEdit(false);
         }
     };
 
@@ -216,17 +254,90 @@ export default function SuperadminPage() {
                                     </div>
                                 </div>
 
-                                {/* Delete button */}
-                                <div className="mt-4 pt-4 border-t border-slate-700">
+                                {/* Action Buttons */}
+                                <div className="mt-4 pt-4 border-t border-slate-700 flex gap-2">
+                                    <button
+                                        onClick={() => {
+                                            setEditingTeacher(teacher);
+                                            setEditTeacherName(teacher.name);
+                                            setEditMaxStudents(teacher.maxStudents || 25);
+                                            setEditMaxMaps(teacher.maxMaps || 1);
+                                            setShowEditModal(true);
+                                        }}
+                                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-sky-400 bg-sky-500/5 border border-sky-500/20 rounded-lg hover:bg-sky-500/15 transition-colors"
+                                    >
+                                        <School className="w-3.5 h-3.5" /> Editar Límites
+                                    </button>
                                     <button
                                         onClick={() => handleDeleteTeacher(teacher.id, teacher.name)}
-                                        className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-red-400 bg-red-500/5 border border-red-500/20 rounded-lg hover:bg-red-500/15 transition-colors"
+                                        className="flex-[0.4] flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-red-400 bg-red-500/5 border border-red-500/20 rounded-lg hover:bg-red-500/15 transition-colors"
+                                        title="Eliminar Maestro"
                                     >
-                                        <Trash2 className="w-3.5 h-3.5" /> Eliminar Maestro
+                                        <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* Edit Teacher Modal */}
+                {showEditModal && editingTeacher && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+                        <div className="bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up border border-slate-700">
+                            <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+                                <h3 className="font-bold text-xl text-white flex items-center gap-2">
+                                    <School className="w-5 h-5 text-sky-400" /> Editar Maestro
+                                </h3>
+                                <button onClick={() => { setShowEditModal(false); setEditingTeacher(null); }} className="text-slate-400 hover:text-white transition-colors">
+                                    <Trash2 className="w-5 h-5 hidden" /> {/* Espaciador invisible o cambiar ícono a X */}
+                                    <span className="text-xl font-bold rounded-full w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-slate-600">×</span>
+                                </button>
+                            </div>
+                            <div className="p-6 space-y-5">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-300 mb-1">Nombre del Maestro</label>
+                                    <input
+                                        type="text"
+                                        value={editTeacherName}
+                                        onChange={(e) => setEditTeacherName(e.target.value)}
+                                        className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-sky-500 outline-none"
+                                        placeholder="Nombre del maestro..."
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-300 mb-1">Límite de Alumnos</label>
+                                        <input
+                                            type="number"
+                                            value={editMaxStudents}
+                                            onChange={(e) => setEditMaxStudents(Number(e.target.value) || 0)}
+                                            className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-amber-400 focus:ring-2 focus:ring-amber-500 outline-none font-bold"
+                                            min={1}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-300 mb-1">Límite de Mapas</label>
+                                        <input
+                                            type="number"
+                                            value={editMaxMaps}
+                                            onChange={(e) => setEditMaxMaps(Number(e.target.value) || 0)}
+                                            className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sky-400 focus:ring-2 focus:ring-sky-500 outline-none font-bold"
+                                            min={1}
+                                        />
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleSaveEdit}
+                                    disabled={isSavingEdit || !editTeacherName.trim()}
+                                    className="w-full bg-sky-600 hover:bg-sky-500 text-white py-3 rounded-xl font-bold shadow-lg transition-all disabled:opacity-50 mt-4"
+                                >
+                                    {isSavingEdit ? "Guardando..." : "Guardar Cambios Individuales"}
+                                </button>
+                                <p className="text-xs text-slate-500 text-center">Estos límites personalizados sobrescribirán los límites por defecto del plan seleccionado.</p>
+                            </div>
+                        </div>
                     </div>
                 )}
             </main>

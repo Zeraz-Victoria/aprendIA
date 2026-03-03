@@ -127,38 +127,49 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
-        const { schoolId, subscriptionPlan, subscriptionStatus } = await req.json();
+        const { schoolId, teacherId, newName, subscriptionPlan, subscriptionStatus, maxMaps, maxStudents } = await req.json();
 
         if (!schoolId) {
             return NextResponse.json({ error: "School ID required" }, { status: 400 });
         }
 
-        // Automatic limit setting
-        let maxMaps = 1;
-        let maxStudents = 25;
+        const updateData: any = {};
+        if (subscriptionPlan) updateData.subscriptionPlan = subscriptionPlan;
+        if (subscriptionStatus) updateData.subscriptionStatus = subscriptionStatus;
 
+        // Auto-limits when switching plans
         if (subscriptionPlan === 'INTERMEDIATE') {
-            maxMaps = 5;
-            maxStudents = 50;
+            updateData.maxMaps = 5;
+            updateData.maxStudents = 50;
         } else if (subscriptionPlan === 'PREMIUM') {
-            maxMaps = 10;
-            maxStudents = 80;
+            updateData.maxMaps = 10;
+            updateData.maxStudents = 80;
+        } else if (subscriptionPlan === 'BASIC') {
+            updateData.maxMaps = 1;
+            updateData.maxStudents = 25;
         }
+
+        // Manual overriding of limits
+        if (maxMaps !== undefined) updateData.maxMaps = parseInt(maxMaps);
+        if (maxStudents !== undefined) updateData.maxStudents = parseInt(maxStudents);
 
         const updatedSchool = await prisma.school.update({
             where: { id: schoolId },
-            data: {
-                subscriptionPlan,
-                subscriptionStatus,
-                maxMaps,
-                maxStudents
-            }
+            data: updateData
         });
+
+        // Update teacher name if provided and teacherId is present
+        if (teacherId && newName?.trim()) {
+            await prisma.user.update({
+                where: { id: teacherId },
+                data: { name: newName.trim() }
+            });
+        }
 
         return NextResponse.json({ success: true, school: updatedSchool });
     } catch (error) {
-        console.error("Error updating subscription:", error);
-        return NextResponse.json({ error: "Failed to update subscription" }, { status: 500 });
+        console.error("Error updating teacher/school data:", error);
+        return NextResponse.json({ error: "Failed to update" }, { status: 500 });
     }
 }
 

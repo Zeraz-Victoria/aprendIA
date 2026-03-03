@@ -66,6 +66,12 @@ export default function TeacherDashboard() {
     const [studentForAssignMap, setStudentForAssignMap] = useState<Student | null>(null);
     const [isAssigningMap, setIsAssigningMap] = useState(false);
 
+    // Gem Award State
+    const [showAwardGemsModal, setShowAwardGemsModal] = useState(false);
+    const [studentForGems, setStudentForGems] = useState<Student | null>(null);
+    const [gemAmountToAward, setGemAmountToAward] = useState(10);
+    const [isAwardingGems, setIsAwardingGems] = useState(false);
+
     // Raid Boss Management State
     const [raidBossName, setRaidBossName] = useState("Dragón del Caos");
     const [raidBossEmoji, setRaidBossEmoji] = useState("🐉");
@@ -133,6 +139,34 @@ export default function TeacherDashboard() {
         setIsResettingBoss(false);
     };
     const [hintText, setHintText] = useState("");
+
+    const handleAwardGems = async () => {
+        if (!studentForGems || !gemAmountToAward || isNaN(gemAmountToAward) || gemAmountToAward === 0) return;
+        setIsAwardingGems(true);
+        try {
+            const res = await fetch('/api/teacher/award-gems', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: studentForGems.id, gemsToAdd: gemAmountToAward })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                // Instantly update the UI local state for immediate feedback
+                setStudentForGems(prev => prev ? { ...prev, gems: data.newTotal } : prev);
+                const updatedStudentRow = document.getElementById(`student-gems-${studentForGems.id}`);
+                if (updatedStudentRow) updatedStudentRow.innerText = data.newTotal + " Gemas";
+                alert(`¡Éxito! El alumno ahora tiene ${data.newTotal} gemas.`);
+                setShowAwardGemsModal(false);
+                setGemAmountToAward(10);
+            } else {
+                alert(data.error || "Error entregando gemas.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error de red al entregar gemas.");
+        }
+        setIsAwardingGems(false);
+    };
 
     // Subscription & Limits State
     const [schoolInfo, setSchoolInfo] = useState<any>(null);
@@ -1039,6 +1073,16 @@ export default function TeacherDashboard() {
                                                         </button>
                                                         <button
                                                             onClick={() => {
+                                                                setStudentForGems(student);
+                                                                setShowAwardGemsModal(true);
+                                                            }}
+                                                            className="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 transition-colors flex gap-2 items-center text-xs font-bold shadow-sm"
+                                                            title="Dar Gemas al estudiante"
+                                                        >
+                                                            💎 <span className="hidden sm:inline">Dar Gemas</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
                                                                 setEditingStudent(student);
                                                                 setStudentName(student.name);
                                                                 setStudentAvatar(student.avatar);
@@ -1866,6 +1910,64 @@ export default function TeacherDashboard() {
                     </div>
                 );
             })()}
+            {/* Gem Award Modal */}
+            {showAwardGemsModal && studentForGems && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-fade-in-up text-center">
+                        <button
+                            onClick={() => setShowAwardGemsModal(false)}
+                            disabled={isAwardingGems}
+                            className="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors z-10 disabled:opacity-50"
+                        >
+                            <X className="w-5 h-5 text-slate-600" />
+                        </button>
+
+                        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-inner">
+                            💎
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-1">Cofre de Gemas</h3>
+                        <p className="text-slate-500 text-sm mb-6">
+                            ¿Cuántas gemas deseas otorgarle a <strong className="text-emerald-700">{studentForGems.name}</strong>?
+                        </p>
+
+                        <div className="flex flex-col gap-4">
+                            <input
+                                type="number"
+                                value={gemAmountToAward}
+                                onChange={(e) => setGemAmountToAward(parseInt(e.target.value) || 0)}
+                                className="w-full text-center text-3xl font-black bg-slate-50 border-2 border-slate-200 rounded-2xl py-4 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none text-slate-700 transition-all"
+                                disabled={isAwardingGems}
+                            />
+
+                            <div className="flex justify-center gap-2 mb-2">
+                                {[10, 50, 100, 500].map(amt => (
+                                    <button
+                                        key={amt}
+                                        onClick={() => setGemAmountToAward(amt)}
+                                        className="bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                                    >
+                                        +{amt}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={handleAwardGems}
+                                disabled={isAwardingGems || gemAmountToAward === 0}
+                                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-emerald-200 transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {isAwardingGems ? (
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                ) : (
+                                    "✨ Entregar Gemas"
+                                )}
+                            </button>
+                            <p className="text-[10px] text-slate-400 mt-2">Puedes escribir números negativos para restar gemas por mal comportamiento.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* ADD GRADE MODAL */}
             {showAddGradeModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
