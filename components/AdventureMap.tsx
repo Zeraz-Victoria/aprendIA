@@ -105,9 +105,11 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
         return null;
     }
 
+    const totalCompletedLevels = studentProgress.length;
+
     const levels: Level[] = mergedDays.map((day, index) => {
-        const isCompleted = studentProgress.includes(day.dayNumber);
-        const isActive = !isCompleted && day.dayNumber === highestCompleted + 1;
+        const isCompleted = index < totalCompletedLevels;
+        const isActive = index === totalCompletedLevels;
 
         let status: LevelStatus = "locked";
         if (isCompleted) status = "completed";
@@ -239,7 +241,7 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
                             />
                             {/* Progress Path (could be masked in advanced version, just simple dash for now) */}
                             <path
-                                d={generatePathData(dynamicCoords.slice(0, highestCompleted + 1))}
+                                d={generatePathData(dynamicCoords.slice(0, totalCompletedLevels + 1))}
                                 fill="none"
                                 stroke="#818cf8" // teal-400
                                 strokeWidth="4"
