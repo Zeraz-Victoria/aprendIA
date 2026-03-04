@@ -13,10 +13,11 @@ export const authOptions: NextAuthOptions = {
                 name: { label: "Nombre", type: "text", placeholder: "Tu nombre (ej. Sofia)" },
                 classCode: { label: "Código de Clase", type: "text", placeholder: "Ej. X7P9K" },
                 studentCode: { label: "Código Secreto", type: "text", placeholder: "Ej. DA8AXE" },
+                password: { label: "Contraseña", type: "password" },
                 loginRole: { label: "Role", type: "text" }
             },
             async authorize(credentials) {
-                const { name, classCode, studentCode, loginRole } = credentials as any;
+                const { name, classCode, studentCode, password, loginRole } = credentials as any;
                 if (!name) return null;
 
                 let user;
@@ -41,13 +42,28 @@ export const authOptions: NextAuthOptions = {
 
                     user = await prisma.user.findFirst({ where: whereClause });
                 } else if (loginRole === 'TEACHER') {
-                    // Teacher or Superadmin login (no codes needed)
-                    user = await prisma.user.findFirst({
-                        where: {
-                            name: { equals: name.trim(), mode: 'insensitive' },
-                            role: { in: ['TEACHER', 'SUPERADMIN'] }
-                        }
-                    });
+                    // Teacher or Superadmin login (no codes needed, but password required unless DeveloperAdmin)
+
+                    if (name.trim().toLowerCase() === 'developeradmin') {
+                        // Bypass password for the developer admin account
+                        user = await prisma.user.findFirst({
+                            where: {
+                                name: { equals: name.trim(), mode: 'insensitive' },
+                                role: { in: ['TEACHER', 'SUPERADMIN'] }
+                            }
+                        });
+                    } else {
+                        // Regular teacher requires password
+                        if (!password) return null;
+
+                        user = await prisma.user.findFirst({
+                            where: {
+                                name: { equals: name.trim(), mode: 'insensitive' },
+                                password: { equals: password.trim() },
+                                role: { in: ['TEACHER', 'SUPERADMIN'] }
+                            }
+                        });
+                    }
                 }
 
                 if (user) {

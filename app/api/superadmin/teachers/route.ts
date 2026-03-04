@@ -60,10 +60,10 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
-        const { name, plan } = await req.json();
+        const { name, plan, password } = await req.json();
 
-        if (!name?.trim()) {
-            return NextResponse.json({ error: "Name is required" }, { status: 400 });
+        if (!name?.trim() || !password?.trim()) {
+            return NextResponse.json({ error: "Name and password are required" }, { status: 400 });
         }
 
         // Look for existing user with that name just in case
@@ -107,6 +107,7 @@ export async function POST(req: Request) {
         const teacher = await prisma.user.create({
             data: {
                 name: name.trim(),
+                password: password.trim(),
                 role: "TEACHER",
                 schoolId: virtualSchool.id,
                 avatar: "👨‍🏫"
@@ -127,7 +128,7 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
-        const { schoolId, teacherId, newName, subscriptionPlan, subscriptionStatus, maxMaps, maxStudents } = await req.json();
+        const { schoolId, teacherId, newName, newPassword, subscriptionPlan, subscriptionStatus, maxMaps, maxStudents } = await req.json();
 
         if (!schoolId) {
             return NextResponse.json({ error: "School ID required" }, { status: 400 });
@@ -158,11 +159,16 @@ export async function PATCH(req: Request) {
             data: updateData
         });
 
-        // Update teacher name if provided and teacherId is present
-        if (teacherId && newName?.trim()) {
+        if (newName?.trim() || newPassword?.trim()) {
+            if (!teacherId) return NextResponse.json({ error: "Teacher ID required for renaming" }, { status: 400 });
+
+            const userUpdateData: any = {};
+            if (newName?.trim()) userUpdateData.name = newName.trim();
+            if (newPassword?.trim()) userUpdateData.password = newPassword.trim();
+
             await prisma.user.update({
                 where: { id: teacherId },
-                data: { name: newName.trim() }
+                data: userUpdateData
             });
         }
 

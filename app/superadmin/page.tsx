@@ -12,10 +12,16 @@ export default function SuperadminPage() {
     const [teachers, setTeachers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [newTeacherName, setNewTeacherName] = useState("");
+    const [newTeacherPassword, setNewTeacherPassword] = useState("");
     const [newTeacherPlan, setNewTeacherPlan] = useState("BASIC");
     const [isCreating, setIsCreating] = useState(false);
 
-    // State for creating new teachers
+    // Edit Teacher State
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingTeacher, setEditingTeacher] = useState<any>(null);
+    const [editTeacherName, setEditTeacherName] = useState("");
+    const [editTeacherPassword, setEditTeacherPassword] = useState("");
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -46,18 +52,19 @@ export default function SuperadminPage() {
 
     const handleCreateTeacher = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newTeacherName.trim()) return;
+        if (!newTeacherName.trim() || !newTeacherPassword.trim()) return;
 
         setIsCreating(true);
         try {
             const res = await fetch("/api/superadmin/teachers", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: newTeacherName, plan: newTeacherPlan })
+                body: JSON.stringify({ name: newTeacherName, password: newTeacherPassword, plan: newTeacherPlan })
             });
 
             if (res.ok) {
                 setNewTeacherName("");
+                setNewTeacherPassword("");
                 fetchTeachers();
             }
         } catch (error) {
@@ -77,6 +84,35 @@ export default function SuperadminPage() {
             if (res.ok) fetchTeachers();
         } catch (error) {
             console.error(error);
+        }
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingTeacher || (!editTeacherName.trim() && !editTeacherPassword.trim())) return;
+
+        setIsSavingEdit(true);
+        try {
+            const res = await fetch("/api/superadmin/teachers", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    schoolId: editingTeacher.schoolId,
+                    teacherId: editingTeacher.id,
+                    newName: editTeacherName,
+                    newPassword: editTeacherPassword,
+                })
+            });
+            if (res.ok) {
+                setShowEditModal(false);
+                setEditingTeacher(null);
+                fetchTeachers(); // Refresh list to reflect changes
+            } else {
+                alert("Error al guardar los cambios del maestro.");
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsSavingEdit(false);
         }
     };
 
@@ -135,7 +171,14 @@ export default function SuperadminPage() {
                             placeholder="Nombre del nuevo maestro..."
                             value={newTeacherName}
                             onChange={(e) => setNewTeacherName(e.target.value)}
-                            className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none w-52 text-white"
+                            className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none w-48 text-white"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Contraseña..."
+                            value={newTeacherPassword}
+                            onChange={(e) => setNewTeacherPassword(e.target.value)}
+                            className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none w-32 text-white"
                         />
                         <select
                             value={newTeacherPlan}
@@ -148,7 +191,7 @@ export default function SuperadminPage() {
                         </select>
                         <button
                             type="submit"
-                            disabled={!newTeacherName.trim() || isCreating}
+                            disabled={!newTeacherName.trim() || !newTeacherPassword.trim() || isCreating}
                             className="bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
                         >
                             <Plus className="w-4 h-4" />
@@ -221,15 +264,76 @@ export default function SuperadminPage() {
                                 {/* Action Buttons */}
                                 <div className="mt-4 pt-4 border-t border-slate-700 flex gap-2">
                                     <button
+                                        onClick={() => {
+                                            setEditingTeacher(teacher);
+                                            setEditTeacherName(teacher.name);
+                                            setEditTeacherPassword("");
+                                            setShowEditModal(true);
+                                        }}
+                                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-sky-400 bg-sky-500/5 border border-sky-500/20 rounded-lg hover:bg-sky-500/15 transition-colors"
+                                    >
+                                        <School className="w-3.5 h-3.5" /> Editar
+                                    </button>
+                                    <button
                                         onClick={() => handleDeleteTeacher(teacher.id, teacher.name)}
-                                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-red-400 bg-red-500/5 border border-red-500/20 rounded-lg hover:bg-red-500/15 transition-colors"
+                                        className="flex-[0.4] flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-red-400 bg-red-500/5 border border-red-500/20 rounded-lg hover:bg-red-500/15 transition-colors"
                                         title="Eliminar Maestro"
                                     >
-                                        <Trash2 className="w-3.5 h-3.5" /> Eliminar Maestro
+                                        <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* Edit Teacher Modal */}
+                {showEditModal && editingTeacher && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+                        <div className="bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up border border-slate-700">
+                            <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+                                <h3 className="font-bold text-xl text-white flex items-center gap-2">
+                                    <School className="w-5 h-5 text-sky-400" /> Editar Maestro
+                                </h3>
+                                <button onClick={() => { setShowEditModal(false); setEditingTeacher(null); }} className="text-slate-400 hover:text-white transition-colors">
+                                    <Trash2 className="w-5 h-5 hidden" /> {/* Espaciador invisible o cambiar ícono a X */}
+                                    <span className="text-xl font-bold rounded-full w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-slate-600">×</span>
+                                </button>
+                            </div>
+                            <div className="p-6 space-y-5">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-300 mb-1">Nombre</label>
+                                    <input
+                                        type="text"
+                                        value={editTeacherName}
+                                        onChange={(e) => setEditTeacherName(e.target.value)}
+                                        className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-sky-500 outline-none"
+                                        placeholder="Nombre del maestro..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-300 mb-1 flex justify-between">
+                                        Contraseña
+                                        <span className="text-xs font-normal text-slate-500">Opcional: déjalo vacío para no cambiarla</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editTeacherPassword}
+                                        onChange={(e) => setEditTeacherPassword(e.target.value)}
+                                        className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-sky-500 outline-none"
+                                        placeholder="Nueva contraseña..."
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={handleSaveEdit}
+                                    disabled={isSavingEdit || (!editTeacherName.trim() && !editTeacherPassword.trim())}
+                                    className="w-full bg-sky-600 hover:bg-sky-500 text-white py-3 rounded-xl font-bold shadow-lg transition-all disabled:opacity-50 mt-4"
+                                >
+                                    {isSavingEdit ? "Guardando..." : "Guardar Cambios"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
 

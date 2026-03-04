@@ -17,6 +17,7 @@ model User {
   avatar        String? // Emoji avatar for students
   activeFrame   String? // Store cosmetic item from inventory (e.g. frame_fire)
   studentCode   String? @unique // Secret unique login code for students
+  password      String? // Password for TEACHER and SUPERADMIN roles
   activeSessionToken String? // Single-device enforcement: only the latest login token is valid
   status        String    @default("active") // active, idle, needs_help
   lastActivity  DateTime  @default(now())

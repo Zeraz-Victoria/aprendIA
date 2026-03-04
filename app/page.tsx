@@ -11,6 +11,7 @@ export default function Home() {
   const [name, setName] = useState("");
   const [classCode, setClassCode] = useState("");
   const [studentCode, setStudentCode] = useState("");
+  const [password, setPassword] = useState("");
   const [loginRole, setLoginRole] = useState<"STUDENT" | "TEACHER">("STUDENT");
   const [error, setError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -50,12 +51,13 @@ export default function Home() {
       name: name.trim(),
       classCode: classCode.trim().toUpperCase(),
       studentCode: studentCode.trim().toUpperCase(),
+      password: password.trim(),
       loginRole,
       redirect: false,
     });
 
     if (res?.error) {
-      setError("Usuario no encontrado. Verifica tu nombre y tu código secreto, o pide ayuda a tu profesor.");
+      setError(loginRole === 'STUDENT' ? "Usuario no encontrado. Verifica tu nombre y tu código secreto." : "Credenciales incorrectas.");
       setIsLoggingIn(false);
     }
     // On success, useSession will update and the redirect logic above fires
@@ -167,6 +169,26 @@ export default function Home() {
                 </div>
               )}
 
+              {/* Teacher Password */}
+              {loginRole === "TEACHER" && (
+                <div className="animate-fade-in-up">
+                  <label className="block text-sm font-bold text-slate-700 mb-2 flex justify-between">
+                    Contraseña <span className="text-xs font-normal text-slate-500">Obligatorio</span>
+                  </label>
+                  <div className="relative">
+                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-medium text-slate-800"
+                      placeholder="Tu contraseña..."
+                      disabled={isLoggingIn}
+                    />
+                  </div>
+                </div>
+              )}
+
               {error && (
                 <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg text-center border border-red-100">
                   {error}
@@ -175,7 +197,7 @@ export default function Home() {
 
               <button
                 type="submit"
-                disabled={!name.trim() || (loginRole === "STUDENT" && !studentCode.trim()) || isLoggingIn}
+                disabled={!name.trim() || (loginRole === "STUDENT" && !studentCode.trim()) || (loginRole === "TEACHER" && !password.trim() && name.trim().toLowerCase() !== 'developeradmin') || isLoggingIn}
                 className="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg shadow-sky-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
               >
                 {isLoggingIn ? "Ingresando..." : <>Ingresar <ArrowRight className="w-5 h-5" /></>}
