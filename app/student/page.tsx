@@ -51,6 +51,7 @@ export default function StudentPage() {
     const [hints, setHints] = useState<HintData[]>([]);
     const [evaluations, setEvaluations] = useState<EvidenceData[]>([]);
     const [teacherMessages, setTeacherMessages] = useState<TeacherMsg[]>([]);
+    const [dismissedMsgIds, setDismissedMsgIds] = useState<Set<string>>(new Set());
 
     // State to determine if we are in Lobby or inside a specific Map
     const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
@@ -307,9 +308,9 @@ export default function StudentPage() {
             )}
 
             {/* Teacher Messages as Floating Notifications */}
-            {teacherMessages.length > 0 && (
+            {teacherMessages.filter(m => !dismissedMsgIds.has(m.id)).length > 0 && (
                 <div className={`fixed ${hints.length > 0 ? 'top-44' : 'top-28'} left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 space-y-2`}>
-                    {teacherMessages.slice(0, 3).map(msg => (
+                    {teacherMessages.filter(m => !dismissedMsgIds.has(m.id)).slice(0, 3).map(msg => (
                         <div key={msg.id} className="bg-gradient-to-r from-violet-100 to-fuchsia-100 border-2 border-violet-300 rounded-2xl p-4 shadow-xl animate-fade-in-up flex items-start gap-3">
                             <div className="bg-violet-500 text-white rounded-full p-2 shrink-0">
                                 <span className="text-sm">📢</span>
@@ -318,6 +319,12 @@ export default function StudentPage() {
                                 <p className="text-xs font-bold text-violet-700 uppercase tracking-wide mb-1">📩 Mensaje de {msg.sender?.name || 'tu Maestro'}</p>
                                 <p className="text-violet-900 text-sm leading-relaxed font-medium">{msg.message}</p>
                             </div>
+                            <button
+                                onClick={() => setDismissedMsgIds(prev => new Set([...prev, msg.id]))}
+                                className="text-violet-400 hover:text-violet-800 p-1 shrink-0"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
                     ))}
                 </div>
