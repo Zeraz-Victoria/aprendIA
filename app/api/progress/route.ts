@@ -39,7 +39,13 @@ export async function GET(req: Request) {
             progressMap[p.studentId][p.worldId].push(p.levelId);
         });
 
-        return NextResponse.json(progressMap);
+        return NextResponse.json(progressMap, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            }
+        });
     } catch (error) {
         console.error('Error fetching progress:', error);
         return NextResponse.json({ error: 'Failed to fetch progress' }, { status: 500 });

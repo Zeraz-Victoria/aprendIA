@@ -42,7 +42,13 @@ export async function GET(req: Request) {
             pedagogy: world.pedagogyJson ? JSON.parse(world.pedagogyJson) : undefined
         }));
 
-        return NextResponse.json(parsedWorlds);
+        return NextResponse.json(parsedWorlds, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            }
+        });
     } catch (error) {
         console.error('Error fetching worlds:', error);
         return NextResponse.json({ error: 'Failed to fetch worlds' }, { status: 500 });

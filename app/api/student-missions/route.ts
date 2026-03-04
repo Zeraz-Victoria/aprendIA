@@ -33,10 +33,22 @@ export async function GET(req: Request) {
         });
 
         if (!mission) {
-            return NextResponse.json({ days: [] });
+            return NextResponse.json({ days: [] }, {
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0',
+                }
+            });
         }
 
-        return NextResponse.json({ days: JSON.parse(mission.daysJson) });
+        return NextResponse.json({ days: JSON.parse(mission.daysJson) }, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            }
+        });
     } catch (error) {
         console.error('Error fetching student missions:', error);
         return NextResponse.json({ error: 'Failed to fetch student missions' }, { status: 500 });

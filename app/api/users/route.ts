@@ -32,7 +32,13 @@ export async function GET() {
             }
         });
 
-        return NextResponse.json(students);
+        return NextResponse.json(students, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            }
+        });
     } catch (error) {
         console.error('Error fetching students:', error);
         return NextResponse.json({ error: 'Failed to fetch students' }, { status: 500 });
@@ -83,7 +89,7 @@ export async function POST(req: NextRequest) {
             }
 
             // Check if it's truly unique in the DB
-            const existingUser = await prisma.user.findUnique({
+            const existingUser = await prisma.user.findFirst({
                 where: { studentCode: newStudentCode }
             });
             if (!existingUser) {
