@@ -2,7 +2,7 @@
 
 import AdventureMap from "@/components/AdventureMap";
 import StudentHUD from "@/components/StudentHUD";
-import { ArrowLeft, X, BrainCircuit, ClipboardList, MessageSquare } from "lucide-react";
+import { ArrowLeft, X, BrainCircuit, ClipboardList } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
 import { useState, useEffect, useCallback } from "react";
 import RewardsStore from "@/components/RewardsStore";
@@ -48,7 +48,6 @@ export default function StudentPage() {
     const [showProfile, setShowProfile] = useState(false);
     const [showRaidModal, setShowRaidModal] = useState(false);
     const [showEvaluations, setShowEvaluations] = useState(false);
-    const [showMessages, setShowMessages] = useState(false);
     const [hints, setHints] = useState<HintData[]>([]);
     const [evaluations, setEvaluations] = useState<EvidenceData[]>([]);
     const [teacherMessages, setTeacherMessages] = useState<TeacherMsg[]>([]);
@@ -249,47 +248,34 @@ export default function StudentPage() {
             />
 
             {/* Action Bar Superior Izquierda — debajo del HUD */}
-            <div className="fixed top-16 left-6 z-30 flex gap-3">
+            <div className="fixed top-16 left-4 right-4 z-30 flex flex-wrap gap-2">
                 <button
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="bg-white/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all flex items-center justify-center w-12 h-12"
+                    className="bg-white/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all flex items-center justify-center w-10 h-10"
                     title="Salir de la cuenta"
                 >
-                    <ArrowLeft className="w-5 h-5" />
+                    <ArrowLeft className="w-4 h-4" />
                 </button>
 
                 {/* Si el estudiante tiene múltiples mapas, mostrar botón para regresar al Lobby */}
                 {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
                     <button
                         onClick={() => setSelectedMapId(null)}
-                        className="bg-teal-600/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-teal-400 text-white hover:bg-teal-700 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 px-5 font-bold text-sm animate-fade-in-up"
+                        className="bg-teal-600/90 backdrop-blur-md rounded-full shadow-lg border border-teal-400 text-white hover:bg-teal-700 active:scale-95 transition-all flex items-center gap-1 px-3 py-2 font-bold text-xs"
                     >
-                        🗺️ Mis Mundos
+                        🗺️ Mundos
                     </button>
                 )}
 
                 {/* Evaluaciones Button */}
                 <button
                     onClick={() => setShowEvaluations(true)}
-                    className="bg-amber-500/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-amber-400 text-white hover:bg-amber-600 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 px-5 font-bold text-sm animate-fade-in-up relative"
+                    className="bg-amber-500/90 backdrop-blur-md rounded-full shadow-lg border border-amber-400 text-white hover:bg-amber-600 active:scale-95 transition-all flex items-center gap-1 px-3 py-2 font-bold text-xs relative"
                 >
-                    <ClipboardList className="w-4 h-4" /> Mis Evaluaciones
+                    <ClipboardList className="w-3.5 h-3.5" /> Evaluaciones
                     {evaluations.length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-black">
+                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black">
                             {evaluations.length}
-                        </span>
-                    )}
-                </button>
-
-                {/* Messages Button */}
-                <button
-                    onClick={() => setShowMessages(true)}
-                    className="bg-violet-500/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-violet-400 text-white hover:bg-violet-600 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 px-5 font-bold text-sm animate-fade-in-up relative"
-                >
-                    <MessageSquare className="w-4 h-4" /> Mensajes
-                    {teacherMessages.length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-black">
-                            {teacherMessages.length}
                         </span>
                     )}
                 </button>
@@ -299,7 +285,7 @@ export default function StudentPage() {
 
             {/* AI Hints from Teacher */}
             {hints.length > 0 && (
-                <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 space-y-2">
+                <div className="fixed top-28 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 space-y-2">
                     {hints.map(hint => (
                         <div key={hint.id} className="bg-gradient-to-r from-yellow-100 to-amber-100 border-2 border-amber-300 rounded-2xl p-4 shadow-xl animate-fade-in-up flex items-start gap-3">
                             <div className="bg-amber-400 text-white rounded-full p-2 shrink-0">
@@ -315,6 +301,23 @@ export default function StudentPage() {
                             >
                                 <X className="w-4 h-4" />
                             </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Teacher Messages as Floating Notifications */}
+            {teacherMessages.length > 0 && (
+                <div className={`fixed ${hints.length > 0 ? 'top-44' : 'top-28'} left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 space-y-2`}>
+                    {teacherMessages.slice(0, 3).map(msg => (
+                        <div key={msg.id} className="bg-gradient-to-r from-violet-100 to-fuchsia-100 border-2 border-violet-300 rounded-2xl p-4 shadow-xl animate-fade-in-up flex items-start gap-3">
+                            <div className="bg-violet-500 text-white rounded-full p-2 shrink-0">
+                                <span className="text-sm">📢</span>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs font-bold text-violet-700 uppercase tracking-wide mb-1">📩 Mensaje de {msg.sender?.name || 'tu Maestro'}</p>
+                                <p className="text-violet-900 text-sm leading-relaxed font-medium">{msg.message}</p>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -423,50 +426,6 @@ export default function StudentPage() {
                                         </div>
                                     );
                                 })
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-            {/* Messages Panel */}
-            {showMessages && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-lg max-h-[85vh] overflow-hidden relative shadow-2xl flex flex-col">
-                        <div className="bg-gradient-to-r from-violet-500 to-fuchsia-500 p-6 text-white">
-                            <button onClick={() => setShowMessages(false)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 transition z-10">
-                                <X className="w-5 h-5 text-white" />
-                            </button>
-                            <h2 className="text-2xl font-black flex items-center gap-2"><MessageSquare className="w-6 h-6" /> Mensajes del Maestro</h2>
-                            <p className="text-violet-100 text-sm mt-1">Avisos y comunicados de tu profesor</p>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            {teacherMessages.length === 0 ? (
-                                <div className="text-center py-12">
-                                    <div className="text-5xl mb-4">✉️</div>
-                                    <h3 className="text-lg font-bold text-slate-700">Sin mensajes aún</h3>
-                                    <p className="text-slate-400 text-sm">Cuando tu maestro te envíe un mensaje, aparecerá aquí.</p>
-                                </div>
-                            ) : (
-                                teacherMessages.map((msg) => (
-                                    <div key={msg.id} className="p-4 rounded-2xl border-2 border-violet-100 bg-white shadow-sm">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-sm">👨‍🏫</span>
-                                                <span className="text-sm font-bold text-violet-700">{msg.sender?.name || 'Maestro'}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                {msg.isGlobal && (
-                                                    <span className="text-xs bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full font-bold">📢 Para todos</span>
-                                                )}
-                                                <span className="text-xs text-slate-400">
-                                                    {new Date(msg.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{msg.message}</p>
-                                    </div>
-                                ))
                             )}
                         </div>
                     </div>
