@@ -50,6 +50,7 @@ export default function Home() {
       name: name.trim(),
       classCode: classCode.trim().toUpperCase(),
       studentCode: studentCode.trim().toUpperCase(),
+      loginRole,
       redirect: false,
     });
 
