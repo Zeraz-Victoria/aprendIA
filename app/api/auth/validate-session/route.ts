@@ -22,6 +22,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ valid });
     } catch (error) {
         console.error("Session validation error:", error);
-        return NextResponse.json({ valid: false });
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

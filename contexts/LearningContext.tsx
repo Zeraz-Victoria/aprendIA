@@ -204,7 +204,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
           if (role === 'STUDENT') {
             const currentUserId = (session?.user as any)?.id;
-            const userMatch = dbUsers?.find((u: any) => u.id === currentUserId || u.name === session?.user?.name);
+            const userMatch = dbUsers?.find((u: any) => u.id === currentUserId);
             if (userMatch?.assignedWorlds?.length > 0) {
               const parsedAssignedWorlds = userMatch.assignedWorlds.map((w: any) => ({
                 ...w,

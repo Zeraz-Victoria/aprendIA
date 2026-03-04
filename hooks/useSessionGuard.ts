@@ -24,6 +24,11 @@ export function useSessionGuard() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ userId, sessionToken })
                 });
+                if (!res.ok) {
+                    console.warn(`Session validation HTTP error: ${res.status}`);
+                    return;
+                }
+
                 const data = await res.json();
 
                 if (!data.valid && !hasShownAlert.current) {
