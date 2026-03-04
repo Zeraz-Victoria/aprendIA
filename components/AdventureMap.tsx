@@ -203,7 +203,7 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
     };
 
     return (
-        <div className="relative w-full min-h-screen bg-slate-900 overflow-y-auto flex flex-col items-center py-16 px-4 md:px-8">
+        <div className="relative w-full min-h-screen bg-slate-900 overflow-y-auto flex flex-col items-center pt-4 pb-16 px-4 md:px-8">
             {/* Background Texture mock */}
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none fixed"></div>
 

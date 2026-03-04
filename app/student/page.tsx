@@ -241,96 +241,92 @@ export default function StudentPage() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-50">
-            <StudentHUD
-                onOpenStore={() => setShowStore(true)}
-                onOpenLeaderboard={() => setShowLeaderboard(true)}
-                onOpenProfile={() => setShowProfile(true)}
-            />
+        <main className="min-h-screen bg-slate-900 flex flex-col">
+            {/* === STICKY HEADER SECTION (does not scroll) === */}
+            <div className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
+                {/* Row 1: HUD Stats */}
+                <StudentHUD
+                    onOpenStore={() => setShowStore(true)}
+                    onOpenLeaderboard={() => setShowLeaderboard(true)}
+                    onOpenProfile={() => setShowProfile(true)}
+                />
 
-            {/* Action Bar Superior Izquierda — debajo del HUD */}
-            <div className="fixed top-16 left-4 right-4 z-30 flex flex-wrap gap-2">
-                <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                    className="bg-white/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all flex items-center justify-center w-10 h-10"
-                    title="Salir de la cuenta"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                </button>
-
-                {/* Si el estudiante tiene múltiples mapas, mostrar botón para regresar al Lobby */}
-                {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
+                {/* Row 2: Action Buttons (below HUD, same block) */}
+                <div className="px-3 pt-12 pb-2 flex flex-wrap gap-2 items-center">
                     <button
-                        onClick={() => setSelectedMapId(null)}
-                        className="bg-teal-600/90 backdrop-blur-md rounded-full shadow-lg border border-teal-400 text-white hover:bg-teal-700 active:scale-95 transition-all flex items-center gap-1 px-3 py-2 font-bold text-xs"
+                        onClick={() => signOut({ callbackUrl: "/" })}
+                        className="bg-slate-700 p-2 rounded-full shadow border border-slate-600 text-slate-300 hover:bg-slate-600 transition-all flex items-center justify-center w-9 h-9"
+                        title="Salir"
                     >
-                        🗺️ Mundos
+                        <ArrowLeft className="w-4 h-4" />
                     </button>
+
+                    {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
+                        <button
+                            onClick={() => setSelectedMapId(null)}
+                            className="bg-teal-700 rounded-full shadow border border-teal-600 text-white active:scale-95 transition-all flex items-center gap-1 px-3 py-1.5 font-bold text-xs"
+                        >
+                            🗺️ Mundos
+                        </button>
+                    )}
+
+                    <button
+                        onClick={() => setShowEvaluations(true)}
+                        className="bg-amber-600 rounded-full shadow border border-amber-500 text-white active:scale-95 transition-all flex items-center gap-1 px-3 py-1.5 font-bold text-xs relative"
+                    >
+                        <ClipboardList className="w-3.5 h-3.5" /> Evaluaciones
+                        {evaluations.length > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black">
+                                {evaluations.length}
+                            </span>
+                        )}
+                    </button>
+                </div>
+
+                {/* Inline Notifications (inside header, not floating) */}
+                {hints.length > 0 && (
+                    <div className="px-3 pb-2 space-y-2 max-w-lg mx-auto w-full">
+                        {hints.map(hint => (
+                            <div key={hint.id} className="bg-gradient-to-r from-yellow-100 to-amber-100 border-2 border-amber-300 rounded-2xl p-3 shadow flex items-start gap-2">
+                                <div className="bg-amber-400 text-white rounded-full p-1.5 shrink-0">
+                                    <BrainCircuit className="w-4 h-4" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-0.5">💡 Pista</p>
+                                    <p className="text-amber-900 text-xs leading-relaxed font-medium">{hint.message}</p>
+                                </div>
+                                <button onClick={() => dismissHint(hint.id)} className="text-amber-500 hover:text-amber-800 p-1 shrink-0">
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 )}
 
-                {/* Evaluaciones Button */}
-                <button
-                    onClick={() => setShowEvaluations(true)}
-                    className="bg-amber-500/90 backdrop-blur-md rounded-full shadow-lg border border-amber-400 text-white hover:bg-amber-600 active:scale-95 transition-all flex items-center gap-1 px-3 py-2 font-bold text-xs relative"
-                >
-                    <ClipboardList className="w-3.5 h-3.5" /> Evaluaciones
-                    {evaluations.length > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black">
-                            {evaluations.length}
-                        </span>
-                    )}
-                </button>
+                {teacherMessages.filter(m => !dismissedMsgIds.has(m.id)).length > 0 && (
+                    <div className="px-3 pb-2 space-y-2 max-w-lg mx-auto w-full">
+                        {teacherMessages.filter(m => !dismissedMsgIds.has(m.id)).slice(0, 3).map(msg => (
+                            <div key={msg.id} className="bg-gradient-to-r from-violet-100 to-fuchsia-100 border-2 border-violet-300 rounded-2xl p-3 shadow flex items-start gap-2">
+                                <div className="bg-violet-500 text-white rounded-full p-1.5 shrink-0">
+                                    <span className="text-xs">📢</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wide mb-0.5">📩 {msg.sender?.name || 'Maestro'}</p>
+                                    <p className="text-violet-900 text-xs leading-relaxed font-medium">{msg.message}</p>
+                                </div>
+                                <button onClick={() => setDismissedMsgIds(prev => new Set([...prev, msg.id]))} className="text-violet-400 hover:text-violet-800 p-1 shrink-0">
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
-
-
-            {/* AI Hints from Teacher */}
-            {hints.length > 0 && (
-                <div className="fixed top-28 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 space-y-2">
-                    {hints.map(hint => (
-                        <div key={hint.id} className="bg-gradient-to-r from-yellow-100 to-amber-100 border-2 border-amber-300 rounded-2xl p-4 shadow-xl animate-fade-in-up flex items-start gap-3">
-                            <div className="bg-amber-400 text-white rounded-full p-2 shrink-0">
-                                <BrainCircuit className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1">💡 Pista de tu Maestro</p>
-                                <p className="text-amber-900 text-sm leading-relaxed font-medium">{hint.message}</p>
-                            </div>
-                            <button
-                                onClick={() => dismissHint(hint.id)}
-                                className="text-amber-500 hover:text-amber-800 p-1 shrink-0"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Teacher Messages as Floating Notifications */}
-            {teacherMessages.filter(m => !dismissedMsgIds.has(m.id)).length > 0 && (
-                <div className={`fixed ${hints.length > 0 ? 'top-44' : 'top-28'} left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 space-y-2`}>
-                    {teacherMessages.filter(m => !dismissedMsgIds.has(m.id)).slice(0, 3).map(msg => (
-                        <div key={msg.id} className="bg-gradient-to-r from-violet-100 to-fuchsia-100 border-2 border-violet-300 rounded-2xl p-4 shadow-xl animate-fade-in-up flex items-start gap-3">
-                            <div className="bg-violet-500 text-white rounded-full p-2 shrink-0">
-                                <span className="text-sm">📢</span>
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-xs font-bold text-violet-700 uppercase tracking-wide mb-1">📩 Mensaje de {msg.sender?.name || 'tu Maestro'}</p>
-                                <p className="text-violet-900 text-sm leading-relaxed font-medium">{msg.message}</p>
-                            </div>
-                            <button
-                                onClick={() => setDismissedMsgIds(prev => new Set([...prev, msg.id]))}
-                                className="text-violet-400 hover:text-violet-800 p-1 shrink-0"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            <AdventureMap onOpenRaid={() => setShowRaidModal(true)} />
+            {/* === SCROLLABLE MAP (only this part moves) === */}
+            <div className="flex-1">
+                <AdventureMap onOpenRaid={() => setShowRaidModal(true)} />
+            </div>
 
             {showStore && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
