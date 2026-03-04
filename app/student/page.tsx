@@ -51,7 +51,13 @@ export default function StudentPage() {
     const [hints, setHints] = useState<HintData[]>([]);
     const [evaluations, setEvaluations] = useState<EvidenceData[]>([]);
     const [teacherMessages, setTeacherMessages] = useState<TeacherMsg[]>([]);
-    const [dismissedMsgIds, setDismissedMsgIds] = useState<Set<string>>(new Set());
+    const [dismissedMsgIds, setDismissedMsgIds] = useState<Set<string>>(() => {
+        // Restore dismissed IDs from localStorage on first render
+        try {
+            const stored = typeof window !== 'undefined' ? window.localStorage.getItem('dismissedTeacherMsgIds') : null;
+            return stored ? new Set(JSON.parse(stored)) : new Set<string>();
+        } catch { return new Set<string>(); }
+    });
 
     // State to determine if we are in Lobby or inside a specific Map
     const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
@@ -114,6 +120,15 @@ export default function StudentPage() {
         const interval = setInterval(fetchMessages, 15000);
         return () => clearInterval(interval);
     }, [fetchMessages]);
+
+    const dismissMessage = (msgId: string) => {
+        const newSet = new Set([...dismissedMsgIds, msgId]);
+        setDismissedMsgIds(newSet);
+        try {
+            window.localStorage.setItem('dismissedTeacherMsgIds', JSON.stringify([...newSet]));
+        } catch { /* ignore storage errors */ }
+    };
+
 
     const dismissHint = async (hintId: string) => {
         setHints(prev => prev.filter(h => h.id !== hintId));
@@ -314,7 +329,7 @@ export default function StudentPage() {
                                     <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wide mb-0.5">📩 {msg.sender?.name || 'Maestro'}</p>
                                     <p className="text-violet-900 text-xs leading-relaxed font-medium">{msg.message}</p>
                                 </div>
-                                <button onClick={() => setDismissedMsgIds(prev => new Set([...prev, msg.id]))} className="text-violet-400 hover:text-violet-800 p-1 shrink-0">
+                                <button onClick={() => dismissMessage(msg.id)} className="text-violet-400 hover:text-violet-800 p-1 shrink-0">
                                     <X className="w-3.5 h-3.5" />
                                 </button>
                             </div>
