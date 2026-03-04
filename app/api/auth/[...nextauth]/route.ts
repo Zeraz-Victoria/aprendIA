@@ -12,19 +12,20 @@ export const authOptions: NextAuthOptions = {
             credentials: {
                 name: { label: "Nombre", type: "text", placeholder: "Tu nombre (ej. Sofia)" },
                 classCode: { label: "Código de Clase", type: "text", placeholder: "Ej. X7P9K" },
-                studentCode: { label: "Código Secreto", type: "text", placeholder: "Ej. DA8AXE" }
+                studentCode: { label: "Código Secreto", type: "text", placeholder: "Ej. DA8AXE" },
+                loginRole: { label: "Role", type: "text" }
             },
             async authorize(credentials) {
-                const { name, classCode, studentCode } = credentials as any;
+                const { name, classCode, studentCode, loginRole } = credentials as any;
                 if (!name) return null;
 
                 let user;
 
-                if (studentCode && studentCode.trim() !== '') {
+                if (loginRole === 'STUDENT') {
                     // Student login: requires name + studentCode, optionally also classCode
                     const whereClause: any = {
                         name: { equals: name.trim(), mode: 'insensitive' },
-                        studentCode: studentCode.trim().toUpperCase(),
+                        studentCode: studentCode ? studentCode.trim().toUpperCase() : '',
                         role: 'STUDENT'
                     };
 
@@ -39,7 +40,7 @@ export const authOptions: NextAuthOptions = {
                     }
 
                     user = await prisma.user.findFirst({ where: whereClause });
-                } else {
+                } else if (loginRole === 'TEACHER') {
                     // Teacher or Superadmin login (no codes needed)
                     user = await prisma.user.findFirst({
                         where: {

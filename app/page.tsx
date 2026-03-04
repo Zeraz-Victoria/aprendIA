@@ -11,6 +11,7 @@ export default function Home() {
   const [name, setName] = useState("");
   const [classCode, setClassCode] = useState("");
   const [studentCode, setStudentCode] = useState("");
+  const [loginRole, setLoginRole] = useState<"STUDENT" | "TEACHER">("STUDENT");
   const [error, setError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -88,6 +89,25 @@ export default function Home() {
 
           <div className="p-8">
             <form onSubmit={handleLogin} className="space-y-6">
+
+              {/* Role Selection Tabs */}
+              <div className="flex bg-slate-100 rounded-xl p-1 shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => setLoginRole("STUDENT")}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginRole === "STUDENT" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                >
+                  🏫 Soy Alumno
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLoginRole("TEACHER")}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginRole === "TEACHER" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                >
+                  🎓 Soy Maestro
+                </button>
+              </div>
+
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   Tu Nombre
@@ -99,50 +119,52 @@ export default function Home() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-medium text-slate-800"
-                    placeholder="Ej. Sofía, Profe..."
+                    placeholder={loginRole === "STUDENT" ? "Ej. Sofía, Diego..." : "Ej. Maestro Carlos"}
                     autoFocus
                     disabled={isLoggingIn}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">
-                    Código de Clase
-                  </label>
-                  <div className="relative">
-                    <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      value={classCode}
-                      onChange={(e) => setClassCode(e.target.value.toUpperCase())}
-                      className="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase text-sm"
-                      placeholder="Ej. X7P9K"
-                      disabled={isLoggingIn}
-                      maxLength={10}
-                    />
+              {/* Student Codes */}
+              {loginRole === "STUDENT" && (
+                <div className="grid grid-cols-2 gap-3 animate-fade-in-up">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                      Código de Clase
+                    </label>
+                    <div className="relative">
+                      <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                      <input
+                        type="text"
+                        value={classCode}
+                        onChange={(e) => setClassCode(e.target.value.toUpperCase())}
+                        className="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase text-sm"
+                        placeholder="Opcional"
+                        disabled={isLoggingIn}
+                        maxLength={10}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                      Código Secreto <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                      <input
+                        type="text"
+                        value={studentCode}
+                        onChange={(e) => setStudentCode(e.target.value.toUpperCase())}
+                        className="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase text-sm"
+                        placeholder="Ej. DA8AXE"
+                        disabled={isLoggingIn}
+                        maxLength={6}
+                      />
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">
-                    Código Secreto
-                  </label>
-                  <div className="relative">
-                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      value={studentCode}
-                      onChange={(e) => setStudentCode(e.target.value.toUpperCase())}
-                      className="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase text-sm"
-                      placeholder="Ej. DA8AXE"
-                      disabled={isLoggingIn}
-                      maxLength={6}
-                    />
-                  </div>
-                </div>
-              </div>
-              <p className="text-[10px] text-slate-400 -mt-4">Alumnos: pide ambos códigos a tu maestro. Docentes: deja vacío.</p>
+              )}
 
               {error && (
                 <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg text-center border border-red-100">
@@ -152,7 +174,7 @@ export default function Home() {
 
               <button
                 type="submit"
-                disabled={!name.trim() || isLoggingIn}
+                disabled={!name.trim() || (loginRole === "STUDENT" && !studentCode.trim()) || isLoggingIn}
                 className="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg shadow-sky-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
               >
                 {isLoggingIn ? "Ingresando..." : <>Ingresar <ArrowRight className="w-5 h-5" /></>}
@@ -160,7 +182,7 @@ export default function Home() {
 
               <div className="text-center">
                 <p className="text-xs text-slate-400">
-                  Pide ayuda a tu profesor si no puedes ingresar.
+                  {loginRole === "STUDENT" ? "Pide el código secreto a tu profesor." : "Ingresa con tu nombre registrado."}
                 </p>
               </div>
             </form>
