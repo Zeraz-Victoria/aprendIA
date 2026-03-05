@@ -18,10 +18,14 @@ export async function GET() {
 
         let whereClause: any = { role: 'STUDENT' };
 
-        if (role === 'TEACHER') {
-            whereClause.teacherOwnerId = teacherId;
-        } else if (schoolId) {
+        // Always filter by schoolId — this ensures ALL students in the school are visible,
+        // regardless of whether they were created with teacherOwnerId or not.
+        // Filtering by teacherOwnerId caused map assignments to go to wrong duplicate students.
+        if (schoolId) {
             whereClause.schoolId = schoolId;
+        } else {
+            // Fallback for edge case: teacher without schoolId — show nobody
+            return NextResponse.json([]);
         }
 
         const students = await prisma.user.findMany({
