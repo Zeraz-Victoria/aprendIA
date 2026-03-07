@@ -553,14 +553,10 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       });
       if (res.ok) {
         const data = await res.json();
-        // Parse daysJson/pedagogyJson from raw DB objects so they're usable as LearningWorld data
-        const parsedWorlds = (data.assignedWorlds || []).map((w: any) => ({
-          ...w,
-          days: w.daysJson ? JSON.parse(w.daysJson) : (w.days || []),
-          pedagogy: w.pedagogyJson ? JSON.parse(w.pedagogyJson) : undefined
-        }));
-        setStudents(prev => prev.map(s => s.id === studentId ? { ...s, assignedWorlds: parsedWorlds } : s));
-        setCurrentUser(prev => prev && prev.id === studentId ? { ...prev, assignedWorlds: parsedWorlds } : prev);
+        // API now returns lightweight world refs (id, title, theme) — no parsing needed
+        const assignedWorlds = data.assignedWorlds || [];
+        setStudents(prev => prev.map(s => s.id === studentId ? { ...s, assignedWorlds } : s));
+        setCurrentUser(prev => prev && prev.id === studentId ? { ...prev, assignedWorlds } : prev);
         return true;
       }
       return false;

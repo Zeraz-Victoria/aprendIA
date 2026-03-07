@@ -47,7 +47,9 @@ export async function POST(req: Request) {
                     : { connect: { id: worldId } }
             },
             include: {
-                assignedWorlds: true
+                assignedWorlds: {
+                    select: { id: true, title: true, theme: true }
+                }
             }
         }) as any;
 
