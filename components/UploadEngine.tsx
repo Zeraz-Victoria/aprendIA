@@ -95,85 +95,83 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                 createdAt: new Date().toISOString()
             };
 
-            // --- Force Bake Day 1 First ---
-            if (newWorld.days.length > 0) {
-                setLoadingStatus("Construyendo el Nivel 1...");
-                setLoadingSub("Escribiendo la historia inicial con IA...");
-                try {
-                    const firstDay = newWorld.days[0];
-                    const bakeRes = await fetch('/api/ai/generate-day', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            day: firstDay,
-                            pedagogy: newWorld.pedagogy,
-                            theme: newWorld.theme,
-                            documentText: rawDocumentText || (file.name === "examen_demo.pdf" ? "DEMO_MODE" : "")
-                        })
-                    });
-
-                    if (bakeRes.ok) {
-                        const bakedStory = await bakeRes.json();
-                        newWorld.days[0] = {
-                            ...firstDay,
-                            narrative: bakedStory.narrative,
-                            content: bakedStory.content,
-                            isGenerating: false
-                        };
+            // Helper: bake a single day with 1 retry on failure
+            const bakeDay = async (day: any): Promise<any | null> => {
+                const payload = {
+                    day,
+                    pedagogy: newWorld.pedagogy,
+                    theme: newWorld.theme,
+                    documentText: rawDocumentText || (file.name === "examen_demo.pdf" ? "DEMO_MODE" : "")
+                };
+                for (let attempt = 0; attempt < 2; attempt++) {
+                    try {
+                        const res = await fetch('/api/ai/generate-day', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (res.ok) return await res.json();
+                        console.warn(`Bake attempt ${attempt + 1} failed for Day ${day.dayNumber}: HTTP ${res.status}`);
+                    } catch (e) {
+                        console.warn(`Bake attempt ${attempt + 1} threw for Day ${day.dayNumber}:`, e);
                     }
-                } catch (e) {
-                    console.error("Failed to bake first day upfront", e);
+                    // Brief pause before retry
+                    if (attempt === 0) await new Promise(r => setTimeout(r, 2000));
+                }
+                return null;
+            };
+
+            const totalDays = newWorld.days.length;
+
+            // --- Force Bake Day 1 First ---
+            if (totalDays > 0) {
+                setLoadingStatus(`Construyendo sesión 1 de ${totalDays}...`);
+                setLoadingSub("Escribiendo la historia inicial con IA...");
+                const bakedStory = await bakeDay(newWorld.days[0]);
+                if (bakedStory) {
+                    newWorld.days[0] = {
+                        ...newWorld.days[0],
+                        narrative: bakedStory.narrative,
+                        content: bakedStory.content,
+                        isGenerating: false
+                    };
                 }
             }
 
             await addWorld(newWorld);
             setActiveWorld(newWorld.id);
-            setIsUploading(false); // Stop the main spinner immediately!
 
-            // Wait a moment so they see the success message, then close the modal so they can see the map
-            setTimeout(() => {
-                setUploadSuccess(true);
-                if (onSuccess) onSuccess();
-            }, 1500);
-
-            // Progressive Generation Background Loop starting from Day 2 (index 1)
-            for (let i = 1; i < newWorld.days.length; i++) {
+            // Progressive Generation Loop — bake remaining days sequentially
+            for (let i = 1; i < totalDays; i++) {
                 const skeletonDay = newWorld.days[i];
-                try {
-                    console.log(`Baking Day ${skeletonDay.dayNumber}...`);
-                    const bakeRes = await fetch('/api/ai/generate-day', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            day: skeletonDay,
-                            pedagogy: newWorld.pedagogy,
-                            theme: newWorld.theme,
-                            documentText: rawDocumentText || (file.name === "examen_demo.pdf" ? "DEMO_MODE" : "") // Pass text for context
-                        })
-                    });
+                setLoadingStatus(`Construyendo sesión ${i + 1} de ${totalDays}...`);
+                setLoadingSub(`Generando contenido para: ${skeletonDay.title || `Nivel ${skeletonDay.dayNumber}`}`);
 
-                    if (bakeRes.ok) {
-                        const bakedStory = await bakeRes.json();
-                        // Update the specific day with the rich narrative
-                        const completedDay = {
-                            ...skeletonDay,
-                            narrative: bakedStory.narrative,
-                            content: bakedStory.content,
-                            isGenerating: false
-                        };
+                console.log(`Baking Day ${skeletonDay.dayNumber}...`);
+                const bakedStory = await bakeDay(skeletonDay);
 
-                        // Copy the world, replace the specific day, and save it to Context
-                        const updatedDays = [...newWorld.days];
-                        updatedDays[i] = completedDay;
-                        newWorld.days = updatedDays; // Keep local pointer updated for subsequent loops
+                if (bakedStory) {
+                    const completedDay = {
+                        ...skeletonDay,
+                        narrative: bakedStory.narrative,
+                        content: bakedStory.content,
+                        isGenerating: false
+                    };
 
-                        updateWorld(newWorld);
-                    }
-                } catch (bakeError) {
-                    console.error("Failed to bake day", skeletonDay.dayNumber, bakeError);
-                    // Leave it as "generating" or mark it failed, but don't stop the loop
+                    const updatedDays = [...newWorld.days];
+                    updatedDays[i] = completedDay;
+                    newWorld.days = updatedDays;
+
+                    await updateWorld(newWorld);
+                } else {
+                    console.error(`Day ${skeletonDay.dayNumber} failed after retries, leaving as isGenerating.`);
                 }
             }
+
+            // All days done — show success and close
+            setIsUploading(false);
+            setUploadSuccess(true);
+            if (onSuccess) onSuccess();
 
         } catch (error) {
             console.error(error);
