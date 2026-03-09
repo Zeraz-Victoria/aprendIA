@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Lock, Check, Star, MapPin, AlertCircle } from "lucide-react";
+import { Lock, Check, Star, MapPin, AlertCircle, Shield, Swords, Skull, Zap } from "lucide-react";
 import NotebookUploader from "./NotebookUploader";
 import InteractiveLessonCard from "./InteractiveLessonCard";
 import BossFightCamera from "./BossFightCamera";
 import MapCompletionReport from "./MapCompletionReport";
 import { DayContent, BossDayContent } from "@/types/learning-world";
 import { useLearning } from "@/contexts/LearningContext";
+import { getTheme } from "@/lib/themes";
 
 type LevelStatus = "locked" | "active" | "completed";
 
@@ -33,6 +34,7 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
 
     // Derive active world
     const world = worlds.find(w => w.id === activeWorldId);
+    const theme = getTheme(world?.theme);
 
     // Move all hooks to the top before any early returns to obey Rules of Hooks
     const studentProgress = currentUser && activeWorldId ? progress[currentUser.id]?.[activeWorldId] || [] : [];
@@ -77,7 +79,7 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
         let seenBoss = false;
         allDays = allDays.filter(d => {
             if (d.type === 'boss_fight') {
-                if (seenBoss) return false; // skip duplicate boss
+                if (seenBoss) return false;
                 seenBoss = true;
             }
             return true;
@@ -92,15 +94,12 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
         return Array.from({ length: numLevels }, (_, i) => {
             if (numLevels === 1) return { x: 50, y: 50 };
             const progressRatio = i / (numLevels - 1);
-            // From top (15%) to bottom (95%) — compact banner leaves more space
             const y = 15 + (progressRatio * 80);
-            const x = 50 + Math.sin(i * 1.5) * 35; // Sine wave
+            const x = 50 + Math.sin(i * 1.5) * 35;
             return { x, y };
         });
     }, [numLevels]);
 
-    // If no world is generated yet, show empty state
-    // If no world is selected yet, let the parent component (student lobby) handle it
     if (!world) {
         return null;
     }
@@ -115,7 +114,7 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
         if (isCompleted) status = "completed";
         else if (isActive) status = "active";
 
-        const coords = dynamicCoords[index] || { x: 50, y: 50 }; // fallback coords
+        const coords = dynamicCoords[index] || { x: 50, y: 50 };
 
         return {
             id: day.dayNumber,
@@ -155,12 +154,9 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
 
         setSelectedLevel(level);
 
-        // Find content for this level from Context
         const levelContent = world.days.find(d => d.dayNumber === level.id);
-
         if (!levelContent) return;
 
-        // ALL nodes now go through the InteractiveLessonCard first for pedagogical flow
         setShowLesson(true);
     };
 
@@ -170,7 +166,6 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
         if (selectedLevel?.type === 'boss_fight') {
             setShowBoss(true);
         } else {
-            // Both guided_practice and concept_story require evidence now!
             setShowUploader(true);
         }
     };
@@ -190,12 +185,10 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
             if (currentUser && activeWorldId && selectedLevel) {
                 markLevelComplete(currentUser.id, activeWorldId, selectedLevel.id, true);
             }
-            // Show the completion report instead of just closing
             setShowReport(true);
         }
     };
 
-    // Helper to get content safely
     const getDayContent = (dayNumber: number) => {
         return world.days.find(d => d.dayNumber === dayNumber) as DayContent;
     };
@@ -204,24 +197,66 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
         return world.days.find(d => d.dayNumber === selectedLevel?.id) as BossDayContent;
     };
 
-    return (
-        <div className="relative w-full min-h-screen bg-slate-900 overflow-y-auto flex flex-col items-center pt-4 pb-16 px-4 md:px-8">
-            {/* Background Texture mock */}
-            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none fixed"></div>
+    // ═══════════════════════════════════════════
+    // FREE FIRE INSPIRED RENDER
+    // ═══════════════════════════════════════════
 
-            {/* Map Container - Dynamic Vertical Height based on nodes */}
+    return (
+        <div className={`relative w-full min-h-screen ${theme.mapBg} overflow-y-auto flex flex-col items-center pt-4 pb-16 px-4 md:px-8`}>
+            {/* Background Texture */}
             <div
-                className="relative w-full max-w-4xl bg-slate-800 rounded-[2.5rem] shadow-2xl border border-slate-700/50 overflow-hidden shrink-0"
+                className="absolute inset-0 opacity-[0.07] pointer-events-none fixed"
+                style={{ backgroundImage: `url('${theme.texture}')` }}
+            />
+
+            {/* Animated particles effect */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden fixed">
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full animate-pulse"
+                        style={{
+                            left: `${15 + (i * 12)}%`,
+                            top: `${10 + (i * 10)}%`,
+                            backgroundColor: theme.pathProgress,
+                            opacity: 0.3,
+                            animationDelay: `${i * 0.5}s`,
+                            animationDuration: `${2 + (i % 3)}s`,
+                        }}
+                    />
+                ))}
+            </div>
+
+            {/* Map Container — Battle Arena Style */}
+            <div
+                className={`relative w-full max-w-4xl ${theme.mapCardBg} rounded-[2rem] shadow-2xl border-2 ${theme.mapBorder} overflow-hidden shrink-0`}
                 style={{ minHeight: `${Math.max(600, numLevels * 160)}px` }}
             >
-                {/* World Title Banner — Compact */}
+                {/* World Title Banner — Military Style */}
                 <div className="absolute top-0 left-0 w-full z-20 pointer-events-none p-3">
-                    <div className="max-w-sm mx-auto bg-slate-900/80 backdrop-blur-md rounded-xl px-4 py-2.5 shadow-xl border border-slate-700 flex items-center gap-3">
+                    <div className={`max-w-sm mx-auto ${theme.bannerBg} backdrop-blur-md rounded-xl px-4 py-2.5 shadow-xl border ${theme.bannerBorder} flex items-center gap-3`}>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-[10px] font-bold text-teal-400 uppercase tracking-widest bg-slate-900/50 px-2 py-0.5 rounded-full whitespace-nowrap">{world.theme}</span>
+                                <span className={`text-[10px] font-black ${theme.bannerAccent} uppercase tracking-[0.2em] bg-black/30 px-2 py-0.5 rounded-full whitespace-nowrap flex items-center gap-1`}>
+                                    <Shield className="w-3 h-3" /> {world.theme}
+                                </span>
                             </div>
-                            <h1 className="text-sm font-bold text-slate-100 leading-tight truncate">{world.title}</h1>
+                            <h1 className="text-sm font-black text-white leading-tight truncate tracking-wide">
+                                {world.title}
+                            </h1>
+                        </div>
+                        <div className="text-right shrink-0">
+                            <div className={`text-[10px] font-bold ${theme.hudTextSecondary}`}>{totalCompletedLevels}/{numLevels}</div>
+                            {/* Mini progress bar */}
+                            <div className="w-16 h-1.5 bg-black/40 rounded-full overflow-hidden mt-0.5">
+                                <div
+                                    className="h-full rounded-full transition-all duration-700"
+                                    style={{
+                                        width: `${numLevels > 0 ? (totalCompletedLevels / numLevels) * 100 : 0}%`,
+                                        backgroundColor: theme.pathProgress,
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -230,76 +265,90 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none">
                     {dynamicCoords.length > 1 && (
                         <>
+                            {/* Base path — dashed */}
                             <path
                                 d={generatePathData(dynamicCoords)}
                                 fill="none"
-                                stroke="#334155" // slate-700
+                                stroke={theme.pathBase}
                                 strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeDasharray="6,6"
                                 vectorEffect="non-scaling-stroke"
                             />
-                            {/* Progress Path (could be masked in advanced version, just simple dash for now) */}
+                            {/* Progress path — solid glow */}
                             <path
                                 d={generatePathData(dynamicCoords.slice(0, totalCompletedLevels + 1))}
                                 fill="none"
-                                stroke="#818cf8" // teal-400
+                                stroke={theme.pathProgress}
                                 strokeWidth="4"
                                 strokeLinecap="round"
                                 vectorEffect="non-scaling-stroke"
-                                className="drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]"
+                                className={theme.pathGlow}
                             />
                         </>
                     )}
                 </svg>
 
-                {/* Level Nodes */}
+                {/* Level Nodes — Hexagonal Battle Nodes */}
                 {levels.map((level) => (
                     <div
                         key={level.id}
-                        className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-transform z-10 flex flex-col items-center ${level.status === 'locked' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:scale-110'}`}
+                        className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 z-10 flex flex-col items-center ${level.status === 'locked' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-110'}`}
                         style={{ left: `${level.x}%`, top: `${level.y}%` }}
                         onClick={() => handleLevelClick(level)}
                     >
+                        {/* Node circle with themed styling */}
                         <div
                             className={`
-                w-16 h-16 rounded-full flex items-center justify-center shadow-lg border-4 transition-all duration-300
-                ${level.status === 'locked' ? 'bg-slate-800 border-slate-700 text-slate-500' : ''}
-                ${level.status === 'active' && level.type === 'guided_practice' ? 'bg-teal-600 border-white text-white animate-pulse shadow-[0_0_20px_rgba(79,70,229,0.5)]' : ''}
-                ${level.status === 'active' && level.type !== 'guided_practice' ? 'bg-blue-600 border-white text-white animate-pulse shadow-[0_0_20px_rgba(37,99,235,0.5)]' : ''}
-                ${level.status === 'completed' ? 'bg-emerald-500 border-emerald-300 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]' : ''}
-              `}
+                                w-[4.5rem] h-[4.5rem] rounded-full flex items-center justify-center shadow-lg border-[3px] transition-all duration-300 relative
+                                ${level.status === 'locked' ? `${theme.nodeLocked} text-slate-500` : ''}
+                                ${level.status === 'active' ? `${theme.nodeActive} border-white text-white` : ''}
+                                ${level.status === 'completed' ? `${theme.nodeCompleted} border-white/60 text-white` : ''}
+                            `}
+                            style={level.status === 'active' ? { boxShadow: theme.nodeActiveGlow } : undefined}
                         >
+                            {/* Inner ring for active nodes */}
+                            {level.status === 'active' && (
+                                <div className="absolute inset-1 rounded-full border-2 border-white/30 animate-ping" style={{ animationDuration: '2s' }} />
+                            )}
+
                             {level.status === 'locked' && <Lock className="w-6 h-6" />}
-                            {level.status !== 'locked' && level.type === 'guided_practice' && !level.isGenerating && <div className="text-2xl">🎯</div>}
-                            {level.label === 'Jefe Final' && level.status !== 'locked' && !level.isGenerating && <div className="text-2xl">👹</div>}
+                            {level.status !== 'locked' && level.type === 'guided_practice' && !level.isGenerating && <Swords className="w-6 h-6" />}
+                            {level.label === 'Jefe Final' && level.status !== 'locked' && !level.isGenerating && <Skull className="w-7 h-7" />}
                             {level.status === 'active' && !level.isGenerating && level.label !== 'Jefe Final' && level.type !== 'guided_practice' && (
-                                <div className="text-4xl animate-bounce drop-shadow-lg z-20 absolute -top-4">
+                                <div className="text-3xl animate-bounce drop-shadow-lg z-20 absolute -top-5">
                                     {currentUser?.avatar || "🧑"}
                                 </div>
                             )}
-                            {level.status === 'completed' && <Check className="w-8 h-8" />}
+                            {level.status === 'completed' && <Check className="w-8 h-8" strokeWidth={3} />}
                             {level.isGenerating && (
-                                <svg className="animate-spin w-8 h-8 text-teal-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <svg className="animate-spin w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                 </svg>
                             )}
                         </div>
 
-                        <div className={`mt-3 px-4 py-1.5 rounded-full text-xs font-bold shadow-md tracking-wide ${level.status === 'locked' ? 'bg-slate-800 text-slate-500 border border-slate-700' : 'bg-slate-700 text-slate-200 border border-slate-600'}`}>
-                            {level.isGenerating ? 'Generando...' : level.label}
+                        {/* Label badge — military tag style */}
+                        <div className={`mt-2.5 px-4 py-1.5 rounded-lg text-[11px] font-black shadow-md tracking-wide uppercase ${level.status === 'locked' ? `${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder} border opacity-50` : `${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder} border`}`}>
+                            {level.isGenerating ? '⚡ Generando...' : level.label}
                         </div>
 
                         {/* Stars for completed levels */}
                         {level.status === 'completed' && (
-                            <div className="absolute -top-2 -right-2 text-yellow-500 drop-shadow-sm">
-                                <Star className="w-6 h-6 fill-current" />
+                            <div className="absolute -top-1 -right-1 flex items-center">
+                                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400 drop-shadow-lg" />
+                            </div>
+                        )}
+
+                        {/* Mission indicator */}
+                        {level.isStudentMission && level.status !== 'locked' && (
+                            <div className="absolute -top-2 -left-2">
+                                <Zap className="w-5 h-5 text-yellow-400 fill-yellow-400 drop-shadow-lg animate-pulse" />
                             </div>
                         )}
                     </div>
                 ))}
-
             </div>
 
             {/* Modals sequence */}

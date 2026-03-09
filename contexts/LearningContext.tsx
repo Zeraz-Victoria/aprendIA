@@ -198,8 +198,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         if (worldsRes.ok && isMounted) {
           const dbWorlds = await worldsRes.json();
           setWorlds(dbWorlds);
-          if (dbWorlds.length > 0 && !activeWorldId) {
-            setActiveWorldId(dbWorlds[0].id);
+          if (dbWorlds.length > 0) {
+            setActiveWorldId(prev => prev || dbWorlds[0].id);
           }
 
           if (role === 'STUDENT') {
@@ -212,8 +212,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
                 pedagogy: w.pedagogyJson ? JSON.parse(w.pedagogyJson) : undefined
               }));
               setWorlds(parsedAssignedWorlds);
-              if (!activeWorldId && parsedAssignedWorlds.length > 0) {
-                setActiveWorldId(parsedAssignedWorlds[0].id);
+              if (parsedAssignedWorlds.length > 0) {
+                setActiveWorldId(prev => prev || parsedAssignedWorlds[0].id);
               }
             }
           }
@@ -340,12 +340,12 @@ export function LearningProvider({ children }: { children: ReactNode }) {
   };
 
   // -- Student CRUD --
-  const addStudent = async (name: string, avatar: string): Promise<boolean> => {
+  const addStudent = async (name: string, avatar: string, classroomId?: string | null): Promise<boolean> => {
     try {
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, avatar })
+        body: JSON.stringify({ name, avatar, classroomId })
       });
       if (res.ok) {
         const newUser = await res.json();
@@ -359,7 +359,9 @@ export function LearningProvider({ children }: { children: ReactNode }) {
           lives: newUser.lives,
           gems: newUser.gems,
           streak: newUser.streak,
-          xp: newUser.xp
+          xp: newUser.xp,
+          classroomId: newUser.classroomId || null,
+          assignedWorlds: newUser.assignedWorlds || []
         };
         setStudents(prev => [...prev, mapped]);
         return true;

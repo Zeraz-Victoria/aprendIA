@@ -170,7 +170,8 @@ Ejemplo exacto:
                         grade: finalGrade,
                         feedback: `${evaluationData.categoria || 'Evaluado'}\n\nCalificación: ${finalGrade}/10\n\n${evaluationData.feedback || 'Revisado'}`,
                         isCorrect: evaluationData.puedeAvanzar,
-                        canAdvance: evaluationData.puedeAvanzar
+                        canAdvance: evaluationData.puedeAvanzar,
+                        imageUrl: null // Clear image after evaluation to save storage
                     }
                 });
             } else {
@@ -185,7 +186,8 @@ Ejemplo exacto:
                         grade: finalGrade,
                         feedback: `${evaluationData.categoria || 'Evaluado'}\n\nCalificación: ${finalGrade}/10\n\n${evaluationData.feedback || 'Revisado'}`,
                         isCorrect: evaluationData.puedeAvanzar,
-                        canAdvance: evaluationData.puedeAvanzar
+                        canAdvance: evaluationData.puedeAvanzar,
+                        imageUrl: null // Never store image — only keep evaluation data
                     }
                 });
                 console.log('Evidencia insertada con éxito en EvidenceEntry.');

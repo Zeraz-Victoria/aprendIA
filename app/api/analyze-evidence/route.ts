@@ -139,21 +139,44 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
             let dbSaveStatus = "skipped";
             if (studentId && worldId && levelId !== undefined) {
                 try {
-                    const savedEntry = await prisma.evidenceEntry.create({
-                        data: {
-                            studentId,
-                            worldId,
-                            levelId: typeof levelId === 'string' ? parseInt(levelId) : levelId,
-                            studentAnswer: textEvidence || "IMAGEN ADJUNTA ESCANEADA",
-                            isCorrect: isLegacyCorrect,
-                            grade: parsedData.grade,
-                            canAdvance: parsedData.canAdvance,
-                            feedback: `${parsedRaw.categoria || 'Evaluado'}\n\nCalificación: ${parsedData.grade}/10\n\n${parsedData.extractedText}`,
-                            topic: parsedData.topic,
-                            emotionDetected: parsedData.emotionDetected
-                        }
+                    const parsedLevelId = typeof levelId === 'string' ? parseInt(levelId) : levelId;
+                    const existingEntry = await prisma.evidenceEntry.findFirst({
+                        where: { studentId, worldId, levelId: parsedLevelId }
                     });
-                    console.log("✅ Auto-logged evidence to DB:", savedEntry.id);
+
+                    let savedEntry;
+                    if (existingEntry) {
+                        savedEntry = await prisma.evidenceEntry.update({
+                            where: { id: existingEntry.id },
+                            data: {
+                                studentAnswer: textEvidence || "IMAGEN ADJUNTA ESCANEADA",
+                                isCorrect: isLegacyCorrect,
+                                grade: parsedData.grade,
+                                canAdvance: parsedData.canAdvance,
+                                feedback: `${parsedRaw.categoria || 'Evaluado'}\n\nCalificación: ${parsedData.grade}/10\n\n${parsedData.extractedText}`,
+                                topic: parsedData.topic,
+                                emotionDetected: parsedData.emotionDetected,
+                                imageUrl: null // Clear existing image to save DB storage
+                            }
+                        });
+                    } else {
+                        savedEntry = await prisma.evidenceEntry.create({
+                            data: {
+                                studentId,
+                                worldId,
+                                levelId: parsedLevelId,
+                                studentAnswer: textEvidence || "IMAGEN ADJUNTA ESCANEADA",
+                                isCorrect: isLegacyCorrect,
+                                grade: parsedData.grade,
+                                canAdvance: parsedData.canAdvance,
+                                feedback: `${parsedRaw.categoria || 'Evaluado'}\n\nCalificación: ${parsedData.grade}/10\n\n${parsedData.extractedText}`,
+                                topic: parsedData.topic,
+                                emotionDetected: parsedData.emotionDetected,
+                                imageUrl: null // Never store image — only keep evaluation data
+                            }
+                        });
+                    }
+                    console.log("✅ Auto-logged evidence to DB (no image stored):", savedEntry.id);
                     dbSaveStatus = "saved:" + savedEntry.id;
 
                     // AUTO-RESCUE: Continuous Adaptive Difficulty (Feature 5)

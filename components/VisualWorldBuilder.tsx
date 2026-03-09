@@ -110,11 +110,18 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                         newNodes = [...newNodes, ...appendedDays];
                     }
 
-                    // Re-sequence day numbers so the path flows sequentially
-                    newNodes = newNodes.map((n, i) => ({
-                        ...n,
-                        dayNumber: i + 1
-                    }));
+                    // Re-sequence day numbers and remove old boss fights
+                    newNodes = newNodes.map((n, i) => {
+                        let safeType = n.type;
+                        if (safeType === "boss_fight" && i !== newNodes.length - 1) {
+                            safeType = "guided_practice";
+                        }
+                        return {
+                            ...n,
+                            type: safeType,
+                            dayNumber: i + 1
+                        } as LevelContent;
+                    });
 
                     setNodes(newNodes);
 
@@ -192,7 +199,6 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             const element = document.getElementById("full-map-pdf-container");
             if (!element) return;
 
-            // Show element for capture — position it absolutely off-screen but unconstrained
             element.style.display = "block";
             element.style.position = "absolute";
             element.style.top = "0";
@@ -201,26 +207,68 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             element.style.zIndex = "9990";
             element.style.overflow = "visible";
 
-            // Wait for React and the browser to paint the DOM element
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 600));
 
-            // Lowered scale to 1.5 to avoid hitting canvas max-size limits on long maps
-            // Safari workaround: First call warms up the internal SVG/font cache, second call captures
-            await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false, width: 900 }).catch(() => { });
-            const canvas = await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false, width: 900 });
-            const imgData = canvas.toDataURL("image/jpeg", 0.95);
+            // PDF setup
+            const pdfWidth = 210;  // A4 mm
+            const pdfPageHeight = 297;
+            const margin = 10;
+            const contentWidth = pdfWidth - (margin * 2);
+            const maxContentHeight = pdfPageHeight - (margin * 2);
 
-            const pdfWidth = 210; // 210mm is A4 width
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-            // Create a custom-sized PDF so the whole image fits on one continuous page without crashing
-            const pdf = new jsPDF({
-                orientation: pdfHeight > pdfWidth ? "portrait" : "landscape",
-                unit: "mm",
-                format: [pdfWidth, Math.max(297, pdfHeight + 10)]
-            });
+            // Capture each child section individually to avoid cutting text
+            const sections = element.querySelectorAll("[data-pdf-section]");
+            let currentY = margin;
 
-            pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+            for (let i = 0; i < sections.length; i++) {
+                const section = sections[i] as HTMLElement;
+
+                // Safari workaround + capture
+                await toCanvas(section, { pixelRatio: 2, backgroundColor: '#ffffff', skipFonts: false }).catch(() => { });
+                const sectionCanvas = await toCanvas(section, { pixelRatio: 2, backgroundColor: '#ffffff', skipFonts: false });
+
+                const scale = contentWidth / sectionCanvas.width; // mm per pixel
+                const sectionHeightMm = sectionCanvas.height * scale;
+
+                // If section won't fit on current page, start a new page
+                if (currentY + sectionHeightMm > pdfPageHeight - margin && currentY > margin + 5) {
+                    pdf.addPage();
+                    currentY = margin;
+                }
+
+                // If section is taller than a full page, we need to slice it
+                if (sectionHeightMm > maxContentHeight) {
+                    const pageHeightInPx = maxContentHeight / scale;
+                    const totalSlices = Math.ceil(sectionCanvas.height / pageHeightInPx);
+
+                    for (let s = 0; s < totalSlices; s++) {
+                        if (s > 0) { pdf.addPage(); currentY = margin; }
+
+                        const sliceCanvas = document.createElement("canvas");
+                        sliceCanvas.width = sectionCanvas.width;
+                        const sliceH = Math.min(pageHeightInPx, sectionCanvas.height - (s * pageHeightInPx));
+                        sliceCanvas.height = sliceH;
+
+                        const ctx = sliceCanvas.getContext("2d");
+                        if (ctx) {
+                            ctx.fillStyle = "#ffffff";
+                            ctx.fillRect(0, 0, sliceCanvas.width, sliceH);
+                            ctx.drawImage(sectionCanvas, 0, s * pageHeightInPx, sectionCanvas.width, sliceH, 0, 0, sliceCanvas.width, sliceH);
+                        }
+
+                        const imgData = sliceCanvas.toDataURL("image/jpeg", 0.92);
+                        pdf.addImage(imgData, "JPEG", margin, currentY, contentWidth, sliceH * scale);
+                        currentY += sliceH * scale + 4;
+                    }
+                } else {
+                    const imgData = sectionCanvas.toDataURL("image/jpeg", 0.92);
+                    pdf.addImage(imgData, "JPEG", margin, currentY, contentWidth, sectionHeightMm);
+                    currentY += sectionHeightMm + 4; // 4mm gap between sections
+                }
+            }
+
             pdf.save(`Guia-Docente-${title.replace(/\s+/g, '-')}.pdf`);
 
         } catch (error: any) {
@@ -467,14 +515,14 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                 className="bg-white p-10 text-black"
                 style={{ display: "none", position: "absolute", top: "-9999px", left: "-9999px", width: "900px", minHeight: "100vh" }}
             >
-                <div className="border-b-4 border-indigo-600 pb-6 mb-8 text-center">
+                <div data-pdf-section className="border-b-4 border-indigo-600 pb-6 mb-8 text-center">
                     <h1 className="text-4xl font-black text-indigo-900 mb-2">{title}</h1>
                     <p className="text-xl text-slate-600 font-medium">Guía Docente Completa • Tema: {theme}</p>
                 </div>
 
                 <div className="space-y-12">
                     {nodes.map((node, idx) => (
-                        <div key={idx} className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 shadow-sm break-inside-avoid">
+                        <div key={idx} data-pdf-section className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 shadow-sm break-inside-avoid">
                             <div className="flex items-center gap-4 mb-4 border-b border-slate-200 pb-4">
                                 <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl ${node.type === 'boss_fight' ? 'bg-red-500' : 'bg-indigo-500'}`}>
                                     {idx + 1}

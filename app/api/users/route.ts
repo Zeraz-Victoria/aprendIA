@@ -118,7 +118,31 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        return NextResponse.json(student, { status: 201 });
+        // Auto-assign existing worlds from this school to the new student
+        if (schoolId) {
+            const schoolWorlds = await prisma.world.findMany({
+                where: { schoolId },
+                select: { id: true }
+            });
+
+            if (schoolWorlds.length > 0) {
+                await prisma.user.update({
+                    where: { id: student.id },
+                    data: {
+                        assignedWorlds: {
+                            connect: schoolWorlds.map(w => ({ id: w.id }))
+                        }
+                    }
+                });
+            }
+        }
+
+        const updatedStudent = await prisma.user.findUnique({
+            where: { id: student.id },
+            include: { assignedWorlds: true }
+        });
+
+        return NextResponse.json(updatedStudent, { status: 201 });
     } catch (error) {
         console.error('Error creating student:', error);
         return NextResponse.json({ error: 'Failed to create student' }, { status: 500 });

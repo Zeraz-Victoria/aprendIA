@@ -103,6 +103,25 @@ export async function POST(req: Request) {
             include: { classrooms: true }
         });
 
+        // Auto-assign new world to ALL students in the same school
+        if (schoolId) {
+            const allStudents = await prisma.user.findMany({
+                where: { schoolId, role: 'STUDENT' },
+                select: { id: true }
+            });
+            if (allStudents.length > 0) {
+                await prisma.world.update({
+                    where: { id: newWorld.id },
+                    data: {
+                        assignedStudents: {
+                            connect: allStudents.map(s => ({ id: s.id }))
+                        }
+                    }
+                });
+                console.log(`Auto-assigned world "${title}" to ${allStudents.length} students.`);
+            }
+        }
+
         const parsedWorld = {
             ...newWorld,
             days: JSON.parse(newWorld.daysJson),

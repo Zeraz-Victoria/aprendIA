@@ -2,7 +2,7 @@
 
 import AdventureMap from "@/components/AdventureMap";
 import StudentHUD from "@/components/StudentHUD";
-import { ArrowLeft, X, BrainCircuit, ClipboardList } from "lucide-react";
+import { ArrowLeft, X, BrainCircuit, ClipboardList, Shield } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
 import { useState, useEffect, useCallback } from "react";
 import RewardsStore from "@/components/RewardsStore";
@@ -12,6 +12,7 @@ import RaidBossWidget from "@/components/RaidBossWidget";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useSessionGuard } from "@/hooks/useSessionGuard";
+import { getTheme, THEME_LIST } from "@/lib/themes";
 
 interface HintData {
     id: string;
@@ -27,6 +28,7 @@ interface EvidenceData {
     canAdvance: boolean;
     createdAt: string;
     topic?: string;
+    worldId: string;
     world?: { title: string; theme: string };
 }
 
@@ -51,13 +53,17 @@ export default function StudentPage() {
     const [hints, setHints] = useState<HintData[]>([]);
     const [evaluations, setEvaluations] = useState<EvidenceData[]>([]);
     const [teacherMessages, setTeacherMessages] = useState<TeacherMsg[]>([]);
-    const [dismissedMsgIds, setDismissedMsgIds] = useState<Set<string>>(() => {
-        // Restore dismissed IDs from localStorage on first render
+    const [dismissedMsgIds, setDismissedMsgIds] = useState<Set<string>>(new Set());
+
+    // Load dismissed messages after component mounts to prevent hydration mismatch
+    useEffect(() => {
         try {
-            const stored = typeof window !== 'undefined' ? window.localStorage.getItem('dismissedTeacherMsgIds') : null;
-            return stored ? new Set(JSON.parse(stored)) : new Set<string>();
-        } catch { return new Set<string>(); }
-    });
+            const stored = localStorage.getItem('dismissedTeacherMsgIds');
+            if (stored) {
+                setDismissedMsgIds(new Set(JSON.parse(stored)));
+            }
+        } catch { /* ignore storage errors */ }
+    }, []);
 
     // State to determine if we are in Lobby or inside a specific Map
     const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
@@ -173,10 +179,14 @@ export default function StudentPage() {
         );
     }
 
+    // Determine lobby theme from first assigned world
+    const lobbyThemeKey = currentUser.assignedWorlds?.[0]?.theme;
+    const lobbyTheme = getTheme(lobbyThemeKey);
+
     // THE LOBBY VIEW
     if (!selectedMapId) {
         return (
-            <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            <main className={`min-h-screen bg-gradient-to-br ${lobbyTheme.lobbyBg} flex flex-col items-center justify-center p-6 relative overflow-hidden`}>
                 <div className="absolute top-4 left-4 z-40">
                     <button
                         onClick={() => signOut({ callbackUrl: "/" })}
@@ -189,8 +199,8 @@ export default function StudentPage() {
                 </div>
 
                 {/* Visual Background Elements */}
-                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-teal-500/20 rounded-full blur-[120px] pointer-events-none"></div>
-                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className={`absolute top-[-20%] left-[-10%] w-[50%] h-[50%] ${lobbyTheme.lobbyGlow1} rounded-full blur-[120px] pointer-events-none`}></div>
+                <div className={`absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] ${lobbyTheme.lobbyGlow2} rounded-full blur-[120px] pointer-events-none`}></div>
 
                 <div className="w-full max-w-5xl z-10 animate-fade-in-up">
                     <div className="text-center mb-12">
@@ -199,11 +209,11 @@ export default function StudentPage() {
                                 <span className="text-2xl">{currentUser.avatar}</span> Hola, {currentUser.name}
                             </h2>
                         </div>
-                        <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-emerald-300 to-sky-300 mb-4 drop-shadow-sm">
+                        <h1 className={`text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r ${lobbyTheme.lobbyTitle} mb-4 drop-shadow-sm`}>
                             Elige tu Destino
                         </h1>
-                        <p className="text-teal-200 text-lg md:text-xl font-medium max-w-2xl mx-auto">
-                            Tienes {currentUser.assignedWorlds?.length || 0} aventuras disponibles. ¿En cuál quieres adentrarte el día de hoy?
+                        <p className="text-white/60 text-lg md:text-xl font-medium max-w-2xl mx-auto">
+                            Tienes {currentUser.assignedWorlds?.length || 0} aventuras disponibles. ¿En cuál quieres adentrarte?
                         </p>
                     </div>
 
@@ -211,43 +221,49 @@ export default function StudentPage() {
                         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 sm:p-12 text-center max-w-2xl mx-auto shadow-2xl">
                             <div className="text-5xl sm:text-6xl mb-4 opacity-50">🏝️</div>
                             <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Aún no tienes mundos asignados</h3>
-                            <p className="text-teal-200 mb-6 text-sm sm:text-base">Tu maestro debe asignarte una aventura para que puedas comenzar a jugar. ¡Pronto habrá retos increíbles!</p>
-                            <button onClick={() => window.location.reload()} className="bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-8 rounded-full transition-all active:scale-95 shadow-lg shadow-slate-900/50">
+                            <p className="text-white/50 mb-6 text-sm sm:text-base">Tu maestro debe asignarte una aventura para que puedas comenzar a jugar.</p>
+                            <button onClick={() => window.location.reload()} className={`${lobbyTheme.nodeActive} text-white font-bold py-3 px-8 rounded-full transition-all active:scale-95 shadow-lg`}>
                                 Recargar
                             </button>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
-                            {currentUser.assignedWorlds.map((world, idx) => (
-                                <button
-                                    key={world.id}
-                                    onClick={() => {
-                                        setSelectedMapId(world.id);
-                                        setActiveWorld(world.id);
-                                    }}
-                                    className="group text-left relative bg-white/10 backdrop-blur-md border object-cover border-white/20 rounded-3xl p-8 hover:bg-white/20 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(45,212,191,0.3)] hover:-translate-y-2 overflow-hidden flex flex-col h-full min-h-[250px]"
-                                >
-                                    {/* Map Card Background Glow */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            {currentUser.assignedWorlds.map((world, idx) => {
+                                const cardTheme = getTheme(world.theme);
+                                return (
+                                    <button
+                                        key={world.id}
+                                        onClick={() => {
+                                            setSelectedMapId(world.id);
+                                            setActiveWorld(world.id);
+                                        }}
+                                        className={`group text-left relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 hover:bg-white/20 transition-all duration-300 hover:scale-[1.03] ${cardTheme.lobbyCardHover} hover:-translate-y-2 overflow-hidden flex flex-col h-full min-h-[250px]`}
+                                    >
+                                        {/* Card glow */}
+                                        <div className={`absolute inset-0 ${cardTheme.lobbyGlow1} opacity-0 group-hover:opacity-40 transition-opacity rounded-3xl`} />
 
-                                    <div className="relative z-10 flex-1 flex flex-col">
-                                        <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-lg shadow-teal-500/30 transform group-hover:rotate-12 transition-transform">
-                                            🗺️
+                                        <div className="relative z-10 flex-1 flex flex-col">
+                                            <div className={`w-14 h-14 ${cardTheme.nodeActive} rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-lg transform group-hover:rotate-12 transition-transform`}>
+                                                {cardTheme.emoji}
+                                            </div>
+                                            <h3 className="text-2xl font-black text-white mb-2 leading-tight break-words line-clamp-3">
+                                                {world.title || `Mundo ${idx + 1}`}
+                                            </h3>
+                                            <div className="flex items-center gap-2 mt-auto">
+                                                <Shield className="w-3.5 h-3.5 text-white/40" />
+                                                <p className="text-white/50 font-bold text-xs uppercase tracking-wider">
+                                                    {cardTheme.label} • {world.theme}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <h3 className="text-2xl font-black text-white mb-2 leading-tight break-words line-clamp-3">
-                                            {world.title || `Mundo ${idx + 1}`}
-                                        </h3>
-                                        <p className="text-teal-200 font-medium text-sm mt-auto">
-                                            Tema: {world.theme}
-                                        </p>
-                                    </div>
 
-                                    <div className="relative z-10 mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-teal-300 font-bold text-sm uppercase tracking-wider group-hover:text-teal-200">
-                                        <span>Entrar al Mapa</span>
-                                        <span className="transform group-hover:translate-x-1 transition-transform">→</span>
-                                    </div>
-                                </button>
-                            ))}
+                                        <div className={`relative z-10 mt-6 pt-4 border-t border-white/10 flex items-center justify-between ${cardTheme.hudAccent} font-black text-sm uppercase tracking-wider group-hover:text-white`}>
+                                            <span>Entrar al Mapa</span>
+                                            <span className="transform group-hover:translate-x-2 transition-transform">→</span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -386,14 +402,18 @@ export default function StudentPage() {
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            {evaluations.length === 0 ? (
-                                <div className="text-center py-12">
-                                    <div className="text-5xl mb-4">📋</div>
-                                    <h3 className="text-lg font-bold text-slate-700">Sin evaluaciones aún</h3>
-                                    <p className="text-slate-400 text-sm">Cuando tu maestro revise tu trabajo, aparecerá aquí.</p>
-                                </div>
-                            ) : (
-                                evaluations.map((ev) => {
+                            {(() => {
+                                const mapEvaluations = evaluations.filter(ev => ev.worldId === selectedMapId);
+                                if (mapEvaluations.length === 0) {
+                                    return (
+                                        <div className="text-center py-12">
+                                            <div className="text-5xl mb-4">📋</div>
+                                            <h3 className="text-lg font-bold text-slate-700">Sin evaluaciones aún</h3>
+                                            <p className="text-slate-400 text-sm">Cuando tu maestro revise tu trabajo en este mapa, aparecerá aquí.</p>
+                                        </div>
+                                    );
+                                }
+                                return mapEvaluations.map((ev) => {
                                     const feedbackLines = ev.feedback.split('\n').filter(l => l.trim());
                                     const category = feedbackLines[0] || 'Evaluado';
                                     const detailedFeedback = feedbackLines.slice(1).join('\n').trim();
@@ -443,8 +463,8 @@ export default function StudentPage() {
                                             )}
                                         </div>
                                     );
-                                })
-                            )}
+                                });
+                            })()}
                         </div>
                     </div>
                 </div>

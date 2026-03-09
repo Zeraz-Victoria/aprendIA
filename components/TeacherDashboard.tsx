@@ -909,12 +909,10 @@ export default function TeacherDashboard() {
                                 </div>
                             ) : (
                                 worlds.map(w => (
-                                    <div key={w.id} className={`bg-white p-6 rounded-2xl border-2 transition-all relative ${activeWorldId === w.id ? 'border-sky-500 ring-4 ring-sky-50' : 'border-slate-100 hover:border-slate-300'}`}>
-                                        {activeWorldId === w.id && (
-                                            <span className="absolute top-4 right-4 bg-sky-100 text-sky-700 text-xs px-2 py-1 rounded-full font-bold">
-                                                Activa
-                                            </span>
-                                        )}
+                                    <div key={w.id} className={`bg-white p-6 rounded-2xl border-2 transition-all relative border-emerald-200 hover:border-emerald-400`}>
+                                        <span className="absolute top-4 right-4 bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded-full font-bold">
+                                            ✓ Activa
+                                        </span>
                                         <h3 className="font-bold text-lg text-slate-800 mb-2 break-words line-clamp-3">{w.title || "Aventura Sin Título"}</h3>
                                         <div className="text-sm text-slate-500 mb-4">
                                             <p>Tema: {w.theme}</p>
@@ -931,13 +929,10 @@ export default function TeacherDashboard() {
                                                 <Pencil className="w-3.5 h-3.5" /> Ver / Editar
                                             </button>
 
-                                            <button
-                                                onClick={() => setActiveWorld(w.id)}
-                                                disabled={activeWorldId === w.id}
-                                                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                                            >
-                                                {activeWorldId === w.id ? "Activo" : "Activar"}
-                                            </button>
+
+                                            <span className="bg-emerald-50 text-emerald-700 font-bold py-2 px-3 rounded-lg text-sm flex items-center gap-1">
+                                                ✓ Activo
+                                            </span>
 
                                             <button
                                                 onClick={() => setWorldToDelete(w)}

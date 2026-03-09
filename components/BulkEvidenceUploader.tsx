@@ -94,11 +94,11 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
 
             {!processedResults.length ? (
                 <div className="space-y-6">
-                    <div className="flex gap-4 mb-4">
+                    <div className="flex flex-col md:flex-row gap-4 mb-4">
                         <select
                             value={selectedWorldId}
                             onChange={(e) => { setSelectedWorldId(e.target.value); setSelectedLevelId(""); }}
-                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-sky-400 focus:border-sky-400 w-full"
                         >
                             <option value="">Selecciona un Mapa / Nivel</option>
                             {worlds.map(w => (
@@ -109,7 +109,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                             value={selectedLevelId}
                             onChange={(e) => setSelectedLevelId(e.target.value)}
                             disabled={!selectedWorldId}
-                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-sky-400 focus:border-sky-400 disabled:opacity-50"
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-sky-400 focus:border-sky-400 disabled:opacity-50 w-full"
                         >
                             <option value="">Selecciona la Actividad</option>
                             {selectedWorldId && worlds.find(w => w.id === selectedWorldId)?.days.map(d => (

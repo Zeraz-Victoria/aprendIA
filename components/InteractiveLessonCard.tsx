@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import { toCanvas } from "html-to-image";
 import PedagogicalWrapper from "./PedagogicalWrapper";
 import GlossaryWrapper from "./GlossaryWrapper";
+import TheoryRenderer, { PresentationType } from "./TheoryRenderer";
 
 function safeParsePromptText(text: string | undefined): string {
     if (!text) return "";
@@ -128,6 +129,11 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     const [gameOverTimer, setGameOverTimer] = useState(30);
     const [isDownloading, setIsDownloading] = useState(false);
 
+    // Multi-stage activity logic: "minigame" -> "practice"
+    const hasMiniGame = !!data.content?.miniGame;
+    const hasPractice = !!(data.content?.practiceProblem || (data as any).reto_gameplay?.instruccion_fiel || (data as any).originalProblemText || data.type === 'guided_practice');
+    const [activityStage, setActivityStage] = useState<"minigame" | "practice">(hasMiniGame && data.type !== 'guided_practice' ? "minigame" : "practice");
+
     // TTS State
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [speechSupported, setSpeechSupported] = useState(true);
@@ -239,20 +245,53 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             await new Promise(resolve => setTimeout(resolve, 500));
 
             // Safari workaround: First call warms up the internal SVG/font cache, second call captures
-            await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false }).catch(() => { });
-            const canvas = await toCanvas(element, { pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: false });
-            const imgData = canvas.toDataURL("image/jpeg", 0.95);
+            await toCanvas(element, { pixelRatio: 2, backgroundColor: '#ffffff', skipFonts: false }).catch(() => { });
+            const canvas = await toCanvas(element, { pixelRatio: 2, backgroundColor: '#ffffff', skipFonts: false });
 
+            // PDF dimensions in mm (Letter size)
             const pdfWidth = 210;
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            const pdfPageHeight = 297;
+            const margin = 5; // mm margin
+
+            // Calculate how many pixels of the canvas fit on one PDF page
+            const contentWidth = pdfWidth - (margin * 2);
+            const scale = contentWidth / canvas.width; // mm per pixel
+            const pageHeightInPx = (pdfPageHeight - (margin * 2)) / scale;
+            const totalPages = Math.ceil(canvas.height / pageHeightInPx);
 
             const pdf = new jsPDF({
-                orientation: pdfHeight > pdfWidth ? "portrait" : "landscape",
+                orientation: "portrait",
                 unit: "mm",
-                format: [pdfWidth, Math.max(297, pdfHeight + 10)]
+                format: "a4"
             });
 
-            pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+            for (let page = 0; page < totalPages; page++) {
+                if (page > 0) pdf.addPage();
+
+                // Create a temporary canvas for this page slice
+                const pageCanvas = document.createElement("canvas");
+                pageCanvas.width = canvas.width;
+                const sliceHeight = Math.min(pageHeightInPx, canvas.height - (page * pageHeightInPx));
+                pageCanvas.height = sliceHeight;
+
+                const ctx = pageCanvas.getContext("2d");
+                if (ctx) {
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                    ctx.drawImage(
+                        canvas,
+                        0, page * pageHeightInPx,           // source x, y
+                        canvas.width, sliceHeight,           // source width, height
+                        0, 0,                                // dest x, y
+                        pageCanvas.width, sliceHeight        // dest width, height
+                    );
+                }
+
+                const imgData = pageCanvas.toDataURL("image/jpeg", 0.92);
+                const imgHeight = sliceHeight * scale;
+                pdf.addImage(imgData, "JPEG", margin, margin, contentWidth, imgHeight);
+            }
+
             pdf.save(`Leccion-${(data.title || 'lesson').replace(/\s+/g, '-')}.pdf`);
 
         } catch (error: any) {
@@ -424,7 +463,12 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             rewardGems(bonus);
             setFeedback("success");
             setTimeout(() => {
-                onComplete();
+                if (hasPractice) {
+                    setActivityStage("practice");
+                    setFeedback(null); // reset feedback for next screen
+                } else {
+                    onComplete();
+                }
             }, 2000);
         } else {
             setWrongCount(prev => prev + 1);
@@ -438,7 +482,12 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
         rewardGems(bonus);
         setFeedback("success");
         setTimeout(() => {
-            onComplete();
+            if (hasPractice) {
+                setActivityStage("practice");
+                setFeedback(null);
+            } else {
+                onComplete();
+            }
         }, 2500);
     };
 
@@ -632,10 +681,12 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     ¡Mini-Desafío! 🧠
                 </h2>
 
-                <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-teal-100 text-center">
-                    <p className="text-xl text-slate-700 mb-8">{data.content?.miniGame?.question}</p>
+                <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-teal-100 text-center w-full max-w-full">
+                    <p className="text-xl text-slate-700 mb-8 break-words whitespace-pre-wrap w-full max-w-full overflow-hidden relative">
+                        {data.content?.miniGame?.question}
+                    </p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                         {(data.content?.miniGame?.options || []).map((option, idx) => (
                             <button
                                 key={idx}
@@ -643,7 +694,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 onClick={() => handleMiniGameAnswer(option)}
                                 disabled={disabledOptions[option]}
                                 className={`
-                            p-4 rounded-xl text-lg font-bold border-2 transition-all relative
+                            p-4 rounded-xl text-lg font-bold border-2 transition-all relative break-words whitespace-pre-wrap w-full text-center flex items-center justify-center
                             ${feedback === 'success' && option === data.content?.miniGame?.correctAnswer
                                         ? 'bg-green-100 border-green-500 text-green-700 scale-105'
                                         : disabledOptions[option]
@@ -831,11 +882,37 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                         <div className="space-y-6">
                             <div className="relative">
                                 {data.type === 'guided_practice' && <span className="absolute -top-3 -right-3 z-10 bg-teal-500 text-white text-xs px-2 py-1 rounded font-bold shadow-sm">Teoría</span>}
-                                <PedagogicalWrapper
-                                    content={currentChunk || ""}
-                                    studentName={studentName || "Aventurero"}
-                                    type={data.type === 'guided_practice' ? 'theory' : 'narrative'}
-                                />
+                                {/* Use TheoryRenderer for interactive formats, fallback to PedagogicalWrapper */}
+                                {(() => {
+                                    const formats: PresentationType[] = ["flashcards", "mind_map", "synoptic_chart", "infographic", "crossword"];
+                                    const stored = (data as any).presentationType;
+                                    const effectiveType: PresentationType = stored && stored !== "text"
+                                        ? stored
+                                        : data.type === "concept_story"
+                                            ? formats[((data.dayNumber || 1) - 1) % formats.length]
+                                            : "text";
+
+                                    if (effectiveType !== "text") {
+                                        return (
+                                            <div className="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl">
+                                                <TheoryRenderer
+                                                    presentationType={effectiveType}
+                                                    title={data.title}
+                                                    content={(currentChunk || "").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
+                                                    glossary={(data as any).glosario}
+                                                    accentColor="teal"
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <PedagogicalWrapper
+                                            content={currentChunk || ""}
+                                            studentName={studentName || "Aventurero"}
+                                            type={data.type === 'guided_practice' ? 'theory' : 'narrative'}
+                                        />
+                                    );
+                                })()}
                             </div>
 
                             <div className="flex justify-between pt-4">
@@ -870,7 +947,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             >
                                 <ChevronLeft className="w-4 h-4" /> Volver a la Lectura
                             </button>
-                            {data.type === 'guided_practice' ? renderGuidedPractice() : renderMiniGame()}
+                            {activityStage === "practice" ? renderGuidedPractice() : renderMiniGame()}
                         </div>
                     )}
                 </div>
