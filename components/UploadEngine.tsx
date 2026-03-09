@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { UploadCloud, FileText, CheckCircle, Loader2 } from "lucide-react";
+import { UploadCloud, FileText, CheckCircle, Loader2, Palette } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
+import { THEME_LIST, ThemeKey } from "@/lib/themes";
 // @ts-expect-error - mammoth browser version lacks official types
 import * as mammoth from "mammoth/mammoth.browser";
 
@@ -20,6 +21,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
     const [loadingStatus, setLoadingStatus] = useState("Analizando Documento...");
     const [loadingSub, setLoadingSub] = useState("Extrayendo contenido pedagógico...");
     const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [selectedTheme, setSelectedTheme] = useState<ThemeKey>('clasico');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -88,7 +90,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
             // Clean up missing fields if any
             const newWorld = {
                 id: crypto.randomUUID(),
-                theme: data.theme || "detective",
+                theme: selectedTheme,
                 title: data.title || `Aventura: ${file.name.replace('.pdf', '')}`,
                 days: data.days,
                 pedagogy: data.pedagogy, // Optional, but useful for display
@@ -103,20 +105,28 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                     theme: newWorld.theme,
                     documentText: rawDocumentText || (file.name === "examen_demo.pdf" ? "DEMO_MODE" : "")
                 };
-                for (let attempt = 0; attempt < 2; attempt++) {
+                for (let attempt = 0; attempt < 4; attempt++) {
                     try {
                         const res = await fetch('/api/ai/generate-day', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
                         });
-                        if (res.ok) return await res.json();
+                        if (res.ok) {
+                            if (attempt === 0) await new Promise(r => setTimeout(r, 4500));
+                            return await res.json();
+                        }
                         console.warn(`Bake attempt ${attempt + 1} failed for Day ${day.dayNumber}: HTTP ${res.status}`);
+                        if (res.status === 429) {
+                            console.warn("Rate limit (429) detectado. Pausando 18 segundos...");
+                            await new Promise(r => setTimeout(r, 18000));
+                        } else {
+                            await new Promise(r => setTimeout(r, 5000));
+                        }
                     } catch (e) {
                         console.warn(`Bake attempt ${attempt + 1} threw for Day ${day.dayNumber}:`, e);
+                        await new Promise(r => setTimeout(r, 5000));
                     }
-                    // Brief pause before retry
-                    if (attempt === 0) await new Promise(r => setTimeout(r, 2000));
                 }
                 return null;
             };
@@ -133,6 +143,8 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                         ...newWorld.days[0],
                         narrative: bakedStory.narrative,
                         content: bakedStory.content,
+                        presentationType: bakedStory.presentationType || "text",
+                        glosario: bakedStory.glosario || [],
                         isGenerating: false
                     };
                 }
@@ -141,37 +153,59 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
             await addWorld(newWorld);
             setActiveWorld(newWorld.id);
 
-            // Progressive Generation Loop — bake remaining days sequentially
-            for (let i = 1; i < totalDays; i++) {
-                const skeletonDay = newWorld.days[i];
-                setLoadingStatus(`Construyendo sesión ${i + 1} de ${totalDays}...`);
-                setLoadingSub(`Generando contenido para: ${skeletonDay.title || `Nivel ${skeletonDay.dayNumber}`}`);
-
-                console.log(`Baking Day ${skeletonDay.dayNumber}...`);
-                const bakedStory = await bakeDay(skeletonDay);
-
-                if (bakedStory) {
-                    const completedDay = {
-                        ...skeletonDay,
-                        narrative: bakedStory.narrative,
-                        content: bakedStory.content,
-                        isGenerating: false
-                    };
-
-                    const updatedDays = [...newWorld.days];
-                    updatedDays[i] = completedDay;
-                    newWorld.days = updatedDays;
-
-                    await updateWorld(newWorld);
-                } else {
-                    console.error(`Day ${skeletonDay.dayNumber} failed after retries, leaving as isGenerating.`);
-                }
-            }
-
-            // All days done — show success and close
+            // ✅ SUCCESS — Show immediately after Day 1 is ready
             setIsUploading(false);
             setUploadSuccess(true);
             if (onSuccess) onSuccess();
+
+            // 🔥 Background Generation — build remaining days without blocking UI
+            // Uses direct API call instead of updateWorld() to avoid triggering React re-renders
+            if (totalDays > 1) {
+                (async () => {
+                    for (let i = 1; i < totalDays; i++) {
+                        const skeletonDay = newWorld.days[i];
+                        console.log(`[Background] Baking Day ${skeletonDay.dayNumber}/${totalDays}...`);
+
+                        const bakedStory = await bakeDay(skeletonDay);
+
+                        if (bakedStory) {
+                            const completedDay = {
+                                ...skeletonDay,
+                                narrative: bakedStory.narrative,
+                                content: bakedStory.content,
+                                presentationType: bakedStory.presentationType || "text",
+                                glosario: bakedStory.glosario || [],
+                                isGenerating: false
+                            };
+                            newWorld.days[i] = completedDay;
+                        } else {
+                            console.error(`[Background] Day ${skeletonDay.dayNumber} failed after retries. Applying fallback.`);
+                            newWorld.days[i] = {
+                                ...skeletonDay,
+                                narrative: "La inteligencia artificial experimentó problemas de conexión al generar este fragmento. Puedes editar este nivel manualmente en el Constructor Visual.",
+                                content: {
+                                    explanation: { chunks: ["Sin detalles técnicos generados."], analogy: "El aprendizaje tiene pausas." },
+                                    practiceProblem: { statement: "Problema no disponible. Revisa el manual del docente.", correctValue: "N/A", hint: "Pide ayuda al maestro." }
+                                },
+                                isGenerating: false
+                            };
+                        }
+
+                        // Silent DB update for both success and fallback
+                        try {
+                            await fetch(`/api/worlds/${newWorld.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(newWorld)
+                            });
+                            console.log(`[Background] Day ${skeletonDay.dayNumber} DB sync done ✓`);
+                        } catch (e) {
+                            console.warn(`[Background] DB update for Day ${skeletonDay.dayNumber} failed:`, e);
+                        }
+                    }
+                    console.log(`[Background] All ${totalDays} sessions generated ✓`);
+                })();
+            }
 
         } catch (error) {
             console.error(error);
@@ -249,11 +283,11 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                                     {file ? <FileText className="w-10 h-10" /> : <UploadCloud className="w-10 h-10" />}
                                 </div>
 
-                                <div>
+                                <div className="w-full max-w-[90%] mx-auto text-center overflow-hidden">
                                     {file ? (
                                         <>
-                                            <h3 className="text-xl font-bold text-slate-800">{file.name}</h3>
-                                            <p className="text-slate-500 text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                            <h3 className="text-base font-bold text-slate-800 break-all leading-snug" title={file.name}>{file.name}</h3>
+                                            <p className="text-slate-500 text-sm mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                         </>
                                     ) : (
                                         <>
@@ -267,6 +301,31 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                     </>
                 )}
             </div>
+
+            {/* Theme Selector — shown when file is ready */}
+            {file && !isUploading && !uploadSuccess && (
+                <div className="mt-6" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2 mb-3 justify-center">
+                        <Palette className="w-4 h-4 text-slate-500" />
+                        <span className="text-sm font-bold text-slate-600 uppercase tracking-wider">Tema Visual del Juego</span>
+                    </div>
+                    <div className="flex gap-2 justify-center flex-wrap">
+                        {THEME_LIST.map(t => (
+                            <button
+                                key={t.key}
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setSelectedTheme(t.key); }}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${selectedTheme === t.key
+                                    ? 'border-sky-500 bg-sky-50 text-sky-700 scale-105 shadow-md'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                                    }`}
+                            >
+                                {t.emoji} {t.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {file && !isUploading && !uploadSuccess && (
                 <div className="mt-8 flex justify-center">
