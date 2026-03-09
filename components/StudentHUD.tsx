@@ -180,73 +180,82 @@ export default function StudentHUD({
 
             {/* Buffs Modal */}
             {showBuffModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 cursor-auto pointer-events-auto">
-                    <div className="bg-white rounded-3xl w-full max-w-sm p-6 relative shadow-2xl">
-                        <button
-                            onClick={() => setShowBuffModal(false)}
-                            className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition"
-                        >
-                            <X className="w-5 h-5 text-slate-600" />
-                        </button>
-                        <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-cyan-500 text-xl" /> Enviar Energía
-                        </h3>
-                        <p className="text-slate-500 text-sm mb-4">Usa tus gemas para animar a tus compañeros de clase.</p>
-
-                        <div className="mb-4 space-y-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                            <div>
-                                <label className="text-xs font-bold text-slate-700 mb-1 block">Mensaje (opcional)</label>
-                                <input
-                                    type="text"
-                                    placeholder="¡Tú puedes lograrlo!"
-                                    value={customMessage}
-                                    onChange={(e) => setCustomMessage(e.target.value)}
-                                    maxLength={40}
-                                    className="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                                />
-                            </div>
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                    type="checkbox"
-                                    checked={includeHint}
-                                    onChange={(e) => setIncludeHint(e.target.checked)}
-                                    className="w-4 h-4 text-cyan-600 rounded border-slate-300 focus:ring-cyan-500"
-                                />
-                                <span className="text-sm font-medium text-slate-700 select-none group-hover:text-slate-900 transition-colors">
-                                    Enviar una pista extra <span className="text-blue-500 font-bold ml-1 text-xs bg-blue-50 px-1.5 py-0.5 rounded-md border border-blue-100">+5 Gemas</span>
-                                </span>
-                            </label>
+                <div
+                    className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 cursor-auto pointer-events-auto"
+                    onClick={(e) => { if (e.target === e.currentTarget) setShowBuffModal(false); }}
+                >
+                    <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-sm max-h-[80vh] flex flex-col relative shadow-2xl overflow-hidden">
+                        {/* Sticky Header */}
+                        <div className="p-5 pb-3 border-b border-slate-100 shrink-0">
+                            <button
+                                onClick={() => setShowBuffModal(false)}
+                                className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition z-10"
+                            >
+                                <X className="w-5 h-5 text-slate-600" />
+                            </button>
+                            <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-cyan-500 text-xl" /> Enviar Energía
+                            </h3>
+                            <p className="text-slate-500 text-sm">Usa tus gemas para animar a tus compañeros de clase.</p>
                         </div>
 
-                        <div className="space-y-3 max-h-56 overflow-y-auto pr-2 custom-scrollbar">
-                            {classmates.map(c => (
-                                <div key={c.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-3xl bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-sm border border-slate-100">
-                                            {c.avatar}
-                                        </span>
-                                        <div>
-                                            <p className="font-bold text-slate-700 text-sm">{c.name}</p>
-                                            {c.status === "needs_help" && (
-                                                <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">Necesita ayuda</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => handleSendBuff(c.id)}
-                                        disabled={stats.gems < (includeHint ? 15 : 10) || sendingBuffTo === c.id}
-                                        className="bg-cyan-100 hover:bg-cyan-200 text-slate-700 disabled:opacity-50 px-3 py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-transform active:scale-95 shrink-0 min-w-[70px]"
-                                    >
-                                        <span>Animar</span>
-                                        <span className="text-[10px] flex items-center gap-1 opacity-80">
-                                            <Diamond className="w-3 h-3 fill-slate-700" /> {includeHint ? 15 : 10}
-                                        </span>
-                                    </button>
+                        {/* Scrollable Content */}
+                        <div className="flex-1 overflow-y-auto p-5 pt-3 space-y-4">
+                            <div className="space-y-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                                <div>
+                                    <label className="text-xs font-bold text-slate-700 mb-1 block">Mensaje (opcional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="¡Tú puedes lograrlo!"
+                                        value={customMessage}
+                                        onChange={(e) => setCustomMessage(e.target.value)}
+                                        maxLength={40}
+                                        className="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                                    />
                                 </div>
-                            ))}
-                            {classmates.length === 0 && (
-                                <div className="text-center text-slate-400 py-4 text-sm font-medium">Buscando compañeros...</div>
-                            )}
+                                <label className="flex items-center gap-2 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        checked={includeHint}
+                                        onChange={(e) => setIncludeHint(e.target.checked)}
+                                        className="w-4 h-4 text-cyan-600 rounded border-slate-300 focus:ring-cyan-500"
+                                    />
+                                    <span className="text-sm font-medium text-slate-700 select-none group-hover:text-slate-900 transition-colors">
+                                        Enviar una pista extra <span className="text-blue-500 font-bold ml-1 text-xs bg-blue-50 px-1.5 py-0.5 rounded-md border border-blue-100">+5 Gemas</span>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div className="space-y-3">
+                                {classmates.map(c => (
+                                    <div key={c.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-3xl bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-sm border border-slate-100">
+                                                {c.avatar}
+                                            </span>
+                                            <div>
+                                                <p className="font-bold text-slate-700 text-sm">{c.name}</p>
+                                                {c.status === "needs_help" && (
+                                                    <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">Necesita ayuda</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleSendBuff(c.id)}
+                                            disabled={stats.gems < (includeHint ? 15 : 10) || sendingBuffTo === c.id}
+                                            className="bg-cyan-100 hover:bg-cyan-200 text-slate-700 disabled:opacity-50 px-3 py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-transform active:scale-95 shrink-0 min-w-[70px]"
+                                        >
+                                            <span>Animar</span>
+                                            <span className="text-[10px] flex items-center gap-1 opacity-80">
+                                                <Diamond className="w-3 h-3 fill-slate-700" /> {includeHint ? 15 : 10}
+                                            </span>
+                                        </button>
+                                    </div>
+                                ))}
+                                {classmates.length === 0 && (
+                                    <div className="text-center text-slate-400 py-4 text-sm font-medium">Buscando compañeros...</div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
