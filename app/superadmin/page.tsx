@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { School, Users, ShieldAlert, Plus, Power, Map, Trash2, MessageSquare } from "lucide-react";
+import { School, Users, ShieldAlert, Plus, Power, Map, Trash2, MessageSquare, CalendarDays, AlertTriangle } from "lucide-react";
 
 export default function SuperadminPage() {
     const { data: session, status } = useSession();
@@ -224,6 +224,35 @@ export default function SuperadminPage() {
                                         {teacher.name}
                                     </h3>
                                 </div>
+
+                                {/* Creation Date & Expiry */}
+                                {(() => {
+                                    const created = new Date(teacher.createdAt);
+                                    const now = new Date();
+                                    const daysSinceCreation = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+                                    const currentCycleDays = daysSinceCreation % 30;
+                                    const daysRemaining = 30 - currentCycleDays;
+                                    const isExpiringSoon = daysRemaining <= 5;
+                                    const isWarning = daysRemaining <= 10 && daysRemaining > 5;
+
+                                    return (
+                                        <div className="mb-4 space-y-2">
+                                            <div className="flex items-center gap-2 text-xs text-slate-400">
+                                                <CalendarDays className="w-3.5 h-3.5" />
+                                                <span>Creado: <span className="text-slate-300 font-medium">{created.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</span></span>
+                                            </div>
+                                            <div className={`flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg font-bold ${isExpiringSoon ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
+                                                    isWarning ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' :
+                                                        'bg-slate-700/50 text-slate-400 border border-slate-600/30'
+                                                }`}>
+                                                {isExpiringSoon && <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />}
+                                                <span>{daysRemaining === 0 ? '¡Vence HOY!' : `Vence en ${daysRemaining} día${daysRemaining !== 1 ? 's' : ''}`}</span>
+                                                <span className="text-[10px] opacity-60 ml-auto">Ciclo {Math.floor(daysSinceCreation / 30) + 1}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
                                 <div className="text-xs text-slate-500 mb-4 uppercase tracking-wider flex justify-between items-center">
                                     <span>ID: <span className="font-mono text-slate-400">{teacher.id}</span></span>
                                     <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${teacher.subscriptionStatus === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>

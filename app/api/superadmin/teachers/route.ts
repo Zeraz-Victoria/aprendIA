@@ -41,6 +41,7 @@ export async function GET(req: Request) {
             classroomsCount: t._count?.ownedClassrooms || 0,
             studentsCount: t.school?._count?.users || 0,
             lastActivity: t.lastActivity,
+            createdAt: t.school?.createdAt || t.lastActivity,
             schoolId: t.school?.id,
             subscriptionPlan: t.school?.subscriptionPlan || 'BASIC',
             subscriptionStatus: t.school?.subscriptionStatus || 'ACTIVE'
