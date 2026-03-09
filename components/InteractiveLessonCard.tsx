@@ -200,8 +200,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
         }
 
         // Calculate half of the wrong options to disable
-        const options = data.content.miniGame.options;
-        const correct = data.content.miniGame.correctAnswer || "";
+        const options = data.content?.miniGame?.options || [];
+        const correct = data.content?.miniGame?.correctAnswer || "";
         const wrongOptions = options.filter(opt => !answersMatch(opt, correct));
 
         // Pick half to eliminate
@@ -442,7 +442,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     };
 
     const handleMiniGameAnswer = (option: string) => {
-        const isCorrect = answersMatch(option, data.content.miniGame?.correctAnswer || "");
+        const isCorrect = answersMatch(option, data.content?.miniGame?.correctAnswer || "");
 
         // Asynchronously log the attempt to the universal evidence endpoint
         if (studentId && worldId && levelId !== undefined) {
@@ -451,7 +451,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     studentId, worldId, levelId,
-                    context: `Interactive Quiz: ${data.content.miniGame?.question}`,
+                    context: `Interactive Quiz: ${data.content?.miniGame?.question}`,
                     narrative: data.narrative,
                     textEvidence: option
                 })
@@ -492,7 +492,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     };
 
     const handlePracticeCheck = () => {
-        const isCorrect = answersMatch(studentInput, String(data.content.practiceProblem?.correctValue));
+        const isCorrect = answersMatch(studentInput, String(data.content?.practiceProblem?.correctValue));
 
         // Asynchronously log the attempt to the universal evidence endpoint
         if (studentId && worldId && levelId !== undefined) {
@@ -501,7 +501,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     studentId, worldId, levelId,
-                    context: `Guided Practice: ${data.content.practiceProblem?.statement}`,
+                    context: `Guided Practice: ${data.content?.practiceProblem?.statement}`,
                     narrative: data.narrative,
                     textEvidence: studentInput
                 })
@@ -528,7 +528,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    problemText: data.content.practiceProblem?.statement || data.narrative,
+                    problemText: data.content?.practiceProblem?.statement || data.narrative,
                     studentAttempt: studentInput || "Aún no sé cómo empezar."
                 })
             });

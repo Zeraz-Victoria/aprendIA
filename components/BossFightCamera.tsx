@@ -116,7 +116,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
 
         try {
             const payload: any = { context: problemText };
-            if (data.narrative) payload.narrative = data.narrative;
+            if ((data as any).narrative) payload.narrative = (data as any).narrative;
             if (studentId) payload.studentId = studentId;
             if (worldId) payload.worldId = worldId;
             if (levelId !== undefined) payload.levelId = levelId;
@@ -217,11 +217,6 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                 {problemText.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
                             </ReactMarkdown>
                         </div>
-                        {data.originalProblemImage && (
-                            <div className="mt-4 rounded-lg overflow-hidden border border-slate-600">
-                                <img src={data.originalProblemImage} alt="Problema Original" className="w-full h-auto object-contain" />
-                            </div>
-                        )}
                         <div className="mt-4 bg-red-900/30 p-4 rounded-xl border border-red-500/30">
                             <p className="whitespace-pre-wrap font-bold text-red-100">
                                 ⚔️ Tu Misión:

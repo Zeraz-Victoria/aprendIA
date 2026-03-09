@@ -154,6 +154,63 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
         }
     };
 
+    const handleRetryDayBake = async (nodeIndex: number) => {
+        const node = nodes[nodeIndex];
+        // Optimistic UI for specifically this node
+        const updatedNodes = [...nodes];
+        updatedNodes[nodeIndex] = { ...node, isRetrying: true, isGenerating: true };
+        setNodes(updatedNodes);
+
+        try {
+            const payload = {
+                day: node,
+                pedagogy: initialWorld?.pedagogy || { topic: title, pda: "General", grade: "Fase General" },
+                theme: theme,
+                documentText: "Generación solicitada manualmente por el profesor"
+            };
+
+            const res = await fetch('/api/ai/generate-day', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                const bakedStory = await res.json();
+                const finishedNodes = [...updatedNodes];
+                finishedNodes[nodeIndex] = {
+                    ...node,
+                    narrative: bakedStory.narrative,
+                    content: bakedStory.content,
+                    presentationType: bakedStory.presentationType || "text",
+                    glosario: bakedStory.glosario || [],
+                    isGenerating: false,
+                    isRetrying: false
+                };
+                setNodes(finishedNodes);
+
+                if (initialWorld) {
+                    const savedWorld = {
+                        ...initialWorld,
+                        days: finishedNodes
+                    };
+                    updateWorld(savedWorld);
+                }
+            } else {
+                const finishedNodes = [...updatedNodes];
+                finishedNodes[nodeIndex] = { ...node, isRetrying: false, isGenerating: false };
+                setNodes(finishedNodes);
+                alert("Error de la IA al reintentar generar esta sesión.");
+            }
+        } catch (e) {
+            console.error(e);
+            const finishedNodes = [...updatedNodes];
+            finishedNodes[nodeIndex] = { ...node, isRetrying: false, isGenerating: false };
+            setNodes(finishedNodes);
+            alert("Error de red al intentar reconectar con la IA.");
+        }
+    };
+
     const handleAddNode = (type: "concept_story" | "guided_practice" | "boss_fight") => {
         const nextDay = nodes.length + 1;
         let newNode: any = { dayNumber: nextDay as any, type, title: `Día ${nextDay}` };
@@ -406,6 +463,22 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                                 <p className="text-slate-500 text-sm line-clamp-2">
                                     {node.type === 'boss_fight' ? safeParsePromptText((node as BossDayContent).originalProblemText) : safeParsePromptText((node as DayContent).narrative) || 'Sin historia configurada.'}
                                 </p>
+                                {(node.isGenerating ||
+                                    (node.type !== 'boss_fight' && (node as DayContent).narrative?.includes('Generando contenido con IA')) ||
+                                    (node.type === 'boss_fight' && ((node as BossDayContent).originalProblemText?.includes('Generando contenido con IA') || (node as any).content?.originalProblemText?.includes('Generando contenido con IA')))
+                                ) && (
+                                        <div className="mt-3">
+                                            <button
+                                                onClick={() => handleRetryDayBake(i)}
+                                                disabled={node.isRetrying}
+                                                className="bg-sky-100 hover:bg-sky-200 text-sky-800 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition disabled:opacity-50"
+                                            >
+                                                {node.isRetrying ? <Sparkles className="w-4 h-4 animate-spin" /> : <Bot className="w-4 h-4" />}
+                                                {node.isRetrying ? 'Reconstruyendo...' : 'Reintentar Generación con IA'}
+                                            </button>
+                                            {!node.isRetrying && <p className="text-xs text-slate-400 mt-1">Este nivel quedó atascado. Haz clic para forzar su regeneración.</p>}
+                                        </div>
+                                    )}
                             </div>
                         </div>
                     ))}

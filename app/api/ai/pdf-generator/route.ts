@@ -22,6 +22,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'AI API Key not configured' }, { status: 500 });
     }
 
+    if (file.size > 4 * 1024 * 1024) {
+      return NextResponse.json({ error: 'El archivo excede el límite de 4MB. Por favor, comprime el PDF o procesa el documento en partes.' }, { status: 400 });
+    }
+
     console.log("Reading buffer...");
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);

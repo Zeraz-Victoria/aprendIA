@@ -39,6 +39,10 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
         setIsDragging(false);
         const droppedFile = e.dataTransfer.files[0];
         if (droppedFile && (droppedFile.type === "application/pdf" || droppedFile.name.endsWith('.docx') || droppedFile.name.endsWith('.doc'))) {
+            if (droppedFile.size > 4 * 1024 * 1024) {
+                alert("El archivo es demasiado grande (" + (droppedFile.size / 1024 / 1024).toFixed(2) + " MB). El límite máximo es 4 MB. Por favor, comprime tu archivo o sube solo un fragmento.");
+                return;
+            }
             setFile(droppedFile);
         } else {
             alert("Por favor sube solo archivos PDF o Word (.docx, .doc).");
@@ -48,6 +52,11 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
         if (selectedFile) {
+            if (selectedFile.size > 4 * 1024 * 1024) {
+                alert("El archivo es demasiado grande (" + (selectedFile.size / 1024 / 1024).toFixed(2) + " MB). El límite máximo es 4 MB. Por favor, comprime tu archivo o sube solo un fragmento.");
+                if (fileInputRef.current) fileInputRef.current.value = "";
+                return;
+            }
             setFile(selectedFile);
         }
     };
@@ -182,7 +191,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                             console.error(`[Background] Day ${skeletonDay.dayNumber} failed after retries. Applying fallback.`);
                             newWorld.days[i] = {
                                 ...skeletonDay,
-                                narrative: "La inteligencia artificial experimentó problemas de conexión al generar este fragmento. Puedes editar este nivel manualmente en el Constructor Visual.",
+                                narrative: "(Generando contenido con IA...)\n\n[ERROR DE CONEXIÓN] La inteligencia artificial experimentó problemas de recarga. Por favor, reintenta generar esta sesión manualmente en el Constructor Visual.",
                                 content: {
                                     explanation: { chunks: ["Sin detalles técnicos generados."], analogy: "El aprendizaje tiene pausas." },
                                     practiceProblem: { statement: "Problema no disponible. Revisa el manual del docente.", correctValue: "N/A", hint: "Pide ayuda al maestro." }
