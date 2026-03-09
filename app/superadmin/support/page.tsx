@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MessageCircle, CheckCircle, Clock, Trash2, ShieldAlert } from "lucide-react";
+import { MessageCircle, CheckCircle, Clock, ShieldAlert, Send, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { useRouter } from "next/navigation";
 
 interface Ticket {
     id: string;
     message: string;
+    adminReply: string | null;
     status: "OPEN" | "RESOLVED";
     createdAt: string;
     sender: {
@@ -21,8 +23,13 @@ interface Ticket {
 }
 
 export default function SupportDashboard() {
+    const router = useRouter();
     const [tickets, setTickets] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showResolved, setShowResolved] = useState(false);
+    const [replyingTo, setReplyingTo] = useState<string | null>(null);
+    const [replyText, setReplyText] = useState("");
+    const [sending, setSending] = useState(false);
 
     const fetchTickets = async () => {
         try {
@@ -37,13 +44,32 @@ export default function SupportDashboard() {
         }
     };
 
-    useEffect(() => {
-        fetchTickets();
-    }, []);
+    useEffect(() => { fetchTickets(); }, []);
+
+    const handleReplyAndResolve = async (id: string) => {
+        if (!replyText.trim()) return;
+        setSending(true);
+        try {
+            await fetch('/api/support', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status: "RESOLVED", adminReply: replyText.trim() })
+            });
+            setTickets(prev => prev.map(t =>
+                t.id === id ? { ...t, status: "RESOLVED", adminReply: replyText.trim() } : t
+            ));
+            setReplyingTo(null);
+            setReplyText("");
+        } catch (error) {
+            console.error("Error resolving ticket:", error);
+        } finally {
+            setSending(false);
+        }
+    };
 
     const markResolved = async (id: string) => {
         try {
-            setTickets(tickets.map(t => t.id === id ? { ...t, status: "RESOLVED" } : t));
+            setTickets(prev => prev.map(t => t.id === id ? { ...t, status: "RESOLVED" } : t));
             await fetch('/api/support', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -54,105 +80,170 @@ export default function SupportDashboard() {
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-slate-500 animate-pulse">Cargando tickets de soporte...</div>;
+    if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-400 animate-pulse text-lg">Cargando tickets de soporte...</div>;
 
     const openTickets = tickets.filter(t => t.status === "OPEN");
     const resolvedTickets = tickets.filter(t => t.status === "RESOLVED");
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fade-in-up">
-            <header className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-                        <MessageCircle className="w-8 h-8 text-indigo-600" />
-                        Buzón de Soporte
-                        <span className="bg-indigo-100 text-indigo-700 text-sm py-1 px-3 rounded-full font-bold">
-                            {openTickets.length} Abiertos
-                        </span>
-                    </h1>
-                    <p className="text-slate-500 mt-2">Mensajes enviados por usuarios desde el Widget Global.</p>
-                </div>
-                <button onClick={fetchTickets} className="text-sm font-bold bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-50 shadow-sm transition">
-                    🔄 Actualizar
-                </button>
-            </header>
-
-            {tickets.length === 0 ? (
-                <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-16 text-center text-slate-400">
-                    <ShieldAlert className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-                    <h2 className="text-xl font-bold text-slate-500">Buzón Vacío</h2>
-                    <p>No hay mensajes de soporte por el momento.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* OPEN TICKETS */}
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-bold flex flex-col sm:flex-row items-baseline gap-2 text-slate-800 border-b pb-2">
-                            <span className="flex items-center gap-2"><Clock className="w-5 h-5 text-amber-500" /> Pendientes</span>
-                        </h2>
-                        {openTickets.length === 0 && <p className="text-sm text-slate-400 italic">No hay tickets pendientes.</p>}
-
-                        {openTickets.map(ticket => (
-                            <TicketCard key={ticket.id} ticket={ticket} onResolve={() => markResolved(ticket.id)} />
-                        ))}
+        <div className="min-h-screen bg-slate-900 text-slate-100">
+            {/* Header */}
+            <header className="bg-slate-800 border-b border-slate-700 px-4 sm:px-6 py-4 sticky top-0 z-10">
+                <div className="max-w-4xl mx-auto flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => router.push('/superadmin')} className="p-2 hover:bg-slate-700 rounded-lg transition">
+                            <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <MessageCircle className="w-6 h-6 text-indigo-400" />
+                        <h1 className="text-lg sm:text-xl font-bold">Buzón de Soporte</h1>
+                        {openTickets.length > 0 && (
+                            <span className="bg-red-500/20 text-red-400 text-xs px-2.5 py-1 rounded-full font-bold border border-red-500/30">
+                                {openTickets.length} pendiente{openTickets.length !== 1 ? 's' : ''}
+                            </span>
+                        )}
                     </div>
-
-                    {/* RESOLVED TICKETS */}
-                    <div className="space-y-4 opacity-75">
-                        <h2 className="text-xl font-bold flex flex-col sm:flex-row items-baseline gap-2 text-slate-800 border-b pb-2">
-                            <span className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500" /> Resueltos</span>
-                        </h2>
-                        {resolvedTickets.length === 0 && <p className="text-sm text-slate-400 italic">No hay tickets resueltos aún.</p>}
-
-                        {resolvedTickets.map(ticket => (
-                            <TicketCard key={ticket.id} ticket={ticket} />
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
-
-function TicketCard({ ticket, onResolve }: { ticket: Ticket; onResolve?: () => void }) {
-    return (
-        <div className={`bg-white rounded-2xl p-5 border shadow-sm transition-all hover:shadow-md ${ticket.status === 'RESOLVED' ? 'border-green-200 bg-green-50/30' : 'border-slate-200'}`}>
-            <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-xl overflow-hidden border">
-                        {ticket.sender.avatar ? (
-                            ticket.sender.avatar.startsWith('http') ? <img src={ticket.sender.avatar} className="w-full h-full object-cover" /> : ticket.sender.avatar
-                        ) : '👤'}
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-slate-900 leading-none">{ticket.sender.name || "Usuario Anónimo"}</h4>
-                        <div className="flex items-center gap-2 text-xs font-medium text-slate-500 mt-1">
-                            <span className="bg-slate-100 border px-1.5 py-0.5 rounded text-[10px] uppercase">{ticket.sender.role}</span>
-                            {ticket.sender.email && <span>• {ticket.sender.email}</span>}
-                        </div>
-                    </div>
-                </div>
-                <div className="text-right">
-                    <div className="text-xs text-slate-400 whitespace-nowrap">
-                        {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true, locale: es })}
-                    </div>
-                </div>
-            </div>
-
-            <div className="bg-slate-50 p-4 rounded-xl text-slate-700 text-sm whitespace-pre-wrap border border-slate-100 mb-4">
-                "{ticket.message}"
-            </div>
-
-            {ticket.status === 'OPEN' && onResolve && (
-                <div className="flex justify-end">
-                    <button
-                        onClick={onResolve}
-                        className="bg-green-100 hover:bg-green-200 text-green-700 font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition"
-                    >
-                        <CheckCircle className="w-4 h-4" /> Marcar Resuelto
+                    <button onClick={fetchTickets} className="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg transition font-medium">
+                        🔄
                     </button>
                 </div>
-            )}
+            </header>
+
+            {/* Content */}
+            <main className="max-w-4xl mx-auto p-4 sm:p-6 space-y-4">
+                {tickets.length === 0 ? (
+                    <div className="bg-slate-800/50 border-2 border-dashed border-slate-700 rounded-2xl p-16 text-center">
+                        <ShieldAlert className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+                        <h2 className="text-xl font-bold text-slate-400">Buzón Vacío</h2>
+                        <p className="text-slate-500 mt-2">No hay mensajes de soporte por el momento.</p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Open Tickets */}
+                        {openTickets.length > 0 && (
+                            <div className="space-y-3">
+                                <h2 className="text-sm font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2 px-1">
+                                    <Clock className="w-4 h-4" /> Pendientes ({openTickets.length})
+                                </h2>
+                                {openTickets.map(ticket => (
+                                    <div key={ticket.id} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+                                        {/* Ticket Header */}
+                                        <div className="p-4 flex items-start gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-xl shrink-0 border border-slate-600">
+                                                {ticket.sender.avatar && !ticket.sender.avatar.startsWith('http') ? ticket.sender.avatar : '👤'}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="font-bold text-white text-sm">{ticket.sender.name || "Anónimo"}</span>
+                                                    <span className="text-[10px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded uppercase font-bold">{ticket.sender.role}</span>
+                                                    {ticket.sender.school?.name && (
+                                                        <span className="text-[10px] text-slate-500">• {ticket.sender.school.name}</span>
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-slate-500 mt-0.5">
+                                                    {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true, locale: es })}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Message */}
+                                        <div className="px-4 pb-3">
+                                            <div className="bg-slate-900/60 p-3 rounded-lg text-sm text-slate-300 whitespace-pre-wrap border border-slate-700/50">
+                                                {ticket.message}
+                                            </div>
+                                        </div>
+
+                                        {/* Reply Area */}
+                                        {replyingTo === ticket.id ? (
+                                            <div className="px-4 pb-4 space-y-3">
+                                                <textarea
+                                                    value={replyText}
+                                                    onChange={(e) => setReplyText(e.target.value)}
+                                                    placeholder="Escribe tu respuesta al usuario..."
+                                                    className="w-full bg-slate-900 border border-indigo-500/50 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 resize-none"
+                                                    rows={3}
+                                                    autoFocus
+                                                />
+                                                <div className="flex gap-2 justify-end">
+                                                    <button
+                                                        onClick={() => { setReplyingTo(null); setReplyText(""); }}
+                                                        className="px-3 py-2 text-sm text-slate-400 hover:text-white transition"
+                                                    >
+                                                        Cancelar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleReplyAndResolve(ticket.id)}
+                                                        disabled={!replyText.trim() || sending}
+                                                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg text-sm font-bold transition"
+                                                    >
+                                                        <Send className="w-4 h-4" /> {sending ? 'Enviando...' : 'Responder y Resolver'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="px-4 pb-4 flex gap-2 flex-wrap">
+                                                <button
+                                                    onClick={() => setReplyingTo(ticket.id)}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-lg text-sm font-bold transition border border-indigo-500/30"
+                                                >
+                                                    <Send className="w-4 h-4" /> Responder
+                                                </button>
+                                                <button
+                                                    onClick={() => markResolved(ticket.id)}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-lg text-sm font-bold transition border border-emerald-500/30"
+                                                >
+                                                    <CheckCircle className="w-4 h-4" /> Resolver sin responder
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Resolved Toggle */}
+                        {resolvedTickets.length > 0 && (
+                            <div className="pt-4">
+                                <button
+                                    onClick={() => setShowResolved(!showResolved)}
+                                    className="w-full flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-slate-300 transition py-2 border-t border-slate-700/50"
+                                >
+                                    <CheckCircle className="w-4 h-4" />
+                                    {showResolved ? 'Ocultar' : 'Ver'} resueltos ({resolvedTickets.length})
+                                    {showResolved ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                </button>
+
+                                {showResolved && (
+                                    <div className="space-y-3 mt-3 opacity-60">
+                                        {resolvedTickets.map(ticket => (
+                                            <div key={ticket.id} className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-4 space-y-3">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-base shrink-0">
+                                                        {ticket.sender.avatar && !ticket.sender.avatar.startsWith('http') ? ticket.sender.avatar : '👤'}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <span className="font-bold text-slate-400 text-sm">{ticket.sender.name}</span>
+                                                        <span className="text-xs text-slate-600 ml-2">
+                                                            {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true, locale: es })}
+                                                        </span>
+                                                    </div>
+                                                    <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                                                </div>
+                                                <p className="text-sm text-slate-500 pl-11">{ticket.message}</p>
+                                                {ticket.adminReply && (
+                                                    <div className="ml-11 bg-indigo-900/30 border border-indigo-500/20 rounded-lg p-3">
+                                                        <p className="text-xs text-indigo-400 font-bold mb-1">Tu respuesta:</p>
+                                                        <p className="text-sm text-indigo-200">{ticket.adminReply}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </>
+                )}
+            </main>
         </div>
     );
 }

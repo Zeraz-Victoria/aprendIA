@@ -141,29 +141,29 @@ export default function SuperadminPage() {
     return (
         <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
             {/* Header */}
-            <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-                <div className="flex items-center gap-3">
-                    <div className="bg-sky-600 p-2 rounded-lg">
-                        <ShieldAlert className="w-6 h-6 text-white" />
+            <header className="bg-slate-800 border-b border-slate-700 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-10 gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="bg-sky-600 p-1.5 sm:p-2 rounded-lg shrink-0">
+                        <ShieldAlert className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div>
-                        <h1 className="text-xl font-bold text-white leading-tight">SaaS Portal</h1>
-                        <p className="text-xs text-sky-300">Superadministrator</p>
+                    <div className="min-w-0">
+                        <h1 className="text-base sm:text-xl font-bold text-white leading-tight truncate">SaaS Portal</h1>
+                        <p className="text-[10px] sm:text-xs text-sky-300">Superadministrator</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 shrink-0">
                     <button
                         onClick={() => router.push('/superadmin/support')}
-                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-colors rounded-lg text-sm font-bold border border-indigo-500/30"
+                        className="flex items-center gap-1.5 px-2.5 sm:px-4 py-2 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-colors rounded-lg text-xs sm:text-sm font-bold border border-indigo-500/30"
                     >
-                        <MessageSquare className="w-4 h-4" /> Buzón de Soporte
+                        <MessageSquare className="w-4 h-4" /> <span className="hidden sm:inline">Buzón de Soporte</span>
                     </button>
                     <button
                         onClick={() => signOut()}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-red-600/20 hover:text-red-400 transition-colors rounded-lg text-sm font-medium"
+                        className="flex items-center gap-1.5 px-2.5 sm:px-4 py-2 bg-slate-700 hover:bg-red-600/20 hover:text-red-400 transition-colors rounded-lg text-xs sm:text-sm font-medium"
                     >
-                        <Power className="w-4 h-4" /> Cerrar Sesión
+                        <Power className="w-4 h-4" /> <span className="hidden sm:inline">Cerrar Sesión</span>
                     </button>
                 </div>
             </header>
@@ -242,8 +242,8 @@ export default function SuperadminPage() {
                                                 <span>Creado: <span className="text-slate-300 font-medium">{created.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</span></span>
                                             </div>
                                             <div className={`flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg font-bold ${isExpiringSoon ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
-                                                    isWarning ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' :
-                                                        'bg-slate-700/50 text-slate-400 border border-slate-600/30'
+                                                isWarning ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' :
+                                                    'bg-slate-700/50 text-slate-400 border border-slate-600/30'
                                                 }`}>
                                                 {isExpiringSoon && <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />}
                                                 <span>{daysRemaining === 0 ? '¡Vence HOY!' : `Vence en ${daysRemaining} día${daysRemaining !== 1 ? 's' : ''}`}</span>

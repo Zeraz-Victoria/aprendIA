@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     }
 }
 
-// PATCH: Mark ticket as resolved
+// PATCH: Update ticket (reply + resolve)
 export async function PATCH(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -72,15 +72,19 @@ export async function PATCH(req: Request) {
         }
 
         const body = await req.json();
-        const { id, status } = body;
+        const { id, status, adminReply } = body;
 
-        if (!id || (status !== 'OPEN' && status !== 'RESOLVED')) {
-            return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 });
+        if (!id) {
+            return NextResponse.json({ error: 'Ticket ID required' }, { status: 400 });
         }
+
+        const updateData: any = {};
+        if (status === 'OPEN' || status === 'RESOLVED') updateData.status = status;
+        if (adminReply !== undefined) updateData.adminReply = adminReply;
 
         const updated = await (prisma as any).supportTicket.update({
             where: { id },
-            data: { status }
+            data: updateData
         });
 
         return NextResponse.json(updated);

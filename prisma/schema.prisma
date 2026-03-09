@@ -355,13 +355,14 @@ model TeacherMessage {
 }
 
 model SupportTicket {
-  id        String   @id @default(cuid())
-  senderId  String
-  message   String   @db.Text
-  status    String   @default("OPEN") // "OPEN", "RESOLVED"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  senderId   String
+  message    String   @db.Text
+  adminReply String?  @db.Text
+  status     String   @default("OPEN") // "OPEN", "RESOLVED"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  sender    User     @relation("UserSupportTickets", fields: [senderId], references: [id], onDelete: Cascade)
+  sender     User     @relation("UserSupportTickets", fields: [senderId], references: [id], onDelete: Cascade)
 }
 
