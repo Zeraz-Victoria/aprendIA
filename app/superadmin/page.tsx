@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { School, Users, ShieldAlert, Plus, Power, Map, Trash2 } from "lucide-react";
+import { School, Users, ShieldAlert, Plus, Power, Map, Trash2, MessageSquare } from "lucide-react";
 
 export default function SuperadminPage() {
     const { data: session, status } = useSession();
@@ -152,12 +152,20 @@ export default function SuperadminPage() {
                     </div>
                 </div>
 
-                <button
-                    onClick={() => signOut()}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-red-600/20 hover:text-red-400 transition-colors rounded-lg text-sm font-medium"
-                >
-                    <Power className="w-4 h-4" /> Cerrar Sesión
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => router.push('/superadmin/support')}
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-colors rounded-lg text-sm font-bold border border-indigo-500/30"
+                    >
+                        <MessageSquare className="w-4 h-4" /> Buzón de Soporte
+                    </button>
+                    <button
+                        onClick={() => signOut()}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-red-600/20 hover:text-red-400 transition-colors rounded-lg text-sm font-medium"
+                    >
+                        <Power className="w-4 h-4" /> Cerrar Sesión
+                    </button>
+                </div>
             </header>
 
             {/* Main Content */}

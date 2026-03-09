@@ -4,6 +4,7 @@ import "./globals.css";
 import { LearningProvider } from "@/contexts/LearningContext";
 import Providers from "@/components/Providers";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import SupportWidget from "@/components/SupportWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
           <LearningProvider>
             <ServiceWorkerRegister />
             {children}
+            <SupportWidget />
           </LearningProvider>
         </Providers>
       </body>
