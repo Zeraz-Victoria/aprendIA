@@ -17,7 +17,7 @@ export async function POST(req: Request) {
         console.log(`Generating narrative for Day ${day.dayNumber}: ${day.title}...`);
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-2.0-flash',
             generationConfig: {
                 maxOutputTokens: 8192,
                 temperature: 0.2, // Slightly more creative for narratives

@@ -166,7 +166,8 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                 day: node,
                 pedagogy: initialWorld?.pedagogy || { topic: title, pda: "General", grade: "Fase General" },
                 theme: theme,
-                documentText: "Generación solicitada manualmente por el profesor"
+                documentText: (node as any).session_start || node.title || "Generación solicitada manualmente por el profesor",
+                isFinalBoss: (node as any).isFinalBoss || false
             };
 
             const res = await fetch('/api/ai/generate-day', {
