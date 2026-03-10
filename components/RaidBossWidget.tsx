@@ -107,9 +107,27 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
         }
     };
 
-    if (!boss) return null;
+    const healthPercent = boss ? Math.max(0, (boss.currentHealth / boss.maxHealth) * 100) : 0;
 
-    const healthPercent = Math.max(0, (boss.currentHealth / boss.maxHealth) * 100);
+    // If no boss exists, still allow the modal to open with a message
+    if (!boss) {
+        if (!showModal) return null;
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl w-full max-w-sm overflow-hidden relative shadow-2xl border-2 border-slate-700 p-8 text-center">
+                    <button
+                        onClick={closeModal}
+                        className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition z-10 text-white"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                    <Swords className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+                    <h2 className="text-xl font-black text-white mb-2">Sin Raid Boss Activo</h2>
+                    <p className="text-slate-400 text-sm">Tu maestro aún no ha convocado un Jefe de Incursión. ¡Pídele que active uno para que todo el grupo pueda atacar juntos!</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>
