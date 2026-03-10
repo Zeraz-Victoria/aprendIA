@@ -210,11 +210,24 @@ function Infographic({ title, steps, accentColor }: { title: string; steps: { ic
 // CROSSWORD (Crucigrama from glossary)
 // ═══════════════════════════════════════════
 function CrosswordGame({ words, accentColor }: { words: { palabra: string; definicion: string }[]; accentColor: string }) {
-    const [answers, setAnswers] = useState<Record<number, string>>({});
+    // Use a map of maps: answers[wordIdx][charIdx] = single character
+    const [answers, setAnswers] = useState<Record<number, Record<number, string>>>({});
     const [revealed, setRevealed] = useState<Set<number>>(new Set());
 
+    const getAnswer = (wordIdx: number): string => {
+        const cells = answers[wordIdx] || {};
+        return words[wordIdx].palabra.split("").map((_, i) => cells[i] || "").join("");
+    };
+
+    const setCell = (wordIdx: number, charIdx: number, val: string) => {
+        setAnswers(prev => ({
+            ...prev,
+            [wordIdx]: { ...(prev[wordIdx] || {}), [charIdx]: val }
+        }));
+    };
+
     const handleCheck = (idx: number) => {
-        const userAnswer = (answers[idx] || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const userAnswer = getAnswer(idx).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const correct = words[idx].palabra.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         if (userAnswer === correct) {
             setRevealed(prev => new Set([...prev, idx]));
@@ -253,15 +266,10 @@ function CrosswordGame({ words, accentColor }: { words: { palabra: string; defin
                                             inputMode="text"
                                             autoComplete="off"
                                             className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-slate-700 border border-slate-600 text-white text-center font-bold text-sm uppercase focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 outline-none transition"
-                                            value={(answers[idx] || "")[cIdx] || ""}
+                                            value={(answers[idx] || {})[cIdx] || ""}
                                             onChange={(e) => {
-                                                const val = e.target.value.slice(-1); // Only last char
-                                                setAnswers(prev => {
-                                                    const current = (prev[idx] || "").padEnd(word.palabra.length, " ");
-                                                    const arr = current.split("");
-                                                    arr[cIdx] = val;
-                                                    return { ...prev, [idx]: arr.join("") };
-                                                });
+                                                const val = e.target.value.slice(-1);
+                                                setCell(idx, cIdx, val);
                                                 // Auto-focus next input
                                                 if (val && cIdx < word.palabra.length - 1) {
                                                     const next = document.getElementById(`cw-${idx}-${cIdx + 1}`);
@@ -269,17 +277,14 @@ function CrosswordGame({ words, accentColor }: { words: { palabra: string; defin
                                                 }
                                             }}
                                             onKeyDown={(e) => {
-                                                if (e.key === "Backspace" && !(answers[idx] || "")[cIdx] && cIdx > 0) {
-                                                    e.preventDefault();
-                                                    const prev = document.getElementById(`cw-${idx}-${cIdx - 1}`);
-                                                    if (prev) {
-                                                        (prev as HTMLInputElement).focus();
-                                                        setAnswers(a => {
-                                                            const current = (a[idx] || "").padEnd(word.palabra.length, " ");
-                                                            const arr = current.split("");
-                                                            arr[cIdx - 1] = " ";
-                                                            return { ...a, [idx]: arr.join("") };
-                                                        });
+                                                if (e.key === "Backspace") {
+                                                    const currentVal = (answers[idx] || {})[cIdx] || "";
+                                                    if (!currentVal && cIdx > 0) {
+                                                        e.preventDefault();
+                                                        // Clear previous cell and focus it
+                                                        setCell(idx, cIdx - 1, "");
+                                                        const prev = document.getElementById(`cw-${idx}-${cIdx - 1}`);
+                                                        if (prev) (prev as HTMLInputElement).focus();
                                                     }
                                                 }
                                             }}
