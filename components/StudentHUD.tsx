@@ -178,84 +178,83 @@ export default function StudentHUD({
                 </div>
             )}
 
-            {/* Buffs Modal */}
+            {/* Buffs Modal — Bottom Sheet on mobile */}
             {showBuffModal && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 cursor-auto pointer-events-auto"
+                    className="fixed inset-0 z-[60] bg-black/60 cursor-auto pointer-events-auto"
                     onClick={(e) => { if (e.target === e.currentTarget) setShowBuffModal(false); }}
+                    style={{ touchAction: 'none' }}
                 >
-                    <div className="bg-white rounded-3xl w-full max-w-sm max-h-[85vh] flex flex-col relative shadow-2xl overflow-hidden">
-                        {/* Sticky Header */}
-                        <div className="p-5 pb-3 border-b border-slate-100 shrink-0">
-                            <button
-                                onClick={() => setShowBuffModal(false)}
-                                className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition z-10"
-                            >
-                                <X className="w-5 h-5 text-slate-600" />
-                            </button>
-                            <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                <Sparkles className="w-5 h-5 text-cyan-500 text-xl" /> Enviar Energía
-                            </h3>
-                            <p className="text-slate-500 text-sm">Usa tus gemas para animar a tus compañeros de clase.</p>
+                    {/* Modal container — anchored to bottom on all sizes */}
+                    <div
+                        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl overflow-hidden flex flex-col"
+                        style={{ maxHeight: '75dvh' }}
+                    >
+                        {/* Drag Handle + Close */}
+                        <div className="shrink-0 pt-3 pb-2 px-5 border-b border-slate-100">
+                            <div className="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-3" />
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-cyan-500" /> Enviar Energía
+                                </h3>
+                                <button
+                                    onClick={() => setShowBuffModal(false)}
+                                    className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition"
+                                >
+                                    <X className="w-5 h-5 text-slate-600" />
+                                </button>
+                            </div>
+                            {/* Message input — always visible */}
+                            <div className="mt-3 flex gap-2 items-center">
+                                <input
+                                    type="text"
+                                    placeholder="¡Tú puedes! (opcional)"
+                                    value={customMessage}
+                                    onChange={(e) => setCustomMessage(e.target.value)}
+                                    maxLength={40}
+                                    className="flex-1 text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 bg-slate-50"
+                                />
+                            </div>
+                            <label className="flex items-center gap-2 cursor-pointer mt-2 mb-1">
+                                <input
+                                    type="checkbox"
+                                    checked={includeHint}
+                                    onChange={(e) => setIncludeHint(e.target.checked)}
+                                    className="w-4 h-4 text-cyan-600 rounded border-slate-300 focus:ring-cyan-500"
+                                />
+                                <span className="text-xs font-medium text-slate-600">
+                                    Enviar pista extra <span className="text-blue-500 font-bold bg-blue-50 px-1.5 py-0.5 rounded-md border border-blue-100">+5💎</span>
+                                </span>
+                            </label>
                         </div>
 
-                        {/* Scrollable Content */}
-                        <div className="flex-1 overflow-y-auto p-5 pt-3 space-y-4">
-                            <div className="space-y-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                                <div>
-                                    <label className="text-xs font-bold text-slate-700 mb-1 block">Mensaje (opcional)</label>
-                                    <input
-                                        type="text"
-                                        placeholder="¡Tú puedes lograrlo!"
-                                        value={customMessage}
-                                        onChange={(e) => setCustomMessage(e.target.value)}
-                                        maxLength={40}
-                                        className="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                                    />
-                                </div>
-                                <label className="flex items-center gap-2 cursor-pointer group">
-                                    <input
-                                        type="checkbox"
-                                        checked={includeHint}
-                                        onChange={(e) => setIncludeHint(e.target.checked)}
-                                        className="w-4 h-4 text-cyan-600 rounded border-slate-300 focus:ring-cyan-500"
-                                    />
-                                    <span className="text-sm font-medium text-slate-700 select-none group-hover:text-slate-900 transition-colors">
-                                        Enviar una pista extra <span className="text-blue-500 font-bold ml-1 text-xs bg-blue-50 px-1.5 py-0.5 rounded-md border border-blue-100">+5 Gemas</span>
-                                    </span>
-                                </label>
-                            </div>
-
-                            <div className="space-y-3">
-                                {classmates.map(c => (
-                                    <div key={c.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <span className="text-3xl bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-sm border border-slate-100 shrink-0">
-                                                {c.avatar}
-                                            </span>
-                                            <div className="min-w-0">
-                                                <p className="font-bold text-slate-700 text-sm truncate">{c.name}</p>
-                                                {c.status === "needs_help" && (
-                                                    <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">Necesita ayuda</span>
-                                                )}
-                                            </div>
+                        {/* Scrollable classmates list */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                            {classmates.map(c => (
+                                <div key={c.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <span className="text-2xl bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm border border-slate-100 shrink-0">
+                                            {c.avatar}
+                                        </span>
+                                        <div className="min-w-0">
+                                            <p className="font-bold text-slate-700 text-sm truncate">{c.name}</p>
+                                            {c.status === "needs_help" && (
+                                                <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">Necesita ayuda</span>
+                                            )}
                                         </div>
-                                        <button
-                                            onClick={() => handleSendBuff(c.id)}
-                                            disabled={stats.gems < (includeHint ? 15 : 10) || sendingBuffTo === c.id}
-                                            className="bg-cyan-100 hover:bg-cyan-200 text-slate-700 disabled:opacity-50 px-3 py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-transform active:scale-95 shrink-0 min-w-[70px]"
-                                        >
-                                            <span>Animar</span>
-                                            <span className="text-[10px] flex items-center gap-1 opacity-80">
-                                                <Diamond className="w-3 h-3 fill-slate-700" /> {includeHint ? 15 : 10}
-                                            </span>
-                                        </button>
                                     </div>
-                                ))}
-                                {classmates.length === 0 && (
-                                    <div className="text-center text-slate-400 py-4 text-sm font-medium">Buscando compañeros...</div>
-                                )}
-                            </div>
+                                    <button
+                                        onClick={() => handleSendBuff(c.id)}
+                                        disabled={stats.gems < (includeHint ? 15 : 10) || sendingBuffTo === c.id}
+                                        className="bg-cyan-100 hover:bg-cyan-200 text-slate-700 disabled:opacity-50 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-transform active:scale-95 shrink-0"
+                                    >
+                                        Animar <Diamond className="w-3 h-3 fill-slate-700" /> {includeHint ? 15 : 10}
+                                    </button>
+                                </div>
+                            ))}
+                            {classmates.length === 0 && (
+                                <div className="text-center text-slate-400 py-8 text-sm font-medium">Buscando compañeros...</div>
+                            )}
                         </div>
                     </div>
                 </div>
