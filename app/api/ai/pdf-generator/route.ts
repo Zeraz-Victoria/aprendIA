@@ -45,9 +45,9 @@ export async function POST(req: Request) {
 
     console.log("Sending prompt to Gemini...");
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       generationConfig: {
-        maxOutputTokens: 8192,
+        maxOutputTokens: 16384,
         temperature: 0.1, // Low temperature for consistent formatting
         responseMimeType: "application/json",
       }
@@ -110,6 +110,11 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
     const candidate = result.response.candidates?.[0];
     const finishReason = candidate?.finishReason || 'UNKNOWN';
     console.log(`Received response from Gemini. Finish Reason: ${finishReason}, Length: ${responseText.length}`);
+
+    // Warn if the response was truncated (MAX_TOKENS hit)
+    if (finishReason === 'MAX_TOKENS' || finishReason as string === 'LENGTH') {
+      console.warn('⚠️ WARNING: Gemini response was TRUNCATED due to token limit. Some sessions may be missing.');
+    }
 
     // Strict JSON stripping
     responseText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
