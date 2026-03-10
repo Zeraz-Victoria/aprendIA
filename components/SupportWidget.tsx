@@ -2,8 +2,15 @@
 
 import { useState } from "react";
 import { MessageCircle, X, Send, CheckCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export default function SupportWidget() {
+    const { data: session } = useSession();
+    const role = (session?.user as any)?.role;
+
+    // Only show for TEACHER and SUPERADMIN — students should not see this
+    if (!role || role === 'STUDENT') return null;
+
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");

@@ -167,8 +167,8 @@ ${adaptiveRescuePrompt}
             // Construct NOTEBOOK/EVIDENCE portion
             const evidenciaEjemplos = parsed.instruccion_evidencia?.ejemplos_resolucion || "";
             const practiceProblem = {
-                statement: `** INSTRUCCIÓN(LIBRETA):**\n${parsed.instruccion_evidencia?.instruccion_fiel} \n\n${evidenciaEjemplos ? `**EJEMPLO RESUELTO:**\n${evidenciaEjemplos}` : ""} `,
-                correctValue: parsed.instruccion_evidencia?.valor_esperado_docente || "Evidencia completada",
+                statement: `**📝 INSTRUCCIÓN (LIBRETA):**\n${parsed.instruccion_evidencia?.instruccion_fiel}`,
+                correctValue: `${parsed.instruccion_evidencia?.valor_esperado_docente || "Evidencia completada"}${evidenciaEjemplos ? `\n\nEJEMPLO RESUELTO:\n${evidenciaEjemplos}` : ""}`,
                 hint: parsed.oraculo_teoria?.tip_clave || "Recuerda revisar tus apuntes.",
                 tipo_evidencia_requerida: parsed.instruccion_evidencia?.tipo_evidencia_requerida || "FOTO_TEXTO"
             };
