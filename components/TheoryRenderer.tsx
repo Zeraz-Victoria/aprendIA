@@ -242,27 +242,45 @@ function CrosswordGame({ words, accentColor }: { words: { palabra: string; defin
                                 ✅ {word.palabra}
                             </div>
                         ) : (
-                            <div className="flex gap-2">
-                                <div className="flex gap-1 flex-1">
+                            <div className="space-y-2">
+                                <div className="flex flex-wrap gap-1">
                                     {word.palabra.split("").map((_, cIdx) => (
                                         <input
                                             key={cIdx}
+                                            id={`cw-${idx}-${cIdx}`}
                                             type="text"
                                             maxLength={1}
-                                            className="w-9 h-9 rounded-lg bg-slate-700 border border-slate-600 text-white text-center font-bold text-sm uppercase focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 outline-none transition"
+                                            inputMode="text"
+                                            autoComplete="off"
+                                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-slate-700 border border-slate-600 text-white text-center font-bold text-sm uppercase focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 outline-none transition"
                                             value={(answers[idx] || "")[cIdx] || ""}
                                             onChange={(e) => {
-                                                const val = e.target.value;
+                                                const val = e.target.value.slice(-1); // Only last char
                                                 setAnswers(prev => {
-                                                    const current = prev[idx] || "";
+                                                    const current = (prev[idx] || "").padEnd(word.palabra.length, " ");
                                                     const arr = current.split("");
                                                     arr[cIdx] = val;
                                                     return { ...prev, [idx]: arr.join("") };
                                                 });
                                                 // Auto-focus next input
                                                 if (val && cIdx < word.palabra.length - 1) {
-                                                    const next = e.target.nextElementSibling as HTMLInputElement;
-                                                    if (next) next.focus();
+                                                    const next = document.getElementById(`cw-${idx}-${cIdx + 1}`);
+                                                    if (next) (next as HTMLInputElement).focus();
+                                                }
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Backspace" && !(answers[idx] || "")[cIdx] && cIdx > 0) {
+                                                    e.preventDefault();
+                                                    const prev = document.getElementById(`cw-${idx}-${cIdx - 1}`);
+                                                    if (prev) {
+                                                        (prev as HTMLInputElement).focus();
+                                                        setAnswers(a => {
+                                                            const current = (a[idx] || "").padEnd(word.palabra.length, " ");
+                                                            const arr = current.split("");
+                                                            arr[cIdx - 1] = " ";
+                                                            return { ...a, [idx]: arr.join("") };
+                                                        });
+                                                    }
                                                 }
                                             }}
                                         />
@@ -270,7 +288,7 @@ function CrosswordGame({ words, accentColor }: { words: { palabra: string; defin
                                 </div>
                                 <button
                                     onClick={() => handleCheck(idx)}
-                                    className={`px-4 py-2 bg-${accentColor}-600 hover:bg-${accentColor}-500 text-white rounded-xl font-bold text-xs transition whitespace-nowrap`}
+                                    className={`px-4 py-2 bg-${accentColor}-600 hover:bg-${accentColor}-500 text-white rounded-xl font-bold text-xs transition whitespace-nowrap w-full sm:w-auto`}
                                 >
                                     Verificar
                                 </button>
