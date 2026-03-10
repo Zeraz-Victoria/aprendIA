@@ -2,7 +2,7 @@
 
 import AdventureMap from "@/components/AdventureMap";
 import StudentHUD from "@/components/StudentHUD";
-import { ArrowLeft, X, BrainCircuit, ClipboardList, Shield } from "lucide-react";
+import { ArrowLeft, X, BrainCircuit, ClipboardList, Shield, Swords, Timer } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
 import { useState, useEffect, useCallback } from "react";
 import RewardsStore from "@/components/RewardsStore";
@@ -54,6 +54,8 @@ export default function StudentPage() {
     const [evaluations, setEvaluations] = useState<EvidenceData[]>([]);
     const [teacherMessages, setTeacherMessages] = useState<TeacherMsg[]>([]);
     const [dismissedMsgIds, setDismissedMsgIds] = useState<Set<string>>(new Set());
+    const [livesResetCountdown, setLivesResetCountdown] = useState(0);
+    const [showPenaltyMessage, setShowPenaltyMessage] = useState(false);
 
     // Load dismissed messages after component mounts to prevent hydration mismatch
     useEffect(() => {
@@ -169,6 +171,38 @@ export default function StudentPage() {
             }
         }
     }, [currentUser, selectedMapId, setActiveWorld]);
+
+    // Auto-reset lives when they reach 0 after a 60-second cooldown
+    const { stats, setStats: setLearningStats } = useLearning();
+    useEffect(() => {
+        if (stats.lives <= 0 && livesResetCountdown === 0) {
+            setLivesResetCountdown(60);
+        }
+    }, [stats.lives]);
+
+    useEffect(() => {
+        if (livesResetCountdown <= 0) return;
+        const timer = setInterval(() => {
+            setLivesResetCountdown(prev => {
+                if (prev <= 1) {
+                    // Reset lives to 3 via API + local state
+                    if (currentUser?.id) {
+                        fetch('/api/users/sync-stats', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ studentId: currentUser.id, livesToAdd: 3 })
+                        }).catch(console.error);
+                        setLearningStats(s => ({ ...s, lives: 3 }));
+                    }
+                    setShowPenaltyMessage(true);
+                    setTimeout(() => setShowPenaltyMessage(false), 8000);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [livesResetCountdown, currentUser?.id]);
 
     // Consistent loading for SSR + client
     if (!mounted || status === "loading" || !currentUser) {
@@ -312,7 +346,40 @@ export default function StudentPage() {
                             </span>
                         )}
                     </button>
+
+                    <button
+                        onClick={() => setShowRaidModal(true)}
+                        className="bg-purple-700 rounded-full shadow border border-purple-600 text-white active:scale-95 transition-all flex items-center gap-1 px-3 py-1.5 font-bold text-xs"
+                    >
+                        <Swords className="w-3.5 h-3.5" /> Raid Boss
+                    </button>
                 </div>
+
+                {/* Lives Cooldown Timer */}
+                {livesResetCountdown > 0 && (
+                    <div className="px-3 pb-2 max-w-lg mx-auto w-full">
+                        <div className="bg-gradient-to-r from-red-100 to-orange-100 border-2 border-red-300 rounded-2xl p-3 shadow flex items-center gap-3">
+                            <Timer className="w-5 h-5 text-red-500 animate-pulse shrink-0" />
+                            <div className="flex-1">
+                                <p className="text-xs font-black text-red-700">💔 Perdiste todas tus vidas</p>
+                                <p className="text-[11px] text-red-600">Tus vidas se recuperarán en <span className="font-black">{livesResetCountdown}s</span></p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Penalty Message after reset */}
+                {showPenaltyMessage && (
+                    <div className="px-3 pb-2 max-w-lg mx-auto w-full">
+                        <div className="bg-gradient-to-r from-amber-100 to-yellow-100 border-2 border-amber-400 rounded-2xl p-3 shadow flex items-center gap-3">
+                            <span className="text-2xl">⚠️</span>
+                            <p className="text-xs font-bold text-amber-800">Tus vidas han sido restauradas, pero como penalización tu siguiente actividad valdrá 1 punto menos.</p>
+                            <button onClick={() => setShowPenaltyMessage(false)} className="text-amber-500 hover:text-amber-800 p-1 shrink-0">
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Inline Notifications (inside header, not floating) */}
                 {hints.length > 0 && (
