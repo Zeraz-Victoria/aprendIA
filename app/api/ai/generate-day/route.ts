@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
     try {
-        const { day, pedagogy, theme, documentText, previousGrade, isFinalBoss } = await req.json();
+        const { day, pedagogy, theme, documentText, previousGrade, isFinalBoss, vocabularyLevel } = await req.json();
 
         if (!day || !pedagogy) {
             return NextResponse.json({ error: 'Faltan datos requeridos (day, pedagogy)' }, { status: 400 });
@@ -32,10 +32,20 @@ export async function POST(req: Request) {
             ? `\n\n[ALERTA DE REZAGO: El alumno tuvo dificultades severas en el nivel anterior (Calificación: ${previousGrade}/10). Simplifica el vocabulario de esta sesión al máximo, explica con ejemplos muy cotidianos y reduce la complejidad cognitiva de la actividad de desarrollo un 30%].`
             : "";
 
+        // Vocabulary complexity instruction
+        const vocabInstructions: Record<string, string> = {
+            facil: 'NIVEL DE VOCABULARIO: FÁCIL (1° a 4° de primaria). Usa palabras simples y cotidianas que un niño de 6 a 10 años entienda. Evita tecnicismos. Usa oraciones cortas y directas. Si necesitas usar un término técnico, explícalo inmediatamente con palabras sencillas.',
+            medio: 'NIVEL DE VOCABULARIO: MEDIO (5° primaria a 1° secundaria). Usa vocabulario adecuado para preadolescentes de 10 a 13 años. Puedes usar algunos términos técnicos básicos pero siempre con contexto. Oraciones de complejidad media.',
+            alto: 'NIVEL DE VOCABULARIO: ALTO (2° secundaria a preparatoria). Usa vocabulario académico apropiado para adolescentes de 13 a 18 años. Puedes usar terminología técnica y especializada del campo. Oraciones complejas con conectores lógicos.'
+        };
+        const vocabPrompt = vocabInstructions[vocabularyLevel || 'facil'] || vocabInstructions.facil;
+
         // Custom prompt per day type
         const prompt = `
 # ROL
 Eres un Diseñador Instruccional Senior especializado en la Nueva Escuela Mexicana (NEM), con maestría en Tecnología Educativa. Tu trabajo es crear experiencias de aprendizaje digitales autónomas de calidad profesional.
+
+# ${vocabPrompt}
 
 # DATOS DE ENTRADA
 - TÍTULO DE LA SESIÓN: ${day.title || pedagogy.topic}

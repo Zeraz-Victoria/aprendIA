@@ -12,6 +12,7 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
+    const vocabularyLevel = (formData.get('vocabularyLevel') as string) || 'facil';
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
@@ -25,6 +26,14 @@ export async function POST(req: Request) {
     if (file.size > 4 * 1024 * 1024) {
       return NextResponse.json({ error: 'El archivo excede el límite de 4MB. Por favor, comprime el PDF o procesa el documento en partes.' }, { status: 400 });
     }
+
+    // Vocabulary complexity instruction
+    const vocabInstructions: Record<string, string> = {
+      facil: 'NIVEL DE VOCABULARIO: FÁCIL (1° a 4° de primaria). Usa palabras simples y cotidianas que un niño de 6 a 10 años entienda. Evita tecnicismos. Usa oraciones cortas y directas. Si necesitas usar un término técnico, explícalo inmediatamente con palabras sencillas.',
+      medio: 'NIVEL DE VOCABULARIO: MEDIO (5° primaria a 1° secundaria). Usa vocabulario adecuado para preadolescentes de 10 a 13 años. Puedes usar algunos términos técnicos básicos pero siempre con contexto. Oraciones de complejidad media.',
+      alto: 'NIVEL DE VOCABULARIO: ALTO (2° secundaria a preparatoria). Usa vocabulario académico apropiado para adolescentes de 13 a 18 años. Puedes usar terminología técnica y especializada del campo. Oraciones complejas con conectores lógicos.'
+    };
+    const vocabPrompt = vocabInstructions[vocabularyLevel] || vocabInstructions.facil;
 
     console.log("Reading buffer...");
     const arrayBuffer = await file.arrayBuffer();
@@ -57,6 +66,8 @@ export async function POST(req: Request) {
     const prompt = `
 # ROL
 Eres un Analista de Datos Pedagógicos experto en la Nueva Escuela Mexicana (NEM). Tu función es desglosar documentos de planeación educativa en fragmentos técnicos detallados sin alterar el contenido original.
+
+# ${vocabPrompt}
 
 # OBJETIVO
 Extraer CADA sesión del documento y organizarla en un esquema JSON. Debes capturar la mayor cantidad posible de información pedagógica por sesión para que otro sistema pueda generar contenido de aprendizaje autónomo de alta calidad.

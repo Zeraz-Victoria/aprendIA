@@ -22,6 +22,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
     const [loadingSub, setLoadingSub] = useState("Extrayendo contenido pedagógico...");
     const [uploadSuccess, setUploadSuccess] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState<ThemeKey>('clasico');
+    const [vocabularyLevel, setVocabularyLevel] = useState<'facil' | 'medio' | 'alto'>('facil');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -69,6 +70,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('vocabularyLevel', vocabularyLevel);
 
         let rawDocumentText = "";
 
@@ -112,7 +114,8 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                     day,
                     pedagogy: newWorld.pedagogy,
                     theme: newWorld.theme,
-                    documentText: rawDocumentText || (file.name === "examen_demo.pdf" ? "DEMO_MODE" : "")
+                    documentText: rawDocumentText || (file.name === "examen_demo.pdf" ? "DEMO_MODE" : ""),
+                    vocabularyLevel
                 };
                 for (let attempt = 0; attempt < 4; attempt++) {
                     try {
@@ -330,6 +333,36 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                                     }`}
                             >
                                 {t.emoji} {t.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Vocabulary Complexity Selector */}
+            {file && !isUploading && !uploadSuccess && (
+                <div className="mt-6" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2 mb-3 justify-center">
+                        <span className="text-base">📚</span>
+                        <span className="text-sm font-bold text-slate-600 uppercase tracking-wider">Nivel de Vocabulario</span>
+                    </div>
+                    <div className="flex gap-2 justify-center flex-wrap">
+                        {[
+                            { key: 'facil' as const, emoji: '🟢', label: 'Fácil', desc: '1° a 4° Primaria' },
+                            { key: 'medio' as const, emoji: '🟡', label: 'Medio', desc: '5° Prim. a 1° Sec.' },
+                            { key: 'alto' as const, emoji: '🔴', label: 'Alto', desc: '2° Sec. a Prepa' },
+                        ].map(level => (
+                            <button
+                                key={level.key}
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setVocabularyLevel(level.key); }}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all flex flex-col items-center gap-0.5 min-w-[100px] ${vocabularyLevel === level.key
+                                    ? 'border-sky-500 bg-sky-50 text-sky-700 scale-105 shadow-md'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                                    }`}
+                            >
+                                <span>{level.emoji} {level.label}</span>
+                                <span className="text-[10px] font-normal text-slate-400">{level.desc}</span>
                             </button>
                         ))}
                     </div>
