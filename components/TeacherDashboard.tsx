@@ -14,7 +14,7 @@ import { useSessionGuard } from "@/hooks/useSessionGuard";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-type Tab = "students" | "insights" | "library" | "reports" | "raid";
+type Tab = "students" | "insights" | "library" | "reports" | "raid" | "messages";
 
 export default function TeacherDashboard() {
     useSessionGuard();
@@ -834,6 +834,13 @@ export default function TeacherDashboard() {
                     >
                         <Swords className="w-4 h-4" /> Jefe de Incursión
                     </button>
+
+                    <button
+                        onClick={() => setActiveTab("messages")}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'messages' ? 'bg-cyan-50 text-cyan-700 shadow-sm' : 'text-slate-500 hover:bg-cyan-50/50 hover:text-cyan-600'}`}
+                    >
+                        <MessageSquare className="w-4 h-4" /> Mensajes Alumnos
+                    </button>
                 </nav>
                 <div className="p-4 border-t border-sky-50">
                     <button
@@ -1438,6 +1445,10 @@ export default function TeacherDashboard() {
                 <button onClick={() => setActiveTab("raid")} className={`flex flex-col items-center gap-1 ${activeTab === 'raid' ? 'text-red-600' : 'text-slate-400'}`}>
                     <Swords className="w-5 h-5" />
                     <span className="text-[10px] font-bold">Raid</span>
+                </button>
+                <button onClick={() => setActiveTab("messages")} className={`flex flex-col items-center gap-1 ${activeTab === 'messages' ? 'text-cyan-600' : 'text-slate-400'}`}>
+                    <MessageSquare className="w-5 h-5" />
+                    <span className="text-[10px] font-bold">Msgs</span>
                 </button>
                 <button onClick={() => signOut({ callbackUrl: "/" })} className="flex flex-col items-center gap-1 text-slate-400">
                     <LogOut className="w-5 h-5" />
@@ -2505,7 +2516,88 @@ export default function TeacherDashboard() {
                 </div>
             )}
 
+            {/* ═══ MESSAGES TAB ═══ */}
+            {activeTab === 'messages' && (
+                <StudentMessagesPanel />
+            )}
+
+
         </div >
+    );
+}
+
+function StudentMessagesPanel() {
+    const [messages, setMessages] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchMessages = async () => {
+        try {
+            const res = await fetch('/api/gamification/buffs/history');
+            const data = await res.json();
+            if (Array.isArray(data)) setMessages(data);
+        } catch (e) {
+            console.error("Error fetching messages:", e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMessages();
+        const interval = setInterval(fetchMessages, 30000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <MessageSquare className="w-6 h-6 text-cyan-600" /> Mensajes entre Alumnos
+                    </h2>
+                    <p className="text-slate-500 text-sm mt-1">Historial de mensajes de ánimo enviados entre compañeros.</p>
+                </div>
+                <button
+                    onClick={() => { setLoading(true); fetchMessages(); }}
+                    className="px-4 py-2 bg-cyan-50 text-cyan-700 rounded-xl font-bold text-sm hover:bg-cyan-100 transition"
+                >
+                    Actualizar
+                </button>
+            </div>
+
+            {loading ? (
+                <div className="text-center py-12">
+                    <div className="animate-spin h-8 w-8 border-3 border-cyan-600 border-t-transparent rounded-full mx-auto mb-3" />
+                    <p className="text-slate-500 font-medium">Cargando mensajes...</p>
+                </div>
+            ) : messages.length === 0 ? (
+                <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200">
+                    <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <p className="text-slate-500 font-bold">Sin mensajes aún</p>
+                    <p className="text-slate-400 text-sm">Los alumnos no han enviado mensajes de ánimo todavía.</p>
+                </div>
+            ) : (
+                <div className="space-y-3 max-h-[70vh] overflow-y-auto">
+                    {messages.map((msg) => (
+                        <div key={msg.id} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-start gap-3">
+                            <span className="text-2xl shrink-0">{msg.fromAvatar}</span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-bold text-slate-700 text-sm">{msg.fromName}</span>
+                                    <span className="text-slate-400 text-xs">→</span>
+                                    <span className="text-2xl shrink-0">{msg.targetAvatar}</span>
+                                    <span className="font-bold text-slate-700 text-sm">{msg.targetName}</span>
+                                </div>
+                                <p className="text-slate-600 text-sm mt-1 bg-cyan-50 px-3 py-1.5 rounded-xl inline-block">&quot;{msg.message}&quot;</p>
+                                <p className="text-slate-400 text-xs mt-1">
+                                    {new Date(msg.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
     );
 }
 

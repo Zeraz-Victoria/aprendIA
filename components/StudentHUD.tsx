@@ -181,10 +181,10 @@ export default function StudentHUD({
             {/* Buffs Modal */}
             {showBuffModal && (
                 <div
-                    className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 cursor-auto pointer-events-auto"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 cursor-auto pointer-events-auto"
                     onClick={(e) => { if (e.target === e.currentTarget) setShowBuffModal(false); }}
                 >
-                    <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-sm max-h-[80vh] flex flex-col relative shadow-2xl overflow-hidden">
+                    <div className="bg-white rounded-3xl w-full max-w-sm max-h-[85vh] flex flex-col relative shadow-2xl overflow-hidden">
                         {/* Sticky Header */}
                         <div className="p-5 pb-3 border-b border-slate-100 shrink-0">
                             <button
@@ -229,12 +229,12 @@ export default function StudentHUD({
                             <div className="space-y-3">
                                 {classmates.map(c => (
                                     <div key={c.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-3xl bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-sm border border-slate-100">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <span className="text-3xl bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-sm border border-slate-100 shrink-0">
                                                 {c.avatar}
                                             </span>
-                                            <div>
-                                                <p className="font-bold text-slate-700 text-sm">{c.name}</p>
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-slate-700 text-sm truncate">{c.name}</p>
                                                 {c.status === "needs_help" && (
                                                     <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">Necesita ayuda</span>
                                                 )}
