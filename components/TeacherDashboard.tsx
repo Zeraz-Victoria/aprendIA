@@ -26,6 +26,7 @@ export default function TeacherDashboard() {
     } = useLearning();
     const [activeTab, setActiveTab] = useState<Tab>("students");
     const [selectedInsightWorldId, setSelectedInsightWorldId] = useState<string>("");
+    const [insightClassroomId, setInsightClassroomId] = useState<string>("all");
     const [selectedClassroomId, setSelectedClassroomId] = useState<string>("all");
     const [showAddClassroomModal, setShowAddClassroomModal] = useState(false);
     const [newClassName, setNewClassName] = useState("");
@@ -779,15 +780,28 @@ export default function TeacherDashboard() {
         }
     }, [worlds, selectedInsightWorldId]);
 
-    const atRiskStudents = insightWorld
+    const atRiskStudentsUnfiltered = insightWorld
         ? students.filter(s => calculateStudentProgressForWorld(s.id, progress, insightWorld) < 30)
         : atRiskStudentsGlobal;
-    const strugglingStudents = insightWorld
+    const strugglingStudentsUnfiltered = insightWorld
         ? students.filter(s => {
             const p = calculateStudentProgressForWorld(s.id, progress, insightWorld);
             return p >= 30 && p < 70;
         })
         : strugglingStudentsGlobal;
+
+    // Apply classroom filter for insights
+    const atRiskStudents = insightClassroomId === 'all'
+        ? atRiskStudentsUnfiltered
+        : atRiskStudentsUnfiltered.filter(s => s.classroomId === insightClassroomId);
+    const strugglingStudents = insightClassroomId === 'all'
+        ? strugglingStudentsUnfiltered
+        : strugglingStudentsUnfiltered.filter(s => s.classroomId === insightClassroomId);
+
+    // Filtered students for insights trends panel
+    const insightStudents = insightClassroomId === 'all'
+        ? students
+        : students.filter(s => s.classroomId === insightClassroomId);
 
     // Metrics already calculated above handler
 
@@ -873,6 +887,18 @@ export default function TeacherDashboard() {
                                 {worlds.map(w => (
                                     <option key={w.id} value={w.id}>
                                         🗺️ {w.title || w.theme}
+                                    </option>
+                                ))}
+                            </select>
+                            <select
+                                value={insightClassroomId}
+                                onChange={e => setInsightClassroomId(e.target.value)}
+                                className="bg-white/80 border border-emerald-200 rounded-xl px-3 py-2 text-sm font-medium text-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"
+                            >
+                                <option value="all">🏫 Todos los Grupos</option>
+                                {classrooms.map(cls => (
+                                    <option key={cls.id} value={cls.id}>
+                                        {cls.emoji} {cls.name}
                                     </option>
                                 ))}
                             </select>
@@ -1365,10 +1391,10 @@ export default function TeacherDashboard() {
                                 </div>
 
                                 <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
-                                    {students.length === 0 ? (
-                                        <div className="text-sm text-slate-500 text-center py-6">No hay alumnos para analizar.</div>
+                                    {insightStudents.length === 0 ? (
+                                        <div className="text-sm text-slate-500 text-center py-6">No hay alumnos para analizar{insightClassroomId !== 'all' ? ' en este grupo' : ''}.</div>
                                     ) : (
-                                        students.map(student => {
+                                        insightStudents.map(student => {
                                             const progressVal = calculateStudentProgress(student.id, progress, worlds);
                                             let statusColor = "bg-green-50 border-green-100";
                                             let textStatusColor = "text-green-700";
