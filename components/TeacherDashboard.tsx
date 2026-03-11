@@ -2366,13 +2366,12 @@ export default function TeacherDashboard() {
             )}
 
             {showBuilderModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-5xl max-h-[95vh] overflow-y-auto relative shadow-2xl">
-                        <VisualWorldBuilder
-                            onClose={() => { setShowBuilderModal(false); setBuilderWorld(null); }}
-                            initialWorld={builderWorld || undefined}
-                        />
-                    </div>
+                <div className="fixed inset-0 z-50 bg-slate-100 flex flex-col w-full h-full">
+                    <VisualWorldBuilder
+                        onClose={() => { setShowBuilderModal(false); setBuilderWorld(null); setBuilderInitialAIPrompt(false); }}
+                        initialWorld={builderWorld || undefined}
+                        initialShowAIPrompt={builderInitialAIPrompt}
+                    />
                 </div>
             )}
 
