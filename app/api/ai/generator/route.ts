@@ -30,6 +30,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'AI API Key not configured' }, { status: 500 });
     }
 
+    console.log("=== AUTO-GENERATOR INIT ===");
+    console.log("Payload:", { theme, topic, difficulty });
+
     // Attempt to fetch from Cache first to save AI API tokens
     //@ts-ignore
     const cachedPrompt = await prisma.aIPromptCache.findUnique({
@@ -44,11 +47,13 @@ export async function POST(req: Request) {
     if (cachedPrompt) {
       console.log(`[CACHE HIT] Returning cached map for Topic: ${topic} | Theme: ${theme}`);
       try {
+        const parsedCached = JSON.parse(cachedPrompt.response);
+        console.log("Successfully parsed cached response. Sending to frontend.");
         return NextResponse.json({
           id: crypto.randomUUID(),
           theme: theme,
           title: `Aventura de ${topic}`,
-          days: JSON.parse(cachedPrompt.response),
+          days: parsedCached,
           createdAt: new Date().toISOString()
         });
       } catch (e) {
@@ -104,10 +109,12 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
    }
 `;
 
+    console.log("Calling Google AI...");
     const result = await model.generateContent(prompt);
     let responseText = result.response.text();
 
-    console.log("Raw AI Response:", responseText); // Debugging log
+    console.log("Raw AI Response completed. Length:", responseText.length);
+    console.log("Raw AI Response Snip:", responseText.substring(0, 100)); // Debugging log
 
     // Clean up markdown if the model hallucinated it
     responseText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
@@ -148,11 +155,13 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
     try {
       // Intentar primero el JSON puro que generó la IA (suele venir perfecto con Gemini 2.5 Flash)
       parsedResponse = JSON.parse(responseText);
+      console.log("JSON parsed successfully on first try");
     } catch (initialError) {
       console.log("JSON Parse inicial falló, intentando sanear comillas...");
       responseText = escapeUnsafeQuotes(responseText);
       try {
         parsedResponse = JSON.parse(responseText);
+        console.log("JSON parsed successfully on second try");
       } catch (parseError) {
         console.error("Failed to parse AI JSON after escaping:", parseError);
         console.error("Attempted to parse:", responseText);

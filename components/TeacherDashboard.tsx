@@ -7,7 +7,7 @@ import { useLearning, LearningWorld, Student, Grade, Classroom } from "@/context
 import UploadEngine from "./UploadEngine";
 import VisualWorldBuilder from "./VisualWorldBuilder";
 import BulkEvidenceUploader from "./BulkEvidenceUploader";
-import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare, RotateCcw } from "lucide-react";
+import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare, RotateCcw, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useSessionGuard } from "@/hooks/useSessionGuard";
@@ -41,6 +41,7 @@ export default function TeacherDashboard() {
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showBulkModal, setShowBulkModal] = useState(false);
     const [showBuilderModal, setShowBuilderModal] = useState(false);
+    const [builderInitialAIPrompt, setBuilderInitialAIPrompt] = useState(false);
     const [builderWorld, setBuilderWorld] = useState<LearningWorld | null>(null);
 
     const [showAiReviewModal, setShowAiReviewModal] = useState(false);
@@ -919,6 +920,20 @@ export default function TeacherDashboard() {
                             >
                                 <UploadCloud className="w-4 h-4" />
                                 Subir Evidencias
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
+                                    if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) en tu plan actual. Borra un mapa para crear otro.`);
+                                    setBuilderWorld(null);
+                                    setBuilderInitialAIPrompt(true);
+                                    setShowBuilderModal(true);
+                                }}
+                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-amber-100 hover:bg-amber-200'} text-amber-900 border border-amber-300 px-5 py-2 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2`}
+                            >
+                                <Sparkles className="w-4 h-4 text-amber-500" />
+                                Auto-Generar con IA
                             </button>
 
                             <button

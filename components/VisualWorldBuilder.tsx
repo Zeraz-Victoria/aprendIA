@@ -29,7 +29,7 @@ function safeParsePromptText(text: string | undefined): string {
 }
 
 
-export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose: () => void, initialWorld?: LearningWorld }) {
+export default function VisualWorldBuilder({ onClose, initialWorld, initialShowAIPrompt = false }: { onClose: () => void, initialWorld?: LearningWorld, initialShowAIPrompt?: boolean }) {
     const { addWorld, updateWorld, setActiveWorld, classrooms } = useLearning();
     const [title, setTitle] = useState(initialWorld?.title || "Nueva Aventura Épica");
     const [theme, setTheme] = useState(initialWorld?.theme || "detective");
@@ -38,14 +38,14 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
     );
 
     // AI Generator State
-    const [showAIPrompt, setShowAIPrompt] = useState(false);
+    const [showAIPrompt, setShowAIPrompt] = useState(initialShowAIPrompt);
     const [aiTopic, setAiTopic] = useState("");
     const [aiDifficulty, setAiDifficulty] = useState("Básico");
     const [isGenerating, setIsGenerating] = useState(false);
     const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
     // Default starting node
-    const [nodes, setNodes] = useState<LevelContent[]>(initialWorld?.days || [
+    const [nodes, setNodes] = useState<LevelContent[]>(initialShowAIPrompt ? [] : (initialWorld?.days || [
         {
             dayNumber: 1,
             type: "concept_story",
@@ -53,7 +53,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
             narrative: "Escribe la historia aquí...",
             content: { explanation: { chunks: ["Paso 1"], analogy: "Imagina que..." } }
         } as DayContent
-    ]);
+    ]));
 
     const [editingNode, setEditingNode] = useState<number | null>(null);
     const [isAppendMode, setIsAppendMode] = useState(false);
@@ -411,12 +411,6 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                         {isDownloadingPdf ? <Sparkles className="w-4 h-4 animate-spin text-sky-500 shrink-0" /> : <Download className="w-4 h-4 text-sky-500 shrink-0" />}
                         {isDownloadingPdf ? "Generando..." : "Descargar Guía PDF"}
                     </button>
-                    <button
-                        onClick={() => setShowAIPrompt(true)}
-                        className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-4 py-2 rounded-full font-bold shadow-sm transition flex items-center gap-2 whitespace-nowrap shrink-0"
-                    >
-                        <Sparkles className="w-4 h-4 text-amber-500 shrink-0" /> Auto-Generar con IA
-                    </button>
                     <button onClick={onClose} className="text-slate-500 hover:text-slate-800 hover:bg-slate-100 px-5 py-2 rounded-full font-bold transition-colors flex items-center gap-2 whitespace-nowrap shrink-0">
                         <X className="w-5 h-5 shrink-0" /> Cerrar
                     </button>
@@ -483,6 +477,20 @@ export default function VisualWorldBuilder({ onClose, initialWorld }: { onClose:
                             </div>
                         </div>
                     ))}
+
+                    {nodes.length === 0 && (
+                        <div className="flex flex-col items-center justify-center p-12 text-slate-400 bg-white/50 backdrop-blur rounded-3xl border border-dashed border-slate-300 mb-8 max-w-2xl mx-auto shadow-sm">
+                            <Bot className="w-16 h-16 text-slate-300 mb-4" />
+                            <h3 className="font-bold text-xl mb-2 text-slate-600">Lienzo en Blanco</h3>
+                            <p className="text-center text-sm">Genera un mundo completo con IA usando el asistente, o agrega nodos manualmente debajo.</p>
+                            <button
+                                onClick={() => setShowAIPrompt(true)}
+                                className="mt-6 bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold px-6 py-3 rounded-xl transition flex items-center gap-2 shadow-sm border border-amber-200"
+                            >
+                                <Sparkles className="w-5 h-5" /> Abrir Asistente IA
+                            </button>
+                        </div>
+                    )}
 
                     {/* Add Node Buttons */}
                     <div className="flex gap-4 ml-24 mt-4">
