@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "npm run clean-port && NODE_OPTIONS='--max-old-space-size=2048' next dev",
+    "clean-port": "lsof -ti:3000 | xargs kill -9 || true",
     "build": "npm install && prisma generate && (prisma db push || true) && NODE_OPTIONS=--max-old-space-size=448 next build",
     "start": "next start",
     "lint": "eslint"

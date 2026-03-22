@@ -39,7 +39,7 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
 
     useEffect(() => {
         fetchBoss();
-        const interval = setInterval(fetchBoss, 10000);
+        const interval = setInterval(fetchBoss, 120000); // Polling reducido a 120s ya que Pusher cubre el tiempo real
 
         const pusher = getPusherClient();
         const channel = pusher.subscribe('raid-boss');

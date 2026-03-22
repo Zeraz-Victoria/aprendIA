@@ -42,9 +42,9 @@ export function useSessionGuard() {
             }
         };
 
-        // Check immediately and then every 8 seconds
+        // Check immediately and then every 60 seconds
         validateSession();
-        const interval = setInterval(validateSession, 8000);
+        const interval = setInterval(validateSession, 60000);
         return () => clearInterval(interval);
     }, [session]);
 }

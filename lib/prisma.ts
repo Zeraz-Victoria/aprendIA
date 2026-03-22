@@ -1,7 +1,22 @@
 import { PrismaClient } from '@prisma/client'
 
 const prismaClientSingleton = () => {
-    return new PrismaClient()
+    const client = new PrismaClient({
+        log: [
+            { emit: 'event', level: 'query' },
+            { emit: 'stdout', level: 'error' },
+            { emit: 'stdout', level: 'warn' },
+        ],
+    })
+
+    client.$on('query', (e) => {
+        if (e.duration > 2000) {
+            console.warn(`[PRISMA SLOW QUERY] - ${e.duration}ms`);
+            console.warn(`Query: ${e.query}`);
+        }
+    })
+
+    return client
 }
 
 declare global {

@@ -232,8 +232,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
     loadData();
 
-    // Poll for fresh data every 30 seconds so students see map changes without refresh
-    const interval = setInterval(loadData, 30000);
+    // Poll for fresh data every 5 minutes so students see map changes without refresh
+    const interval = setInterval(loadData, 300000);
     return () => { isMounted = false; clearInterval(interval); };
   }, [status, session]);
 

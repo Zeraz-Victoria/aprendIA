@@ -85,7 +85,9 @@ export default function StudentPage() {
 
     useEffect(() => {
         fetchHints();
-        const interval = setInterval(fetchHints, 10000); // Poll every 10 seconds
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') fetchHints();
+        }, 180000); // Poll every 180 seconds to avoid server overload
         return () => clearInterval(interval);
     }, [fetchHints]);
 
@@ -105,7 +107,9 @@ export default function StudentPage() {
 
     useEffect(() => {
         fetchEvaluations();
-        const interval = setInterval(fetchEvaluations, 30000);
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') fetchEvaluations();
+        }, 300000); // Poll every 300 seconds (5 minutes)
         return () => clearInterval(interval);
     }, [fetchEvaluations]);
 
@@ -125,7 +129,9 @@ export default function StudentPage() {
 
     useEffect(() => {
         fetchMessages();
-        const interval = setInterval(fetchMessages, 15000);
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') fetchMessages();
+        }, 300000); // Poll every 300 seconds (5 minutes)
         return () => clearInterval(interval);
     }, [fetchMessages]);
 

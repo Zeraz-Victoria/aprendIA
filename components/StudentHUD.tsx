@@ -51,7 +51,11 @@ export default function StudentHUD({
         };
 
         checkPendingBuffs(); // Check immediately on mount
-        const interval = setInterval(checkPendingBuffs, 8000); // And then every 8 seconds
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                checkPendingBuffs();
+            }
+        }, 120000); // And then every 120 seconds, only if visible
         return () => clearInterval(interval);
     }, [currentUser?.id]);
 

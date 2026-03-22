@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+let bossCache: { data: any, timestamp: number, schoolId: string } | null = null;
+const CACHE_TTL = 15000;
+
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
@@ -9,6 +12,11 @@ export async function GET() {
 
         if (!schoolId) {
             return NextResponse.json(null);
+        }
+
+        const now = Date.now();
+        if (bossCache && bossCache.schoolId === schoolId && (now - bossCache.timestamp < CACHE_TTL)) {
+            return NextResponse.json(bossCache.data);
         }
 
         const activeBoss = await prisma.raidBoss.findFirst({
@@ -38,10 +46,13 @@ export async function GET() {
             .sort((a, b) => b.totalDamage - a.totalDamage)
             .slice(0, 5);
 
-        return NextResponse.json({
+        const responseData = {
             ...activeBoss,
             topContributors
-        });
+        };
+        bossCache = { data: responseData, timestamp: now, schoolId };
+
+        return NextResponse.json(responseData);
     } catch (error) {
         return NextResponse.json({ error: "Failed to fetch boss" }, { status: 500 });
     }
