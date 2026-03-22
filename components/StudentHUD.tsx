@@ -185,14 +185,13 @@ export default function StudentHUD({
             {/* Buffs Modal — Bottom Sheet on mobile */}
             {showBuffModal && (
                 <div
-                    className="fixed inset-0 z-[60] bg-black/60 cursor-auto pointer-events-auto"
+                    className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm cursor-auto pointer-events-auto flex items-end sm:items-center justify-center"
                     onClick={(e) => { if (e.target === e.currentTarget) setShowBuffModal(false); }}
-                    style={{ touchAction: 'none' }}
                 >
-                    {/* Modal container — anchored to bottom on all sizes */}
+                    {/* Modal container */}
                     <div
-                        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl overflow-hidden flex flex-col"
-                        style={{ maxHeight: '75dvh' }}
+                        className="relative w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300"
+                        style={{ maxHeight: '85dvh' }}
                     >
                         {/* Drag Handle + Close */}
                         <div className="shrink-0 pt-3 pb-2 px-5 border-b border-slate-100">

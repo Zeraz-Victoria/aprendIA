@@ -94,6 +94,7 @@ model School {
   maxStudents        Int                @default(25)
   subscriptionPlan   SubscriptionPlan   @default(BASIC)
   subscriptionStatus SubscriptionStatus @default(ACTIVE)
+  apiCalls           Int                @default(0)
   classrooms         Classroom[]
   grades             Grade[]
   raidBosses         RaidBoss[]

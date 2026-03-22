@@ -32,6 +32,36 @@ export async function POST(req: Request) {
             if (!world) return NextResponse.json({ error: "World not found in your school" }, { status: 404 });
         }
 
+        // --- NEW: 3 ATTEMPT LIMIT ---
+        if (studentId && worldId && levelId !== undefined) {
+             const parsedLevelId = typeof levelId === 'string' ? parseInt(levelId) : levelId;
+             
+             // Check if already passed (grade >= 6)
+             const alreadyPassed = await prisma.evidenceEntry.findFirst({
+                 where: { studentId, worldId, levelId: parsedLevelId, grade: { gte: 6 } }
+             });
+             
+             if (alreadyPassed) {
+                 return NextResponse.json({ 
+                     success: false, 
+                     message: `Ya has aprobado esta actividad con una calificación de ${alreadyPassed.grade}. ¡Puedes avanzar al siguiente nivel!` 
+                 }, { status: 400 });
+             }
+
+             // Count attempts
+             const attempts = await prisma.evidenceEntry.count({
+                 where: { studentId, worldId, levelId: parsedLevelId }
+             });
+
+             if (attempts >= 3) {
+                 return NextResponse.json({ 
+                     success: false, 
+                     message: "Has alcanzado el límite de 3 intentos para esta sesión. Aunque no puedes ganar más puntos aquí, puedes continuar con el resto de tu aventura." 
+                 }, { status: 400 });
+             }
+        }
+        // ----------------------------
+
         // Tarea 2: Bloqueo Real de Respuestas Vacías (Hard Stop)
         if (!imageBase64 && (!textEvidence || textEvidence.trim().length === 0)) {
             return NextResponse.json({ success: false, message: "No puedes avanzar sin enviar una respuesta válida." }, { status: 400 });
@@ -113,6 +143,16 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
         }
 
         const responseText = result.response.text();
+
+        // Increment API calls for the school
+        try {
+            await prisma.school.update({
+                where: { id: schoolId },
+                data: { apiCalls: { increment: 1 } }
+            });
+        } catch (apiErr) {
+            console.error("Failed to increment school apiCalls:", apiErr);
+        }
 
         try {
             // Clean up markdown if the model hallucinated it

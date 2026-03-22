@@ -44,7 +44,8 @@ export async function GET(req: Request) {
             createdAt: t.school?.createdAt || t.lastActivity,
             schoolId: t.school?.id,
             subscriptionPlan: t.school?.subscriptionPlan || 'BASIC',
-            subscriptionStatus: t.school?.subscriptionStatus || 'ACTIVE'
+            subscriptionStatus: t.school?.subscriptionStatus || 'ACTIVE',
+            apiCalls: t.school?.apiCalls || 0
         }));
 
         return NextResponse.json(formattedTeachers);

@@ -296,6 +296,14 @@ export default function SuperadminPage() {
                                             <Users className="w-3 h-3" /> Alumnos
                                         </div>
                                     </div>
+                                    <div className="text-center border-t border-slate-700 pt-4 col-span-2">
+                                        <div className="text-xl font-black text-emerald-400">
+                                            {teacher.apiCalls || 0}
+                                        </div>
+                                        <div className="text-[10px] text-slate-500 flex items-center justify-center gap-1 mt-0.5 uppercase tracking-tighter">
+                                            Llamadas API (Gasto Est: ${((teacher.apiCalls || 0) * 0.002).toFixed(2)})
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Action Buttons */}
