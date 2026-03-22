@@ -3,6 +3,9 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+let hintsCache: Record<string, { data: any, timestamp: number }> = {};
+const CACHE_TTL = 15000;
+
 // GET /api/hints?studentId=xxx — fetch unread hints for a student
 export async function GET(req: Request) {
     try {
@@ -24,11 +27,17 @@ export async function GET(req: Request) {
         const student = await prisma.user.findUnique({ where: { id: studentId, schoolId } });
         if (!student) return NextResponse.json({ error: "Unauthorized access to student" }, { status: 403 });
 
+        const now = Date.now();
+        if (hintsCache[studentId] && (now - hintsCache[studentId].timestamp < CACHE_TTL)) {
+            return NextResponse.json(hintsCache[studentId].data);
+        }
+
         const hints = await prisma.hint.findMany({
             where: { studentId, read: false },
             orderBy: { createdAt: 'desc' },
         });
 
+        hintsCache[studentId] = { data: hints, timestamp: now };
         return NextResponse.json(hints);
     } catch (error) {
         console.error('Error fetching hints:', error);
@@ -83,6 +92,7 @@ export async function PATCH(req: Request) {
             data: { read: true },
         });
 
+        hintsCache = {}; // Global invalidation for simplicity
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error marking hints as read:', error);

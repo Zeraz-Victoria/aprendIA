@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+let pendingEvidenceCache: Record<string, { data: any, timestamp: number }> = {};
+const CACHE_TTL = 15000;
+
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
@@ -8,6 +11,11 @@ export async function GET(req: Request) {
 
         if (!teacherId) {
             return NextResponse.json({ error: 'Falta teacherId' }, { status: 400 });
+        }
+
+        const now = Date.now();
+        if (pendingEvidenceCache[teacherId] && (now - pendingEvidenceCache[teacherId].timestamp < CACHE_TTL)) {
+            return NextResponse.json(pendingEvidenceCache[teacherId].data);
         }
 
         // Obtener todas las aulas que le pertenecen a este maestro
@@ -37,6 +45,7 @@ export async function GET(req: Request) {
             orderBy: { createdAt: 'desc' }
         });
 
+        pendingEvidenceCache[teacherId] = { data: pendingEvidences, timestamp: now };
         return NextResponse.json(pendingEvidences);
     } catch (error: any) {
         console.error('Error in GET /api/evidence/pending:', error);
