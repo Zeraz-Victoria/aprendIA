@@ -26,7 +26,8 @@ export async function GET(req: Request) {
                                     where: { role: "STUDENT" }
                                 },
                             }
-                        }
+                        },
+                        apiCalls: true
                     }
                 }
             },
