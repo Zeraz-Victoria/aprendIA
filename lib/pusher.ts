@@ -1,20 +1,27 @@
 import PusherServer from 'pusher';
 import PusherClient from 'pusher-js';
 
-// We use dummy fallbacks so the app doesn't crash if the user hasn't configured Pusher yet.
+// Usamos las llaves reales. Si no existen, lanzará un error limpio en lugar de un bucle.
 export const pusherServer = new PusherServer({
-    appId: process.env.PUSHER_APP_ID || 'dummy_id',
-    key: process.env.NEXT_PUBLIC_PUSHER_KEY || 'dummy_key',
-    secret: process.env.PUSHER_SECRET || 'dummy_secret',
-    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'us2',
+    appId: process.env.PUSHER_APP_ID!,
+    key: process.env.NEXT_PUBLIC_PUSHER_KEY!,
+    secret: process.env.PUSHER_SECRET!,
+    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
     useTLS: true,
 });
 
+// Singleton para el cliente para no crear múltiples conexiones innecesarias
+let pusherClientInstance: PusherClient | null = null;
+
 export const getPusherClient = () => {
-    return new PusherClient(
-        process.env.NEXT_PUBLIC_PUSHER_KEY || 'dummy_key',
-        {
-            cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'us2',
-        }
-    );
+    if (!pusherClientInstance) {
+        pusherClientInstance = new PusherClient(
+            process.env.NEXT_PUBLIC_PUSHER_KEY!,
+            {
+                cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+            }
+        );
+    }
+    return pusherClientInstance;
 };
+

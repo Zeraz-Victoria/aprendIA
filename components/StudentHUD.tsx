@@ -185,7 +185,7 @@ export default function StudentHUD({
             {/* Buffs Modal — Bottom Sheet on mobile */}
             {showBuffModal && (
                 <div
-                    className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm cursor-auto pointer-events-auto flex items-end sm:items-center justify-center"
+                    className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm cursor-auto pointer-events-auto flex items-end sm:items-start justify-center sm:pt-20"
                     onClick={(e) => { if (e.target === e.currentTarget) setShowBuffModal(false); }}
                 >
                     {/* Modal container */}
