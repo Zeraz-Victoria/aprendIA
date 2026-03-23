@@ -37,6 +37,17 @@ export async function GET(req: Request) {
                                 users: { where: { role: "STUDENT" } } 
                             }
                         },
+                        users: {
+                            where: { apiCalls: { gt: 0 } },
+                            select: {
+                                id: true,
+                                name: true,
+                                role: true,
+                                apiCalls: true
+                            },
+                            orderBy: { apiCalls: 'desc' },
+                            take: 20
+                        }
                     }
                 }
             },
@@ -53,8 +64,9 @@ export async function GET(req: Request) {
             createdAt: t.school?.createdAt || t.lastActivity,
             schoolId: t.school?.id,
             subscriptionPlan: t.school?.subscriptionPlan || 'BASIC',
-            subscriptionStatus: t.school?.subscriptionStatus || 'ACTIVE'
-            // Se eliminó apiCalls: t.school?.apiCalls porque no existe en el schema
+            subscriptionStatus: t.school?.subscriptionStatus || 'ACTIVE',
+            apiCalls: t.school?.apiCalls || 0,
+            apiCallsBreakdown: t.school?.users || []
         }));
 
         // 5. Guardar en Caché antes de responder

@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { trackAICall } from "@/lib/ai-tracker";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
@@ -85,6 +86,12 @@ Ejemplo exacto:
             systemPrompt,
             imagePart
         ]);
+
+        // Increment API calls for the teacher
+        const userId = (session?.user as any)?.id;
+        if (userId) {
+            await trackAICall(userId, schoolId);
+        }
 
         const responseText = result.response.text();
         let evaluationData;

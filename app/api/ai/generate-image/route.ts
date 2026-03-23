@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { trackAICall } from "@/lib/ai-tracker";
 
 export const maxDuration = 30;
 export const dynamic = 'force-dynamic';
@@ -36,6 +37,13 @@ export async function GET(req: Request) {
                 responseModalities: ["IMAGE", "TEXT"] as any,
             } as any,
         });
+
+        // Increment API calls
+        const userId = (session.user as any).id;
+        const schoolId = (session.user as any).schoolId;
+        if (userId) {
+            await trackAICall(userId, schoolId);
+        }
 
         const response = result.response;
         const candidates = response.candidates;

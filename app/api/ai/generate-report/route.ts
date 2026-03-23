@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { trackAICall } from "@/lib/ai-tracker";
 
 export async function POST(req: Request) {
     try {
@@ -96,6 +97,13 @@ SI EL TIPO ES "DOCENTE":
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
+
+        // Increment API calls
+        const userId = (session.user as any).id;
+        const schoolId = (session.user as any).schoolId;
+        if (userId) {
+            await trackAICall(userId, schoolId);
+        }
 
         let finalReport = "";
         try {

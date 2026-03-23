@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { trackAICall } from "@/lib/ai-tracker";
+import prisma from "@/lib/prisma";
 
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
@@ -9,6 +11,9 @@ export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const userId = (session.user as any).id;
+        const schoolId = (session.user as any).schoolId;
 
         const { problemText, studentAttempt, studentName = 'Estudiante' } = await req.json();
 
@@ -40,6 +45,11 @@ Usa un tono amable, motivador y deductivo. Mantén tu respuesta extremadamente c
 
         const result = await model.generateContent(prompt);
         const hintText = result.response.text();
+
+        // Increment API calls
+        if (userId) {
+            await trackAICall(userId, schoolId);
+        }
 
         return NextResponse.json({ hint: hintText });
 

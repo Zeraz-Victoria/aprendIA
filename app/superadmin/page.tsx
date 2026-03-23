@@ -22,6 +22,9 @@ export default function SuperadminPage() {
     const [editTeacherName, setEditTeacherName] = useState("");
     const [editTeacherPassword, setEditTeacherPassword] = useState("");
     const [isSavingEdit, setIsSavingEdit] = useState(false);
+    const [showBreakdown, setShowBreakdown] = useState(false);
+    const [selectedBreakdown, setSelectedBreakdown] = useState<any[]>([]);
+    const [selectedSchoolName, setSelectedSchoolName] = useState("");
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -296,12 +299,20 @@ export default function SuperadminPage() {
                                             <Users className="w-3 h-3" /> Alumnos
                                         </div>
                                     </div>
-                                    <div className="text-center border-t border-slate-700 pt-4 col-span-2">
-                                        <div className="text-xl font-black text-emerald-400">
+                                    <div 
+                                        onClick={() => {
+                                            setSelectedBreakdown(teacher.apiCallsBreakdown || []);
+                                            setSelectedSchoolName(teacher.name);
+                                            setShowBreakdown(true);
+                                        }}
+                                        className="text-center border-t border-slate-700 pt-4 col-span-2 cursor-pointer hover:bg-slate-700/30 rounded-lg transition-colors group/api"
+                                    >
+                                        <div className="text-xl font-black text-emerald-400 group-hover/api:scale-110 transition-transform">
                                             {teacher.apiCalls || 0}
                                         </div>
-                                        <div className="text-[10px] text-slate-500 flex items-center justify-center gap-1 mt-0.5 uppercase tracking-tighter">
+                                        <div className="text-[10px] text-slate-500 flex items-center justify-center gap-1 mt-0.5 uppercase tracking-tighter group-hover/api:text-emerald-400">
                                             Llamadas API (Gasto Est: ${((teacher.apiCalls || 0) * 0.002).toFixed(2)})
+                                            <span className="text-[8px] bg-emerald-500/10 px-1 rounded ml-1">Ver Detalle</span>
                                         </div>
                                     </div>
                                 </div>
@@ -377,6 +388,56 @@ export default function SuperadminPage() {
                                 >
                                     {isSavingEdit ? "Guardando..." : "Guardar Cambios"}
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* API Breakdown Modal */}
+                {showBreakdown && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[70]">
+                        <div className="bg-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-fade-in-up border border-slate-700 flex flex-col max-h-[80vh]">
+                            <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+                                <div>
+                                    <h3 className="font-bold text-xl text-white flex items-center gap-2">
+                                        <ShieldAlert className="w-5 h-5 text-emerald-400" /> Detalle de Consumo
+                                    </h3>
+                                    <p className="text-xs text-slate-400 mt-1">{selectedSchoolName}</p>
+                                </div>
+                                <button onClick={() => setShowBreakdown(false)} className="text-slate-400 hover:text-white transition-colors">
+                                    <span className="text-xl font-bold rounded-full w-8 h-8 flex items-center justify-center bg-slate-700 hover:bg-slate-600 transition-colors">×</span>
+                                </button>
+                            </div>
+                            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+                                {selectedBreakdown.length === 0 ? (
+                                    <div className="text-center py-10">
+                                        <p className="text-slate-500 italic">No hay llamadas registradas aún.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {selectedBreakdown.map((user: any) => (
+                                            <div key={user.id} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-slate-700/50 hover:border-emerald-500/30 transition-colors">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${user.role === 'TEACHER' ? 'bg-amber-500/10 text-amber-500' : 'bg-sky-500/10 text-sky-500'}`}>
+                                                        {user.role === 'TEACHER' ? '👨‍🏫' : '👤'}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-white line-clamp-1">{user.name}</p>
+                                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">{user.role}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right px-3 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                                                    <p className="text-sm font-black text-emerald-400">{user.apiCalls}</p>
+                                                    <p className="text-[9px] text-emerald-500/70 uppercase">Llamadas</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="p-6 bg-slate-900/30 border-t border-slate-700 flex justify-between items-center text-xs text-slate-500">
+                                <span>Total mostrado: {selectedBreakdown.length} usuarios</span>
+                                <span className="font-mono">Costo Est. Total: ${(selectedBreakdown.reduce((acc, u) => acc + u.apiCalls, 0) * 0.002).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>

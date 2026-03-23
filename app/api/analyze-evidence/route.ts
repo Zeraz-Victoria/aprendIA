@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { trackAICall } from "@/lib/ai-tracker";
 
 // Initialize the Gemini API
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
@@ -144,14 +145,10 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
 
         const responseText = result.response.text();
 
-        // Increment API calls for the school
-        try {
-            await prisma.school.update({
-                where: { id: schoolId },
-                data: { apiCalls: { increment: 1 } }
-            });
-        } catch (apiErr) {
-            console.error("Failed to increment school apiCalls:", apiErr);
+        // Increment API calls for user and school
+        const userId = (session?.user as any)?.id;
+        if (userId) {
+            await trackAICall(userId, schoolId);
         }
 
         try {

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { trackAICall } from "@/lib/ai-tracker";
 
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
@@ -42,6 +43,14 @@ Devuelve la respuesta estrictamente en este formato JSON:
 }`;
 
         const result = await model.generateContent(prompt);
+
+        // Increment API calls
+        const userId = (session.user as any).id;
+        const schoolId = (session.user as any).schoolId;
+        if (userId) {
+            await trackAICall(userId, schoolId);
+        }
+
         const responseText = result.response.text();
 
         // Extraer JSON del bloque de código si Gemini lo rodea de ```json ... ```
