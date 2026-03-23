@@ -119,7 +119,15 @@ export default function StudentHUD({
                         onClick={onOpenProfile}
                     >
                         <span className="text-xl">{currentUser?.avatar || "🧑"}</span>
-                        <span className="font-bold text-slate-200 text-sm hidden sm:inline">{currentUser?.name}</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                            <span className="font-bold text-slate-200 text-sm hidden sm:inline">{currentUser?.name}</span>
+                            {currentUser?.globalActivityAverage !== undefined && currentUser?.globalActivityAverage !== null && (
+                                <div className="bg-sky-500/20 px-2 py-0.5 rounded-lg border border-sky-400/30 flex items-center gap-1">
+                                    <span className="text-[9px] font-black text-sky-400 uppercase tracking-tighter hidden xs:inline">Grado</span>
+                                    <span className="text-xs font-black text-white">{currentUser.globalActivityAverage.toFixed(1)}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Right: Stats */}
