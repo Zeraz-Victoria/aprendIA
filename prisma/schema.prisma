@@ -1,0 +1,319 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String             @id @default(cuid())
+  name               String?
+  role               Role               @default(STUDENT)
+  avatar             String?
+  status             String             @default("active")
+  lastActivity       DateTime           @default(now())
+  gems               Int                @default(0)
+  lives              Int                @default(3)
+  streak             Int                @default(0)
+  xp                 Int                @default(0)
+  email              String?            @unique
+  emailVerified      DateTime?
+  image              String?
+  classroomId        String?
+  schoolId           String?
+  activeFrame        String?
+  activeSessionToken String?
+  teacherOwnerId     String?
+  studentCode        String?            @unique
+  password           String?
+  accounts           Account[]
+  buffsReceived      Buff[]
+  ownedClassrooms    Classroom[]        @relation("ClassroomTeacher")
+  evidenceEntries    EvidenceEntry[]
+  ownedGrades        Grade[]            @relation("GradeTeacher")
+  hints              Hint[]
+  inventory          Inventory[]
+  progress           Progress[]
+  raidContributions  RaidContribution[]
+  sessions           Session[]
+  studentMissions    StudentMission[]
+  supportTicketsSent SupportTicket[]    @relation("UserSupportTickets")
+  sentMessages       TeacherMessage[]   @relation("SentMessages")
+  classroom          Classroom?         @relation("ClassroomStudents", fields: [classroomId], references: [id])
+  school             School?            @relation(fields: [schoolId], references: [id])
+  teacherOwner       User?              @relation("TeacherStudents", fields: [teacherOwnerId], references: [id])
+  ownedStudents      User[]             @relation("TeacherStudents")
+  achievements       UserAchievement[]
+  createdWorlds      World[]            @relation("TeacherWorlds")
+  receivedMessages   TeacherMessage[]   @relation("MessageRecipients")
+  assignedWorlds     World[]            @relation("StudentAssignedWorlds")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model School {
+  id                 String             @id @default(cuid())
+  name               String
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  maxMaps            Int                @default(1)
+  maxStudents        Int                @default(25)
+  subscriptionPlan   SubscriptionPlan   @default(BASIC)
+  subscriptionStatus SubscriptionStatus @default(ACTIVE)
+  apiCalls           Int                @default(0)
+  classrooms         Classroom[]
+  grades             Grade[]
+  raidBosses         RaidBoss[]
+  messages           TeacherMessage[]
+  users              User[]
+  worlds             World[]
+}
+
+model World {
+  id               String           @id @default(cuid())
+  title            String
+  theme            String
+  daysJson         String
+  createdAt        DateTime         @default(now())
+  pedagogyJson     String?
+  schoolId         String?
+  teacherId        String?
+  evidenceEntries  EvidenceEntry[]
+  progress         Progress[]
+  studentMissions  StudentMission[]
+  school           School?          @relation(fields: [schoolId], references: [id])
+  teacher          User?            @relation("TeacherWorlds", fields: [teacherId], references: [id])
+  classrooms       Classroom[]      @relation("ClassroomToWorld")
+  assignedStudents User[]           @relation("StudentAssignedWorlds")
+}
+
+model EvidenceEntry {
+  id              String   @id @default(cuid())
+  studentId       String
+  worldId         String
+  levelId         Int
+  studentAnswer   String
+  isCorrect       Boolean
+  feedback        String
+  topic           String?
+  emotionDetected String?
+  createdAt       DateTime @default(now())
+  imageUrl        String?
+  status          String   @default("COMPLETED")
+  canAdvance      Boolean  @default(true)
+  grade           Int?
+  student         User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  world           World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+}
+
+model Progress {
+  id        String   @id @default(cuid())
+  studentId String
+  worldId   String
+  levelId   Int
+  createdAt DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  world     World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, worldId, levelId])
+}
+
+model Inventory {
+  id        String   @id @default(cuid())
+  studentId String
+  itemId    String
+  createdAt DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, itemId])
+}
+
+model Achievement {
+  id          String            @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  condition   String
+  xpReward    Int               @default(0)
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  studentId     String
+  achievementId String
+  earnedAt      DateTime    @default(now())
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  student       User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, achievementId])
+}
+
+model RaidBoss {
+  id            String             @id @default(cuid())
+  name          String
+  imageUrl      String?
+  maxHealth     Int
+  currentHealth Int
+  status        String             @default("ACTIVE")
+  createdAt     DateTime           @default(now())
+  schoolId      String?
+  school        School?            @relation(fields: [schoolId], references: [id])
+  contributions RaidContribution[]
+}
+
+model RaidContribution {
+  id          String   @id @default(cuid())
+  raidBossId  String
+  studentId   String
+  damageDealt Int
+  createdAt   DateTime @default(now())
+  raidBoss    RaidBoss @relation(fields: [raidBossId], references: [id], onDelete: Cascade)
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Hint {
+  id        String   @id @default(cuid())
+  studentId String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Buff {
+  id         String   @id @default(cuid())
+  targetId   String
+  fromName   String
+  fromAvatar String
+  message    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  target     User     @relation(fields: [targetId], references: [id], onDelete: Cascade)
+}
+
+model StudentMission {
+  id        String   @id @default(cuid())
+  studentId String
+  worldId   String
+  daysJson  String
+  createdAt DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  world     World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, worldId])
+}
+
+model Grade {
+  id          String      @id @default(cuid())
+  name        String
+  teacherId   String
+  createdAt   DateTime    @default(now())
+  description String?
+  schoolId    String?
+  classrooms  Classroom[]
+  school      School?     @relation(fields: [schoolId], references: [id])
+  teacher     User        @relation("GradeTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+}
+
+model Classroom {
+  id          String   @id @default(cuid())
+  name        String
+  emoji       String   @default("📚")
+  teacherId   String
+  createdAt   DateTime @default(now())
+  gradeId     String?
+  description String?
+  schoolId    String?
+  accessCode  String?  @unique
+  grade       Grade?   @relation(fields: [gradeId], references: [id])
+  school      School?  @relation(fields: [schoolId], references: [id])
+  teacher     User     @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  students    User[]   @relation("ClassroomStudents")
+  worlds      World[]  @relation("ClassroomToWorld")
+}
+
+model AIPromptCache {
+  id        String   @id @default(cuid())
+  topic     String
+  theme     String
+  response  String
+  createdAt DateTime @default(now())
+
+  @@unique([topic, theme])
+  @@index([topic, theme])
+}
+
+model TeacherMessage {
+  id         String   @id @default(cuid())
+  senderId   String
+  schoolId   String
+  message    String
+  isGlobal   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  school     School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipients User[]   @relation("MessageRecipients")
+}
+
+model SupportTicket {
+  id         String   @id @default(cuid())
+  senderId   String
+  message    String
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  adminReply String?
+  sender     User     @relation("UserSupportTickets", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  TEACHER
+  STUDENT
+  SUPERADMIN
+}
+
+enum SubscriptionPlan {
+  BASIC
+  INTERMEDIATE
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  SUSPENDED
+}
