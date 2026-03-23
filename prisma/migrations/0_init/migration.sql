@@ -29,6 +29,7 @@ CREATE TABLE "User" (
     "teacherOwnerId" TEXT,
     "studentCode" TEXT,
     "password" TEXT,
+    "apiCalls" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
