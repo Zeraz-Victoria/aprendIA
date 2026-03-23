@@ -48,8 +48,3 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     }
 }
 
-    } catch (error) {
-        console.error("Error updating grade:", error);
-        return NextResponse.json({ error: "Failed to update grade" }, { status: 500 });
-    }
-}
