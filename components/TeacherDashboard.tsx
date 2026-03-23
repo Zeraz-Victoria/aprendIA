@@ -441,23 +441,69 @@ export default function TeacherDashboard() {
         }
     };
 
+    // Derived properties for early warning system (GLOBAL — across all worlds)
+    const atRiskStudentsGlobal = students.filter(s => calculateStudentProgress(s.id, progress, worlds) < 30);
+    const strugglingStudentsGlobal = students.filter(s => {
+        const p = calculateStudentProgress(s.id, progress, worlds);
+        return p >= 30 && p < 70;
+    });
+
+    // Per-map filtered versions
+    const insightWorld = worlds.find(w => w.id === selectedInsightWorldId) || (worlds.length > 0 ? worlds[0] : null);
+    const effectiveInsightWorldId = insightWorld?.id || "";
+
+    // Auto-select the first world if none is selected
+    React.useEffect(() => {
+        if (!selectedInsightWorldId && worlds.length > 0) {
+            setSelectedInsightWorldId(worlds[0].id);
+        }
+    }, [worlds, selectedInsightWorldId]);
+
+    const atRiskStudentsUnfiltered = insightWorld
+        ? students.filter(s => s.assignedWorlds?.some(aw => aw.id === insightWorld.id) && calculateStudentProgressForWorld(s.id, progress, insightWorld) < 30)
+        : atRiskStudentsGlobal;
+    const strugglingStudentsUnfiltered = insightWorld
+        ? students.filter(s => {
+            if (!s.assignedWorlds?.some(aw => aw.id === insightWorld.id)) return false;
+            const p = calculateStudentProgressForWorld(s.id, progress, insightWorld);
+            return p >= 30 && p < 70;
+        })
+        : strugglingStudentsGlobal;
+
+    // Apply classroom filter for insights
+    const atRiskStudents = insightClassroomId === 'all'
+        ? atRiskStudentsUnfiltered
+        : atRiskStudentsUnfiltered.filter(s => s.classroomId === insightClassroomId);
+    const strugglingStudents = insightClassroomId === 'all'
+        ? strugglingStudentsUnfiltered
+        : strugglingStudentsUnfiltered.filter(s => s.classroomId === insightClassroomId);
+
+    // Filtered students for insights trends panel
+    const insightWorldStudents = insightWorld
+        ? students.filter(s => s.assignedWorlds?.some(aw => aw.id === insightWorld.id))
+        : students;
+
+    const insightStudents = insightClassroomId === 'all'
+        ? insightWorldStudents
+        : insightWorldStudents.filter(s => s.classroomId === insightClassroomId);
+
     // Calculate dynamic class metrics
-    const calculateClassMetrics = () => {
-        if (students.length === 0 || worlds.length === 0) return { completion: 0, average: 0 };
+    const calculateClassMetrics = (targetStudents: Student[]) => {
+        if (targetStudents.length === 0 || worlds.length === 0) return { completion: 0, average: 0 };
 
         let totalProgress = 0;
-        students.forEach(student => {
+        targetStudents.forEach(student => {
             totalProgress += calculateStudentProgress(student.id, progress, worlds);
         });
 
-        const classCompletion = Math.round(totalProgress / students.length);
+        const classCompletion = Math.round(totalProgress / targetStudents.length);
         // Map progress (0-100) to a grade (0-10) for the 'Promedio'
         const classAverage = (classCompletion / 10).toFixed(1);
 
         return { completion: classCompletion, average: classAverage };
     };
 
-    const metrics = calculateClassMetrics();
+    const metrics = calculateClassMetrics(activeTab === 'insights' ? insightStudents : students);
 
     const handleDownloadPDF = async () => {
         const doc = new jsPDF();
@@ -509,7 +555,8 @@ export default function TeacherDashboard() {
         }
 
         // Students Loop
-        students.forEach((student, index) => {
+        const reportStudents = activeTab === 'insights' ? insightStudents : students;
+        reportStudents.forEach((student, index) => {
             const p = calculateStudentProgress(student.id, progress, worlds);
             const context = getStudentContext(student.id);
             const evidence = allEvidence[student.id] || [];
@@ -763,46 +810,6 @@ export default function TeacherDashboard() {
         }
     };
 
-    // Derived properties for early warning system (GLOBAL — across all worlds)
-    const atRiskStudentsGlobal = students.filter(s => calculateStudentProgress(s.id, progress, worlds) < 30);
-    const strugglingStudentsGlobal = students.filter(s => {
-        const p = calculateStudentProgress(s.id, progress, worlds);
-        return p >= 30 && p < 70;
-    });
-
-    // Per-map filtered versions
-    const insightWorld = worlds.find(w => w.id === selectedInsightWorldId) || (worlds.length > 0 ? worlds[0] : null);
-    const effectiveInsightWorldId = insightWorld?.id || "";
-
-    // Auto-select the first world if none is selected
-    React.useEffect(() => {
-        if (!selectedInsightWorldId && worlds.length > 0) {
-            setSelectedInsightWorldId(worlds[0].id);
-        }
-    }, [worlds, selectedInsightWorldId]);
-
-    const atRiskStudentsUnfiltered = insightWorld
-        ? students.filter(s => calculateStudentProgressForWorld(s.id, progress, insightWorld) < 30)
-        : atRiskStudentsGlobal;
-    const strugglingStudentsUnfiltered = insightWorld
-        ? students.filter(s => {
-            const p = calculateStudentProgressForWorld(s.id, progress, insightWorld);
-            return p >= 30 && p < 70;
-        })
-        : strugglingStudentsGlobal;
-
-    // Apply classroom filter for insights
-    const atRiskStudents = insightClassroomId === 'all'
-        ? atRiskStudentsUnfiltered
-        : atRiskStudentsUnfiltered.filter(s => s.classroomId === insightClassroomId);
-    const strugglingStudents = insightClassroomId === 'all'
-        ? strugglingStudentsUnfiltered
-        : strugglingStudentsUnfiltered.filter(s => s.classroomId === insightClassroomId);
-
-    // Filtered students for insights trends panel
-    const insightStudents = insightClassroomId === 'all'
-        ? students
-        : students.filter(s => s.classroomId === insightClassroomId);
 
     // Metrics already calculated above handler
 
@@ -871,38 +878,71 @@ export default function TeacherDashboard() {
             <main className="flex-1 p-4 pb-24 md:p-8 md:pb-8 overflow-y-auto w-full max-w-[100vw] overflow-x-hidden">
 
                 {activeTab === 'insights' && (
-                    <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
-                        <div>
-                            <h2 className="text-xl sm:text-2xl font-bold text-sky-900">
-                                Panel de Análisis
-                            </h2>
-                            <p className="text-sky-600/70 text-sm sm:text-base">Progreso y alertas filtrados por mapa • Rendimiento global</p>
+                    <header className="flex flex-col gap-6 mb-8 bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-sky-100 shadow-sm">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                            <div>
+                                <h2 className="text-2xl font-black text-sky-900 flex items-center gap-2">
+                                    <BrainCircuit className="w-8 h-8 text-sky-600" /> Panel de Análisis e IA
+                                </h2>
+                                <p className="text-sky-600/70 text-sm font-medium mt-1">Diagnóstico pedagógico y seguimiento de objetivos en tiempo real.</p>
+                            </div>
+                            <div className="flex flex-wrap gap-2 items-center">
+                                {/* Map Selector for per-map filtering */}
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-[10px] font-bold text-sky-400 uppercase tracking-wider ml-1">Proyecto / Mapa</label>
+                                    <select
+                                        value={effectiveInsightWorldId}
+                                        onChange={e => setSelectedInsightWorldId(e.target.value)}
+                                        className="bg-white border-2 border-sky-100 rounded-xl px-4 py-2 text-sm font-bold text-sky-800 focus:ring-4 focus:ring-sky-100 focus:border-sky-400 outline-none transition-all shadow-sm"
+                                    >
+                                        {worlds.map(w => (
+                                            <option key={w.id} value={w.id}>
+                                                🗺️ {w.title || w.theme}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider ml-1">Grupo / Salón</label>
+                                    <select
+                                        value={insightClassroomId}
+                                        onChange={e => setInsightClassroomId(e.target.value)}
+                                        className="bg-white border-2 border-emerald-100 rounded-xl px-4 py-2 text-sm font-bold text-emerald-800 focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 outline-none transition-all shadow-sm"
+                                    >
+                                        <option value="all">🏫 Todos los Grupos</option>
+                                        {classrooms.map(cls => (
+                                            <option key={cls.id} value={cls.id}>
+                                                {cls.emoji} {cls.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex flex-wrap gap-2 items-center">
-                            {/* Map Selector for per-map filtering */}
-                            <select
-                                value={effectiveInsightWorldId}
-                                onChange={e => setSelectedInsightWorldId(e.target.value)}
-                                className="bg-white/80 border border-sky-200 rounded-xl px-3 py-2 text-sm font-medium text-sky-700 focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+
+                        {/* Integrated Action Buttons */}
+                        <div className="flex flex-wrap gap-3 pt-4 border-t border-sky-50">
+                            <button
+                                onClick={handleDownloadPDF}
+                                className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-sky-100 transition-all flex items-center gap-2 text-sm active:scale-95"
                             >
-                                {worlds.map(w => (
-                                    <option key={w.id} value={w.id}>
-                                        🗺️ {w.title || w.theme}
-                                    </option>
-                                ))}
-                            </select>
-                            <select
-                                value={insightClassroomId}
-                                onChange={e => setInsightClassroomId(e.target.value)}
-                                className="bg-white/80 border border-emerald-200 rounded-xl px-3 py-2 text-sm font-medium text-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"
+                                <FileText className="w-4 h-4" />
+                                Generar Reporte (PDF)
+                            </button>
+                            <button
+                                onClick={() => setShowMessageModal(true)}
+                                className="bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-100 px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm active:scale-95"
                             >
-                                <option value="all">🏫 Todos los Grupos</option>
-                                {classrooms.map(cls => (
-                                    <option key={cls.id} value={cls.id}>
-                                        {cls.emoji} {cls.name}
-                                    </option>
-                                ))}
-                            </select>
+                                <MessageSquare className="w-4 h-4 text-sky-500" />
+                                Mensaje Grupal
+                            </button>
+                            <button
+                                onClick={() => setShowResetModal(true)}
+                                className="bg-red-50 hover:bg-red-100 text-red-600 px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm active:scale-95 ml-auto"
+                            >
+                                <RotateCcw className="w-4 h-4" />
+                                Reiniciar Todo
+                            </button>
                         </div>
                     </header>
                 )}
@@ -1283,31 +1323,7 @@ export default function TeacherDashboard() {
                 {/* INSIGHTS & REPORTS TAB */}
                 {activeTab === 'insights' && (
                     <div className="space-y-6">
-                        {/* Reports Generation Header */}
-                        <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-sky-100 flex justify-between items-center">
-                            <div>
-                                <h3 className="text-xl font-bold text-sky-900">Reportes de Progreso</h3>
-                                <p className="text-sky-600/70 text-sm mt-1">Genera reportes PDF detallados para padres o administración escolar.</p>
-                            </div>
-                            <button
-                                onClick={handleDownloadPDF}
-                                className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-sky-200 transition-all flex items-center gap-2">
-                                <FileText className="w-5 h-5" />
-                                Generar Reporte de Clase (PDF)
-                            </button>
-                            <button
-                                onClick={() => setShowMessageModal(true)}
-                                className="bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-violet-200 transition-all flex items-center gap-2">
-                                <MessageSquare className="w-5 h-5" />
-                                Enviar Mensaje a Alumnos
-                            </button>
-                            <button
-                                onClick={() => setShowResetModal(true)}
-                                className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-red-200 transition-all flex items-center gap-2">
-                                <RotateCcw className="w-5 h-5" />
-                                Reiniciar Progreso
-                            </button>
-                        </div>
+                        {/* Redundant section removed and unified in header */}
 
                         <div className="grid md:grid-cols-2 gap-6">
                             {/* Early Warning System */}
@@ -1396,7 +1412,7 @@ export default function TeacherDashboard() {
                                         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
                                             <TrendingUp className="w-5 h-5 text-sky-500" /> Rendimiento y Emociones
                                         </h3>
-                                        <p className="text-xs text-slate-400">🌐 Global — Todos los mapas activos</p>
+                                        <p className="text-xs text-slate-400">{insightWorld ? `📍 Filtrado por: ${insightWorld.title}` : "🌐 Global — Todos los mapas activos"}</p>
                                     </div>
                                     <div className="flex gap-2 text-xs">
                                         <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> Motivado</div>
