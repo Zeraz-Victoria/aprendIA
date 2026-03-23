@@ -49,6 +49,7 @@ model User {
   createdWorlds      World[]            @relation("TeacherWorlds")
   receivedMessages   TeacherMessage[]   @relation("MessageRecipients")
   assignedWorlds     World[]            @relation("StudentAssignedWorlds")
+  projectGrades      ProjectGrade[]     @relation("StudentProjectGrades")
   apiCalls           Int                @default(0)
 }
 
@@ -120,6 +121,7 @@ model World {
   teacher          User?            @relation("TeacherWorlds", fields: [teacherId], references: [id])
   classrooms       Classroom[]      @relation("ClassroomToWorld")
   assignedStudents User[]           @relation("StudentAssignedWorlds")
+  projectGrades    ProjectGrade[]   @relation("WorldProjectGrades")
 }
 
 model EvidenceEntry {
@@ -317,4 +319,18 @@ enum SubscriptionPlan {
 enum SubscriptionStatus {
   ACTIVE
   SUSPENDED
+}
+
+model ProjectGrade {
+  id        String   @id @default(cuid())
+  studentId String
+  worldId   String
+  grade     Float
+  feedback  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  student   User     @relation("StudentProjectGrades", fields: [studentId], references: [id], onDelete: Cascade)
+  world     World    @relation("WorldProjectGrades", fields: [worldId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, worldId])
 }

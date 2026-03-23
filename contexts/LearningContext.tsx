@@ -48,6 +48,7 @@ export interface DBUser {
   activeFrame?: string | null;
   studentCode?: string | null;
   assignedWorlds?: { id: string, title?: string, theme: string }[];
+  projectGrades?: { id: string, worldId: string, grade: number, feedback?: string | null }[];
 }
 
 export interface Student {
@@ -65,6 +66,7 @@ export interface Student {
   activeFrame?: string | null;
   studentCode?: string | null;
   assignedWorlds?: { id: string, title?: string, theme: string }[];
+  projectGrades?: { id: string, worldId: string, grade: number, feedback?: string | null }[];
 }
 
 // Progress Map: studentId -> worldId -> completedLevels[]
@@ -110,6 +112,7 @@ interface LearningContextType {
   deleteClassroom: (id: string) => Promise<boolean>;
   assignStudentToClassroom: (studentId: string, classroomId: string | null) => Promise<boolean>;
   toggleWorldAssignment: (studentId: string, worldId: string, action: 'assign' | 'unassign') => Promise<boolean>;
+  setProjectGrade: (studentId: string, worldId: string, grade: number, feedback?: string) => Promise<boolean>;
 }
 
 export interface Grade {
@@ -188,7 +191,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
             classroomId: u.classroomId || null,
             activeFrame: u.activeFrame,
             studentCode: u.studentCode,
-            assignedWorlds: u.assignedWorlds
+            assignedWorlds: u.assignedWorlds,
+            projectGrades: u.projectGrades
           }));
           setStudents(mappedStudents);
         }
@@ -366,7 +370,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
           streak: newUser.streak,
           xp: newUser.xp,
           classroomId: newUser.classroomId || null,
-          assignedWorlds: newUser.assignedWorlds || []
+          assignedWorlds: newUser.assignedWorlds || [],
+          projectGrades: newUser.projectGrades || []
         };
         setStudents(prev => [...prev, mapped]);
         return true;
@@ -570,7 +575,33 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     } catch { return false; }
   };
 
-  const markLevelComplete = async (studentId: string, worldId: string, levelId: number, isBoss: boolean) => {
+    const setProjectGrade = async (studentId: string, worldId: string, grade: number, feedback?: string): Promise<boolean> => {
+      try {
+        const res = await fetch('/api/teacher/project-grades', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId, worldId, grade, feedback })
+        });
+        if (res.ok) {
+          const newGradeObj = await res.json();
+          setStudents(prev => prev.map(s => {
+            if (s.id === studentId) {
+              const currentGrades = (s as any).projectGrades || [];
+              const exists = currentGrades.find((g: any) => g.worldId === worldId);
+              const updatedGrades = exists 
+                ? currentGrades.map((g: any) => g.worldId === worldId ? newGradeObj : g)
+                : [...currentGrades, newGradeObj];
+              return { ...s, projectGrades: updatedGrades };
+            }
+            return s;
+          }));
+          return true;
+        }
+        return false;
+      } catch { return false; }
+    };
+
+    const markLevelComplete = async (studentId: string, worldId: string, levelId: number, isBoss: boolean) => {
     // Optimistic Update
     const xpReward = isBoss ? 100 : 50;
     const gemsReward = isBoss ? 25 : 10;
@@ -694,7 +725,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       worlds, activeWorldId, addWorld, updateWorld, deleteWorld, setActiveWorld,
       currentUser, login, logout,
       stats, setStats, progress, inventory, markLevelComplete, purchaseItem, consumeItem,
-      students, addStudent, updateStudent, updateStudentAvatar, updateStudentFrame, deleteStudent, toggleWorldAssignment,
+      students, addStudent, updateStudent, updateStudentAvatar, updateStudentFrame, deleteStudent, toggleWorldAssignment, setProjectGrade,
       classrooms, addClassroom, updateClassroom, deleteClassroom, assignStudentToClassroom,
       grades, addGrade, updateGrade, deleteGrade
     }}>

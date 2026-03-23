@@ -32,7 +32,8 @@ export async function GET() {
             where: whereClause,
             orderBy: { name: 'asc' },
             include: {
-                assignedWorlds: true
+                assignedWorlds: true,
+                projectGrades: true
             }
         });
 
@@ -130,7 +131,7 @@ export async function POST(req: NextRequest) {
                     where: { id: student.id },
                     data: {
                         assignedWorlds: {
-                            connect: schoolWorlds.map(w => ({ id: w.id }))
+                            connect: schoolWorlds.map((w: { id: string }) => ({ id: w.id }))
                         }
                     }
                 });

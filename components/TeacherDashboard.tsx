@@ -20,7 +20,7 @@ export default function TeacherDashboard() {
     useSessionGuard();
     const {
         students, worlds, activeWorldId, setActiveWorld, deleteWorld,
-        addStudent, updateStudent, deleteStudent, progress, toggleWorldAssignment,
+        addStudent, updateStudent, deleteStudent, progress, toggleWorldAssignment, setProjectGrade,
         classrooms, addClassroom, updateClassroom, deleteClassroom, assignStudentToClassroom,
         grades, addGrade, updateGrade, deleteGrade
     } = useLearning();
@@ -439,6 +439,16 @@ export default function TeacherDashboard() {
         } finally {
             document.getElementById('mission-loading')?.remove();
         }
+    };
+
+    const calculateGlobalGrade = (student: Student) => {
+        if (!student.projectGrades || student.projectGrades.length === 0) return "—";
+        const sum = student.projectGrades.reduce((s, g) => s + g.grade, 0);
+        return (sum / student.projectGrades.length).toFixed(1);
+    };
+
+    const getProjectGrade = (student: Student, worldId: string) => {
+        return student.projectGrades?.find(g => g.worldId === worldId)?.grade || "";
     };
 
     // Derived properties for early warning system (GLOBAL — across all worlds)
@@ -1459,7 +1469,35 @@ export default function TeacherDashboard() {
                                                                 <span className={`text-xs block opacity-80 ${textStatusColor}`}>{statusLabel}</span>
                                                             </div>
                                                         </div>
-                                                        <span className={`text-sm font-bold ${textStatusColor}`}>{progressVal}%</span>
+                                                        <div className="flex gap-4 items-center">
+                                                            {insightWorld && (
+                                                                <div className="flex flex-col items-end" onClick={(e) => e.stopPropagation()}>
+                                                                    <span className="text-[10px] font-bold text-sky-400 uppercase tracking-tighter mb-0.5">Nota Proyecto</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        min="5"
+                                                                        max="10"
+                                                                        step="0.1"
+                                                                        key={`${student.id}-${insightWorld.id}-${getProjectGrade(student, insightWorld.id)}`}
+                                                                        defaultValue={getProjectGrade(student, insightWorld.id)}
+                                                                        onBlur={(e) => {
+                                                                            const val = parseFloat(e.target.value);
+                                                                            if (!isNaN(val) && val >= 5 && val <= 10) {
+                                                                                setProjectGrade(student.id, insightWorld.id, val);
+                                                                            }
+                                                                        }}
+                                                                        className="w-14 bg-white border-2 border-sky-100 rounded-lg px-2 py-1 text-xs font-black text-sky-800 text-center focus:ring-4 focus:ring-sky-50 focus:border-sky-300 outline-none transition-all shadow-sm"
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                            <div className="flex flex-col items-end">
+                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-0.5">Global</span>
+                                                                <span className="text-sm font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md min-w-[32px] text-center">{calculateGlobalGrade(student)}</span>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <span className={`text-sm font-bold ${textStatusColor}`}>{Math.round(progressVal)}%</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                     <div className="w-full bg-white/50 rounded-full h-2 overflow-hidden shadow-inner">
                                                         <div className={`${bgFillColor} h-2 rounded-full`} style={{ width: `${progressVal}%` }}></div>
