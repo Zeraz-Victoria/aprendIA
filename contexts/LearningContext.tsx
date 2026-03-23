@@ -49,6 +49,8 @@ export interface DBUser {
   studentCode?: string | null;
   assignedWorlds?: { id: string, title?: string, theme: string }[];
   projectGrades?: { id: string, worldId: string, grade: number, feedback?: string | null }[];
+  automaticProjectGrades?: { worldId: string, averageGrade: number }[];
+  globalActivityAverage?: number | null;
 }
 
 export interface Student {
@@ -67,6 +69,8 @@ export interface Student {
   studentCode?: string | null;
   assignedWorlds?: { id: string, title?: string, theme: string }[];
   projectGrades?: { id: string, worldId: string, grade: number, feedback?: string | null }[];
+  automaticProjectGrades?: { worldId: string, averageGrade: number }[];
+  globalActivityAverage?: number | null;
 }
 
 // Progress Map: studentId -> worldId -> completedLevels[]
@@ -192,7 +196,9 @@ export function LearningProvider({ children }: { children: ReactNode }) {
             activeFrame: u.activeFrame,
             studentCode: u.studentCode,
             assignedWorlds: u.assignedWorlds,
-            projectGrades: u.projectGrades
+            projectGrades: u.projectGrades,
+            automaticProjectGrades: u.automaticProjectGrades,
+            globalActivityAverage: u.globalActivityAverage
           }));
           setStudents(mappedStudents);
         }

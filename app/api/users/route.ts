@@ -37,7 +37,42 @@ export async function GET() {
             }
         });
 
-        return NextResponse.json(students, {
+        // Fetch activity-based averages for each student and world
+        const evidenceStats = await prisma.evidenceEntry.groupBy({
+            by: ['studentId', 'worldId'],
+            where: {
+                student: { schoolId },
+                grade: { not: null }
+            },
+            _avg: { grade: true }
+        });
+
+        // Fetch global averages for each student
+        const globalStats = await prisma.evidenceEntry.groupBy({
+            by: ['studentId'],
+            where: {
+                student: { schoolId },
+                grade: { not: null }
+            },
+            _avg: { grade: true }
+        });
+
+        // Map stats for easier lookup
+        const studentsWithStats = students.map((student: any) => {
+            const studentEvidence = evidenceStats.filter((s: any) => s.studentId === student.id);
+            const studentGlobal = globalStats.find((s: any) => s.studentId === student.id);
+
+            return {
+                ...student,
+                automaticProjectGrades: studentEvidence.map((se: any) => ({
+                    worldId: se.worldId,
+                    averageGrade: se._avg.grade ? parseFloat(se._avg.grade.toFixed(1)) : 0
+                })),
+                globalActivityAverage: studentGlobal?._avg.grade ? parseFloat(studentGlobal._avg.grade.toFixed(1)) : null
+            };
+        });
+
+        return NextResponse.json(studentsWithStats, {
             headers: {
                 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
                 'Pragma': 'no-cache',

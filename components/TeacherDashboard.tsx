@@ -442,13 +442,14 @@ export default function TeacherDashboard() {
     };
 
     const calculateGlobalGrade = (student: Student) => {
-        if (!student.projectGrades || student.projectGrades.length === 0) return "—";
-        const sum = student.projectGrades.reduce((s, g) => s + g.grade, 0);
-        return (sum / student.projectGrades.length).toFixed(1);
+        return student.globalActivityAverage !== undefined && student.globalActivityAverage !== null 
+            ? student.globalActivityAverage.toFixed(1) 
+            : "—";
     };
 
     const getProjectGrade = (student: Student, worldId: string) => {
-        return student.projectGrades?.find(g => g.worldId === worldId)?.grade || "";
+        const auto = student.automaticProjectGrades?.find((g: any) => g.worldId === worldId);
+        return auto ? auto.averageGrade : "—";
     };
 
     // Derived properties for early warning system (GLOBAL — across all worlds)
@@ -1471,23 +1472,11 @@ export default function TeacherDashboard() {
                                                         </div>
                                                         <div className="flex gap-4 items-center">
                                                             {insightWorld && (
-                                                                <div className="flex flex-col items-end" onClick={(e) => e.stopPropagation()}>
+                                                                <div className="flex flex-col items-end">
                                                                     <span className="text-[10px] font-bold text-sky-400 uppercase tracking-tighter mb-0.5">Nota Proyecto</span>
-                                                                    <input
-                                                                        type="number"
-                                                                        min="5"
-                                                                        max="10"
-                                                                        step="0.1"
-                                                                        key={`${student.id}-${insightWorld.id}-${getProjectGrade(student, insightWorld.id)}`}
-                                                                        defaultValue={getProjectGrade(student, insightWorld.id)}
-                                                                        onBlur={(e) => {
-                                                                            const val = parseFloat(e.target.value);
-                                                                            if (!isNaN(val) && val >= 5 && val <= 10) {
-                                                                                setProjectGrade(student.id, insightWorld.id, val);
-                                                                            }
-                                                                        }}
-                                                                        className="w-14 bg-white border-2 border-sky-100 rounded-lg px-2 py-1 text-xs font-black text-sky-800 text-center focus:ring-4 focus:ring-sky-50 focus:border-sky-300 outline-none transition-all shadow-sm"
-                                                                    />
+                                                                    <div className="w-14 bg-white border-2 border-sky-100 rounded-lg py-1 text-sm font-black text-sky-800 text-center shadow-sm">
+                                                                        {getProjectGrade(student, insightWorld.id)}
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                             <div className="flex flex-col items-end">

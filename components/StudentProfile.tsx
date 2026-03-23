@@ -181,31 +181,29 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                     <div className="bg-slate-100 px-4 py-2 rounded-2xl flex flex-col items-end">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Promedio Global</span>
                         <span className="text-xl font-black text-slate-700">
-                            {(() => {
-                                if (!currentUser?.projectGrades || currentUser.projectGrades.length === 0) return "—";
-                                const sum = currentUser.projectGrades.reduce((s, g) => s + g.grade, 0);
-                                return (sum / currentUser.projectGrades.length).toFixed(1);
-                            })()}
+                            {currentUser?.globalActivityAverage !== undefined && currentUser?.globalActivityAverage !== null 
+                                ? currentUser.globalActivityAverage.toFixed(1) 
+                                : "—"}
                         </span>
                     </div>
                 </div>
 
-                {!currentUser?.projectGrades || currentUser.projectGrades.length === 0 ? (
+                {!currentUser?.automaticProjectGrades || currentUser.automaticProjectGrades.length === 0 ? (
                     <div className="text-center py-6 bg-slate-50 rounded-3xl border border-slate-100 mb-6">
-                        <p className="text-slate-400 text-sm">Aún no tienes calificaciones asignadas.</p>
+                        <p className="text-slate-400 text-sm">Aún no tienes actividades calificadas.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 gap-3 mb-8">
-                        {currentUser.projectGrades.map((pg) => {
+                        {currentUser.automaticProjectGrades.map((pg: any, idx: number) => {
                             const worldTitle = currentUser.assignedWorlds?.find(w => w.id === pg.worldId)?.title || "Proyecto";
                             return (
-                                <div key={pg.id} className="bg-white border-2 border-slate-100 p-4 rounded-2xl flex justify-between items-center shadow-sm">
+                                <div key={`${pg.worldId}-${idx}`} className="bg-white border-2 border-slate-100 p-4 rounded-2xl flex justify-between items-center shadow-sm">
                                     <div className="min-w-0 flex-1">
                                         <h4 className="font-bold text-slate-700 text-sm truncate" title={worldTitle}>{worldTitle}</h4>
-                                        <p className="text-[10px] text-slate-400 uppercase font-black">{pg.feedback ? 'Con retroalimentación' : 'Revisado'}</p>
+                                        <p className="text-[10px] text-slate-400 uppercase font-black">Automático</p>
                                     </div>
                                     <div className="text-2xl font-black text-sky-600 ml-3">
-                                        {pg.grade}
+                                        {pg.averageGrade}
                                     </div>
                                 </div>
                             );
