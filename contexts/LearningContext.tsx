@@ -80,8 +80,8 @@ interface LearningContextType {
   // World Management (Teacher)
   worlds: LearningWorld[];
   activeWorldId: string | null;
-  addWorld: (world: LearningWorld) => void;
-  updateWorld: (world: LearningWorld) => void;
+  addWorld: (world: LearningWorld) => Promise<boolean>;
+  updateWorld: (world: LearningWorld) => Promise<boolean>;
   deleteWorld: (worldId: string) => void;
   setActiveWorld: (worldId: string) => void;
 
@@ -278,32 +278,48 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
   // -- Actions --
 
-  const addWorld = async (newWorld: LearningWorld) => {
-    const res = await fetch('/api/worlds', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newWorld)
-    });
-
-    if (res.ok) {
-      const savedWorld = await res.json();
-      setWorlds(prev => {
-        // Auto-seleccionar si es el primer mundo (prev.length === 0)
-        if (prev.length === 0) setActiveWorldId(savedWorld.id);
-        return [...prev, savedWorld];
+  const addWorld = async (newWorld: LearningWorld): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/worlds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newWorld)
       });
+
+      if (res.ok) {
+        const savedWorld = await res.json();
+        setWorlds(prev => {
+          if (prev.length === 0) setActiveWorldId(savedWorld.id);
+          return [...prev, savedWorld];
+        });
+        return true;
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Failed to add world:", errorData);
+        return false;
+      }
+    } catch (e) {
+      console.error("Network error adding world:", e);
+      return false;
     }
   };
 
-  const updateWorld = async (updatedWorld: LearningWorld) => {
-    const res = await fetch(`/api/worlds/${updatedWorld.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedWorld)
-    });
-    if (res.ok) {
-      const parsed = await res.json();
-      setWorlds(prev => prev.map(w => w.id === parsed.id ? parsed : w));
+  const updateWorld = async (updatedWorld: LearningWorld): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/worlds/${updatedWorld.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedWorld)
+      });
+      if (res.ok) {
+        const parsed = await res.json();
+        setWorlds(prev => prev.map(w => w.id === parsed.id ? parsed : w));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("Network error updating world:", e);
+      return false;
     }
   };
 

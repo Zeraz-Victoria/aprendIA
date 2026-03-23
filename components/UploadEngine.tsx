@@ -162,7 +162,10 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                 }
             }
 
-            await addWorld(newWorld);
+            const savedSuccessfully = await addWorld(newWorld);
+            if (!savedSuccessfully) {
+                throw new Error("No se pudo guardar la estructura inicial del mapa en la base de datos. Por favor reintenta.");
+            }
             setActiveWorld(newWorld.id);
 
             // ✅ SUCCESS — Show immediately after Day 1 is ready
