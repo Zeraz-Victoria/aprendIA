@@ -19,8 +19,13 @@ async function main() {
     });
 
     if (existing) {
-        console.log(`⚠️  Ya existe un Superadmin con el nombre "${SUPERADMIN_NAME}".`);
-        console.log(`   Si olvidaste la contraseña, bórralo desde la DB y vuelve a ejecutar este script.`);
+        console.log(`ℹ️  Ya existe el Superadmin "${SUPERADMIN_NAME}". Actualizando contraseña...`);
+        const hashed = await bcrypt.hash(SUPERADMIN_PASSWORD, 10);
+        await prisma.user.update({
+            where: { id: existing.id },
+            data: { password: hashed }
+        });
+        console.log(`✅ Contraseña de "${SUPERADMIN_NAME}" actualizada a: ${SUPERADMIN_PASSWORD}`);
         return;
     }
 
