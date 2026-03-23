@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npm run clean-port && NODE_OPTIONS='--max-old-space-size=2048' next dev",
     "clean-port": "lsof -ti:3000 | xargs kill -9 || true",
-    "build": "prisma generate && prisma migrate deploy && NODE_OPTIONS=--max-old-space-size=448 next build",
+    "build": "prisma generate && prisma migrate deploy && NODE_OPTIONS=--max-old-space-size=1024 next build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -40,6 +40,7 @@
     "@types/node": "^20.19.33",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@eslint/eslintrc": "^3",
     "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
