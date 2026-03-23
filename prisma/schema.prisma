@@ -139,6 +139,7 @@ model EvidenceEntry {
   status          String   @default("COMPLETED")
   canAdvance      Boolean  @default(true)
   grade           Int?
+  attempts        Int      @default(1)
   student         User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   world           World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
 }

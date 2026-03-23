@@ -33,35 +33,38 @@ export async function POST(req: Request) {
             if (!world) return NextResponse.json({ error: "World not found in your school" }, { status: 404 });
         }
 
-        // --- NEW: 3 ATTEMPT LIMIT ---
+        // --- NEW: 3 ATTEMPT LIMIT & GRADE IMPROVEMENT ---
         if (studentId && worldId && levelId !== undefined) {
              const parsedLevelId = typeof levelId === 'string' ? parseInt(levelId) : levelId;
              
-             // Check if already passed (grade >= 6)
-             const alreadyPassed = await prisma.evidenceEntry.findFirst({
-                 where: { studentId, worldId, levelId: parsedLevelId, grade: { gte: 6 } }
-             });
-             
-             if (alreadyPassed) {
-                 return NextResponse.json({ 
-                     success: false, 
-                     message: `Ya has aprobado esta actividad con una calificación de ${alreadyPassed.grade}. ¡Puedes avanzar al siguiente nivel!` 
-                 }, { status: 400 });
-             }
-
-             // Count attempts
-             const attempts = await prisma.evidenceEntry.count({
+             // Check existing entry
+             const existingEntry = await prisma.evidenceEntry.findFirst({
                  where: { studentId, worldId, levelId: parsedLevelId }
              });
+             
+             if (existingEntry) {
+                 if (existingEntry.grade === 10) {
+                     return NextResponse.json({ 
+                         success: true, 
+                         canAdvance: true,
+                         grade: 10,
+                         extractedText: "¡Ya tienes la calificación máxima en esta actividad! No es necesario volver a enviarla.",
+                         message: "Actividad completada con 10."
+                     });
+                 }
 
-             if (attempts >= 3) {
-                 return NextResponse.json({ 
-                     success: false, 
-                     message: "Has alcanzado el límite de 3 intentos para esta sesión. Aunque no puedes ganar más puntos aquí, puedes continuar con el resto de tu aventura." 
-                 }, { status: 400 });
+                 if (existingEntry.attempts >= 3) {
+                     return NextResponse.json({ 
+                         success: true, 
+                         canAdvance: true, // They can advance even if they failed after 3 attempts
+                         grade: existingEntry.grade,
+                         extractedText: "Has alcanzado el límite de 3 intentos para esta sesión. Se mantendrá tu mejor calificación.",
+                         message: "Límite de intentos alcanzado."
+                     });
+                 }
              }
         }
-        // ----------------------------
+        // ------------------------------------------------
 
         // Tarea 2: Bloqueo Real de Respuestas Vacías (Hard Stop)
         if (!imageBase64 && (!textEvidence || textEvidence.trim().length === 0)) {
@@ -183,17 +186,21 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
 
                     let savedEntry;
                     if (existingEntry) {
+                        const newGrade = Math.max(existingEntry.grade || 0, parsedData.grade);
+                        const newAttempts = (existingEntry.attempts || 1) + 1;
+                        
                         savedEntry = await prisma.evidenceEntry.update({
                             where: { id: existingEntry.id },
                             data: {
                                 studentAnswer: textEvidence || "IMAGEN ADJUNTA ESCANEADA",
-                                isCorrect: isLegacyCorrect,
-                                grade: parsedData.grade,
-                                canAdvance: parsedData.canAdvance,
-                                feedback: `${parsedRaw.categoria || 'Evaluado'}\n\nCalificación: ${parsedData.grade}/10\n\n${parsedData.extractedText}`,
+                                isCorrect: isLegacyCorrect || (existingEntry.grade && existingEntry.grade >= 6 ? true : false),
+                                grade: newGrade,
+                                attempts: newAttempts,
+                                canAdvance: parsedData.canAdvance || (existingEntry.grade && existingEntry.grade >= 6 ? true : false),
+                                feedback: `${parsedRaw.categoria || 'Evaluado'}\n\nCalificación: ${newGrade}/10 (Intento ${newAttempts}/3)\n\n${parsedData.extractedText}`,
                                 topic: parsedData.topic,
                                 emotionDetected: parsedData.emotionDetected,
-                                imageUrl: null // Clear existing image to save DB storage
+                                imageUrl: null
                             }
                         });
                     } else {
@@ -205,11 +212,12 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
                                 studentAnswer: textEvidence || "IMAGEN ADJUNTA ESCANEADA",
                                 isCorrect: isLegacyCorrect,
                                 grade: parsedData.grade,
+                                attempts: 1,
                                 canAdvance: parsedData.canAdvance,
-                                feedback: `${parsedRaw.categoria || 'Evaluado'}\n\nCalificación: ${parsedData.grade}/10\n\n${parsedData.extractedText}`,
+                                feedback: `${parsedRaw.categoria || 'Evaluado'}\n\nCalificación: ${parsedData.grade}/10 (Intento 1/3)\n\n${parsedData.extractedText}`,
                                 topic: parsedData.topic,
                                 emotionDetected: parsedData.emotionDetected,
-                                imageUrl: null // Never store image — only keep evaluation data
+                                imageUrl: null
                             }
                         });
                     }
