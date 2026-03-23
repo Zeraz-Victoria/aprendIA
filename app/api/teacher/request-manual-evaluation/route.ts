@@ -48,15 +48,12 @@ export async function POST(req: Request) {
             });
         }
 
-        const existingProgress = await prisma.progress.findUnique({
-            where: { studentId_worldId_levelId: { studentId, worldId, levelId: dayNumber } }
+        // Use upsert to avoid race conditions
+        await prisma.progress.upsert({
+            where: { studentId_worldId_levelId: { studentId, worldId, levelId: dayNumber } },
+            update: {},
+            create: { studentId, worldId, levelId: dayNumber }
         });
-
-        if (!existingProgress) {
-            await prisma.progress.create({
-                data: { studentId, worldId, levelId: dayNumber }
-            });
-        }
 
         return NextResponse.json({ success: true, message: "Estado actualizado a pendiente de maestro" });
 

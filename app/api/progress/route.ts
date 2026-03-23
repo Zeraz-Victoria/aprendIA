@@ -29,7 +29,7 @@ export async function GET(req: Request) {
         // Convert flat list into ProgressMap format: { studentId: { worldId: [levelId] } }
         const progressMap: Record<string, Record<string, number[]>> = {};
 
-        progressList.forEach(p => {
+        progressList.forEach((p: any) => {
             if (!progressMap[p.studentId]) {
                 progressMap[p.studentId] = {};
             }
@@ -66,6 +66,14 @@ export async function POST(req: Request) {
         }
 
         // Upsert or Create since uniqueness is on [studentId, worldId, levelId]
+        const existingProgress = await prisma.progress.findUnique({
+            where: { studentId_worldId_levelId: { studentId, worldId, levelId: parsedLevelId } }
+        });
+
+        if (existingProgress) {
+            return NextResponse.json({ message: 'Already completed' }, { status: 200 });
+        }
+
         const newProgress = await prisma.progress.create({
             data: {
                 studentId,
@@ -86,7 +94,7 @@ export async function POST(req: Request) {
 
         if (user) {
             const allAchievements = await prisma.achievement.findMany();
-            const earnedAchievementIds = new Set(user.achievements.map(a => a.achievementId));
+            const earnedAchievementIds = new Set(user.achievements.map((a: any) => a.achievementId));
 
             const newGrants: string[] = [];
             let totalXpBonus = baseLevelXp;

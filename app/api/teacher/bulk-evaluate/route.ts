@@ -135,7 +135,7 @@ Ejemplo exacto:
             const normalizeStr = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
             const searchName = normalizeStr(evaluationData.nombreAlumno);
 
-            const matchedStudent = students.find(s => {
+            const matchedStudent = students.find((s: any) => {
                 if (!s.name) return false;
                 const dbName = normalizeStr(s.name);
                 // Búsqueda cruzada simple
@@ -202,26 +202,22 @@ Ejemplo exacto:
 
             // Actualizar Progreso si avanzó
             if (evaluationData.puedeAvanzar) {
-                const existingProgress = await prisma.progress.findUnique({
+                // Use upsert to avoid race conditions and unique constraint errors
+                await prisma.progress.upsert({
                     where: {
                         studentId_worldId_levelId: {
                             studentId: studentId,
                             worldId: worldId,
                             levelId: numericLevelId
                         }
+                    },
+                    update: {},
+                    create: {
+                        studentId: studentId,
+                        worldId: worldId,
+                        levelId: numericLevelId
                     }
                 });
-
-                if (!existingProgress) {
-                    await prisma.progress.create({
-                        data: {
-                            studentId: studentId,
-                            worldId: worldId,
-                            levelId: numericLevelId,
-                            // grade ya no existe en progress
-                        }
-                    });
-                }
 
                 // Recompensas XP Gamification
                 await prisma.user.update({
