@@ -3,9 +3,6 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-let messagesCache: Record<string, { data: any, timestamp: number }> = {};
-const CACHE_TTL = 15000;
-
 // GET: Fetch messages for the current user
 export async function GET(req: Request) {
     try {
@@ -16,12 +13,6 @@ export async function GET(req: Request) {
 
         if (!schoolId || !userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const now = Date.now();
-        const cacheKey = `${userId}_${role}`;
-        if (messagesCache[cacheKey] && (now - messagesCache[cacheKey].timestamp < CACHE_TTL)) {
-            return NextResponse.json(messagesCache[cacheKey].data);
         }
 
         if (role === 'STUDENT') {
@@ -40,7 +31,6 @@ export async function GET(req: Request) {
                 orderBy: { createdAt: 'desc' },
                 take: 50
             });
-            messagesCache[cacheKey] = { data: messages, timestamp: now };
             return NextResponse.json(messages);
         } else {
             // Teachers see messages they sent
@@ -53,7 +43,6 @@ export async function GET(req: Request) {
                 orderBy: { createdAt: 'desc' },
                 take: 50
             });
-            messagesCache[cacheKey] = { data: messages, timestamp: now };
             return NextResponse.json(messages);
         }
     } catch (error) {
@@ -96,7 +85,6 @@ export async function POST(req: Request) {
             }
         });
 
-        messagesCache = {}; // Global invalidation
         return NextResponse.json(newMessage);
     } catch (error) {
         console.error("Error sending message:", error);

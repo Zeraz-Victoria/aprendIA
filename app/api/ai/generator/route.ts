@@ -227,6 +227,15 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
       // Fallback in case Gemini hallucinates the old format
       days = parsedResponse;
     }
+
+    if (days.length === 0) {
+      console.error("AI generated 0 days for topic:", topic);
+      return NextResponse.json({ 
+        error: 'La IA no pudo estructurar los niveles del mapa. Intenta con un tema más específico o reintenta en unos segundos.',
+        raw: responseText 
+      }, { status: 422 });
+    }
+
     // Save to Cache so future requests don't hit the Gemini API
     try {
       //@ts-ignore

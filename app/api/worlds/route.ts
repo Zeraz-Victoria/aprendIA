@@ -60,6 +60,10 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { id, title, theme, days, pedagogy, classroomIds } = body;
 
+        if (days && Array.isArray(days) && days.length === 0) {
+            console.warn(`[WARNING] Attempting to create an empty world: ${title}`);
+        }
+
         if (!id || !title || !theme || !days) {
             return NextResponse.json({ error: 'Missing required world fields' }, { status: 400 });
         }

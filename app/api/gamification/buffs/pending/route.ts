@@ -3,9 +3,6 @@ import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
-let buffsCache: Record<string, { data: any, timestamp: number }> = {};
-const CACHE_TTL = 15000;
-
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
@@ -13,11 +10,6 @@ export async function GET(req: Request) {
         const _t = searchParams.get('t'); // Cache busting
 
         if (!studentId) return NextResponse.json({ error: "Missing studentId" }, { status: 400 });
-
-        const now = Date.now();
-        if (buffsCache[studentId] && (now - buffsCache[studentId].timestamp < CACHE_TTL)) {
-            return NextResponse.json(buffsCache[studentId].data);
-        }
 
         const buffs = await prisma.buff.findMany({
             where: {
@@ -29,7 +21,6 @@ export async function GET(req: Request) {
             }
         });
 
-        buffsCache[studentId] = { data: buffs, timestamp: now };
         return NextResponse.json(buffs);
     } catch (e) {
         console.error("Fetch pending buffs error:", e);
@@ -50,7 +41,6 @@ export async function PATCH(req: Request) {
             data: { read: true }
         });
 
-        buffsCache = {}; // Invalidate globally on update to be safe
         return NextResponse.json({ success: true });
     } catch (e) {
         console.error("Mark buffs read error:", e);

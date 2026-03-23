@@ -34,11 +34,15 @@ export default function StudentHUD({
                 const data = await res.json();
 
                 if (data && data.length > 0) {
-                    // Show the first unread buff
-                    setIncomingBuff(data[0]);
-                    setTimeout(() => setIncomingBuff(null), 6000);
+                    // Show buffs one by one
+                    for (const buff of data) {
+                        setIncomingBuff(buff);
+                        await new Promise(r => setTimeout(r, 6000));
+                        setIncomingBuff(null);
+                        await new Promise(r => setTimeout(r, 500)); // Gap
+                    }
 
-                    // Mark them all as read to prevent showing them again immediately
+                    // Mark them all as read once the loop finishes (or user saw them)
                     await fetch('/api/gamification/buffs/pending', {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },

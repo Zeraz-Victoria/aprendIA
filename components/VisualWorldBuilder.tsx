@@ -154,6 +154,28 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
         }
     };
 
+    const handleRepairAllStuckLevels = async () => {
+        const stuckIndices = nodes.map((n, i) => {
+            const isStuck = (n.type !== 'boss_fight' && (n as DayContent).narrative?.includes('Generando contenido con IA')) ||
+                (n.type === 'boss_fight' && ((n as BossDayContent).originalProblemText?.includes('Generando contenido con IA') || (n as any).content?.originalProblemText?.includes('Generando contenido con IA')));
+            return isStuck ? i : -1;
+        }).filter(idx => idx !== -1);
+
+        if (stuckIndices.length === 0) {
+            alert("No se encontraron sesiones atascadas.");
+            return;
+        }
+
+        if (!confirm(`Se encontraron ${stuckIndices.length} sesiones incompletas. ¿Deseas repararlas todas automáticamente?`)) return;
+
+        for (const idx of stuckIndices) {
+            await handleRetryDayBake(idx);
+            // Small pause to avoid hitting rate limits too hard
+            await new Promise(r => setTimeout(r, 2000));
+        }
+        alert("Proceso de reparación finalizado.");
+    };
+
     const handleRetryDayBake = async (nodeIndex: number) => {
         const node = nodes[nodeIndex];
         // Optimistic UI for specifically this node
@@ -178,37 +200,44 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
 
             if (res.ok) {
                 const bakedStory = await res.json();
-                const finishedNodes = [...updatedNodes];
-                finishedNodes[nodeIndex] = {
-                    ...node,
-                    narrative: bakedStory.narrative,
-                    content: bakedStory.content,
-                    presentationType: bakedStory.presentationType || "text",
-                    glosario: bakedStory.glosario || [],
-                    isGenerating: false,
-                    isRetrying: false
-                };
-                setNodes(finishedNodes);
-
-                if (initialWorld) {
-                    const savedWorld = {
-                        ...initialWorld,
-                        days: finishedNodes
+                
+                // Fetch the MOST CURRENT nodes state (in case others updated in background)
+                setNodes(prev => {
+                    const finishedNodes = [...prev];
+                    finishedNodes[nodeIndex] = {
+                        ...node,
+                        narrative: bakedStory.narrative,
+                        content: bakedStory.content,
+                        presentationType: bakedStory.presentationType || "text",
+                        glosario: bakedStory.glosario || [],
+                        isGenerating: false,
+                        isRetrying: false
                     };
-                    updateWorld(savedWorld);
-                }
+                    
+                    if (initialWorld) {
+                        const savedWorld = {
+                            ...initialWorld,
+                            days: finishedNodes
+                        };
+                        updateWorld(savedWorld);
+                    }
+                    return finishedNodes;
+                });
             } else {
-                const finishedNodes = [...updatedNodes];
-                finishedNodes[nodeIndex] = { ...node, isRetrying: false, isGenerating: false };
-                setNodes(finishedNodes);
-                alert("Error de la IA al reintentar generar esta sesión.");
+                setNodes(prev => {
+                    const finishedNodes = [...prev];
+                    finishedNodes[nodeIndex] = { ...node, isRetrying: false, isGenerating: false };
+                    return finishedNodes;
+                });
+                console.error("Error de la IA al reintentar generar esta sesión.");
             }
         } catch (e) {
             console.error(e);
-            const finishedNodes = [...updatedNodes];
-            finishedNodes[nodeIndex] = { ...node, isRetrying: false, isGenerating: false };
-            setNodes(finishedNodes);
-            alert("Error de red al intentar reconectar con la IA.");
+            setNodes(prev => {
+                const finishedNodes = [...prev];
+                finishedNodes[nodeIndex] = { ...node, isRetrying: false, isGenerating: false };
+                return finishedNodes;
+            });
         }
     };
 
@@ -416,6 +445,15 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                         {isDownloadingPdf ? <Sparkles className="w-4 h-4 animate-spin text-sky-500 shrink-0" /> : <Download className="w-4 h-4 text-sky-500 shrink-0" />}
                         {isDownloadingPdf ? "Generando..." : "Descargar Guía PDF"}
                     </button>
+                    {nodes.some(n => (n.type !== 'boss_fight' && (n as DayContent).narrative?.includes('Generando contenido con IA')) ||
+                        (n.type === 'boss_fight' && ((n as BossDayContent).originalProblemText?.includes('Generando contenido con IA')))) && (
+                            <button
+                                onClick={handleRepairAllStuckLevels}
+                                className="bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 px-4 py-2 rounded-full font-bold shadow-sm transition flex items-center gap-2 whitespace-nowrap shrink-0"
+                            >
+                                <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" /> Reparar Mapa (Stuck)
+                            </button>
+                        )}
                     <button onClick={onClose} className="text-slate-500 hover:text-slate-800 hover:bg-slate-100 px-5 py-2 rounded-full font-bold transition-colors flex items-center gap-2 whitespace-nowrap shrink-0">
                         <X className="w-5 h-5 shrink-0" /> Cerrar
                     </button>
