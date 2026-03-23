@@ -37,38 +37,49 @@ export async function GET() {
             }
         });
 
-        // Fetch activity-based averages for each student and world
+        // Fetch activity-based stats for each student and world
         const evidenceStats = await prisma.evidenceEntry.groupBy({
             by: ['studentId', 'worldId'],
             where: {
                 student: { schoolId },
                 grade: { not: null }
             },
-            _avg: { grade: true }
+            _sum: { grade: true }
         });
 
-        // Fetch global averages for each student
-        const globalStats = await prisma.evidenceEntry.groupBy({
-            by: ['studentId'],
-            where: {
-                student: { schoolId },
-                grade: { not: null }
-            },
-            _avg: { grade: true }
-        });
-
-        // Map stats for easier lookup
+        // Map stats to students
         const studentsWithStats = students.map((student: any) => {
-            const studentEvidence = evidenceStats.filter((s: any) => s.studentId === student.id);
-            const studentGlobal = globalStats.find((s: any) => s.studentId === student.id);
+            const studentProjectGrades: any[] = [];
+            let totalProjectGradesSum = 0;
+            const assignedWorldsCount = student.assignedWorlds?.length || 0;
+
+            student.assignedWorlds?.forEach((world: any) => {
+                const stats = evidenceStats.find((s: any) => s.studentId === student.id && s.worldId === world.id);
+                const sumGrades = stats?._sum?.grade || 0;
+                
+                let totalLevels = 8; // Default if parsing fails
+                try {
+                    const days = JSON.parse(world.daysJson);
+                    totalLevels = Array.isArray(days) ? days.length : 8;
+                } catch (e) {}
+
+                // Cumulative grade: Sum / TotalLevels (e.g. 10 levels * 10 max = 100 points. 100/10 = 10)
+                const projectGrade = parseFloat((sumGrades / totalLevels).toFixed(1));
+                studentProjectGrades.push({
+                    worldId: world.id,
+                    averageGrade: projectGrade
+                });
+                totalProjectGradesSum += projectGrade;
+            });
+
+            const globalGrade = assignedWorldsCount > 0 
+                ? parseFloat((totalProjectGradesSum / assignedWorldsCount).toFixed(1))
+                : null;
 
             return {
                 ...student,
-                automaticProjectGrades: studentEvidence.map((se: any) => ({
-                    worldId: se.worldId,
-                    averageGrade: se._avg.grade ? parseFloat(se._avg.grade.toFixed(1)) : 0
-                })),
-                globalActivityAverage: studentGlobal?._avg.grade ? parseFloat(studentGlobal._avg.grade.toFixed(1)) : null
+                automaticProjectGrades: studentProjectGrades,
+                globalActivityAverage: globalGrade
             };
         });
 
