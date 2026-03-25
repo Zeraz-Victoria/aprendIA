@@ -24,7 +24,7 @@ export async function GET(req: Request) {
             // Basic check or just allow if in same school
         }
 
-        const currentUser = await prisma.user.findUnique({
+        const currentUser = await prisma.user.findFirst({
             where: { id: studentId, schoolId },
             select: { classroomId: true, schoolId: true }
         });
@@ -50,13 +50,13 @@ export async function GET(req: Request) {
         });
 
         // Simulate "needs_help" for demo purposes based on low XP or random chance
-        const students = classmates.map(c => ({
+        const students = classmates.map((c: any) => ({
             ...c,
             status: c.xp < 100 || Math.random() < 0.3 ? "needs_help" : "active"
         }));
 
         return NextResponse.json(students);
-    } catch (e) {
+    } catch (e: any) {
         console.error("Fetch classmates error:", e);
         return NextResponse.json({ error: "Error fetching classmates" }, { status: 500 });
     }
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
         if (!sender) return NextResponse.json({ error: "Sender not found" }, { status: 404 });
 
         // Verify target belongs to same school
-        const target = await prisma.user.findUnique({ where: { id: targetId, schoolId: sender.schoolId } });
+        const target = await prisma.user.findFirst({ where: { id: targetId, schoolId: sender.schoolId } });
         if (!target) return NextResponse.json({ error: "Target not found in same school" }, { status: 403 });
 
         if (sender.gems < cost) return NextResponse.json({ error: "Not enough gems" }, { status: 400 });
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({ success: true, remainingGems: sender.gems - cost });
-    } catch (e) {
+    } catch (e: any) {
         console.error("Buff send error:", e);
         return NextResponse.json({ error: "Error sending buff" }, { status: 500 });
     }

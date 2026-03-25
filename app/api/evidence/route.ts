@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 
         const evidence = await withRetry(async () => {
             // Verify student belongs to school
-            const student = await prisma.user.findUnique({ where: { id: studentId, schoolId } });
+            const student = await prisma.user.findFirst({ where: { id: studentId, schoolId } });
             if (!student) {
                 return null;
             }
