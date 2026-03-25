@@ -85,34 +85,37 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "No active boss" }, { status: 404 });
         }
 
-        // Deduct health
-        const newHealth = Math.max(0, activeBoss.currentHealth - damage);
+        // Perform all writes in a single transaction to prevent connection exhaustion and race conditions
+        const [updatedBoss] = await prisma.$transaction([
+            prisma.raidBoss.update({
+                where: { id: activeBoss.id },
+                data: { currentHealth: { decrement: damage } }
+            }),
+            prisma.raidContribution.create({
+                data: {
+                    raidBossId: activeBoss.id,
+                    studentId,
+                    damageDealt: damage
+                }
+            }),
+            prisma.user.update({
+                where: { id: studentId },
+                data: {
+                    gems: { decrement: 5 },
+                    xp: { increment: Math.floor(damage / 2) }
+                }
+            })
+        ]);
 
-        await prisma.raidBoss.update({
-            where: { id: activeBoss.id },
-            data: {
-                currentHealth: newHealth,
-                status: newHealth === 0 ? "DEFEATED" : "ACTIVE"
-            }
-        });
+        let newHealth = Math.max(0, updatedBoss.currentHealth);
 
-        // Record Contribution
-        await prisma.raidContribution.create({
-            data: {
-                raidBossId: activeBoss.id,
-                studentId,
-                damageDealt: damage
-            }
-        });
-
-        // Deduct 5 gems and reward XP
-        await prisma.user.update({
-            where: { id: studentId },
-            data: {
-                gems: { decrement: 5 },
-                xp: { increment: Math.floor(damage / 2) }
-            }
-        });
+        // If health drops to/below 0, we do a quick status update
+        if (newHealth === 0 && activeBoss.status !== "DEFEATED") {
+            await prisma.raidBoss.update({
+                where: { id: activeBoss.id },
+                data: { currentHealth: 0, status: "DEFEATED" }
+            });
+        }
 
         // Trigger Real-Time sync
         try {
