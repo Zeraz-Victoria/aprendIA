@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
+import { withRetry } from '@/lib/db-retry';
+
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
@@ -37,20 +39,22 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
         if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
-        const updatedWorld = await prisma.world.update({
-            where: { id },
-            data: {
-                title,
-                theme,
-                daysJson: JSON.stringify(days),
-                pedagogyJson: pedagogy !== undefined ? (pedagogy ? JSON.stringify(pedagogy) : null) : undefined,
-                ...(classroomIds !== undefined && {
-                    classrooms: {
-                        set: classroomIds.map((cId: string) => ({ id: cId }))
-                    }
-                })
-            },
-            include: { classrooms: true }
+        const updatedWorld = await withRetry(async () => {
+            return await prisma.world.update({
+                where: { id },
+                data: {
+                    title,
+                    theme,
+                    daysJson: JSON.stringify(days),
+                    pedagogyJson: pedagogy !== undefined ? (pedagogy ? JSON.stringify(pedagogy) : null) : undefined,
+                    ...(classroomIds !== undefined && {
+                        classrooms: {
+                            set: classroomIds.map((cId: string) => ({ id: cId }))
+                        }
+                    })
+                },
+                include: { classrooms: true }
+            });
         });
 
         const parsedWorld = {

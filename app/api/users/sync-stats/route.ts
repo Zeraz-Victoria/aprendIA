@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { withRetry } from '@/lib/db-retry';
 
 export async function POST(req: Request) {
     try {
@@ -23,38 +24,46 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const user = await prisma.user.findUnique({ where: { id: studentId } });
-        if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
-        }
+        const result = await withRetry(async () => {
+            const user = await prisma.user.findUnique({ where: { id: studentId } });
+            if (!user) {
+                return { error: "User not found", status: 404 };
+            }
 
-        const dataToUpdate: any = {};
+            const dataToUpdate: any = {};
 
-        if (typeof gemsToAdd === 'number') {
-            dataToUpdate.gems = Math.max(0, user.gems + gemsToAdd);
-        }
+            if (typeof gemsToAdd === 'number') {
+                dataToUpdate.gems = Math.max(0, user.gems + gemsToAdd);
+            }
 
-        if (typeof livesToAdd === 'number') {
-            dataToUpdate.lives = Math.max(0, Math.min(3, user.lives + livesToAdd));
-        }
+            if (typeof livesToAdd === 'number') {
+                dataToUpdate.lives = Math.max(0, Math.min(3, user.lives + livesToAdd));
+            }
 
-        if (modifyStreak === 'reset') {
-            dataToUpdate.streak = 0;
-        } else if (modifyStreak === 'increment') {
-            dataToUpdate.streak = { increment: 1 };
-        }
+            if (modifyStreak === 'reset') {
+                dataToUpdate.streak = 0;
+            } else if (modifyStreak === 'increment') {
+                dataToUpdate.streak = { increment: 1 };
+            }
 
-        if (Object.keys(dataToUpdate).length === 0) {
-            return NextResponse.json({ message: "Nothing to update" }, { status: 200 });
-        }
+            if (Object.keys(dataToUpdate).length === 0) {
+                return { message: "Nothing to update", status: 200 };
+            }
 
-        const updatedUser = await prisma.user.update({
-            where: { id: studentId },
-            data: dataToUpdate,
-            select: { gems: true, streak: true }
+            const updatedUser = await prisma.user.update({
+                where: { id: studentId },
+                data: dataToUpdate,
+                select: { gems: true, streak: true }
+            });
+
+            return { data: updatedUser, status: 200 };
         });
 
-        return NextResponse.json(updatedUser, { status: 200 });
+        if ((result as any).error) {
+            return NextResponse.json({ error: (result as any).error }, { status: (result as any).status });
+        }
+
+        return NextResponse.json((result as any).data || result, { status: (result as any).status || 200 });
     } catch (e: any) {
         console.error("Failed to sync stats", e);
         return NextResponse.json({ error: "Failed to sync" }, { status: 500 });

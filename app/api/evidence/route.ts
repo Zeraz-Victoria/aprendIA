@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { withRetry } from "@/lib/db-retry";
 
 export async function GET(req: Request) {
     try {
@@ -26,27 +27,33 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Missing studentId' }, { status: 400 });
         }
 
-        // Verify student belongs to school
-        const student = await prisma.user.findUnique({ where: { id: studentId, schoolId } });
-        if (!student) {
+        const evidence = await withRetry(async () => {
+            // Verify student belongs to school
+            const student = await prisma.user.findUnique({ where: { id: studentId, schoolId } });
+            if (!student) {
+                return null;
+            }
+
+            return await prisma.evidenceEntry.findMany({
+                where: { studentId },
+                include: {
+                    world: {
+                        select: {
+                            title: true,
+                            theme: true,
+                            schoolId: true
+                        }
+                    }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            });
+        });
+
+        if (evidence === null) {
             return NextResponse.json({ error: "Student not found in your school" }, { status: 404 });
         }
-
-        const evidence = await prisma.evidenceEntry.findMany({
-            where: { studentId },
-            include: {
-                world: {
-                    select: {
-                        title: true,
-                        theme: true,
-                        schoolId: true
-                    }
-                }
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
 
         // Final safety filter: ensure world also matches schoolId (redundant but safe)
         const isolatedEvidence = evidence.filter(e => e.world?.schoolId === schoolId);

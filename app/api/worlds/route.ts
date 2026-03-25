@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
+import { withRetry } from '@/lib/db-retry';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,22 +90,24 @@ export async function POST(req: Request) {
             }
         }
 
-        const newWorld = await prisma.world.create({
-            data: {
-                id,
-                title,
-                theme,
-                schoolId,
-                teacherId: role === 'TEACHER' ? teacherId : null,
-                daysJson: JSON.stringify(days),
-                pedagogyJson: pedagogy ? JSON.stringify(pedagogy) : null,
-                ...(classroomIds && classroomIds.length > 0 && {
-                    classrooms: {
-                        connect: classroomIds.map((cId: string) => ({ id: cId }))
-                    }
-                })
-            },
-            include: { classrooms: true }
+        const newWorld = await withRetry(async () => {
+            return await prisma.world.create({
+                data: {
+                    id,
+                    title,
+                    theme,
+                    schoolId,
+                    teacherId: role === 'TEACHER' ? teacherId : null,
+                    daysJson: JSON.stringify(days),
+                    pedagogyJson: pedagogy ? JSON.stringify(pedagogy) : null,
+                    ...(classroomIds && classroomIds.length > 0 && {
+                        classrooms: {
+                            connect: classroomIds.map((cId: string) => ({ id: cId }))
+                        }
+                    })
+                },
+                include: { classrooms: true }
+            });
         });
 
         // Auto-assign new world to ALL students in the same school
