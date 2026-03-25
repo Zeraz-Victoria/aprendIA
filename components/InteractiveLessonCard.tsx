@@ -308,8 +308,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
         }
     };
 
-    // Use chunks from explanation if they exist, otherwise just use the narrative as a single chunk
-    const chunks = data.content?.explanation?.chunks || [data.narrative || ""];
+    // Always use the full narrative if available so the student sees the exact same theory as the teacher
+    const chunks = data.narrative ? [data.narrative] : (data.content?.explanation?.chunks || [""]);
     const currentChunk = chunks[currentChunkIndex];
 
     const handleNextChunk = () => {

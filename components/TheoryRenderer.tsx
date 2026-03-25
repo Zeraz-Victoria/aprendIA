@@ -444,9 +444,9 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
                 <CrosswordGame words={glossary} accentColor={accentColor} />
             )}
 
-            {/* Fallback to text for text, word_puzzle (handled elsewhere), or crossword without glossary */}
-            {(presentationType === "text" || presentationType === "word_puzzle" || (presentationType === "crossword" && glossary.length === 0)) && (
-                <div className="prose prose-invert prose-sm max-w-none">
+            {/* Siempre mostramos el texto si es 'text', 'word_puzzle' o 'crossword', para que el alumno pueda leer la teoría mientras resuelve el crucigrama */}
+            {(presentationType === "text" || presentationType === "word_puzzle" || presentationType === "crossword") && (
+                <div className="prose prose-invert prose-sm max-w-none mt-6">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                         {content}
                     </ReactMarkdown>
