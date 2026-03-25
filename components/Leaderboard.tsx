@@ -62,7 +62,8 @@ export default function Leaderboard() {
                         <div className={`w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-xl mr-3 border 
                             ${student.activeFrame === 'frame_fire' ? 'border-orange-500 shadow-orange-500/50' :
                                 student.activeFrame === 'frame_ice' ? 'border-cyan-300 shadow-cyan-300/50' :
-                                    'border-slate-100'}
+                                    student.activeFrame === 'frame_lightning' ? 'border-purple-500 shadow-purple-500/50' :
+                                        'border-slate-100'}
                         `}>
                             {student.avatar || "🧑"}
                         </div>

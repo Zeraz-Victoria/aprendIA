@@ -119,7 +119,8 @@ export default function StudentHUD({
                         className={`flex items-center gap-2 pointer-events-auto bg-slate-800/80 cursor-pointer hover:bg-slate-700/90 backdrop-blur rounded-full px-3 py-1 shadow-md border transition-all hover:scale-105
                             ${currentUser?.activeFrame === 'frame_fire' ? 'border-orange-500 shadow-orange-500/50 animate-pulse' :
                                 currentUser?.activeFrame === 'frame_ice' ? 'border-cyan-400 shadow-cyan-400/50' :
-                                    'border-slate-600'}
+                                    currentUser?.activeFrame === 'frame_lightning' ? 'border-purple-500 shadow-purple-500/50 animate-pulse' :
+                                        'border-slate-600'}
                         `}
                         onClick={onOpenProfile}
                     >

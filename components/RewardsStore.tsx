@@ -5,13 +5,16 @@ import { X, Diamond, ShoppingBag, Sparkles, AlertCircle } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
 
 const STORE_ITEMS = [
-    { id: "avatar_ninja", name: "Ninja Asesino", type: "Avatar", description: "Muévete entre los números con sigilo mortal.", cost: 150, icon: "🥷" },
-    { id: "avatar_alien", name: "Invasor Matemático", type: "Avatar", description: "Lógico, frío y del espacio exterior.", cost: 200, icon: "👽" },
-    { id: "avatar_wizard", name: "Hechicero Arcano", type: "Avatar", description: "Domina la magia de los algoritmos.", cost: 250, icon: "🧙‍♂️" },
-    { id: "frame_fire", name: "Aura de Fuego", type: "Marco", description: "Envuelve tu foto de perfil en llamas.", cost: 150, icon: "🔥" },
-    { id: "frame_ice", name: "Borde Glacial", type: "Marco", description: "Congela a tu competencia.", cost: 150, icon: "❄️" },
-    { id: "shield_protect", name: "Escudo Protector", type: "Equipamiento", description: "Te salva de perder una vida y mantiene tu racha.", cost: 100, icon: "🛡️" },
-    { id: "potion_life", name: "Poción Extra", type: "Vida", description: "Suma corazones extra al instante.", cost: 50, icon: "❤️" },
+    { id: "avatar_ninja", name: "Ninja Asesino", type: "Avatar", description: "Sigilo mortal para evadir los problemas.", cost: 350, icon: "🥷" },
+    { id: "avatar_alien", name: "Invasor Matemático", type: "Avatar", description: "Lógico, frío y del espacio exterior.", cost: 450, icon: "👽" },
+    { id: "avatar_wizard", name: "Hechicero Arcano", type: "Avatar", description: "Domina la magia de los algoritmos.", cost: 600, icon: "🧙‍♂️" },
+    { id: "avatar_robot", name: "Cyborg Cuántico", type: "Avatar", description: "Calcula respuestas a la velocidad de la luz.", cost: 850, icon: "🤖" },
+    { id: "avatar_astronaut", name: "Viajero Estelar", type: "Avatar", description: "Explora las galaxias del conocimiento.", cost: 1200, icon: "👨‍🚀" },
+    { id: "frame_fire", name: "Aura de Fuego", type: "Marco", description: "Envuelve tu foto de perfil en llamas intensas.", cost: 400, icon: "🔥" },
+    { id: "frame_ice", name: "Borde Glacial", type: "Marco", description: "Congela a tu competencia bajo cero.", cost: 400, icon: "❄️" },
+    { id: "frame_lightning", name: "Rayo Púrpura", type: "Marco", description: "Desprende chispas de brillantez pura.", cost: 700, icon: "⚡" },
+    { id: "shield_protect", name: "Escudo Protector", type: "Equipamiento", description: "Te salva de perder una vida y mantiene tu racha.", cost: 250, icon: "🛡️" },
+    { id: "potion_life", name: "Poción Extra", type: "Vida", description: "Suma corazones extra al instante.", cost: 150, icon: "❤️" },
 ];
 
 export default function RewardsStore({ onClose }: { onClose: () => void }) {
@@ -23,7 +26,7 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
 
     const studentInventory = inventory[currentUser.id] || [];
 
-    const handlePurchase = (item: typeof STORE_ITEMS[0]) => {
+    const handlePurchase = async (item: typeof STORE_ITEMS[0]) => {
         setPurchaseError(null);
         setPurchaseSuccess(null);
 
@@ -32,7 +35,7 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
             return;
         }
 
-        const success = purchaseItem(currentUser.id, item.id, item.cost);
+        const success = await purchaseItem(currentUser.id, item.id, item.cost);
         if (success) {
             setPurchaseSuccess(`¡Has comprado: ${item.name}!`);
             setTimeout(() => setPurchaseSuccess(null), 3000);

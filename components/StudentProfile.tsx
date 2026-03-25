@@ -58,7 +58,7 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
             </button>
 
             {/* Header */}
-            <div className="bg-sky-600 p-8 text-white relative overflow-hidden">
+            <div className="bg-sky-600 p-8 text-white relative overflow-hidden shrink-0">
                 <div className="absolute -right-10 -bottom-10 opacity-10">
                     <Medal className="w-48 h-48" />
                 </div>
@@ -67,7 +67,8 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                         <div className={`w-24 h-24 bg-white/20 backdrop-blur rounded-full flex items-center justify-center text-5xl border-4 shadow-xl transition-transform group-hover:scale-105
                             ${currentUser?.activeFrame === 'frame_fire' ? 'border-orange-500 shadow-orange-500/50 animate-pulse' :
                                 currentUser?.activeFrame === 'frame_ice' ? 'border-cyan-300 shadow-cyan-300/50' :
-                                    'border-white/30'}
+                                    currentUser?.activeFrame === 'frame_lightning' ? 'border-purple-500 shadow-purple-500/50 animate-pulse' :
+                                        'border-white/30'}
                         `}>
                             {isSavingAvatar ? "⏳" : (currentUser?.avatar || "🧑")}
                         </div>
@@ -106,7 +107,9 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                                     const storeAvatars = [
                                         { id: "avatar_ninja", icon: "🥷" },
                                         { id: "avatar_alien", icon: "👽" },
-                                        { id: "avatar_wizard", icon: "🧙‍♂️" }
+                                        { id: "avatar_wizard", icon: "🧙‍♂️" },
+                                        { id: "avatar_robot", icon: "🤖" },
+                                        { id: "avatar_astronaut", icon: "👨‍🚀" }
                                     ];
                                     const ownedStoreIcons = storeAvatars
                                         .filter(sa => inventory[currentUser?.id || ""]?.includes(sa.id))
@@ -161,6 +164,15 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                                             ❄️ Hielo
                                         </button>
                                     )}
+
+                                    {inventory[currentUser?.id || ""]?.includes('frame_lightning') && (
+                                        <button
+                                            onClick={() => updateStudentFrame('frame_lightning')}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1 transition-colors ${currentUser?.activeFrame === 'frame_lightning' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50 border-2 border-white' : 'bg-white/10 text-purple-300 hover:bg-purple-500/40 border-2 border-transparent'}`}
+                                        >
+                                            ⚡ Rayo
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -169,91 +181,94 @@ export default function StudentProfile({ onClose }: { onClose: () => void }) {
                 )}
             </div>
 
-            {/* Grades Section */}
-            <div className="px-8 pt-8">
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-amber-100 p-2 rounded-xl text-amber-600">
+            {/* Scrollable Content (Grades + Achievements) */}
+            <div className="flex-1 overflow-y-auto w-full">
+                {/* Grades Section */}
+                <div className="px-8 pt-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-amber-100 p-2 rounded-xl text-amber-600">
+                                <Medal className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-800">Calificaciones</h3>
+                        </div>
+                        <div className="bg-slate-100 px-4 py-2 rounded-2xl flex flex-col items-end">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Promedio Global</span>
+                            <span className="text-xl font-black text-slate-700">
+                                {currentUser?.globalActivityAverage !== undefined && currentUser?.globalActivityAverage !== null 
+                                    ? currentUser.globalActivityAverage.toFixed(1) 
+                                    : "—"}
+                            </span>
+                        </div>
+                    </div>
+
+                    {!currentUser?.automaticProjectGrades || currentUser.automaticProjectGrades.length === 0 ? (
+                        <div className="text-center py-6 bg-slate-50 rounded-3xl border border-slate-100 mb-6">
+                            <p className="text-slate-400 text-sm">Aún no tienes actividades calificadas.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-3 mb-8">
+                            {currentUser.automaticProjectGrades.map((pg: any, idx: number) => {
+                                const worldTitle = currentUser.assignedWorlds?.find(w => w.id === pg.worldId)?.title || "Proyecto";
+                                return (
+                                    <div key={`${pg.worldId}-${idx}`} className="bg-white border-2 border-slate-100 p-4 rounded-2xl flex justify-between items-center shadow-sm">
+                                        <div className="min-w-0 flex-1">
+                                            <h4 className="font-bold text-slate-700 text-sm truncate" title={worldTitle}>{worldTitle}</h4>
+                                            <p className="text-[10px] text-slate-400 uppercase font-black">Automático</p>
+                                        </div>
+                                        <div className="text-2xl font-black text-sky-600 ml-3">
+                                            {pg.averageGrade}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* Achievements Grid */}
+                <div className="p-8 pb-12">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="bg-emerald-100 p-2 rounded-xl text-emerald-600">
                             <Medal className="w-6 h-6" />
                         </div>
-                        <h3 className="text-xl font-bold text-slate-800">Calificaciones</h3>
+                        <h3 className="text-xl font-bold text-slate-800">Tus Logros</h3>
                     </div>
-                    <div className="bg-slate-100 px-4 py-2 rounded-2xl flex flex-col items-end">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Promedio Global</span>
-                        <span className="text-xl font-black text-slate-700">
-                            {currentUser?.globalActivityAverage !== undefined && currentUser?.globalActivityAverage !== null 
-                                ? currentUser.globalActivityAverage.toFixed(1) 
-                                : "—"}
-                        </span>
-                    </div>
-                </div>
 
-                {!currentUser?.automaticProjectGrades || currentUser.automaticProjectGrades.length === 0 ? (
-                    <div className="text-center py-6 bg-slate-50 rounded-3xl border border-slate-100 mb-6">
-                        <p className="text-slate-400 text-sm">Aún no tienes actividades calificadas.</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-2 gap-3 mb-8">
-                        {currentUser.automaticProjectGrades.map((pg: any, idx: number) => {
-                            const worldTitle = currentUser.assignedWorlds?.find(w => w.id === pg.worldId)?.title || "Proyecto";
-                            return (
-                                <div key={`${pg.worldId}-${idx}`} className="bg-white border-2 border-slate-100 p-4 rounded-2xl flex justify-between items-center shadow-sm">
-                                    <div className="min-w-0 flex-1">
-                                        <h4 className="font-bold text-slate-700 text-sm truncate" title={worldTitle}>{worldTitle}</h4>
-                                        <p className="text-[10px] text-slate-400 uppercase font-black">Automático</p>
+                    {loading ? (
+                        <div className="animate-pulse space-y-4">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="h-20 bg-slate-100 rounded-2xl w-full"></div>
+                            ))}
+                        </div>
+                    ) : achievements.length > 0 ? (
+                        <div className="grid gap-4">
+                            {achievements.map((ach) => (
+                                <div key={ach.id} className="flex items-center gap-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl hover:shadow-md transition">
+                                    <div className="w-14 h-14 bg-white border border-slate-200 rounded-full flex items-center justify-center text-3xl shadow-sm">
+                                        {ach.icon}
                                     </div>
-                                    <div className="text-2xl font-black text-sky-600 ml-3">
-                                        {pg.averageGrade}
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-slate-800 text-lg">{ach.name}</h4>
+                                        <p className="text-slate-500 text-sm leading-snug">{ach.description}</p>
+                                    </div>
+                                    <div className="text-right flex flex-col items-end">
+                                        <span className="text-xs font-bold text-sky-400 mb-1">RECOMPENSA</span>
+                                        <span className="bg-sky-100 text-sky-700 font-black px-3 py-1 rounded-full text-sm">
+                                            +{ach.xpReward} XP
+                                        </span>
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-
-            {/* Achievements Grid */}
-            <div className="p-8 overflow-y-auto">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="bg-emerald-100 p-2 rounded-xl text-emerald-600">
-                        <Medal className="w-6 h-6" />
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-800">Tus Logros</h3>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-10 bg-slate-50 rounded-3xl border border-slate-100">
+                            <div className="text-4xl mb-4 grayscale opacity-50">🏆</div>
+                            <h4 className="text-slate-600 font-bold mb-1">Aún no tienes logros</h4>
+                            <p className="text-slate-400 text-sm">Completa niveles y mantén tu racha para desbloquear premios especiales.</p>
+                        </div>
+                    )}
                 </div>
-
-                {loading ? (
-                    <div className="animate-pulse space-y-4">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="h-20 bg-slate-100 rounded-2xl w-full"></div>
-                        ))}
-                    </div>
-                ) : achievements.length > 0 ? (
-                    <div className="grid gap-4">
-                        {achievements.map((ach) => (
-                            <div key={ach.id} className="flex items-center gap-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl hover:shadow-md transition">
-                                <div className="w-14 h-14 bg-white border border-slate-200 rounded-full flex items-center justify-center text-3xl shadow-sm">
-                                    {ach.icon}
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-800 text-lg">{ach.name}</h4>
-                                    <p className="text-slate-500 text-sm leading-snug">{ach.description}</p>
-                                </div>
-                                <div className="text-right flex flex-col items-end">
-                                    <span className="text-xs font-bold text-sky-400 mb-1">RECOMPENSA</span>
-                                    <span className="bg-sky-100 text-sky-700 font-black px-3 py-1 rounded-full text-sm">
-                                        +{ach.xpReward} XP
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-10 bg-slate-50 rounded-3xl border border-slate-100">
-                        <div className="text-4xl mb-4 grayscale opacity-50">🏆</div>
-                        <h4 className="text-slate-600 font-bold mb-1">Aún no tienes logros</h4>
-                        <p className="text-slate-400 text-sm">Completa niveles y mantén tu racha para desbloquear premios especiales.</p>
-                    </div>
-                )}
             </div>
         </div>
     );
