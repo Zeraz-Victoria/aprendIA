@@ -56,10 +56,10 @@ export async function GET(req: Request) {
         }
 
         // Final safety filter: ensure world also matches schoolId (redundant but safe)
-        const isolatedEvidence = evidence.filter(e => e.world?.schoolId === schoolId);
+        const isolatedEvidence = evidence.filter((e: any) => e.world?.schoolId === schoolId);
 
         return NextResponse.json(isolatedEvidence);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching evidence:", error);
         return NextResponse.json({ error: "Failed to fetch evidence entries" }, { status: 500 });
     }
