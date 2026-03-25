@@ -322,11 +322,11 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
         // Try to split content into sections for interactive views
         const lines = content.split("\n").filter(l => l.trim());
 
-        // For flashcards: split by ### or ** headings into front/back pairs
         const flashcards: { front: string; back: string }[] = [];
         const sections: { heading: string; items: string[] }[] = [];
         const infographicSteps: { icon: string; heading: string; text: string }[] = [];
         const mindMapBranches: { label: string; children: string[] }[] = [];
+        let introText = "";
 
         let currentSection: { heading: string; items: string[] } | null = null;
         const icons = ["📌", "🧩", "💡", "🎯", "📐", "🔬", "📊", "✏️"];
@@ -366,6 +366,9 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
                 if (cleanLine.length > 0) {
                     currentSection.items.push(cleanLine);
                 }
+            } else if (!currentSection && trimmed.length > 0) {
+                // If we haven't hit a header yet, this is part of the intro text (historia_inicio)
+                introText += trimmed + "\n\n";
             }
         });
 
@@ -400,7 +403,7 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
             flashcards.push({ front: g.palabra, back: g.definicion });
         });
 
-        return { flashcards, sections, infographicSteps, mindMapBranches };
+        return { flashcards, sections, infographicSteps, mindMapBranches, introText: introText.trim() };
     }, [content, title, glossary]);
 
     // Format-specific badges
@@ -419,9 +422,18 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
     return (
         <div className="w-full overflow-hidden">
             {/* Format badge */}
-            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-${accentColor}-900/50 border border-${accentColor}-700/50 text-${accentColor}-300 text-xs font-bold mb-4`}>
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-${accentColor}-900/50 border border-${accentColor}-700/50 text-${accentColor}-300 text-xs font-bold mb-6`}>
                 <span>{badge.icon}</span> {badge.name}
             </div>
+
+            {/* Introductory Story (if not rendered by full-text views below) */}
+            {structuredData.introText && presentationType !== "text" && presentationType !== "word_puzzle" && presentationType !== "crossword" && (
+                <div className="prose prose-invert prose-sm max-w-none mb-8 text-slate-200">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                        {structuredData.introText}
+                    </ReactMarkdown>
+                </div>
+            )}
 
             {/* Render based on type */}
             {presentationType === "flashcards" && (
