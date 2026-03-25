@@ -3,6 +3,7 @@
 import React from "react";
 import { Heart, Flame, Diamond, Trophy, Users, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { getPusherClient } from "@/lib/pusher";
 import { useLearning } from "@/contexts/LearningContext";
 
@@ -195,9 +196,9 @@ export default function StudentHUD({
             )}
 
             {/* Buffs Modal — Bottom Sheet on mobile */}
-            {showBuffModal && (
+            {showBuffModal && typeof document !== 'undefined' && createPortal(
                 <div
-                    className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm cursor-auto pointer-events-auto sm:flex sm:items-start sm:justify-center sm:pt-20"
+                    className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm cursor-auto pointer-events-auto sm:flex sm:items-start sm:justify-center sm:pt-20"
                     onClick={(e) => { if (e.target === e.currentTarget) setShowBuffModal(false); }}
                 >
                     {/* Modal container */}
@@ -243,11 +244,11 @@ export default function StudentHUD({
                         </div>
 
                         {/* Scrollable classmates list */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-2 pb-8">
                             {classmates.map(c => (
-                                <div key={c.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                                <div key={c.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-sm">
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <span className="text-2xl bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm border border-slate-100 shrink-0">
+                                        <span className="text-2xl bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm border border-slate-200 shrink-0">
                                             {c.avatar}
                                         </span>
                                         <div className="min-w-0">
@@ -260,9 +261,9 @@ export default function StudentHUD({
                                     <button
                                         onClick={() => handleSendBuff(c.id)}
                                         disabled={stats.gems < (includeHint ? 15 : 10) || sendingBuffTo === c.id}
-                                        className="bg-cyan-100 hover:bg-cyan-200 text-slate-700 disabled:opacity-50 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-transform active:scale-95 shrink-0"
+                                        className="bg-cyan-100 hover:bg-cyan-200 text-cyan-800 disabled:opacity-50 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-transform active:scale-95 shrink-0"
                                     >
-                                        Animar <Diamond className="w-3 h-3 fill-slate-700" /> {includeHint ? 15 : 10}
+                                        Animar <Diamond className="w-3 h-3 fill-cyan-800" /> {includeHint ? 15 : 10}
                                     </button>
                                 </div>
                             ))}
@@ -271,7 +272,8 @@ export default function StudentHUD({
                             )}
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );
