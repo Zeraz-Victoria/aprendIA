@@ -809,9 +809,10 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             )}
 
             <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border-4 border-amber-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
-                <div className="bg-amber-100 dark:bg-slate-800 p-3 sm:p-4 flex justify-between items-center border-b border-amber-200 dark:border-slate-700 gap-2">
-                    <h3 className="font-bold text-base sm:text-xl text-amber-900 dark:text-amber-100 flex items-center gap-2 truncate min-w-0">
-                        <span className="text-xl sm:text-2xl flex-shrink-0">{data.type === 'guided_practice' ? '🎯' : (data.type === 'boss_fight' ? '👹' : '🎒')}</span> <span className="truncate">{data.title}</span>
+                <div className="bg-amber-100 dark:bg-slate-800 p-3 sm:p-4 flex justify-between items-start border-b border-amber-200 dark:border-slate-700 gap-2">
+                    <h3 className="font-bold text-base sm:text-xl text-amber-900 dark:text-amber-100 flex items-start gap-2 min-w-0 flex-1">
+                        <span className="text-xl sm:text-2xl flex-shrink-0 mt-0.5">{data.type === 'guided_practice' ? '🎯' : (data.type === 'boss_fight' ? '👹' : '🎒')}</span> 
+                        <span className="break-words leading-tight">{data.title}</span>
                     </h3>
                     <div className="flex gap-2 items-center">
                         {/* Inline Lives/Gems/Streak */}

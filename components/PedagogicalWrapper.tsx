@@ -182,10 +182,10 @@ export default function PedagogicalWrapper({ content, studentName, type = 'theor
     // Split into paragraphs (splitting by double newline)
     const rawParagraphs = formattedContent.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
 
-    // If it's just one paragraph or very short, don't overcomplicate, render normal Markdown but beautifully wrapped
-    if (rawParagraphs.length === 0) return null;
-
-    if (rawParagraphs.length === 1) {
+    // If it's just one paragraph, or if it contains markdown headings, don't chop it up. Render as a continuous document.
+    const hasMarkdownHeaders = /^#{1,4}\s+/m.test(formattedContent);
+    
+    if (rawParagraphs.length <= 1 || hasMarkdownHeaders) {
         return (
             <div className={`bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border ${type === 'narrative' ? 'border-amber-200 bg-amber-50/50' : 'border-sky-100'} overflow-hidden break-words`}>
                 <div className="prose prose-lg dark:prose-invert max-w-full leading-relaxed">
