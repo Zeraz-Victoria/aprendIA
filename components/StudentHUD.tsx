@@ -59,7 +59,7 @@ export default function StudentHUD({
             if (document.visibilityState === 'visible') {
                 checkPendingBuffs();
             }
-        }, 120000); // And then every 120 seconds, only if visible
+        }, 60000); // Check every 60 seconds
         return () => clearInterval(interval);
     }, [currentUser?.id]);
 

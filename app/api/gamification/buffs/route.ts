@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { pusherServer } from "@/lib/pusher";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { withRetry } from "@/lib/db-retry";
 
 export async function GET(req: Request) {
     try {
@@ -79,22 +80,22 @@ export async function POST(req: Request) {
 
         if (sender.gems < cost) return NextResponse.json({ error: "Not enough gems" }, { status: 400 });
 
-        // Deduct gems
-        await prisma.user.update({
-            where: { id: senderId },
-            data: { gems: { decrement: cost } }
-        });
-
-        if (includeHint) {
-            await prisma.hint.create({
-                data: {
-                    studentId: targetId,
-                    message: `Tu compañero ${sender.name || ''} ha usado sus gemas para enviarte una pista extra: ¡Lee el problema dos veces en voz alta y busca los datos clave!`
-                }
+        // Deduct gems and Create buff inside a retry block
+        await withRetry(async () => {
+            await prisma.user.update({
+                where: { id: senderId },
+                data: { gems: { decrement: cost } }
             });
-        }
 
-        try {
+            if (includeHint) {
+                await prisma.hint.create({
+                    data: {
+                        studentId: targetId,
+                        message: `Tu compañero ${sender.name || ''} ha usado sus gemas para enviarte una pista extra: ¡Lee el problema dos veces en voz alta y busca los datos clave!`
+                    }
+                });
+            }
+
             await prisma.buff.create({
                 data: {
                     targetId,
@@ -103,9 +104,7 @@ export async function POST(req: Request) {
                     message: buffMessage || '¡Sigue así, tú puedes!'
                 }
             });
-        } catch (e) {
-            console.error("Buff db creation error:", e);
-        }
+        });
 
         return NextResponse.json({ success: true, remainingGems: sender.gems - cost });
     } catch (e) {

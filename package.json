@@ -6,7 +6,7 @@
     "dev": "npm run clean-port && NODE_OPTIONS='--max-old-space-size=2048' next dev",
     "clean-port": "lsof -ti:3000 | xargs kill -9 || true",
     "build": "prisma generate && prisma migrate deploy && NODE_OPTIONS=--max-old-space-size=1024 next build",
-    "start": "next start",
+    "start": "NODE_OPTIONS='--max-old-space-size=450' next start",
     "lint": "eslint"
   },
   "dependencies": {
@@ -32,6 +32,7 @@
     "react-markdown": "^10.1.0",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
+    "sharp": "^0.34.5",
     "stripe": "^20.3.1"
   },
   "devDependencies": {
