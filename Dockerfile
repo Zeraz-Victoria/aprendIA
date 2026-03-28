@@ -14,7 +14,7 @@ COPY . .
 RUN npx prisma generate
 
 # Build Next.js (skip prisma migrate deploy — DB isn't available during build)
-RUN npx prisma generate && NODE_OPTIONS=--max-old-space-size=1024 next build
+RUN NODE_OPTIONS=--max-old-space-size=1024 npx next build
 
 # Production image, copy all the files and run next
 FROM node:20-alpine AS runner
