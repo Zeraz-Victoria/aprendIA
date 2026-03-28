@@ -13,9 +13,8 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build Next.js
-# Ensure you are not building standalone if you rely on typical next start
-RUN npm run build
+# Build Next.js (skip prisma migrate deploy — DB isn't available during build)
+RUN npx prisma generate && NODE_OPTIONS=--max-old-space-size=1024 next build
 
 # Production image, copy all the files and run next
 FROM node:20-alpine AS runner
