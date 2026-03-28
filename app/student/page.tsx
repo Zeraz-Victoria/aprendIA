@@ -2,7 +2,7 @@
 
 import AdventureMap from "@/components/AdventureMap";
 import StudentHUD from "@/components/StudentHUD";
-import { ArrowLeft, X, BrainCircuit, ClipboardList, Shield, Swords, Timer } from "lucide-react";
+import { ArrowLeft, X, BrainCircuit, ClipboardList, Shield, Swords, Timer, MapPin } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
 import { useState, useEffect, useCallback } from "react";
 import RewardsStore from "@/components/RewardsStore";
@@ -317,19 +317,14 @@ export default function StudentPage() {
         <main className="min-h-screen bg-slate-900 flex flex-col">
             {/* === STICKY HEADER SECTION (does not scroll) === */}
             <div className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
-                {/* Row 1: HUD Stats */}
                 <StudentHUD
                     onOpenStore={() => setShowStore(true)}
                     onOpenLeaderboard={() => setShowLeaderboard(true)}
                     onOpenProfile={() => setShowProfile(true)}
-                    onOpenRoom={() => setShowVirtualRoom(true)}
-                />
-
-                {/* Row 2: Action Buttons (below HUD, same block) */}
-                <div className="px-3 pt-12 pb-2 flex flex-wrap gap-2 items-center">
+                >
                     <button
                         onClick={() => signOut({ callbackUrl: "/" })}
-                        className="bg-slate-700 p-2 rounded-full shadow border border-slate-600 text-slate-300 hover:bg-slate-600 transition-all flex items-center justify-center w-9 h-9"
+                        className="bg-slate-800 p-1.5 rounded-xl shadow border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all flex items-center justify-center shrink-0 w-8 h-8 snap-start"
                         title="Salir"
                     >
                         <ArrowLeft className="w-4 h-4" />
@@ -338,31 +333,43 @@ export default function StudentPage() {
                     {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
                         <button
                             onClick={() => setSelectedMapId(null)}
-                            className="bg-teal-700 rounded-full shadow border border-teal-600 text-white active:scale-95 transition-all flex items-center gap-1 px-3 py-1.5 font-bold text-xs"
+                            className="bg-teal-700/80 hover:bg-teal-600 rounded-xl shadow border border-teal-500 text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start"
+                            title="Mundos"
                         >
-                            🗺️ Mundos
+                            <span className="text-base">🗺️</span> <span className="hidden sm:inline">Mundos</span>
                         </button>
                     )}
 
+                    {selectedMapId && currentUser.assignedWorlds && (
+                        <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 rounded-xl border border-slate-700 shadow-inner shrink-0 cursor-default">
+                            <MapPin className="w-3.5 h-3.5 text-teal-400" />
+                            <span className="text-white font-bold text-xs truncate max-w-[150px] lg:max-w-[200px]">
+                                {currentUser.assignedWorlds.find(w => w.id === selectedMapId)?.title || 'Aventura'}
+                            </span>
+                        </div>
+                    )}
+
+                    <button
+                        onClick={() => setShowVirtualRoom(true)}
+                        className="bg-fuchsia-700/80 hover:bg-fuchsia-600 rounded-xl shadow border border-fuchsia-500 text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start"
+                        title="Ir a mi Salón Virtual"
+                    >
+                        <span className="text-base">🏫</span> <span className="hidden sm:inline">Mi Salón</span>
+                    </button>
+
                     <button
                         onClick={() => setShowEvaluations(true)}
-                        className="bg-amber-600 rounded-full shadow border border-amber-500 text-white active:scale-95 transition-all flex items-center gap-1 px-3 py-1.5 font-bold text-xs relative"
+                        className="bg-amber-600/80 hover:bg-amber-500 rounded-xl shadow border border-amber-500 text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs relative shrink-0 snap-start"
+                        title="Evaluaciones"
                     >
-                        <ClipboardList className="w-3.5 h-3.5" /> Evaluaciones
+                        <ClipboardList className="w-4 h-4" /> <span className="hidden sm:inline">Evaluaciones</span>
                         {evaluations.length > 0 && (
-                            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black">
+                            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-black border border-slate-900 shadow-md">
                                 {evaluations.length}
                             </span>
                         )}
                     </button>
-
-                    <button
-                        onClick={() => setShowRaidModal(true)}
-                        className="bg-purple-700 rounded-full shadow border border-purple-600 text-white active:scale-95 transition-all flex items-center gap-1 px-3 py-1.5 font-bold text-xs"
-                    >
-                        <Swords className="w-3.5 h-3.5" /> Raid Boss
-                    </button>
-                </div>
+                </StudentHUD>
 
                 {/* Lives Cooldown Timer */}
                 {livesResetCountdown > 0 && (

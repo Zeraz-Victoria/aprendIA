@@ -21,6 +21,7 @@ interface Level {
     type: string;
     isGenerating?: boolean;
     isStudentMission?: boolean;
+    hasAvatar?: boolean;
 }
 
 export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }) {
@@ -89,16 +90,26 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
     }, [world, studentMissions]);
 
     const numLevels = mergedDays.length;
+    const minHeight = Math.max(600, numLevels * 160);
+
     const dynamicCoords = React.useMemo(() => {
         if (numLevels === 0) return [];
         return Array.from({ length: numLevels }, (_, i) => {
             if (numLevels === 1) return { x: 50, y: 50 };
             const progressRatio = i / (numLevels - 1);
-            const y = 15 + (progressRatio * 80);
+            
+            // Keep fixed pixel margins from top and bottom so large maps don't waste 20% of 2000px
+            const topMarginPx = 100; 
+            const bottomMarginPx = 120;
+            
+            const startY = (topMarginPx / minHeight) * 100;
+            const endY = 100 - ((bottomMarginPx / minHeight) * 100);
+            
+            const y = startY + (progressRatio * (endY - startY));
             const x = 50 + Math.sin(i * 1.5) * 35;
             return { x, y };
         });
-    }, [numLevels]);
+    }, [numLevels, minHeight]);
 
     if (!world) {
         return null;
@@ -109,6 +120,7 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
     const levels: Level[] = mergedDays.map((day, index) => {
         const isCompleted = index < totalCompletedLevels;
         const isActive = index === totalCompletedLevels;
+        const hasAvatar = isActive || (totalCompletedLevels >= numLevels && index === numLevels - 1);
 
         let status: LevelStatus = "locked";
         if (isCompleted) status = "completed";
@@ -126,7 +138,8 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
                 : (day.type === 'boss_fight' ? 'Jefe Final' : `Día ${day.dayNumber}`),
             type: (day as any).isStudentMission ? 'guided_practice' : (day.type || 'concept_story'),
             isGenerating: (day as any).isGenerating,
-            isStudentMission: (day as any).isStudentMission || false
+            isStudentMission: (day as any).isStudentMission || false,
+            hasAvatar
         };
     });
 
@@ -239,7 +252,7 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
             {/* Map Container — Battle Arena Style */}
             <div
                 className={`relative w-full max-w-4xl rounded-[2rem] shadow-2xl border-2 ${theme.mapBorder} overflow-hidden shrink-0 z-10`}
-                style={{ minHeight: `${Math.max(600, numLevels * 160)}px` }}
+                style={{ minHeight: `${minHeight}px` }}
             >
                 {/* High quality container background */}
                 <div className="absolute inset-0 z-0 pointer-events-none">
@@ -251,34 +264,7 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
                     <div className={`absolute inset-0 ${theme.mapCardBg}`} style={{ opacity: 0.85 }}></div>
                 </div>
 
-                {/* World Title Banner — Military Style */}
-                <div className="absolute top-0 left-0 w-full z-20 pointer-events-none p-3">
-                    <div className={`max-w-sm mx-auto ${theme.bannerBg} backdrop-blur-md rounded-xl px-4 py-2.5 shadow-xl border ${theme.bannerBorder} flex items-center gap-3`}>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                                <span className={`text-[10px] font-black ${theme.bannerAccent} uppercase tracking-[0.2em] bg-black/30 px-2 py-0.5 rounded-full whitespace-nowrap flex items-center gap-1`}>
-                                    <Shield className="w-3 h-3" /> {world.theme}
-                                </span>
-                            </div>
-                            <h1 className="text-sm font-black text-white leading-tight truncate tracking-wide">
-                                {world.title}
-                            </h1>
-                        </div>
-                        <div className="text-right shrink-0">
-                            <div className={`text-[10px] font-bold ${theme.hudTextSecondary}`}>{totalCompletedLevels}/{numLevels}</div>
-                            {/* Mini progress bar */}
-                            <div className="w-16 h-1.5 bg-black/40 rounded-full overflow-hidden mt-0.5">
-                                <div
-                                    className="h-full rounded-full transition-all duration-700"
-                                    style={{
-                                        width: `${numLevels > 0 ? (totalCompletedLevels / numLevels) * 100 : 0}%`,
-                                        backgroundColor: theme.pathProgress,
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* SVG Path connecting nodes */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -334,11 +320,14 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
                             {level.status === 'locked' && <Lock className="w-6 h-6" />}
                             {level.status !== 'locked' && level.type === 'guided_practice' && !level.isGenerating && <Swords className="w-6 h-6" />}
                             {level.label === 'Jefe Final' && level.status !== 'locked' && !level.isGenerating && <Skull className="w-7 h-7" />}
-                            {level.status === 'active' && !level.isGenerating && level.label !== 'Jefe Final' && level.type !== 'guided_practice' && (
-                                <div className="text-3xl animate-bounce drop-shadow-lg z-20 absolute -top-5">
+                            
+                            {/* Avatar Indicator */}
+                            {level.hasAvatar && !level.isGenerating && (
+                                <div className="text-4xl animate-bounce drop-shadow-2xl z-20 absolute -top-8">
                                     {currentUser?.avatar || "🧑"}
                                 </div>
                             )}
+
                             {level.status === 'completed' && <Check className="w-8 h-8" strokeWidth={3} />}
                             {level.isGenerating && (
                                 <svg className="animate-spin w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

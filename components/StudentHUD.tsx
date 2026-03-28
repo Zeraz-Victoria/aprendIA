@@ -11,12 +11,12 @@ export default function StudentHUD({
     onOpenStore,
     onOpenLeaderboard,
     onOpenProfile,
-    onOpenRoom
+    children
 }: {
     onOpenStore?: () => void;
     onOpenLeaderboard?: () => void;
     onOpenProfile?: () => void;
-    onOpenRoom?: () => void;
+    children?: React.ReactNode;
 }) {
     const { stats, currentUser, setStats } = useLearning();
     const [showBuffModal, setShowBuffModal] = useState(false);
@@ -127,12 +127,12 @@ export default function StudentHUD({
 
     return (
         <>
-            <div className="fixed top-0 left-0 w-full z-40 px-4 py-3 pointer-events-none">
-                <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="w-full px-2 md:px-4 py-1.5 md:py-2">
+                <div className="max-w-7xl mx-auto flex flex-wrap md:flex-nowrap items-center justify-between gap-y-2 gap-x-2 md:gap-4">
 
                     {/* Left: Profile / Avatar */}
                     <div
-                        className={`flex items-center gap-2 pointer-events-auto bg-slate-800/80 cursor-pointer hover:bg-slate-700/90 backdrop-blur rounded-full px-3 py-1 shadow-md border transition-all hover:scale-105
+                        className={`order-1 flex items-center gap-1.5 bg-slate-800/80 cursor-pointer hover:bg-slate-700/90 backdrop-blur rounded-full px-3 py-1 shadow-sm border transition-all hover:scale-105 shrink-0
                             ${currentUser?.activeFrame === 'frame_fire' ? 'border-orange-500 shadow-orange-500/50 animate-pulse' :
                                 currentUser?.activeFrame === 'frame_ice' ? 'border-cyan-400 shadow-cyan-400/50' :
                                     currentUser?.activeFrame === 'frame_lightning' ? 'border-purple-500 shadow-purple-500/50 animate-pulse' :
@@ -140,67 +140,62 @@ export default function StudentHUD({
                         `}
                         onClick={onOpenProfile}
                     >
-                        <span className="text-xl">{currentUser?.avatar || "🧑"}</span>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                            <span className="font-bold text-slate-200 text-sm hidden sm:inline">{currentUser?.name}</span>
+                        <span className="text-lg">{currentUser?.avatar || "🧑"}</span>
+                        <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-200 text-sm">{currentUser?.name}</span>
                             {currentUser?.globalActivityAverage !== undefined && currentUser?.globalActivityAverage !== null && (
                                 <div className="bg-sky-500/20 px-2 py-0.5 rounded-lg border border-sky-400/30 flex items-center gap-1">
-                                    <span className="text-[9px] font-black text-sky-400 uppercase tracking-tighter hidden xs:inline">Grado</span>
+                                    <span className="text-[10px] font-black text-sky-400 uppercase tracking-tighter hidden sm:inline">Grado</span>
                                     <span className="text-xs font-black text-white">{currentUser.globalActivityAverage.toFixed(1)}</span>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <button
-                        className="pointer-events-auto bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-full px-3 py-1.5 sm:px-4 sm:py-2 shadow-lg border-2 border-fuchsia-400 font-bold text-sm sm:text-base ml-2 cursor-pointer transition-transform hover:scale-105 flex items-center gap-2"
-                        onClick={onOpenRoom}
-                        title="Ir a mi Salón Virtual"
-                    >
-                        🏫 <span className="hidden sm:inline">Mi Salón</span>
-                    </button>
-
-                    <div className="flex-1 opacity-0 pointer-events-none"></div>
+                    {/* Navigation Buttons (Bottom on Mobile, Center on PC) */}
+                    <div className="order-3 md:order-2 w-full md:flex-1 flex flex-row items-center justify-center gap-1.5 md:gap-2 overflow-x-auto no-scrollbar pt-2 md:pt-0 border-t border-slate-800/50 md:border-t-0 snap-x">
+                        {children}
+                    </div>
 
                     {/* Right: Stats */}
-                    <div className="flex items-center gap-3 sm:gap-6 pointer-events-auto">
+                    <div className="order-2 md:order-3 ml-auto md:ml-0 flex items-center gap-3 sm:gap-4 shrink-0 bg-slate-800/50 px-3 py-1.5 rounded-xl border border-slate-700/50 backdrop-blur">
 
                         {/* Motivate Classmates */}
                         <div
-                            className="flex items-center gap-1 sm:gap-2 group cursor-pointer hover:scale-105 transition-transform"
+                            className="flex items-center gap-1 group cursor-pointer hover:scale-105 transition-transform"
                             onClick={handleOpenBuffs}
                         >
-                            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500 fill-cyan-400 group-hover:fill-cyan-500" />
+                            <Users className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-500 fill-cyan-400 group-hover:fill-cyan-500" />
                         </div>
 
                         {/* Leaderboard */}
                         <div
-                            className="flex items-center gap-1 sm:gap-2 group cursor-pointer hover:scale-105 transition-transform"
+                            className="flex items-center gap-1 group cursor-pointer hover:scale-105 transition-transform"
                             onClick={onOpenLeaderboard}
                         >
-                            <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 fill-amber-400 group-hover:fill-amber-500" />
+                            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 fill-amber-400 group-hover:fill-amber-500" />
                         </div>
 
                         {/* Streak */}
-                        <div className="flex items-center gap-1 sm:gap-2 group cursor-pointer">
-                            <Flame className={`w-5 h-5 sm:w-6 sm:h-6 ${stats.streak > 0 ? 'text-orange-500 fill-orange-500 animate-pulse' : 'text-slate-400 fill-slate-400'}`} />
-                            <span className={`font-bold text-sm sm:text-base ${stats.streak > 0 ? 'text-orange-500' : 'text-slate-400'}`}>{stats.streak}</span>
+                        <div className="flex items-center gap-1 group cursor-pointer">
+                            <Flame className={`w-4 h-4 sm:w-5 sm:h-5 ${stats.streak > 0 ? 'text-orange-500 fill-orange-500 animate-pulse' : 'text-slate-400 fill-slate-400'}`} />
+                            <span className={`font-bold text-xs sm:text-sm ${stats.streak > 0 ? 'text-orange-500' : 'text-slate-400'}`}>{stats.streak}</span>
                         </div>
 
                         {/* Gems */}
                         <div
-                            className="flex items-center gap-1 sm:gap-2 group cursor-pointer hover:scale-105 transition-transform bg-black/20 px-2 py-0.5 rounded-full"
+                            className="flex items-center gap-1 group cursor-pointer hover:scale-105 transition-transform bg-black/30 px-2 py-0.5 rounded-full border border-blue-500/20"
                             onClick={onOpenStore}
                             title="Abrir Tienda"
                         >
-                            <Diamond className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500 fill-blue-400 group-hover:fill-blue-500" />
-                            <span className="font-bold text-blue-500 text-sm sm:text-base group-hover:text-blue-400 transition-colors">{stats.gems}</span>
+                            <Diamond className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 fill-blue-400 group-hover:fill-blue-500" />
+                            <span className="font-bold text-blue-500 text-xs sm:text-sm group-hover:text-blue-400 transition-colors">{stats.gems}</span>
                         </div>
 
                         {/* Lives */}
-                        <div className="flex items-center gap-1 sm:gap-2 group cursor-pointer">
-                            <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 fill-red-500" />
-                            <span className="font-bold text-red-500 text-sm sm:text-base">{stats.lives}</span>
+                        <div className="flex items-center gap-1 group cursor-pointer">
+                            <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 fill-red-500" />
+                            <span className="font-bold text-red-500 text-xs sm:text-sm">{stats.lives}</span>
                         </div>
 
                     </div>
