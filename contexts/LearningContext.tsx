@@ -175,11 +175,19 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       if (status !== 'authenticated' || !isMounted) return;
 
       try {
-        // Fetch Users (Students)
-        let dbUsers: any[] = [];
-        const usersRes = await fetch(`/api/users?t=${Date.now()}`, { cache: 'no-store' });
-        if (usersRes.ok && isMounted) {
-          dbUsers = await usersRes.json();
+        // Fetch all data concurrently
+        const [usersRes, worldsRes, progRes, invRes] = await Promise.all([
+          fetch(`/api/users?t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/worlds?t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/progress?t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/inventory?t=${Date.now()}`, { cache: 'no-store' })
+        ]);
+
+        if (!isMounted) return;
+
+        // Process Users (Students)
+        if (usersRes.ok) {
+          const dbUsers = await usersRes.json();
           // Map them to the Student interface 
           const mappedStudents: Student[] = dbUsers.map((u: DBUser) => ({
             id: u.id,
@@ -201,49 +209,45 @@ export function LearningProvider({ children }: { children: ReactNode }) {
             globalActivityAverage: u.globalActivityAverage
           }));
           setStudents(mappedStudents);
-        }
 
-        // Fetch Worlds
-        const worldsRes = await fetch(`/api/worlds?t=${Date.now()}`, { cache: 'no-store' });
-        if (worldsRes.ok && isMounted) {
-          const dbWorlds = await worldsRes.json();
+          // After users are set, process Worlds because fallback logic needs dbUsers
+          if (worldsRes.ok) {
+            const dbWorlds = await worldsRes.json();
 
-          if (role === 'STUDENT') {
-            // Para alumnos: usar los mundos asignados que ya vienen en su perfil (más eficiente)
-            const currentUserId = (session?.user as any)?.id;
-            const userMatch = dbUsers?.find((u: any) => u.id === currentUserId);
-            if (userMatch?.assignedWorlds?.length > 0) {
-              const parsedAssignedWorlds = userMatch.assignedWorlds.map((w: any) => ({
-                ...w,
-                days: w.daysJson ? JSON.parse(w.daysJson) : (w.days || []),
-                pedagogy: w.pedagogyJson ? JSON.parse(w.pedagogyJson) : undefined
-              }));
-              setWorlds(parsedAssignedWorlds);
-              if (parsedAssignedWorlds.length > 0) {
-                setActiveWorldId(prev => prev || parsedAssignedWorlds[0].id);
+            if (role === 'STUDENT') {
+              // Para alumnos: usar los mundos asignados que ya vienen en su perfil (más eficiente)
+              const currentUserId = (session?.user as any)?.id;
+              const userMatch = dbUsers?.find((u: any) => u.id === currentUserId);
+              if (userMatch?.assignedWorlds?.length > 0) {
+                const parsedAssignedWorlds = userMatch.assignedWorlds.map((w: any) => ({
+                  ...w,
+                  days: w.daysJson ? JSON.parse(w.daysJson) : (w.days || []),
+                  pedagogy: w.pedagogyJson ? JSON.parse(w.pedagogyJson) : undefined
+                }));
+                setWorlds(parsedAssignedWorlds);
+                if (parsedAssignedWorlds.length > 0) {
+                  setActiveWorldId(prev => prev || parsedAssignedWorlds[0].id);
+                }
+              } else {
+                // Fallback: usar los mundos del API
+                setWorlds(dbWorlds);
+                if (dbWorlds.length > 0) {
+                  setActiveWorldId(prev => prev || dbWorlds[0].id);
+                }
               }
             } else {
-              // Fallback: usar los mundos del API
+              // Para maestros y admins: usar todos los mundos del API
               setWorlds(dbWorlds);
               if (dbWorlds.length > 0) {
                 setActiveWorldId(prev => prev || dbWorlds[0].id);
               }
             }
-          } else {
-            // Para maestros y admins: usar todos los mundos del API
-            setWorlds(dbWorlds);
-            if (dbWorlds.length > 0) {
-              setActiveWorldId(prev => prev || dbWorlds[0].id);
-            }
           }
         }
 
-        // Fetch Progress and Inventory
-        const progRes = await fetch(`/api/progress?t=${Date.now()}`, { cache: 'no-store' });
-        if (progRes.ok && isMounted) setProgress(await progRes.json());
-
-        const invRes = await fetch(`/api/inventory?t=${Date.now()}`, { cache: 'no-store' });
-        if (invRes.ok && isMounted) setInventory(await invRes.json());
+        // Process Progress and Inventory
+        if (progRes.ok) setProgress(await progRes.json());
+        if (invRes.ok) setInventory(await invRes.json());
       } catch (err) {
         console.error("Failed to load initial data from DB", err);
       }
