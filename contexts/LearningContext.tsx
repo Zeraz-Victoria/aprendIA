@@ -99,6 +99,9 @@ interface LearningContextType {
   purchaseItem: (studentId: string, itemId: string, cost: number) => Promise<boolean>;
   consumeItem: (studentId: string, itemId: string) => Promise<boolean>;
 
+  // Bootstrap extras (pre-fetched for students)
+  bootstrapExtras: { hints: any[]; evaluations: any[]; messages: any[] } | null;
+
   // Teacher Data
   students: Student[];
   addStudent: (name: string, avatar: string, classroomId?: string | null) => Promise<boolean>;
@@ -162,6 +165,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
   });
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
+  const [bootstrapExtras, setBootstrapExtras] = useState<{ hints: any[]; evaluations: any[]; messages: any[] } | null>(null);
 
   const { data: session, status } = useSession();
 
@@ -175,7 +179,56 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       if (status !== 'authenticated' || !isMounted) return;
 
       try {
-        // Fetch all data concurrently
+        // === FAST PATH: Students use a single bootstrap endpoint ===
+        if (role === 'STUDENT') {
+          const res = await fetch(`/api/student/bootstrap?t=${Date.now()}`, { cache: 'no-store' });
+          if (res.ok && isMounted) {
+            const data = await res.json();
+
+            // Set student as the only student in the list
+            const u = data.user;
+            const mappedStudent: Student = {
+              id: u.id,
+              name: u.name,
+              avatar: u.avatar || '🧑🏻',
+              status: u.status as Student['status'],
+              lastActivity: 'Activo recientemente',
+              progress: 0,
+              lives: u.lives,
+              gems: u.gems,
+              streak: u.streak,
+              xp: u.xp,
+              classroomId: u.classroomId || null,
+              activeFrame: u.activeFrame,
+              studentCode: u.studentCode,
+              assignedWorlds: u.assignedWorlds,
+              projectGrades: u.projectGrades,
+              automaticProjectGrades: u.automaticProjectGrades,
+              globalActivityAverage: u.globalActivityAverage
+            };
+            setStudents([mappedStudent]);
+
+            // Set worlds
+            if (data.worlds?.length > 0) {
+              setWorlds(data.worlds);
+              setActiveWorldId(prev => prev || data.worlds[0].id);
+            }
+
+            // Set progress and inventory
+            setProgress(data.progress || {});
+            setInventory(data.inventory || {});
+
+            // Store extras so the student page doesn't need separate fetches
+            setBootstrapExtras({
+              hints: data.hints || [],
+              evaluations: data.evaluations || [],
+              messages: data.messages || []
+            });
+          }
+          return;
+        }
+
+        // === TEACHER / ADMIN PATH: standard parallel fetches ===
         const [usersRes, worldsRes, progRes, invRes] = await Promise.all([
           fetch(`/api/users?t=${Date.now()}`, { cache: 'no-store' }),
           fetch(`/api/worlds?t=${Date.now()}`, { cache: 'no-store' }),
@@ -188,7 +241,6 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         // Process Users (Students)
         if (usersRes.ok) {
           const dbUsers = await usersRes.json();
-          // Map them to the Student interface 
           const mappedStudents: Student[] = dbUsers.map((u: DBUser) => ({
             id: u.id,
             name: u.name,
@@ -209,39 +261,14 @@ export function LearningProvider({ children }: { children: ReactNode }) {
             globalActivityAverage: u.globalActivityAverage
           }));
           setStudents(mappedStudents);
+        }
 
-          // After users are set, process Worlds because fallback logic needs dbUsers
-          if (worldsRes.ok) {
-            const dbWorlds = await worldsRes.json();
-
-            if (role === 'STUDENT') {
-              // Para alumnos: usar los mundos asignados que ya vienen en su perfil (más eficiente)
-              const currentUserId = (session?.user as any)?.id;
-              const userMatch = dbUsers?.find((u: any) => u.id === currentUserId);
-              if (userMatch?.assignedWorlds?.length > 0) {
-                const parsedAssignedWorlds = userMatch.assignedWorlds.map((w: any) => ({
-                  ...w,
-                  days: w.daysJson ? JSON.parse(w.daysJson) : (w.days || []),
-                  pedagogy: w.pedagogyJson ? JSON.parse(w.pedagogyJson) : undefined
-                }));
-                setWorlds(parsedAssignedWorlds);
-                if (parsedAssignedWorlds.length > 0) {
-                  setActiveWorldId(prev => prev || parsedAssignedWorlds[0].id);
-                }
-              } else {
-                // Fallback: usar los mundos del API
-                setWorlds(dbWorlds);
-                if (dbWorlds.length > 0) {
-                  setActiveWorldId(prev => prev || dbWorlds[0].id);
-                }
-              }
-            } else {
-              // Para maestros y admins: usar todos los mundos del API
-              setWorlds(dbWorlds);
-              if (dbWorlds.length > 0) {
-                setActiveWorldId(prev => prev || dbWorlds[0].id);
-              }
-            }
+        // Process Worlds
+        if (worldsRes.ok) {
+          const dbWorlds = await worldsRes.json();
+          setWorlds(dbWorlds);
+          if (dbWorlds.length > 0) {
+            setActiveWorldId(prev => prev || dbWorlds[0].id);
           }
         }
 
@@ -751,6 +778,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       worlds, activeWorldId, addWorld, updateWorld, deleteWorld, setActiveWorld,
       currentUser, login, logout,
       stats, setStats, progress, inventory, markLevelComplete, purchaseItem, consumeItem,
+      bootstrapExtras,
       students, addStudent, updateStudent, updateStudentAvatar, updateStudentFrame, deleteStudent, toggleWorldAssignment, setProjectGrade,
       classrooms, addClassroom, updateClassroom, deleteClassroom, assignStudentToClassroom,
       grades, addGrade, updateGrade, deleteGrade

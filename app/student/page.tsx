@@ -42,7 +42,7 @@ interface TeacherMsg {
 }
 
 export default function StudentPage() {
-    const { currentUser, setActiveWorld } = useLearning();
+    const { currentUser, setActiveWorld, bootstrapExtras } = useLearning();
     const { status } = useSession();
     const router = useRouter();
     useSessionGuard();
@@ -72,6 +72,15 @@ export default function StudentPage() {
     // State to determine if we are in Lobby or inside a specific Map
     const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
 
+    // Initialize hints, evaluations, and messages from bootstrap data (no extra API calls!)
+    useEffect(() => {
+        if (bootstrapExtras) {
+            setHints(bootstrapExtras.hints || []);
+            setEvaluations(bootstrapExtras.evaluations || []);
+            setTeacherMessages(bootstrapExtras.messages || []);
+        }
+    }, [bootstrapExtras]);
+
     const fetchHints = useCallback(async () => {
         if (!currentUser?.id) return;
         try {
@@ -85,11 +94,11 @@ export default function StudentPage() {
         }
     }, [currentUser?.id]);
 
+    // Only poll for updates — initial data comes from bootstrap
     useEffect(() => {
-        fetchHints();
         const interval = setInterval(() => {
             if (document.visibilityState === 'visible') fetchHints();
-        }, 180000); // Poll every 180 seconds to avoid server overload
+        }, 180000);
         return () => clearInterval(interval);
     }, [fetchHints]);
 
@@ -108,10 +117,9 @@ export default function StudentPage() {
     }, [currentUser?.id]);
 
     useEffect(() => {
-        fetchEvaluations();
         const interval = setInterval(() => {
             if (document.visibilityState === 'visible') fetchEvaluations();
-        }, 300000); // Poll every 300 seconds (5 minutes)
+        }, 300000);
         return () => clearInterval(interval);
     }, [fetchEvaluations]);
 
@@ -130,10 +138,9 @@ export default function StudentPage() {
     }, [currentUser?.id]);
 
     useEffect(() => {
-        fetchMessages();
         const interval = setInterval(() => {
             if (document.visibilityState === 'visible') fetchMessages();
-        }, 300000); // Poll every 300 seconds (5 minutes)
+        }, 300000);
         return () => clearInterval(interval);
     }, [fetchMessages]);
 
