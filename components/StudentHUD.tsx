@@ -10,11 +10,13 @@ import { useLearning } from "@/contexts/LearningContext";
 export default function StudentHUD({
     onOpenStore,
     onOpenLeaderboard,
-    onOpenProfile
+    onOpenProfile,
+    onOpenRoom
 }: {
     onOpenStore?: () => void;
     onOpenLeaderboard?: () => void;
     onOpenProfile?: () => void;
+    onOpenRoom?: () => void;
 }) {
     const { stats, currentUser, setStats } = useLearning();
     const [showBuffModal, setShowBuffModal] = useState(false);
@@ -74,6 +76,20 @@ export default function StudentHUD({
             console.error("Failed to fetch classmates", e);
         }
     };
+
+    useEffect(() => {
+        const handleOpenBuff = (e: any) => {
+            if (e.detail?.studentName) {
+                setCustomMessage(`¡Tú puedes lograrlo, ${e.detail.studentName}!`);
+            }
+            setShowBuffModal(true);
+            fetchClassmates();
+        };
+        
+        window.addEventListener('open-buff-modal', handleOpenBuff);
+        return () => window.removeEventListener('open-buff-modal', handleOpenBuff);
+    }, [currentUser?.id]);
+
 
     const handleSendBuff = async (targetId: string) => {
         const cost = includeHint ? 15 : 10;
@@ -135,6 +151,16 @@ export default function StudentHUD({
                             )}
                         </div>
                     </div>
+
+                    <button
+                        className="pointer-events-auto bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-full px-3 py-1.5 sm:px-4 sm:py-2 shadow-lg border-2 border-fuchsia-400 font-bold text-sm sm:text-base ml-2 cursor-pointer transition-transform hover:scale-105 flex items-center gap-2"
+                        onClick={onOpenRoom}
+                        title="Ir a mi Salón Virtual"
+                    >
+                        🏫 <span className="hidden sm:inline">Mi Salón</span>
+                    </button>
+
+                    <div className="flex-1 opacity-0 pointer-events-none"></div>
 
                     {/* Right: Stats */}
                     <div className="flex items-center gap-3 sm:gap-6 pointer-events-auto">

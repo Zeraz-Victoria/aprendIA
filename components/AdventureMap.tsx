@@ -203,9 +203,18 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
 
     return (
         <div className={`relative w-full min-h-screen ${theme.mapBg} overflow-y-auto flex flex-col items-center pt-4 pb-16 px-4 md:px-8`}>
-            {/* Background Texture */}
+            {/* Background Image Container */}
+            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+                <img 
+                    src={theme.mapImage} 
+                    alt="" 
+                    className="w-full h-full object-cover scale-105 opacity-30 blur-sm" 
+                />
+            </div>
+
+            {/* Background Texture Overlay */}
             <div
-                className="absolute inset-0 opacity-[0.07] pointer-events-none fixed"
+                className="absolute inset-0 opacity-[0.1] pointer-events-none fixed z-[1]"
                 style={{ backgroundImage: `url('${theme.texture}')` }}
             />
 
@@ -229,9 +238,19 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
 
             {/* Map Container — Battle Arena Style */}
             <div
-                className={`relative w-full max-w-4xl ${theme.mapCardBg} rounded-[2rem] shadow-2xl border-2 ${theme.mapBorder} overflow-hidden shrink-0`}
+                className={`relative w-full max-w-4xl rounded-[2rem] shadow-2xl border-2 ${theme.mapBorder} overflow-hidden shrink-0 z-10`}
                 style={{ minHeight: `${Math.max(600, numLevels * 160)}px` }}
             >
+                {/* High quality container background */}
+                <div className="absolute inset-0 z-0 pointer-events-none">
+                    <img 
+                        src={theme.mapImage} 
+                        alt="" 
+                        className="w-full h-full object-cover" 
+                    />
+                    <div className={`absolute inset-0 ${theme.mapCardBg}`} style={{ opacity: 0.85 }}></div>
+                </div>
+
                 {/* World Title Banner — Military Style */}
                 <div className="absolute top-0 left-0 w-full z-20 pointer-events-none p-3">
                     <div className={`max-w-sm mx-auto ${theme.bannerBg} backdrop-blur-md rounded-xl px-4 py-2.5 shadow-xl border ${theme.bannerBorder} flex items-center gap-3`}>

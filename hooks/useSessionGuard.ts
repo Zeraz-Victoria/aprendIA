@@ -31,9 +31,14 @@ export function useSessionGuard() {
 
                 const data = await res.json();
 
-                if (!data.valid && !hasShownAlert.current) {
+                if (!data.valid && !hasShownAlert.current && data.reason === "token_mismatch") {
                     hasShownAlert.current = true;
                     alert("⚠️ Tu sesión se cerró porque alguien inició sesión con tu cuenta en otro dispositivo.");
+                    signOut({ callbackUrl: "/" });
+                } else if (!data.valid && !hasShownAlert.current) {
+                    // Just an expired or invalid session (e.g., from server restart). 
+                    // Sign out silently without the scary alert.
+                    hasShownAlert.current = true;
                     signOut({ callbackUrl: "/" });
                 }
             } catch (e) {

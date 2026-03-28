@@ -72,9 +72,6 @@ export async function POST(req: Request) {
 
         return NextResponse.json(result, { status: 201 });
     } catch (error: unknown) {
-        if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-            return NextResponse.json({ message: 'Already purchased' }, { status: 200 });
-        }
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('Error during purchase:', errorMessage);
         return NextResponse.json({ error: 'Failed to complete purchase', details: errorMessage }, { status: 400 });

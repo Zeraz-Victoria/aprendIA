@@ -42,24 +42,29 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
         const interval = setInterval(fetchBoss, 120000); // Polling reducido a 120s ya que Pusher cubre el tiempo real
 
         const pusher = getPusherClient();
-        const channel = pusher.subscribe('raid-boss');
+        let channel: any = null;
 
-        channel.bind('hp-update', (data: any) => {
-            setBoss(prev => {
-                if (!prev || prev.id !== data.bossId) return prev;
-                return { ...prev, currentHealth: data.currentHealth };
+        if (pusher) {
+            channel = pusher.subscribe('raid-boss');
+
+            channel.bind('hp-update', (data: any) => {
+                setBoss(prev => {
+                    if (!prev || prev.id !== data.bossId) return prev;
+                    return { ...prev, currentHealth: data.currentHealth };
+                });
+                if (currentUser && data.attackerId !== currentUser.id) {
+                    setDamageAnim(data.damageAmount);
+                    setTimeout(() => setDamageAnim(null), 1000);
+                }
             });
-            // Only show animation if someone else attacked, self attacks already show it
-            if (currentUser && data.attackerId !== currentUser.id) {
-                setDamageAnim(data.damageAmount);
-                setTimeout(() => setDamageAnim(null), 1000);
-            }
-        });
+        }
 
         return () => {
             clearInterval(interval);
-            channel.unbind_all();
-            channel.unsubscribe();
+            if (channel) {
+                channel.unbind_all();
+                channel.unsubscribe();
+            }
         };
     }, [currentUser]);
 

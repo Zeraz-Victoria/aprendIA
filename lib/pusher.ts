@@ -30,10 +30,11 @@ export const pusherServer = new Proxy({} as PusherServer, {
 // Singleton para el cliente para no crear múltiples conexiones innecesarias
 let pusherClientInstance: PusherClient | null = null;
 
-export const getPusherClient = () => {
+export const getPusherClient = (): PusherClient | null => {
     if (!pusherClientInstance) {
         if (!process.env.NEXT_PUBLIC_PUSHER_KEY || !process.env.NEXT_PUBLIC_PUSHER_CLUSTER) {
-            throw new Error('Faltan variables de entorno del cliente Pusher');
+            console.warn('⚠️ Pusher desactivado: faltan NEXT_PUBLIC_PUSHER_KEY o NEXT_PUBLIC_PUSHER_CLUSTER');
+            return null;
         }
         pusherClientInstance = new PusherClient(
             process.env.NEXT_PUBLIC_PUSHER_KEY,

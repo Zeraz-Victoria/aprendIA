@@ -38,6 +38,7 @@ export interface GameTheme {
     bannerBg: string;
     bannerBorder: string;
     bannerAccent: string;
+    mapImage: string;        // Specific themed background image
 }
 
 export const THEMES: Record<ThemeKey, GameTheme> = {
@@ -71,6 +72,7 @@ export const THEMES: Record<ThemeKey, GameTheme> = {
         bannerBg: 'bg-gray-950/80',
         bannerBorder: 'border-orange-800',
         bannerAccent: 'text-orange-400',
+        mapImage: '/maps/map_bg_fuego.png',
     },
 
     hielo: {
@@ -103,6 +105,7 @@ export const THEMES: Record<ThemeKey, GameTheme> = {
         bannerBg: 'bg-slate-950/80',
         bannerBorder: 'border-cyan-800',
         bannerAccent: 'text-cyan-400',
+        mapImage: '/maps/map_bg_hielo.png',
     },
 
     selva: {
@@ -135,6 +138,7 @@ export const THEMES: Record<ThemeKey, GameTheme> = {
         bannerBg: 'bg-gray-950/80',
         bannerBorder: 'border-green-800',
         bannerAccent: 'text-lime-400',
+        mapImage: '/maps/map_bg_selva.png',
     },
 
     neon: {
@@ -167,6 +171,7 @@ export const THEMES: Record<ThemeKey, GameTheme> = {
         bannerBg: 'bg-gray-950/80',
         bannerBorder: 'border-purple-800',
         bannerAccent: 'text-fuchsia-400',
+        mapImage: '/maps/map_bg_neon.png',
     },
 
     clasico: {
@@ -199,6 +204,7 @@ export const THEMES: Record<ThemeKey, GameTheme> = {
         bannerBg: 'bg-slate-900/80',
         bannerBorder: 'border-slate-700',
         bannerAccent: 'text-teal-400',
+        mapImage: '/maps/map_bg_clasico.png',
     },
 };
 

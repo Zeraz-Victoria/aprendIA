@@ -51,6 +51,11 @@ model User {
   assignedWorlds     World[]            @relation("StudentAssignedWorlds")
   projectGrades      ProjectGrade[]     @relation("StudentProjectGrades")
   apiCalls           Int                @default(0)
+  virtualRoom        VirtualRoom?
+  // Classroom lobby position
+  avatarX            Float              @default(70)
+  avatarY            Float              @default(65)
+  lastSeen           DateTime           @default(now())
 }
 
 model Account {
@@ -163,7 +168,7 @@ model Inventory {
   createdAt DateTime @default(now())
   student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, itemId])
+  @@index([studentId, itemId])
 }
 
 model Achievement {
@@ -334,4 +339,23 @@ model ProjectGrade {
   world     World    @relation("WorldProjectGrades", fields: [worldId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, worldId])
+}
+
+model VirtualRoom {
+  id        String               @id @default(cuid())
+  studentId String               @unique
+  student   User                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  theme     String               @default("basic_room")
+  furniture FurniturePlacement[]
+}
+
+model FurniturePlacement {
+  id        String      @id @default(cuid())
+  roomId    String
+  room      VirtualRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  itemId    String
+  positionX Float
+  positionY Float
+  positionZ Float       @default(0)
+  rotation  Float       @default(0)
 }

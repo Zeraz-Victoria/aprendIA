@@ -12,7 +12,7 @@ export async function GET() {
         const role = (session?.user as any)?.role;
         const teacherId = (session?.user as any)?.id;
 
-        if (!schoolId && role !== 'TEACHER') {
+        if (!schoolId && role !== 'TEACHER' && role !== 'STUDENT') {
             return NextResponse.json([]);
         }
 
@@ -23,6 +23,10 @@ export async function GET() {
         // Filtering by teacherOwnerId caused map assignments to go to wrong duplicate students.
         if (schoolId) {
             whereClause.schoolId = schoolId;
+        } else if (role === 'STUDENT') {
+            // Fallback for students not formally assigned to a school: fetch just themselves 
+            // so the game can load their profile in LearningContext.
+            whereClause.id = (session?.user as any)?.id;
         } else {
             // Fallback for edge case: teacher without schoolId — show nobody
             return NextResponse.json([]);

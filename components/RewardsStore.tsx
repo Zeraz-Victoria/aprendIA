@@ -15,6 +15,27 @@ const STORE_ITEMS = [
     { id: "frame_lightning", name: "Rayo Púrpura", type: "Marco", description: "Desprende chispas de brillantez pura.", cost: 700, icon: "⚡" },
     { id: "shield_protect", name: "Escudo Protector", type: "Equipamiento", description: "Te salva de perder una vida y mantiene tu racha.", cost: 250, icon: "🛡️" },
     { id: "potion_life", name: "Poción Extra", type: "Vida", description: "Suma corazones extra al instante.", cost: 150, icon: "❤️" },
+    // Salón Virtual – Muebles de salón de clase cartoon
+    { id: "furn_desk",         name: "Pupitre Escolar",      type: "Mueble", description: "El clásico pupitre naranja con silla.", cost: 400,  icon: "🪑" },
+    { id: "furn_teacher_desk", name: "Escritorio del Profe",  type: "Mueble", description: "Un escritorio de madera con cajones.", cost: 800,  icon: "🗄️" },
+    { id: "furn_chalkboard",   name: "Pizarrón Verde",       type: "Mueble", description: "Escribe tus fórmulas favoritas.", cost: 1000, icon: "📝" },
+    { id: "furn_bookshelf",    name: "Librero de Madera",    type: "Mueble", description: "Lleno de libros de aventuras.", cost: 900,  icon: "📚" },
+    { id: "furn_plant",        name: "Planta Decorativa",    type: "Mueble", description: "Dale vida verde a tu salón.", cost: 300,  icon: "🌿" },
+    { id: "furn_globe",        name: "Globo Terráqueo",      type: "Mueble", description: "Explora los continentes.", cost: 700,  icon: "🌍" },
+    { id: "furn_clock",        name: "Reloj de Pared",       type: "Mueble", description: "Siempre puntual.", cost: 500,  icon: "🕐" },
+    { id: "furn_rug",          name: "Alfombra Educativa",   type: "Mueble", description: "Para sentarse a leer cuentos.", cost: 600,  icon: "🟣" },
+    { id: "furn_lamp",         name: "Lámpara de Estudio",   type: "Mueble", description: "Ilumina tus ideas.", cost: 400,  icon: "💡" },
+    { id: "furn_computer",     name: "Computadora Escolar",  type: "Mueble", description: "Tecnología para aprender.", cost: 1500, icon: "🖥️" },
+    { id: "furn_trashcan",     name: "Bote de Reciclaje",    type: "Mueble", description: "Cuida el medio ambiente.", cost: 200,  icon: "♻️" },
+    { id: "furn_backpack",     name: "Mochila Escolar",      type: "Mueble", description: "Guarda tus útiles.", cost: 350,  icon: "🎒" },
+    // Útiles escolares
+    { id: "furn_notebook",     name: "Libreta de Apuntes",   type: "Mueble", description: "Anota todo lo importante.", cost: 200,  icon: "📓" },
+    { id: "furn_pencilcase",   name: "Estuche de Lápices",   type: "Mueble", description: "Lápices, colores y plumas.", cost: 250,  icon: "✏️" },
+    { id: "furn_eraser",       name: "Goma de Borrar",       type: "Mueble", description: "Borra tus errores.", cost: 100,  icon: "🧹" },
+    { id: "furn_ruler",        name: "Regla",                type: "Mueble", description: "Mide con precisión.", cost: 100,  icon: "📏" },
+    { id: "furn_phone",        name: "Celular",              type: "Mueble", description: "Mantente conectado.", cost: 800,  icon: "📱" },
+    { id: "furn_tablet",       name: "Tablet",               type: "Mueble", description: "Tu compañera digital.", cost: 1200, icon: "📲" },
+    { id: "furn_waterbottle",  name: "Botella de Agua",      type: "Mueble", description: "Hidrátate.", cost: 150,  icon: "🫗" },
 ];
 
 export default function RewardsStore({ onClose }: { onClose: () => void }) {
@@ -30,7 +51,9 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
         setPurchaseError(null);
         setPurchaseSuccess(null);
 
-        if (studentInventory.includes(item.id) && item.type !== "Vida") {
+        const isFurniture = item.type === "Mueble";
+        const isConsumable = item.type === "Vida";
+        if (studentInventory.includes(item.id) && !isFurniture && !isConsumable) {
             setPurchaseError("Ya tienes este artículo.");
             return;
         }
@@ -74,14 +97,22 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 overflow-y-auto pr-2 pb-6">
                 {STORE_ITEMS.map(item => {
-                    const isOwned = studentInventory.includes(item.id) && item.type !== "Vida";
+                    const isFurniture = item.type === "Mueble";
+                    const isConsumable = item.type === "Vida";
+                    const ownedCount = studentInventory.filter(id => id === item.id).length;
+                    const isOwned = ownedCount > 0 && !isFurniture && !isConsumable;
                     const canAfford = stats.gems >= item.cost;
 
                     return (
                         <div key={item.id} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                             <div>
-                                <div className="text-4xl mb-3 text-center bg-slate-50 rounded-xl py-6 border border-slate-100">
+                                <div className="text-4xl mb-3 text-center bg-slate-50 rounded-xl py-6 border border-slate-100 relative">
                                     {item.icon}
+                                    {isFurniture && ownedCount > 0 && (
+                                        <span className="absolute top-2 right-2 bg-sky-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                            x{ownedCount}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex justify-between items-start mb-1">
                                     <h3 className="font-bold text-slate-800">{item.name}</h3>
@@ -92,7 +123,7 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
 
                             <button
                                 onClick={() => handlePurchase(item)}
-                                disabled={isOwned || (!canAfford && !isOwned)}
+                                disabled={isOwned || !canAfford}
                                 className={`w-full py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors ${isOwned
                                     ? "bg-slate-100 text-slate-400 cursor-not-allowed"
                                     : canAfford
@@ -105,7 +136,7 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
                                 ) : (
                                     <>
                                         <Diamond className={`w-4 h-4 ${canAfford ? 'fill-white text-white' : 'fill-slate-400 text-slate-400'}`} />
-                                        {item.cost}
+                                        {item.cost} {isFurniture && ownedCount > 0 ? `(+1 más)` : ''}
                                     </>
                                 )}
                             </button>

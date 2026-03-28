@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from "react";
 import RewardsStore from "@/components/RewardsStore";
 import Leaderboard from "@/components/Leaderboard";
 import StudentProfile from "@/components/StudentProfile";
+import VirtualClassroom from "@/components/VirtualClassroom";
 import RaidBossWidget from "@/components/RaidBossWidget";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -50,6 +51,7 @@ export default function StudentPage() {
     const [showProfile, setShowProfile] = useState(false);
     const [showRaidModal, setShowRaidModal] = useState(false);
     const [showEvaluations, setShowEvaluations] = useState(false);
+    const [showVirtualRoom, setShowVirtualRoom] = useState(false);
     const [hints, setHints] = useState<HintData[]>([]);
     const [evaluations, setEvaluations] = useState<EvidenceData[]>([]);
     const [teacherMessages, setTeacherMessages] = useState<TeacherMsg[]>([]);
@@ -320,6 +322,7 @@ export default function StudentPage() {
                     onOpenStore={() => setShowStore(true)}
                     onOpenLeaderboard={() => setShowLeaderboard(true)}
                     onOpenProfile={() => setShowProfile(true)}
+                    onOpenRoom={() => setShowVirtualRoom(true)}
                 />
 
                 {/* Row 2: Action Buttons (below HUD, same block) */}
@@ -457,6 +460,13 @@ export default function StudentPage() {
             {showProfile && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <StudentProfile onClose={() => setShowProfile(false)} />
+                </div>
+            )}
+
+            {/* Virtual Room Overlay */}
+            {showVirtualRoom && currentUser?.id && (
+                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-fade-in">
+                    <VirtualClassroom studentId={currentUser.id} onClose={() => setShowVirtualRoom(false)} />
                 </div>
             )}
 
