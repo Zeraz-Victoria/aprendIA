@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  aprendia_web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: aprendia_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    # networks:
+    #   - nginx_proxy # Uncomment if your Nginx Proxy Manager is running in a custom docker network
