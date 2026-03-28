@@ -11,5 +11,23 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    depends_on:
+      - db
     # networks:
-    #   - nginx_proxy # Uncomment if your Nginx Proxy Manager is running in a custom docker network
+    #   - nginx_proxy
+
+  db:
+    image: postgres:15-alpine
+    container_name: aprendia_db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: adrian
+      POSTGRES_PASSWORD: sistema123
+      POSTGRES_DB: aprendia
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
