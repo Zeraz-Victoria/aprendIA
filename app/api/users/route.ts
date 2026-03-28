@@ -16,19 +16,68 @@ export async function GET() {
             return NextResponse.json([]);
         }
 
+        // === FAST PATH: Students only need their own profile ===
+        if (role === 'STUDENT') {
+            const studentId = (session?.user as any)?.id;
+            if (!studentId) return NextResponse.json([]);
+
+            const student = await prisma.user.findUnique({
+                where: { id: studentId },
+                include: {
+                    assignedWorlds: true,
+                    projectGrades: true
+                }
+            });
+
+            if (!student) return NextResponse.json([]);
+
+            // Compute activity grades for just this one student
+            const evidenceStats = await prisma.evidenceEntry.groupBy({
+                by: ['worldId'],
+                where: { studentId, grade: { not: null } },
+                _sum: { grade: true }
+            });
+
+            const studentProjectGrades: any[] = [];
+            let totalProjectGradesSum = 0;
+            const assignedWorldsCount = student.assignedWorlds?.length || 0;
+
+            student.assignedWorlds?.forEach((world: any) => {
+                const stats = evidenceStats.find((s: any) => s.worldId === world.id);
+                const sumGrades = stats?._sum?.grade || 0;
+                let totalLevels = 8;
+                try {
+                    const days = JSON.parse(world.daysJson);
+                    totalLevels = Array.isArray(days) ? days.length : 8;
+                } catch (e) {}
+                const projectGrade = parseFloat((sumGrades / totalLevels).toFixed(1));
+                studentProjectGrades.push({ worldId: world.id, averageGrade: projectGrade });
+                totalProjectGradesSum += projectGrade;
+            });
+
+            const globalGrade = assignedWorldsCount > 0
+                ? parseFloat((totalProjectGradesSum / assignedWorldsCount).toFixed(1))
+                : null;
+
+            return NextResponse.json([{
+                ...student,
+                automaticProjectGrades: studentProjectGrades,
+                globalActivityAverage: globalGrade
+            }], {
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0',
+                }
+            });
+        }
+
+        // === TEACHER / ADMIN PATH: fetch all students in the school ===
         let whereClause: any = { role: 'STUDENT' };
 
-        // Always filter by schoolId — this ensures ALL students in the school are visible,
-        // regardless of whether they were created with teacherOwnerId or not.
-        // Filtering by teacherOwnerId caused map assignments to go to wrong duplicate students.
         if (schoolId) {
             whereClause.schoolId = schoolId;
-        } else if (role === 'STUDENT') {
-            // Fallback for students not formally assigned to a school: fetch just themselves 
-            // so the game can load their profile in LearningContext.
-            whereClause.id = (session?.user as any)?.id;
         } else {
-            // Fallback for edge case: teacher without schoolId — show nobody
             return NextResponse.json([]);
         }
 
@@ -61,13 +110,12 @@ export async function GET() {
                 const stats = evidenceStats.find((s: any) => s.studentId === student.id && s.worldId === world.id);
                 const sumGrades = stats?._sum?.grade || 0;
                 
-                let totalLevels = 8; // Default if parsing fails
+                let totalLevels = 8;
                 try {
                     const days = JSON.parse(world.daysJson);
                     totalLevels = Array.isArray(days) ? days.length : 8;
                 } catch (e) {}
 
-                // Cumulative grade: Sum / TotalLevels (e.g. 10 levels * 10 max = 100 points. 100/10 = 10)
                 const projectGrade = parseFloat((sumGrades / totalLevels).toFixed(1));
                 studentProjectGrades.push({
                     worldId: world.id,

@@ -6,8 +6,10 @@ import { authOptions } from "../auth/[...nextauth]/route";
 export async function GET(req: Request) {
     const session = await getServerSession(authOptions);
     const schoolId = (session?.user as any)?.schoolId;
+    const role = (session?.user as any)?.role;
+    const userId = (session?.user as any)?.id;
 
-    if (!schoolId) {
+    if (!schoolId && role !== 'STUDENT') {
         return NextResponse.json({});
     }
 
@@ -15,11 +17,15 @@ export async function GET(req: Request) {
     const studentId = searchParams.get('studentId');
 
     try {
-        const whereClause: any = {
-            student: { schoolId }
-        };
-        if (studentId) {
-            whereClause.studentId = studentId;
+        const whereClause: any = {};
+        // Students only load their own inventory (massive speedup)
+        if (role === 'STUDENT' && userId) {
+            whereClause.studentId = userId;
+        } else if (schoolId) {
+            whereClause.student = { schoolId };
+            if (studentId) {
+                whereClause.studentId = studentId;
+            }
         }
 
         const inventoryList = await prisma.inventory.findMany({
