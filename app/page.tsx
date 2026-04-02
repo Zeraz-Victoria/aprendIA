@@ -72,22 +72,12 @@ export default function Home() {
       </div>
 
       <div className="z-10 w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-black font-serif text-slate-800 mb-2 tracking-tight drop-shadow-sm">
-            Aprend<span className="text-sky-600">IA</span>
-          </h1>
-          <p className="text-slate-500 font-medium">
-            Ingresa a tu aula virtual
-          </p>
-        </div>
-
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
           <div className="bg-gradient-to-r from-sky-600 to-sky-700 p-8 text-center shadow-inner">
-            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur shadow-sm">
-              <BookOpen className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-white">¡Bienvenido!</h2>
-            <p className="text-sky-100 text-sm mt-1">Alumnos, Docentes y Admin</p>
+            <h2 className="text-4xl md:text-5xl font-black font-serif text-white mb-2 tracking-tighter drop-shadow-md">
+              Aprend<span className="text-sky-300 transition-colors">IA</span>
+            </h2>
+            <p className="text-sky-100 font-medium text-sm">Ingresa a tu aula virtual</p>
           </div>
 
           <div className="p-8">
@@ -100,7 +90,7 @@ export default function Home() {
                   onClick={() => setLoginRole("STUDENT")}
                   className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginRole === "STUDENT" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
                 >
-                  🏫 Soy Alumno
+                  🧑‍🎓 Soy Alumno
                 </button>
                 <button
                   type="button"

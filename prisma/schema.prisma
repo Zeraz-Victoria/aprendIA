@@ -28,6 +28,10 @@ model User {
   teacherOwnerId     String?
   studentCode        String?            @unique
   password           String?
+  apiCalls           Int                @default(0)
+  avatarX            Float              @default(70)
+  avatarY            Float              @default(65)
+  lastSeen           DateTime           @default(now())
   accounts           Account[]
   buffsReceived      Buff[]
   ownedClassrooms    Classroom[]        @relation("ClassroomTeacher")
@@ -36,6 +40,7 @@ model User {
   hints              Hint[]
   inventory          Inventory[]
   progress           Progress[]
+  projectGrades      ProjectGrade[]     @relation("StudentProjectGrades")
   raidContributions  RaidContribution[]
   sessions           Session[]
   studentMissions    StudentMission[]
@@ -46,16 +51,10 @@ model User {
   teacherOwner       User?              @relation("TeacherStudents", fields: [teacherOwnerId], references: [id])
   ownedStudents      User[]             @relation("TeacherStudents")
   achievements       UserAchievement[]
+  virtualRoom        VirtualRoom?
   createdWorlds      World[]            @relation("TeacherWorlds")
   receivedMessages   TeacherMessage[]   @relation("MessageRecipients")
   assignedWorlds     World[]            @relation("StudentAssignedWorlds")
-  projectGrades      ProjectGrade[]     @relation("StudentProjectGrades")
-  apiCalls           Int                @default(0)
-  virtualRoom        VirtualRoom?
-  // Classroom lobby position
-  avatarX            Float              @default(70)
-  avatarY            Float              @default(65)
-  lastSeen           DateTime           @default(now())
 }
 
 model Account {
@@ -121,12 +120,12 @@ model World {
   teacherId        String?
   evidenceEntries  EvidenceEntry[]
   progress         Progress[]
+  projectGrades    ProjectGrade[]   @relation("WorldProjectGrades")
   studentMissions  StudentMission[]
   school           School?          @relation(fields: [schoolId], references: [id])
   teacher          User?            @relation("TeacherWorlds", fields: [teacherId], references: [id])
   classrooms       Classroom[]      @relation("ClassroomToWorld")
   assignedStudents User[]           @relation("StudentAssignedWorlds")
-  projectGrades    ProjectGrade[]   @relation("WorldProjectGrades")
 }
 
 model EvidenceEntry {
@@ -310,23 +309,6 @@ model SupportTicket {
   sender     User     @relation("UserSupportTickets", fields: [senderId], references: [id], onDelete: Cascade)
 }
 
-enum Role {
-  TEACHER
-  STUDENT
-  SUPERADMIN
-}
-
-enum SubscriptionPlan {
-  BASIC
-  INTERMEDIATE
-  PREMIUM
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  SUSPENDED
-}
-
 model ProjectGrade {
   id        String   @id @default(cuid())
   studentId String
@@ -344,18 +326,35 @@ model ProjectGrade {
 model VirtualRoom {
   id        String               @id @default(cuid())
   studentId String               @unique
-  student   User                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
   theme     String               @default("basic_room")
   furniture FurniturePlacement[]
+  student   User                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model FurniturePlacement {
   id        String      @id @default(cuid())
   roomId    String
-  room      VirtualRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
   itemId    String
   positionX Float
   positionY Float
   positionZ Float       @default(0)
   rotation  Float       @default(0)
+  room      VirtualRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  TEACHER
+  STUDENT
+  SUPERADMIN
+}
+
+enum SubscriptionPlan {
+  BASIC
+  INTERMEDIATE
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  SUSPENDED
 }

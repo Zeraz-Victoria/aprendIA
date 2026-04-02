@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { UploadCloud, FileText, CheckCircle, Loader2, Palette } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
-import { THEME_LIST, ThemeKey } from "@/lib/themes";
+import { THEME_LIST, ThemeKey, THEME_COLORS } from "@/lib/themes";
 // @ts-expect-error - mammoth browser version lacks official types
 import * as mammoth from "mammoth/mammoth.browser";
 
@@ -22,6 +22,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
     const [loadingSub, setLoadingSub] = useState("Extrayendo contenido pedagógico...");
     const [uploadSuccess, setUploadSuccess] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState<ThemeKey>('clasico');
+    const [selectedColor, setSelectedColor] = useState<string>(THEME_COLORS.clasico); 
     const [vocabularyLevel, setVocabularyLevel] = useState<'facil' | 'medio' | 'alto'>('facil');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -103,6 +104,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                 id: crypto.randomUUID(),
                 theme: selectedTheme,
                 title: data.title || `Aventura: ${file.name.replace('.pdf', '')}`,
+                color: selectedColor,
                 days: data.days,
                 pedagogy: data.pedagogy, // Optional, but useful for display
                 createdAt: new Date().toISOString()
@@ -299,15 +301,27 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                                 </div>
 
                                 <div className="w-full max-w-[90%] mx-auto text-center overflow-hidden">
-                                    {file ? (
-                                        <>
-                                            <h3 className="text-base font-bold text-slate-800 break-all leading-snug" title={file.name}>{file.name}</h3>
-                                            <p className="text-slate-500 text-sm mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                                        </>
+                                     {file ? (
+                                        <div className="flex flex-col items-center gap-4">
+                                            <div>
+                                                <h3 className="text-base font-bold text-slate-800 break-all leading-snug" title={file.name}>{file.name}</h3>
+                                                <p className="text-slate-500 text-sm mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                            </div>
+                                            
+                                            {!isUploading && !uploadSuccess && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleUpload(); }}
+                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-indigo-100 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 border-2 border-indigo-400/20"
+                                                >
+                                                    <UploadCloud className="w-4 h-4" />
+                                                    Generar con IA
+                                                </button>
+                                            )}
+                                        </div>
                                     ) : (
                                         <>
-                                            <h3 className="text-xl font-bold text-slate-700">Arrastra tu diagrama, PDF o Word aquí</h3>
-                                            <p className="text-slate-400 text-sm">o haz clic para explorar archivos</p>
+                                            <h3 className="text-xl font-bold text-slate-700">Arrastra tu planeación (PDF o Word) aquí</h3>
+                                            <p className="text-slate-400 text-sm mt-2">Jimena transformará el contenido en una aventura interactiva.</p>
                                         </>
                                     )}
                                 </div>
@@ -316,73 +330,6 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                     </>
                 )}
             </div>
-
-            {/* Theme Selector — shown when file is ready */}
-            {file && !isUploading && !uploadSuccess && (
-                <div className="mt-6" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-2 mb-3 justify-center">
-                        <Palette className="w-4 h-4 text-slate-500" />
-                        <span className="text-sm font-bold text-slate-600 uppercase tracking-wider">Tema Visual del Juego</span>
-                    </div>
-                    <div className="flex gap-2 justify-center flex-wrap">
-                        {THEME_LIST.map(t => (
-                            <button
-                                key={t.key}
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); setSelectedTheme(t.key); }}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${selectedTheme === t.key
-                                    ? 'border-sky-500 bg-sky-50 text-sky-700 scale-105 shadow-md'
-                                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                                    }`}
-                            >
-                                {t.emoji} {t.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Vocabulary Complexity Selector */}
-            {file && !isUploading && !uploadSuccess && (
-                <div className="mt-6" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-2 mb-3 justify-center">
-                        <span className="text-base">📚</span>
-                        <span className="text-sm font-bold text-slate-600 uppercase tracking-wider">Nivel de Vocabulario</span>
-                    </div>
-                    <div className="flex gap-2 justify-center flex-wrap">
-                        {[
-                            { key: 'facil' as const, emoji: '🟢', label: 'Fácil', desc: '1° a 4° Primaria' },
-                            { key: 'medio' as const, emoji: '🟡', label: 'Medio', desc: '5° Prim. a 1° Sec.' },
-                            { key: 'alto' as const, emoji: '🔴', label: 'Alto', desc: '2° Sec. a Prepa' },
-                        ].map(level => (
-                            <button
-                                key={level.key}
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); setVocabularyLevel(level.key); }}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all flex flex-col items-center gap-0.5 min-w-[100px] ${vocabularyLevel === level.key
-                                    ? 'border-sky-500 bg-sky-50 text-sky-700 scale-105 shadow-md'
-                                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                                    }`}
-                            >
-                                <span>{level.emoji} {level.label}</span>
-                                <span className="text-[10px] font-normal text-slate-400">{level.desc}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {file && !isUploading && !uploadSuccess && (
-                <div className="mt-8 flex justify-center">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleUpload(); }}
-                        className="bg-sky-600 hover:bg-sky-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-sky-200 transition-transform hover:scale-105 active:scale-95 flex items-center gap-2"
-                    >
-                        <UploadCloud className="w-5 h-5" />
-                        Generar Mapa de Aventura
-                    </button>
-                </div>
-            )}
 
             {/* Demo helper for testing without files */}
             {!file && !isUploading && !uploadSuccess && (
@@ -397,7 +344,6 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                     </button>
                 </div>
             )}
-
         </div>
     );
 }

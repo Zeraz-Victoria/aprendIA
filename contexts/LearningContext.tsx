@@ -9,15 +9,22 @@ export interface LearningWorld {
   theme: string;
   days: LevelContent[];
   title?: string;
+  color?: string;
   pedagogy?: {
     topic: string;
     pda: string;
     ejes: string[];
     grade: string;
+    camposFormativos?: string[];
+    proposito?: string;
+    diagnostico?: string;
+    contenidos?: string;
   };
   createdAt: string;
   classrooms?: { id: string; name?: string }[];
   classroomIds?: string[];
+  assignedStudents?: { id: string; name?: string }[];
+  studentIds?: string[];
 }
 
 export interface StudentStats {
@@ -51,6 +58,7 @@ export interface DBUser {
   projectGrades?: { id: string, worldId: string, grade: number, feedback?: string | null }[];
   automaticProjectGrades?: { worldId: string, averageGrade: number }[];
   globalActivityAverage?: number | null;
+  lastSeen?: string | null;
 }
 
 export interface Student {
@@ -60,6 +68,7 @@ export interface Student {
   progress: number; // 0-100 (Overall)
   status: "active" | "idle" | "needs_help";
   lastActivity: string; // Or Date
+  lastSeen?: string; // Add this line
   lives: number;
   gems: number;
   streak: number;
@@ -193,6 +202,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
               avatar: u.avatar || '🧑🏻',
               status: u.status as Student['status'],
               lastActivity: 'Activo recientemente',
+              lastSeen: u.lastSeen,
               progress: 0,
               lives: u.lives,
               gems: u.gems,
@@ -228,53 +238,23 @@ export function LearningProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // === TEACHER / ADMIN PATH: standard parallel fetches ===
-        const [usersRes, worldsRes, progRes, invRes] = await Promise.all([
-          fetch(`/api/users?t=${Date.now()}`, { cache: 'no-store' }),
-          fetch(`/api/worlds?t=${Date.now()}`, { cache: 'no-store' }),
-          fetch(`/api/progress?t=${Date.now()}`, { cache: 'no-store' }),
-          fetch(`/api/inventory?t=${Date.now()}`, { cache: 'no-store' })
-        ]);
-
-        if (!isMounted) return;
-
-        // Process Users (Students)
-        if (usersRes.ok) {
-          const dbUsers = await usersRes.json();
-          const mappedStudents: Student[] = dbUsers.map((u: DBUser) => ({
-            id: u.id,
-            name: u.name,
-            avatar: u.avatar || '🧑🏻',
-            status: u.status as Student['status'],
-            lastActivity: 'Activo recientemente',
-            progress: 0,
-            lives: u.lives,
-            gems: u.gems,
-            streak: u.streak,
-            xp: u.xp,
-            classroomId: u.classroomId || null,
-            activeFrame: u.activeFrame,
-            studentCode: u.studentCode,
-            assignedWorlds: u.assignedWorlds,
-            projectGrades: u.projectGrades,
-            automaticProjectGrades: u.automaticProjectGrades,
-            globalActivityAverage: u.globalActivityAverage
-          }));
-          setStudents(mappedStudents);
-        }
-
-        // Process Worlds
-        if (worldsRes.ok) {
-          const dbWorlds = await worldsRes.json();
-          setWorlds(dbWorlds);
-          if (dbWorlds.length > 0) {
-            setActiveWorldId(prev => prev || dbWorlds[0].id);
+        // === TEACHER / ADMIN PATH: Unified bootstrap endpoint ===
+        const res = await fetch(`/api/teacher/bootstrap?t=${Date.now()}`, { cache: 'no-store' });
+        
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          
+          setStudents(data.students || []);
+          setWorlds(data.worlds || []);
+          setClassrooms(data.classrooms || []);
+          setGrades(data.grades || []);
+          setProgress(data.progress || {});
+          setInventory(data.inventory || {});
+          
+          if (data.worlds?.length > 0) {
+            setActiveWorldId(prev => prev || data.worlds[0].id);
           }
         }
-
-        // Process Progress and Inventory
-        if (progRes.ok) setProgress(await progRes.json());
-        if (invRes.ok) setInventory(await invRes.json());
       } catch (err) {
         console.error("Failed to load initial data from DB", err);
       }
@@ -282,29 +262,10 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
     loadData();
 
-    // Poll for fresh data every 5 minutes so students see map changes without refresh
+    // Poll for fresh data every 5 minutes
     const interval = setInterval(loadData, 300000);
     return () => { isMounted = false; clearInterval(interval); };
   }, [status, session]);
-
-  // Fetch Teacher specific data once authenticated
-  useEffect(() => {
-    if (status === 'authenticated' && session?.user && (session.user as SessionUser).role === 'TEACHER') {
-      const teacherId = (session.user as SessionUser).id;
-      const fetchTeacherData = async () => {
-        try {
-          const classRes = await fetch(`/api/classrooms?teacherId=${teacherId}`);
-          if (classRes.ok) setClassrooms(await classRes.json());
-
-          const gradesRes = await fetch(`/api/grades?teacherId=${teacherId}`);
-          if (gradesRes.ok) setGrades(await gradesRes.json());
-        } catch (e) {
-          console.error("Failed to load teacher data", e);
-        }
-      };
-      fetchTeacherData();
-    }
-  }, [session, status]);
 
 
   // -- Actions --

@@ -4,17 +4,46 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { useLearning, LearningWorld, Student, Grade, Classroom } from "@/contexts/LearningContext";
+import { THEME_COLORS, ThemeKey } from "@/lib/themes";
 import UploadEngine from "./UploadEngine";
 import VisualWorldBuilder from "./VisualWorldBuilder";
+import AiProjectGenerator from "./AiProjectGenerator";
 import BulkEvidenceUploader from "./BulkEvidenceUploader";
-import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare, RotateCcw, Sparkles } from "lucide-react";
+import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare, RotateCcw, Sparkles, Search, GraduationCap, Layers, Globe, Activity, Target, PlusCircle, Share2 } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useSessionGuard } from "@/hooks/useSessionGuard";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-type Tab = "students" | "insights" | "library" | "reports" | "raid" | "messages";
+type Tab = "students" | "library" | "reports" | "raid" | "messages";
+
+// Helper functions moved to top for scope visibility
+function getClassColor(progress: number) {
+    if (progress < 30) return "bg-red-500";
+    if (progress < 70) return "bg-yellow-500";
+    return "bg-green-500";
+}
+
+function calculateStudentProgress(studentId: string, progressObj: Record<string, Record<string, number[]>>, worlds: LearningWorld[]): number {
+    if (!worlds || worlds.length === 0) return 0;
+    let totalLevels = 0;
+    let completedLevels = 0;
+    for (const world of worlds) {
+        totalLevels += world.days?.length || 0;
+        const studentWorldProgress = progressObj[studentId]?.[world.id] || [];
+        completedLevels += studentWorldProgress.length;
+    }
+    if (totalLevels === 0) return 0;
+    return Math.round((completedLevels / totalLevels) * 100);
+}
+
+function calculateStudentProgressForWorld(studentId: string, progressObj: Record<string, Record<string, number[]>>, world: LearningWorld): number {
+    const totalLevels = world.days?.length || 0;
+    if (totalLevels === 0) return 0;
+    const completedLevels = (progressObj[studentId]?.[world.id] || []).length;
+    return Math.round((completedLevels / totalLevels) * 100);
+}
 
 export default function TeacherDashboard() {
     useSessionGuard();
@@ -25,6 +54,7 @@ export default function TeacherDashboard() {
         grades, addGrade, updateGrade, deleteGrade
     } = useLearning();
     const [activeTab, setActiveTab] = useState<Tab>("students");
+    const [showGlobalStatsModal, setShowGlobalStatsModal] = useState(false);
     const [selectedInsightWorldId, setSelectedInsightWorldId] = useState<string>("");
     const [insightClassroomId, setInsightClassroomId] = useState<string>("all");
     const [selectedClassroomId, setSelectedClassroomId] = useState<string>("all");
@@ -39,6 +69,8 @@ export default function TeacherDashboard() {
     const [newGradeDescription, setNewGradeDescription] = useState("");
     const [editingGrade, setEditingGrade] = useState<Grade | null>(null);
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [showAiGeneratorModal, setShowAiGeneratorModal] = useState(false);
+    const [showCreationChoiceModal, setShowCreationChoiceModal] = useState(false);
     const [showBulkModal, setShowBulkModal] = useState(false);
     const [showBuilderModal, setShowBuilderModal] = useState(false);
     const [builderInitialAIPrompt, setBuilderInitialAIPrompt] = useState(false);
@@ -55,6 +87,7 @@ export default function TeacherDashboard() {
     // AI Analysis Selected Student & Interventions
     const [selectedStudentId, setSelectedStudentId] = useState<string>("");
     const [activeStudentProfileId, setActiveStudentProfileId] = useState<string | null>(null);
+    const [profileScopeWorldId, setProfileScopeWorldId] = useState<string>('global');
     const [studentEvidence, setStudentEvidence] = useState<any[]>([]);
     const [isFetchingEvidence, setIsFetchingEvidence] = useState(false);
     const [studentForHintId, setStudentForHintId] = useState<string | null>(null);
@@ -89,6 +122,91 @@ export default function TeacherDashboard() {
     const [isMessageGlobal, setIsMessageGlobal] = useState(true);
     const [isSendingMessage, setIsSendingMessage] = useState(false);
     const [messageSent, setMessageSent] = useState(false);
+    const [searchTermLibrary, setSearchTermLibrary] = useState("");
+
+    // Bulk report state — separate flags per button so only the clicked one shows "Generando"
+    const [isGeneratingTeacherBulk, setIsGeneratingTeacherBulk] = useState(false);
+    const [isGeneratingParentBulk, setIsGeneratingParentBulk] = useState(false);
+    const [bulkReportWorldId, setBulkReportWorldId] = useState<string>('global'); // 'global' | worldId
+
+    // ── Shared report window opener ────────────────────────────────────────────
+    /**
+     * Opens a new browser tab with the report HTML ready to print/save as PDF.
+     * reportType: 'teacher' | 'parent'
+     * scope: { label, students: [{name, xp, gems, progress, aiText, worldTitle?}] }
+     */
+    const openReportWindow = (reportType: 'teacher' | 'parent', scopeLabel: string, reportItems: {
+        studentName: string;
+        xp: number;
+        gems: number;
+        progress: number;
+        aiText: string;
+        worldTitle?: string;
+        homeActivity?: string;
+    }[]) => {
+        const isParent = reportType === 'parent';
+        const today = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        const cardHtml = reportItems.map(item => `
+            <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:24px;page-break-inside:avoid;">
+                <div style="background:${isParent ? '#0f172a' : '#1e3a8a'};padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="color:white;font-size:16px;font-weight:900;">${item.studentName}</div>
+                        ${item.worldTitle ? `<div style="color:rgba(255,255,255,0.6);font-size:11px;">${item.worldTitle}</div>` : ''}
+                    </div>
+                    <div style="display:flex;gap:16px;">
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:900;color:#fbbf24;">${item.xp.toLocaleString()}</div>
+                            <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;">XP</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:900;color:#34d399;">${item.progress}%</div>
+                            <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;">Avance</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="padding:16px 20px;">
+                    <p style="font-size:13px;line-height:1.7;color:#374151;">${item.aiText}</p>
+                    ${isParent && item.homeActivity ? `
+                        <div style="margin-top:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;">
+                            <p style="font-size:11px;font-weight:900;color:#065f46;text-transform:uppercase;margin-bottom:4px;">Actividad en casa</p>
+                            <p style="font-size:13px;color:#1e293b;">${item.homeActivity}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>${isParent ? 'Reporte para Padres' : 'Reporte Docente'} — ${scopeLabel}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: white; color: #1e293b; padding: 40px; max-width: 900px; margin: 0 auto; }
+        @media print { body { padding: 20px; } button { display: none !important; } }
+    </style>
+</head>
+<body>
+    <div style="text-align:center;border-bottom:4px solid ${isParent ? '#0f172a' : '#1e3a8a'};padding-bottom:24px;margin-bottom:32px;">
+        <div style="font-size:11px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">AprendIA • ${today}</div>
+        <h1 style="font-size:28px;font-weight:900;color:#0f172a;margin-bottom:6px;">${isParent ? '📋 Reporte para Padres de Familia' : '🏫 Reporte para Docente'}</h1>
+        <p style="font-size:15px;color:#64748b;">Alcance: <strong>${scopeLabel}</strong> • ${reportItems.length} alumno${reportItems.length !== 1 ? 's' : ''}</p>
+    </div>
+    <div style="text-align:center;margin-bottom:28px;">
+        <button onclick="window.print()" style="background:${isParent ? '#0f172a' : '#1e3a8a'};color:white;border:none;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">🖨️ Guardar / Imprimir como PDF</button>
+    </div>
+    ${cardHtml}
+</body>
+</html>`;
+
+        const win = window.open('', '_blank');
+        if (!win) { alert('El navegador bloqueó la ventana. Permite los popups para este sitio.'); return; }
+        win.document.write(html);
+        win.document.close();
+    };
+    // ──────────────────────────────────────────────────────────────────────────
 
     const handleSendMessage = async () => {
         if (!messageText.trim()) return;
@@ -158,12 +276,12 @@ export default function TeacherDashboard() {
     };
 
     const MONSTER_NAMES: Record<string, string> = {
-        "🐉": "Dragón del Caos", "🦑": "Kraken Abismal", "🐲": "Serpiente de Fuego",
-        "👹": "Ogro Feroz", "👺": "Demonio Rojo", "🧛": "Vampiro Oscuro",
-        "🧟": "Zombie Legendario", "🦖": "Rex Destroyer", "🐙": "Pulpo Titán",
-        "🕷️": "Araña Venenosa", "🦂": "Escorpión Mortal", "🐍": "Cobra Real",
-        "💀": "Esqueleto Maldito", "👾": "Alien Invasor", "🤖": "Robot Supremo",
-        "🔥": "Llama Eterna", "🦇": "Murciélago Nocturno", "👻": "Fantasma Siniestro"
+        "🐉": "Dragon del Cálculo", "🦑": "Kraken de la Sintaxis", "🐲": "Hidra de la Ecuación",
+        "👹": "Ogro de la Historia", "👺": "Demonio de la Lógica", "🧛": "Vampiro de la Literatura",
+        "🧟": "Zombie de los Conceptos", "🦖": "Rex del Conocimiento", "🐙": "Pulpo de la Aritmética",
+        "🕷️": "Araña de la Geometría", "🦂": "Escorpión de la Ciencia", "🐍": "Cobra de la Química",
+        "💀": "Esqueleto de la Filosofía", "👾": "Alien del Algoritmo", "🤖": "Robot de la Innovación",
+        "🔥": "Llama del Saber", "🦇": "Murciélago de la Mitología", "👻": "Fantasma del Pasado"
     };
     const MONSTER_EMOJIS = Object.keys(MONSTER_NAMES);
     const HP_PRESETS = [
@@ -337,11 +455,19 @@ export default function TeacherDashboard() {
         setSavingStudent(false);
     };
 
+    const [classroomToDelete, setClassroomToDelete] = useState<string | null>(null);
+
     const handleDeleteClassroom = async (classroomId: string) => {
-        if (confirm("¿Estás seguro de que deseas borrar este grupo? Los alumnos vinculados quedarán sin grupo.")) {
-            await deleteClassroom(classroomId);
-            if (selectedClassroomId === classroomId) setSelectedClassroomId("all");
-        }
+        setClassroomToDelete(classroomId);
+    };
+
+    const confirmDeleteClassroom = async () => {
+        if (!classroomToDelete) return;
+        setSavingStudent(true);
+        await deleteClassroom(classroomToDelete);
+        if (selectedClassroomId === classroomToDelete) setSelectedClassroomId("all");
+        setClassroomToDelete(null);
+        setSavingStudent(false);
     };
 
     const handleCreateGrade = async () => {
@@ -360,7 +486,7 @@ export default function TeacherDashboard() {
     };
 
     const handleDeleteGrade = async (gradeId: string) => {
-        if (confirm("¿Borrar permanentemente este grado? (Sus grupos vinculados seguirán existiendo como independientes)")) {
+        if (confirm("¿Borrar permanentemente este grado? (Sus salones vinculados seguirán existiendo como independientes)")) {
             await deleteGrade(gradeId);
         }
     };
@@ -514,7 +640,7 @@ export default function TeacherDashboard() {
         return { completion: classCompletion, average: classAverage };
     };
 
-    const metrics = calculateClassMetrics(activeTab === 'insights' ? insightStudents : students);
+    const metrics = calculateClassMetrics(students);
 
     const handleDownloadPDF = async () => {
         const doc = new jsPDF();
@@ -566,7 +692,7 @@ export default function TeacherDashboard() {
         }
 
         // Students Loop
-        const reportStudents = activeTab === 'insights' ? insightStudents : students;
+        const reportStudents = students;
         reportStudents.forEach((student, index) => {
             const p = calculateStudentProgress(student.id, progress, worlds);
             const context = getStudentContext(student.id);
@@ -743,6 +869,11 @@ export default function TeacherDashboard() {
         setAiReport(null); // Reset AI report when switching students
     }, [activeStudentProfileId]);
 
+    // Reset profile scope when opening a new profile
+    React.useEffect(() => {
+        if (activeStudentProfileId) setProfileScopeWorldId('global');
+    }, [activeStudentProfileId]);
+
     // Keep the selected ID up to date if students are loaded empty then populated
     React.useEffect(() => {
         if (students.length > 0 && !selectedStudentId) {
@@ -788,8 +919,33 @@ export default function TeacherDashboard() {
         }
     };
 
+    const handleSendDirectMessage = async (studentId: string, text: string) => {
+        if (!text.trim()) return;
+        try {
+            const isGlobal = studentId === 'all';
+            const endpoint = isGlobal ? '/api/messages' : '/api/hints';
+            const payload = isGlobal 
+                ? { message: text, isGlobal: true, recipientIds: [] }
+                : { studentId, message: text };
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                alert("✅ Mensaje enviado exitosamente.");
+            } else {
+                throw new Error("Failed to send");
+            }
+        } catch (err) {
+            console.error("Error sending message:", err);
+            alert("No se pudo enviar el mensaje.");
+        }
+    };
+
     const handleSendHint = async () => {
-        if (!hintText.trim()) {
+        if (!hintText.trim() || !studentForHintId) {
             alert("Escribe una pista antes de enviarla.");
             return;
         }
@@ -825,7 +981,15 @@ export default function TeacherDashboard() {
     // Metrics already calculated above handler
 
     return (
-        <div className="min-h-screen bg-slate-50 flex">
+        <div className="min-h-screen bg-[#f0f7ff] text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden relative">
+            {/* Ambient Background Glow - Soft Pastel Mode */}
+            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/20 blur-[120px] rounded-full animate-pulse delay-700" />
+                <div className="absolute inset-0 opacity-[0.05]" 
+                     style={{ backgroundImage: `radial-gradient(circle at 2px 2px, rgba(0,0,0,0.05) 1px, transparent 0)` , backgroundSize: '32px 32px' }} />
+            </div>
+            
             {isSuspended && (
                 <div className="fixed top-0 left-0 w-full z-[100] bg-red-600 text-white text-center py-3 font-bold shadow-lg flex items-center justify-center gap-2">
                     <AlertTriangle className="w-5 h-5" />
@@ -833,723 +997,667 @@ export default function TeacherDashboard() {
                 </div>
             )}
 
-            {/* Sidebar */}
-            <aside className="w-64 bg-white/80 backdrop-blur-sm border-r border-sky-100 hidden md:flex flex-col">
-                <div className="p-6 border-b border-sky-50">
-                    <h1 className="text-xl font-bold text-sky-800 flex items-center gap-2">
-                        <BookOpen className="text-sky-600" />
-                        Aula Virtual
-                    </h1>
+            {/* COMMANDER NAV - Unified Light Glass Style */}
+            <header className="bg-white/70 backdrop-blur-xl border-b border-white/50 sticky top-0 z-50 shadow-sm">
+                <div className="container mx-auto px-6 h-20 flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-indigo-100 overflow-hidden">
+                           <img src="/logo_aprendia.png" alt="AprendIA Logo" className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-black tracking-tighter uppercase leading-none text-slate-900">AprendIA</h1>
+                        </div>
+                    </div>
+
+                    <nav className="hidden lg:flex items-center gap-1 bg-slate-900/5 p-1 rounded-2xl border border-slate-200/50">
+                        {[
+                            { id: 'students', label: 'Salón', icon: Users },
+                            { id: 'library', label: 'Biblioteca', icon: Library },
+                            { id: 'raid', label: 'Incursión', icon: Swords },
+                            { id: 'messages', label: 'Mensajes', icon: MessageSquare },
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as Tab)}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                                    activeTab === tab.id 
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' 
+                                    : 'text-slate-500 hover:text-indigo-600 hover:bg-white/60'
+                                }`}
+                            >
+                                <tab.icon className="w-3.5 h-3.5" />
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
+
+                    <div className="flex items-center gap-4">
+                        <button 
+                            onClick={() => signOut({ callbackUrl: "/" })}
+                            className="flex items-center gap-2 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-slate-200 transition-all active:scale-95"
+                        >
+                           <LogOut className="w-4 h-4" /> <span className="hidden xl:inline">Cerrar Sesión</span>
+                        </button>
+                    </div>
                 </div>
-                <nav className="flex-1 p-4 space-y-2">
-                    <button
-                        onClick={() => setActiveTab("students")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'students' ? 'bg-sky-50 text-sky-700 shadow-sm' : 'text-slate-500 hover:bg-sky-50/50 hover:text-sky-600'}`}
-                    >
-                        <Users className="w-4 h-4" /> Estudiantes
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("library")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'library' ? 'bg-sky-50 text-sky-700 shadow-sm' : 'text-slate-500 hover:bg-sky-50/50 hover:text-sky-600'}`}
-                    >
-                        <Library className="w-4 h-4" /> Mi Biblioteca
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("insights")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'insights' ? 'bg-sky-50 text-sky-700 shadow-sm' : 'text-slate-500 hover:bg-sky-50/50 hover:text-sky-600'}`}
-                    >
-                        <BrainCircuit className="w-4 h-4" /> Análisis Inteligente
-                    </button>
+            </header>
+            {/* Main Content Area */}
+            <main className={`flex-1 overflow-y-auto w-full max-w-full overflow-x-hidden ${activeTab === 'messages' || activeTab === 'students' ? 'p-0' : 'p-6'}`}>
 
-                    <button
-                        onClick={() => setActiveTab("raid")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'raid' ? 'bg-red-50 text-red-700 shadow-sm' : 'text-slate-500 hover:bg-red-50/50 hover:text-red-600'}`}
-                    >
-                        <Swords className="w-4 h-4" /> Jefe de Incursión
-                    </button>
 
-                    <button
-                        onClick={() => setActiveTab("messages")}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'messages' ? 'bg-cyan-50 text-cyan-700 shadow-sm' : 'text-slate-500 hover:bg-cyan-50/50 hover:text-cyan-600'}`}
-                    >
-                        <MessageSquare className="w-4 h-4" /> Mensajes Alumnos
-                    </button>
-                </nav>
-                <div className="p-4 border-t border-sky-50">
-                    <button
-                        onClick={() => signOut({ callbackUrl: "/" })}
-                        className="w-full text-left flex items-center gap-2 text-sm text-slate-500 hover:text-sky-600 p-2 rounded-lg transition-colors hover:bg-sky-50"
-                    >
-                        <LogOut className="w-4 h-4" /> Cerrar Sesión
-                    </button>
-                </div>
-            </aside>
 
-            {/* Main Content */}
-            <main className="flex-1 p-4 pb-24 md:p-8 md:pb-8 overflow-y-auto w-full max-w-[100vw] overflow-x-hidden">
 
-                {activeTab === 'insights' && (
-                    <header className="flex flex-col gap-6 mb-8 bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-sky-100 shadow-sm">
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                            <div>
-                                <h2 className="text-2xl font-black text-sky-900 flex items-center gap-2">
-                                    <BrainCircuit className="w-8 h-8 text-sky-600" /> Panel de Análisis e IA
-                                </h2>
-                                <p className="text-sky-600/70 text-sm font-medium mt-1">Diagnóstico pedagógico y seguimiento de objetivos en tiempo real.</p>
+
+                {/* LIBRARY TAB - Catálogo Académico Premium */}
+                {activeTab === 'library' && (() => {
+                    const filteredWorlds = worlds.filter(w => 
+                        (w.title || "").toLowerCase().includes(searchTermLibrary.toLowerCase()) || 
+                        (w.theme || "").toLowerCase().includes(searchTermLibrary.toLowerCase())
+                    );
+
+                    return (
+                        <div className="space-y-8 animate-fade-in">
+
+                            {/* World Grid */}
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {/* New Map Empty Card */}
+                                <button 
+                                    onClick={() => {
+                                        if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
+                                        if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) en tu plan actual.`);
+                                        setShowCreationChoiceModal(true);
+                                    }}
+                                    className="group h-full min-h-[450px] border-4 border-dashed border-white/60 bg-white/20 hover:bg-white/40 hover:border-indigo-400 rounded-3xl flex flex-col items-center justify-center gap-6 transition-all duration-500 shadow-sm hover:shadow-xl relative overflow-hidden"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="w-24 h-24 bg-white/80 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl border border-white/50 relative z-10">
+                                        <Plus className="w-12 h-12 text-indigo-500 group-hover:rotate-90 transition-transform duration-500" />
+                                    </div>
+                                    <div className="text-center relative z-10">
+                                        <p className="text-slate-800 font-black text-2xl tracking-tight">Nueva Aventura</p>
+                                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mt-2 bg-white/50 px-3 py-1 rounded-full border border-white/40">Inicia tu Creación</p>
+                                    </div>
+                                    
+                                    {/* Modal Hub Integrado (Creation Choice) */}
+                                    {showCreationChoiceModal && (
+                                        <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center gap-4 p-8 animate-in fade-in zoom-in duration-300">
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); setShowCreationChoiceModal(false); }}
+                                                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all"
+                                            >
+                                                <X className="w-5 h-5" />
+                                            </button>
+                                            
+                                            <h3 className="text-xl font-black text-slate-800 mb-2">¿Cómo deseas iniciar?</h3>
+                                            
+                                            <div className="grid grid-cols-1 gap-3 w-full">
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setShowCreationChoiceModal(false);
+                                                        setShowUploadModal(true);
+                                                    }}
+                                                    className="w-full flex items-center gap-4 p-5 bg-white border-2 border-slate-100 hover:border-blue-400 hover:bg-blue-50 rounded-2xl transition-all group/opt shadow-sm"
+                                                >
+                                                    <div className="bg-blue-100 p-3 rounded-xl group-hover/opt:bg-blue-500 transition-colors">
+                                                        <UploadCloud className="w-6 h-6 text-blue-600 group-hover/opt:text-white" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="font-black text-slate-800 text-sm">Carga de Archivos</p>
+                                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Sube PDF o Word</p>
+                                                    </div>
+                                                </button>
+
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setShowCreationChoiceModal(false);
+                                                        setShowAiGeneratorModal(true);
+                                                    }}
+                                                    className="w-full flex items-center gap-4 p-5 bg-white border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 rounded-2xl transition-all group/opt shadow-sm"
+                                                >
+                                                    <div className="bg-indigo-100 p-3 rounded-xl group-hover/opt:bg-indigo-500 transition-colors">
+                                                        <Sparkles className="w-6 h-6 text-indigo-600 group-hover/opt:text-white" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="font-black text-slate-800 text-sm">Autogenerar con IA</p>
+                                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Generación Express</p>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </button>
+
+                                {filteredWorlds.length === 0 ? (
+                                    <div className="col-span-full flex flex-col items-center justify-center py-24 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200">
+                                        <div className="bg-white p-6 rounded-full shadow-sm mb-4">
+                                            <Search className="w-10 h-10 text-slate-300" />
+                                        </div>
+                                        <p className="text-slate-500 font-bold">No se encontraron aventuras</p>
+                                        <p className="text-slate-400 text-sm">Prueba con otros términos o crea una nueva.</p>
+                                    </div>
+                                ) : (
+                                    filteredWorlds.map(w => {
+                                        // Calculate Metrics
+                                        const worldStudents = students.filter(s => s.assignedWorlds?.some(aw => aw.id === w.id));
+                                        const totalGrades = worldStudents.reduce((acc, s) => {
+                                            const autoGrade = s.automaticProjectGrades?.find(ag => ag.worldId === w.id);
+                                            return acc + (autoGrade?.averageGrade || 0);
+                                        }, 0);
+                                        const avgEfficiency = worldStudents.length > 0 ? (totalGrades / worldStudents.length).toFixed(1) : "0.0";
+                                        
+                                        let activeInClasses = [];
+                                        if (w.classrooms && w.classrooms.length > 0) {
+                                            activeInClasses = classrooms.filter(c => w.classrooms!.some((wc: any) => wc.id === c.id));
+                                        } else {
+                                            activeInClasses = classrooms.filter(c => 
+                                                students.some(s => s.classroomId === c.id && s.assignedWorlds?.some(aw => aw.id === w.id))
+                                            );
+                                        }
+
+                                        const cardColor = w.color || THEME_COLORS[w.theme as ThemeKey] || THEME_COLORS.clasico;
+
+                                        return (
+                                            <div key={w.id} className="group bg-white/40 backdrop-blur-md rounded-[1.5rem] border-2 border-white/60 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 flex flex-col overflow-hidden">
+                                                {/* Card Header (Tactical Visual) - Dynamic Color */}
+                                                <div className="h-32 p-6 flex flex-col justify-between relative overflow-hidden" style={{ backgroundColor: cardColor }}>
+                                                    <div className="absolute -right-6 -bottom-6 opacity-20 group-hover:scale-110 transition-transform duration-700">
+                                                        <Globe className="w-40 h-40 text-white" />
+                                                    </div>
+                                                    <div className="flex justify-between items-start relative z-10">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="bg-white text-indigo-900 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg shadow-lg">
+                                                                {w.pedagogy?.grade || "Nivel General"}
+                                                            </span>
+                                                            <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => setWorldToDelete(w)} 
+                                                            className="p-2.5 bg-black/20 hover:bg-rose-600 text-white rounded-[1rem] transition-all shadow-lg border border-white/20 backdrop-blur-sm"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                    <h3 className="text-white text-lg font-black leading-tight line-clamp-2 pr-8 relative z-10 uppercase tracking-tighter">{w.title || "Aventura Sin Título"}</h3>
+                                                </div>
+
+                                                    {/* Card Body - Pedagogy Detail Grid */}
+                                                    <div className="p-6 flex flex-col flex-1 space-y-5">
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div className="space-y-1">
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Campos Formativos</span>
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {w.pedagogy?.camposFormativos && w.pedagogy.camposFormativos.length > 0 ? (
+                                                                        w.pedagogy.camposFormativos.map((cf, idx) => (
+                                                                            <span key={idx} className="bg-indigo-50 text-indigo-700 text-[8px] font-black px-2 py-0.5 rounded-md border border-indigo-100">
+                                                                                {cf}
+                                                                            </span>
+                                                                        ))
+                                                                    ) : w.pedagogy?.topic ? (
+                                                                        <span className="bg-indigo-50 text-indigo-700 text-[8px] font-black px-2 py-0.5 rounded-md border border-indigo-100">
+                                                                            {w.pedagogy.topic}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-[8px] text-slate-300 italic">No definidos</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">PDA</span>
+                                                                <p className="text-[10px] font-bold text-indigo-600 line-clamp-2 leading-tight">
+                                                                    {w.pedagogy?.pda || "Sin PDA específico."}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="space-y-1">
+                                                            <span className="text-[9px] font-black text-sky-500 uppercase tracking-widest block">Ejes Articuladores</span>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {w.pedagogy?.ejes && w.pedagogy.ejes.length > 0 ? (
+                                                                    w.pedagogy.ejes.map((eje, idx) => (
+                                                                        <span key={idx} className="bg-sky-50 text-sky-700 text-[8px] font-bold px-2 py-0.5 rounded-md border border-sky-100">
+                                                                            {eje}
+                                                                        </span>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="text-[8px] text-slate-300 italic">No seleccionados</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="space-y-2 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                <div className="space-y-1">
+                                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Propósito</span>
+                                                                    <p className="text-[10px] text-slate-600 line-clamp-3 leading-snug">
+                                                                        {w.pedagogy?.proposito || "No documentado."}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Diagnóstico</span>
+                                                                    <p className="text-[10px] text-slate-600 line-clamp-3 leading-snug">
+                                                                        {w.pedagogy?.diagnostico || "No documentado."}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="pt-2 mt-2 border-t border-slate-100">
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Contenidos</span>
+                                                                <p className="text-[10px] font-black text-slate-800 line-clamp-1">
+                                                                    {w.pedagogy?.contenidos || "Contenidos generales de la fase."}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Metrics Row - Tactical High Contrast */}
+                                                        <div className="grid grid-cols-3 gap-3">
+                                                            <div className="bg-white p-3 rounded-xl flex flex-col items-center border border-slate-100 shadow-sm transition-colors hover:border-indigo-200">
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-1">Eficacia</span>
+                                                                <span className={`text-sm font-black ${parseFloat(avgEfficiency) >= 8 ? 'text-emerald-600' : parseFloat(avgEfficiency) >= 6 ? 'text-amber-600' : 'text-slate-500'}`}>
+                                                                    {avgEfficiency}
+                                                                </span>
+                                                            </div>
+                                                            <div className="bg-indigo-50/30 p-3 rounded-xl flex flex-col items-center border border-indigo-100 shadow-sm">
+                                                                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-tighter mb-1">Salones</span>
+                                                                <span className="text-sm font-black text-indigo-900">{activeInClasses.length}</span>
+                                                            </div>
+                                                            <div className="bg-white p-3 rounded-xl flex flex-col items-center border border-slate-100 shadow-sm">
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-1">Etapas</span>
+                                                                <span className="text-sm font-black text-slate-900">{w.days?.length || 0}</span>
+                                                            </div>
+                                                        </div>
+
+
+                                                    <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            {activeInClasses.length > 0 ? (
+                                                                <div className="flex -space-x-1">
+                                                                    {activeInClasses.map((cl, i) => (
+                                                                        <div key={i} title={cl.name} className="w-6 h-6 rounded-full bg-indigo-100 border border-white flex items-center justify-center text-[10px] shadow-sm">
+                                                                            {cl.emoji || "🏫"}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-[10px] text-slate-400">Sin asignar</span>
+                                                            )}
+                                                        </div>
+                                                        <button
+                                                            onClick={() => { setBuilderWorld(w); setShowBuilderModal(true); }}
+                                                            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 transition-colors"
+                                                        >
+                                                            Configurar <ChevronRight className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
-                            <div className="flex flex-wrap gap-2 items-center">
-                                {/* Map Selector for per-map filtering */}
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-[10px] font-bold text-sky-400 uppercase tracking-wider ml-1">Proyecto / Mapa</label>
-                                    <select
-                                        value={effectiveInsightWorldId}
-                                        onChange={e => setSelectedInsightWorldId(e.target.value)}
-                                        className="bg-white border-2 border-sky-100 rounded-xl px-4 py-2 text-sm font-bold text-sky-800 focus:ring-4 focus:ring-sky-100 focus:border-sky-400 outline-none transition-all shadow-sm"
-                                    >
-                                        {worlds.map(w => (
-                                            <option key={w.id} value={w.id}>
-                                                🗺️ {w.title || w.theme}
-                                            </option>
-                                        ))}
-                                    </select>
+                        </div>
+                    );
+                })()}
+
+                {/* STUDENTS TAB — Centro de Mando Unificado (Salón & Análisis) */}
+                {activeTab === 'students' && (
+                    <div className="flex flex-col h-full animate-fade-in">
+                        {/* Unified Tactical Nav Bar — Salón & Análisis */}
+                        <header className="sticky top-0 z-40 bg-white/40 backdrop-blur-3xl border-b border-indigo-100/50 px-6 py-2 flex flex-wrap items-center justify-between gap-4 shadow-sm transition-all duration-300">
+                            <div className="flex items-center gap-6 flex-wrap">
+                                <div className="flex flex-col">
                                 </div>
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider ml-1">Grupo / Salón</label>
+                                
+                                <div className="h-8 w-px bg-white/10 hidden sm:block" />
+
+                                {/* Filtros de Grupo Tácticos */}
+                                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
                                     <select
-                                        value={insightClassroomId}
-                                        onChange={e => setInsightClassroomId(e.target.value)}
-                                        className="bg-white border-2 border-emerald-100 rounded-xl px-4 py-2 text-sm font-bold text-emerald-800 focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 outline-none transition-all shadow-sm"
+                                        value={selectedClassroomId}
+                                        onChange={(e) => setSelectedClassroomId(e.target.value)}
+                                        className="w-40 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 truncate"
+                                        title="Seleccionar Salón"
                                     >
-                                        <option value="all">🏫 Todos los Grupos</option>
+                                        <option value="all">🏫 Todos los Salones</option>
                                         {classrooms.map(cls => (
                                             <option key={cls.id} value={cls.id}>
                                                 {cls.emoji} {cls.name}
                                             </option>
                                         ))}
                                     </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Integrated Action Buttons */}
-                        <div className="flex flex-wrap gap-3 pt-4 border-t border-sky-50">
-                            <button
-                                onClick={handleDownloadPDF}
-                                className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-sky-100 transition-all flex items-center gap-2 text-sm active:scale-95"
-                            >
-                                <FileText className="w-4 h-4" />
-                                Generar Reporte (PDF)
-                            </button>
-                            <button
-                                onClick={() => setShowMessageModal(true)}
-                                className="bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-100 px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm active:scale-95"
-                            >
-                                <MessageSquare className="w-4 h-4 text-sky-500" />
-                                Mensaje Grupal
-                            </button>
-                            <button
-                                onClick={() => setShowResetModal(true)}
-                                className="bg-red-50 hover:bg-red-100 text-red-600 px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm active:scale-95 ml-auto"
-                            >
-                                <RotateCcw className="w-4 h-4" />
-                                Reiniciar Todo
-                            </button>
-                        </div>
-                    </header>
-                )}
-
-
-
-                {/* LIBRARY TAB */}
-                {activeTab === 'library' && (
-                    <div className="space-y-6">
-                        {/* Library Action Buttons */}
-                        <div className="flex flex-wrap gap-3">
-                            <button
-                                onClick={() => setShowBulkModal(true)}
-                                className="bg-white/80 border border-sky-200 hover:bg-sky-50 text-sky-700 px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
-                            >
-                                <UploadCloud className="w-4 h-4" />
-                                Subir Evidencias
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
-                                    if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) en tu plan actual. Borra un mapa para crear otro.`);
-                                    setBuilderWorld(null);
-                                    setBuilderInitialAIPrompt(true);
-                                    setShowBuilderModal(true);
-                                }}
-                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-amber-100 hover:bg-amber-200'} text-amber-900 border border-amber-300 px-5 py-2 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2`}
-                            >
-                                <Sparkles className="w-4 h-4 text-amber-500" />
-                                Auto-Generar con IA
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
-                                    if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) en tu plan actual. Borra un mapa para crear otro.`);
-                                    setShowUploadModal(true);
-                                }}
-                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-sky-600 hover:bg-sky-700'} text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-sky-200 transition-all flex items-center gap-2`}
-                            >
-                                <Plus className="w-4 h-4" />
-                                Generar con IA (PDF)
-                            </button>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {worlds.length === 0 ? (
-                                <div className="col-span-full text-center py-20 text-slate-400">
-                                    <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                                    <p>No has creado ninguna aventura aún.</p>
-                                </div>
-                            ) : (
-                                worlds.map(w => (
-                                    <div key={w.id} className={`bg-white p-6 rounded-2xl border-2 transition-all relative border-emerald-200 hover:border-emerald-400`}>
-                                        <span className="absolute top-4 right-4 bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded-full font-bold">
-                                            ✓ Activa
-                                        </span>
-                                        <h3 className="font-bold text-lg text-slate-800 mb-2 break-words line-clamp-3">{w.title || "Aventura Sin Título"}</h3>
-                                        <div className="text-sm text-slate-500 mb-4">
-                                            <p>Tema: {w.theme}</p>
-                                            <p>Niveles: {w.days.length}</p>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <button
+                                    
+                                    <button onClick={() => setShowAddClassroomModal(true)} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-xl transition-all border border-slate-200" title="Nuevo Salón">
+                                        <Plus className="w-4 h-4" />
+                                    </button>
+                                    
+                                    {selectedClassroomId !== "all" && (
+                                        <>
+                                            <div className="w-px h-6 bg-slate-200 mx-1"></div>
+                                            <button 
                                                 onClick={() => {
-                                                    setBuilderWorld(w);
-                                                    setShowBuilderModal(true);
+                                                    const cls = classrooms.find(c => c.id === selectedClassroomId);
+                                                    if (cls) {
+                                                        setEditingClassroom(cls);
+                                                        setNewClassName(cls.name);
+                                                        setNewClassEmoji(cls.emoji);
+                                                        setSelectedGradeIdInModal(cls.gradeId || "");
+                                                        setNewClassDescription(cls.description || "");
+                                                        setShowAddClassroomModal(true);
+                                                    }
                                                 }}
-                                                className="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                                                className="p-2 text-slate-300 hover:text-amber-500 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-200" 
+                                                title="Editar Salón Actual"
                                             >
-                                                <Pencil className="w-3.5 h-3.5" /> Ver / Editar
+                                                <Pencil className="w-4 h-4" />
                                             </button>
-
-
-                                            <span className="bg-emerald-50 text-emerald-700 font-bold py-2 px-3 rounded-lg text-sm flex items-center gap-1">
-                                                ✓ Activo
-                                            </span>
-
-                                            <button
-                                                onClick={() => setWorldToDelete(w)}
-                                                className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold transition-colors flex items-center justify-center shadow-sm"
+                                            <button 
+                                                onClick={() => handleDeleteClassroom(selectedClassroomId)}
+                                                className="p-2 text-slate-300 hover:text-rose-500 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-200" 
+                                                title="Eliminar Salón Actual"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* STUDENTS TAB */}
-                {activeTab === 'students' && (
-                    <>
-                        {/* Classroom Selector */}
-                        <div className="flex flex-col gap-4 mb-6">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    <Users className="w-4 h-4" /> Organización de Aula
-                                </h3>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setShowAddGradeModal(true)}
-                                        className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
-                                    >
-                                        <Plus className="w-3 h-3" /> Nuevo Grado
-                                    </button>
-                                    <button
-                                        onClick={() => setShowAddClassroomModal(true)}
-                                        className="text-xs bg-sky-50 hover:bg-sky-100 text-sky-600 font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
-                                    >
-                                        <Plus className="w-3 h-3" /> Nuevo Grupo
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                <button
-                                    onClick={() => setSelectedClassroomId("all")}
-                                    className={`px-4 py-2 rounded-xl border-2 transition-all whitespace-nowrap font-bold text-sm flex items-center gap-2 ${selectedClassroomId === "all"
-                                        ? "bg-sky-600 border-sky-600 text-white shadow-md shadow-sky-200"
-                                        : "bg-white border-slate-100 text-slate-500 hover:border-sky-200"
-                                        }`}
-                                >
-                                    Todos los Grupos
-                                </button>
-
-                                {grades.map(grade => (
-                                    <div key={grade.id} className="flex items-center gap-2 bg-slate-50/50 p-1.5 rounded-2xl border border-slate-100">
-                                        <div className="flex items-center group relative px-2 pr-4 cursor-pointer">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] font-black text-slate-400 uppercase leading-tight">{grade.name}</span>
-                                                {grade.description && <span className="text-[8px] text-slate-400 max-w-[60px] truncate leading-none mt-0.5" title={grade.description}>{grade.description}</span>}
-                                            </div>
-                                            <div className="absolute right-0 top-0 bottom-0 hidden group-hover:flex items-center bg-transparent z-10 gap-1">
-                                                <button onClick={() => { setEditingGrade(grade); setNewGradeName(grade.name); setNewGradeDescription(grade.description || ""); setShowAddGradeModal(true); }} className="p-0.5 text-slate-400 hover:text-sky-600 transition-colors" title="Editar Grado"><span className="text-[10px]">✏️</span></button>
-                                                <button onClick={() => handleDeleteGrade(grade.id)} className="p-0.5 text-slate-400 hover:text-red-600 transition-colors" title="Borrar Grado"><span className="text-[10px]">❌</span></button>
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            {classrooms.filter(c => c.gradeId === grade.id).map(cls => (
-                                                <div key={cls.id} className="relative group/cls flex items-center">
-                                                    <button
-                                                        onClick={() => setSelectedClassroomId(cls.id)}
-                                                        className={`px-3 py-1.5 rounded-lg border-2 transition-all font-bold text-xs flex flex-col items-start gap-0.5 ${selectedClassroomId === cls.id
-                                                            ? "bg-white border-sky-500 text-sky-700 shadow-sm"
-                                                            : "bg-white border-white text-slate-500 hover:border-slate-200"
-                                                            }`}
-                                                    >
-                                                        <div className="flex items-center gap-1.5 whitespace-nowrap">
-                                                            <span>{cls.emoji}</span> {cls.name}
-                                                        </div>
-                                                        <div className="flex items-center gap-1 opacity-80 mt-1">
-                                                            <span className="text-[9px] font-mono tracking-wider bg-slate-100 px-1.5 py-0.5 rounded text-sky-700">Código: {cls.accessCode || 'N/A'}</span>
-                                                        </div>
-                                                        {cls.description && <span className="text-[9px] font-normal leading-none opacity-80 max-w-[80px] truncate mt-0.5" title={cls.description}>{cls.description}</span>}
-                                                    </button>
-                                                    <div className="absolute -top-6 right-0 hidden group-hover/cls:flex items-center bg-white shadow-lg border border-slate-100 rounded-lg p-1 z-10 transition-all gap-1">
-                                                        <button onClick={() => { setEditingClassroom(cls); setNewClassName(cls.name); setNewClassDescription(cls.description || ""); setNewClassEmoji(cls.emoji); setSelectedGradeIdInModal(cls.gradeId || ""); setShowAddClassroomModal(true); }} className="px-1.5 py-0.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-md text-[10px] font-bold transition-colors">Editar</button>
-                                                        <button onClick={() => handleDeleteClassroom(cls.id)} className="px-1.5 py-0.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md text-[10px] font-bold transition-colors">Borrar</button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {classrooms.filter(c => c.gradeId === grade.id).length === 0 && (
-                                                <span className="text-[10px] text-slate-300 italic px-2">Sin grupos</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {/* Independent Groups */}
-                                {classrooms.filter(c => !c.gradeId).length > 0 && (
-                                    <div className="flex items-center gap-2 bg-slate-50/50 p-1.5 rounded-2xl border border-slate-100">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase px-2">Otros</span>
-                                        <div className="flex gap-2">
-                                            {classrooms.filter(c => !c.gradeId).map(cls => (
-                                                <div key={cls.id} className="relative group/cls flex items-center">
-                                                    <button
-                                                        onClick={() => setSelectedClassroomId(cls.id)}
-                                                        className={`px-3 py-1.5 rounded-lg border-2 transition-all font-bold text-xs flex flex-col items-start gap-0.5 ${selectedClassroomId === cls.id
-                                                            ? "bg-white border-sky-500 text-sky-700 shadow-sm"
-                                                            : "bg-white border-white text-slate-500 hover:border-slate-200"
-                                                            }`}
-                                                    >
-                                                        <div className="flex items-center gap-1.5 whitespace-nowrap">
-                                                            <span>{cls.emoji}</span> {cls.name}
-                                                        </div>
-                                                        <div className="flex items-center gap-1 opacity-80 mt-1">
-                                                            <span className="text-[9px] font-mono tracking-wider bg-slate-100 px-1.5 py-0.5 rounded text-sky-700">Código: {cls.accessCode || 'N/A'}</span>
-                                                        </div>
-                                                        {cls.description && <span className="text-[9px] font-normal leading-none opacity-80 max-w-[80px] truncate mt-0.5" title={cls.description}>{cls.description}</span>}
-                                                    </button>
-                                                    <div className="absolute -top-6 right-0 hidden group-hover/cls:flex items-center bg-white shadow-lg border border-slate-100 rounded-lg p-1 z-10 transition-all gap-1">
-                                                        <button onClick={() => { setEditingClassroom(cls); setNewClassName(cls.name); setNewClassDescription(cls.description || ""); setNewClassEmoji(cls.emoji); setSelectedGradeIdInModal(cls.gradeId || ""); setShowAddClassroomModal(true); }} className="px-1.5 py-0.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-md text-[10px] font-bold transition-colors">Editar</button>
-                                                        <button onClick={() => handleDeleteClassroom(cls.id)} className="px-1.5 py-0.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md text-[10px] font-bold transition-colors">Borrar</button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* AI Insights Card */}
-                        <div className="grid md:grid-cols-3 gap-6 mb-8">
-                            <div className="bg-gradient-to-br from-sky-500 to-slate-500 rounded-2xl p-6 text-white shadow-lg col-span-2">
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <h3 className="font-bold text-lg flex items-center gap-2 mb-2">
-                                            <BrainCircuit className="w-5 h-5" /> Análisis de IA
-                                        </h3>
-                                        <div className="mb-4">
-                                            <label className="text-xs text-sky-200 font-bold uppercase tracking-wider mb-1 block">Seleccionar Alumno</label>
-                                            <select
-                                                value={selectedStudentId}
-                                                onChange={(e) => setSelectedStudentId(e.target.value)}
-                                                className="bg-white/20 border border-white/30 text-white rounded-lg px-3 py-1.5 text-sm w-full max-w-[200px] outline-none"
-                                            >
-                                                {(selectedClassroomId === "all"
-                                                    ? students
-                                                    : students.filter(s => s.classroomId === selectedClassroomId)
-                                                ).map(s => (
-                                                    <option key={s.id} value={s.id} className="text-slate-800">{s.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <p className="text-sky-100 mb-4 text-sm leading-relaxed">
-                                            {activeStudentContext ? (
-                                                <>Se detecta que <strong>{activeStudentContext.student.name}</strong> se encuentra actualmente en el reto <strong>{activeStudentContext.level?.title || "desconocido"}</strong> del mapa actual.</>
-                                            ) : (
-                                                <>Selecciona un alumno y asegúrate de tener un mapa activo para recibir análisis.</>
-                                            )}
-                                        </p>
-                                        {activeStudentContext && (
-                                            <button
-                                                onClick={handleAiReviewClick}
-                                                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full text-sm font-bold backdrop-blur transition-all active:scale-95 shadow-sm"
-                                            >
-                                                Ver Sugerencias de IA
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="bg-white/10 p-3 rounded-full">
-                                        <AlertTriangle className="w-8 h-8 text-yellow-300" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                                <h3 className="font-bold text-slate-700 mb-4">Rendimiento</h3>
-                                <div className="space-y-4">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-slate-500">Promedio Clase</span>
-                                        <span className="font-bold text-green-600">{metrics.average}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-slate-500">Completado</span>
-                                        <span className="font-bold text-sky-600">{metrics.completion}%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Students List */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                                <h3 className="font-bold text-lg text-slate-800">Progreso de Estudiantes</h3>
-                                <button
-                                    onClick={() => {
-                                        if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
-                                        if (studentsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxStudents} alumno(s) en tu plan actual.`);
-                                        setStudentName("");
-                                        setStudentAvatar("🧑🏻");
-                                        setShowAddStudentModal(true);
-                                    }}
-                                    className={`${isSuspended || studentsLimitReached ? 'bg-slate-400' : 'bg-sky-600 hover:bg-sky-700'} text-white px-4 py-2 rounded-full font-bold shadow-lg shadow-sky-200 transition-all flex items-center gap-2 text-sm`}
-                                >
-                                    <UserPlus className="w-4 h-4" />
-                                    Agregar Alumno
-                                </button>
-                            </div>
-                            <div className="divide-y divide-slate-100">
-                                {students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId).length === 0 ? (
-                                    <div className="p-12 text-center text-slate-400">
-                                        <Users className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                        <p>{selectedClassroomId === "all" ? "No hay alumnos registrados." : "No hay alumnos en este grupo."}</p>
-                                        <p className="text-sm mt-1">Haz clic en "Agregar Alumno" para comenzar.</p>
-                                    </div>
-                                ) : (
-                                    students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId).map(student => {
-                                        const calculatedProgress = calculateStudentProgress(student.id, progress, worlds);
-                                        return (
-                                            <div key={student.id} className="p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
-                                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-xl">
-                                                    {student.avatar}
-                                                </div>
-                                                <div className="flex-1 grid grid-cols-12 gap-4 items-center">
-                                                    <div className="col-span-3">
-                                                        <h4 className="font-bold text-slate-700">{student.name}</h4>
-                                                        <div className="flex items-center gap-1 mt-0.5">
-                                                            <span className="text-xs text-slate-400">{student.lastActivity}</span>
-                                                            <span className="text-slate-300">•</span>
-                                                            <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-mono tracking-wider font-bold" title="Código de Acceso del Alumno">
-                                                                {student.studentCode || 'X7P9K2'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-span-1">
-                                                        {student.status === 'needs_help' && (
-                                                            <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-bold">Ayuda</span>
-                                                        )}
-                                                    </div>
-                                                    <div className="col-span-4">
-                                                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                                                            <div
-                                                                className={`h-full rounded-full ${getClassColor(calculatedProgress)}`}
-                                                                style={{ width: `${calculatedProgress}%` }}
-                                                            ></div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-span-2 flex justify-end gap-2 text-right font-bold text-slate-600">
-                                                        {calculatedProgress}%
-                                                    </div>
-                                                    <div className="col-span-3 flex justify-end gap-2">
-                                                        <button
-                                                            onClick={() => {
-                                                                setStudentForAssignMap(student);
-                                                                setShowAssignMapModal(true);
-                                                            }}
-                                                            className="p-2 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-600 hover:text-sky-700 transition-colors flex gap-2 items-center text-xs"
-                                                            title="Asignar mapa"
-                                                        >
-                                                            <Map className="w-4 h-4" /> Asignar Mapa
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setStudentForGems(student);
-                                                                setShowAwardGemsModal(true);
-                                                            }}
-                                                            className="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 transition-colors flex gap-2 items-center text-xs font-bold shadow-sm"
-                                                            title="Dar Gemas al estudiante"
-                                                        >
-                                                            💎 <span className="hidden sm:inline">Dar Gemas</span>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setEditingStudent(student);
-                                                                setStudentName(student.name);
-                                                                setStudentAvatar(student.avatar);
-                                                                setSelectedClassroomInModal(student.classroomId || "");
-                                                            }}
-                                                            className="p-2 rounded-lg bg-slate-100 hover:bg-sky-100 text-slate-500 hover:text-sky-600 transition-colors"
-                                                            title="Editar alumno"
-                                                        >
-                                                            <Pencil className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setStudentToDelete(student)}
-                                                            className="p-2 rounded-lg bg-slate-100 hover:bg-red-100 text-slate-500 hover:text-red-600 transition-colors"
-                                                            title="Eliminar alumno"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )
-                                    })
-                                )}
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {/* INSIGHTS & REPORTS TAB */}
-                {activeTab === 'insights' && (
-                    <div className="space-y-6">
-                        {/* Redundant section removed and unified in header */}
-
-                        <div className="grid md:grid-cols-2 gap-6">
-                            {/* Early Warning System */}
-                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-sky-100 relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-2 h-full bg-red-500"></div>
-                                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
-                                    <AlertTriangle className="w-5 h-5 text-red-500" /> Sistema de Alerta Temprana
-                                </h3>
-                                <p className="text-xs text-slate-400 mb-4">Filtrado por: <strong>{insightWorld?.title || 'Todos'}</strong></p>
-                                <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
-                                    {atRiskStudents.length === 0 && strugglingStudents.length === 0 ? (
-                                        <div className="text-center py-8">
-                                            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <CheckCircle2 className="w-8 h-8" />
-                                            </div>
-                                            <p className="font-bold text-slate-700">¡Todo en orden!</p>
-                                            <p className="text-sm text-slate-500">No hay alumnos en riesgo detectados.</p>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {atRiskStudents.map(student => {
-                                                const stuckContext = getStudentContext(student.id);
-                                                return (
-                                                    <div
-                                                        key={student.id}
-                                                        onClick={() => setActiveStudentProfileId(student.id)}
-                                                        className="p-4 bg-red-50 rounded-xl border border-red-100 cursor-pointer hover:shadow-md transition-all hover:scale-[1.02]"
-                                                        title={`Ver expediente completo de ${student.name}`}
-                                                    >
-                                                        <div className="flex justify-between items-start mb-2">
-                                                            <span className="font-bold text-red-800">{student.name}</span>
-                                                            <span className="text-xs font-bold bg-white text-red-600 px-2 py-1 rounded-full border border-red-200">Alto Riesgo</span>
-                                                        </div>
-                                                        <p className="text-sm text-red-700">
-                                                            Menos del 30% de progreso general. Actualmente en el reto: <strong>{stuckContext?.level?.title || "Ninguno"}</strong>. Se recomienda intervención activa.
-                                                        </p>
-                                                        <span className="mt-3 inline-block text-sm font-bold text-red-600 underline">
-                                                            Ver Actividad Detallada
-                                                        </span>
-                                                    </div>
-                                                )
-                                            })}
-
-                                            {strugglingStudents.map(student => {
-                                                const stuckContext = getStudentContext(student.id);
-                                                return (
-                                                    <div
-                                                        key={student.id}
-                                                        onClick={() => setActiveStudentProfileId(student.id)}
-                                                        className="p-4 bg-yellow-50 rounded-xl border border-yellow-100 cursor-pointer hover:shadow-md transition-all hover:scale-[1.02]"
-                                                        title={`Ver expediente completo de ${student.name}`}
-                                                    >
-                                                        <div className="flex justify-between items-start mb-2">
-                                                            <span className="font-bold text-yellow-800">{student.name}</span>
-                                                            <span className="text-xs font-bold bg-white text-yellow-600 px-2 py-1 rounded-full border border-yellow-200">Vigilancia</span>
-                                                        </div>
-                                                        <p className="text-sm text-yellow-700">
-                                                            Progreso por debajo del ideal. El alumno puede estar teniendo dificultades con: <strong>{stuckContext?.level?.title || "Retos recienes"}</strong>.
-                                                        </p>
-                                                        <div className="mt-3 flex gap-4">
-                                                            <span className="text-sm font-bold text-yellow-600 underline">
-                                                                Ver Actividad Detallada
-                                                            </span>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation(); // prevent modal opening if just sending hint
-                                                                    setStudentForHintId(student.id);
-                                                                }}
-                                                                className="text-sm font-bold text-sky-600 underline hover:text-sky-800 transition-colors"
-                                                            >
-                                                                Enviar Pista por IA
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })}
                                         </>
                                     )}
                                 </div>
                             </div>
 
-                            {/* AI General Trends -> Dynamic Student Trends */}
-                            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-sky-100 flex flex-col">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div>
-                                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
-                                            <TrendingUp className="w-5 h-5 text-sky-500" /> Rendimiento y Emociones
-                                        </h3>
-                                        <p className="text-xs text-slate-400">{insightWorld ? `📍 Filtrado por: ${insightWorld.title}` : "🌐 Global — Todos los mapas activos"}</p>
+                            <div className="flex items-center gap-6">
+                                {/* Global Stats Dashboard Indicators (Neon Style) */}
+                                <div className="flex items-center gap-4">
+                                    <div className="flex flex-col items-end border-r border-white/10 pr-4">
+                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Promedio</span>
+                                        <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                                            <span className="text-xs font-black text-emerald-400 tabular-nums">{metrics.average}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-2 text-xs">
-                                        <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> Motivado</div>
-                                        <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500"></span> Dudoso</div>
-                                        <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span> Frustrado</div>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Cumplimiento</span>
+                                        <div className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-lg shadow-[0_0_15px_rgba(79,70,229,0.1)]">
+                                            <span className="text-xs font-black text-indigo-400 tabular-nums">{metrics.completion}%</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
-                                    {insightStudents.length === 0 ? (
-                                        <div className="text-sm text-slate-500 text-center py-6">No hay alumnos para analizar{insightClassroomId !== 'all' ? ' en este grupo' : ''}.</div>
-                                    ) : (
-                                        insightStudents.map(student => {
-                                            const progressVal = calculateStudentProgress(student.id, progress, worlds);
-                                            let statusColor = "bg-green-50 border-green-100";
-                                            let textStatusColor = "text-green-700";
-                                            let bgFillColor = "bg-green-500";
-                                            let statusLabel = "Buen Ritmo";
-
-                                            if (progressVal < 30) {
-                                                statusColor = "bg-red-50 border-red-100";
-                                                textStatusColor = "text-red-700";
-                                                bgFillColor = "bg-red-500";
-                                                statusLabel = "En Riesgo / Sin Respuesta";
-                                            } else if (progressVal < 70) {
-                                                statusColor = "bg-yellow-50 border-yellow-100";
-                                                textStatusColor = "text-yellow-700";
-                                                bgFillColor = "bg-yellow-500";
-                                                statusLabel = "Requiere Práctica";
+                                <div className="flex items-center gap-2 border-l border-white/10 pl-4">
+                                    <button 
+                                        onClick={() => setShowBulkModal(true)} 
+                                        className="flex items-center gap-3 px-4 py-2.5 bg-slate-100 hover:bg-white text-slate-500 hover:text-indigo-600 rounded-xl border border-slate-200 transition-all group font-black text-[9px] uppercase tracking-widest"
+                                        title="Subir evidencias en lote"
+                                    >
+                                        <UploadCloud className="w-4 h-4 transition-transform group-hover:scale-110" />
+                                        <span className="hidden xl:block">Carga Masiva</span>
+                                    </button>
+                                    {/* ── Bulk Report Controls ── */}
+                                    {/* Project filter for bulk reports */}
+                                    <select
+                                        value={bulkReportWorldId}
+                                        onChange={e => setBulkReportWorldId(e.target.value)}
+                                        className="w-36 min-w-0 px-2 py-2.5 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 truncate"
+                                        title="Filtrar reportes por proyecto"
+                                    >
+                                        <option value="global">🌐 Global</option>
+                                        {worlds.map(w => (
+                                            <option key={w.id} value={w.id}>{w.title}</option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
+                                        onClick={async () => {
+                                            const visibleStudents = students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId);
+                                            if (visibleStudents.length === 0) { alert('No hay alumnos en este salón.'); return; }
+                                            setIsGeneratingTeacherBulk(true);
+                                            try {
+                                                const worldFilter = bulkReportWorldId === 'global' ? null : bulkReportWorldId;
+                                                const items = await Promise.all(visibleStudents.map(async (st) => {
+                                                    const prog = calculateStudentProgress(st.id, progress, worlds);
+                                                    try {
+                                                        const res = await fetch('/api/ai/generate-report', {
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ studentId: st.id, studentName: st.name, reportType: 'teacher', worldFilter })
+                                                        });
+                                                        const data = await res.json();
+                                                        const wTitle = worldFilter ? worlds.find(w => w.id === worldFilter)?.title : undefined;
+                                                        return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: data.report || '', worldTitle: wTitle };
+                                                    } catch {
+                                                        return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: 'No disponible' };
+                                                    }
+                                                }));
+                                                const clsLabel = selectedClassroomId === "all" ? "Todos los Alumnos" : (classrooms.find(c => c.id === selectedClassroomId)?.name || 'Salón');
+                                                const scopeLabel = bulkReportWorldId === 'global' ? clsLabel : `${clsLabel} — ${worlds.find(w => w.id === bulkReportWorldId)?.title}`;
+                                                openReportWindow('teacher', scopeLabel, items);
+                                            } finally {
+                                                setIsGeneratingTeacherBulk(false);
                                             }
-
-                                            return (
-                                                <div
-                                                    key={student.id}
-                                                    onClick={() => setActiveStudentProfileId(student.id)}
-                                                    className={`p-4 rounded-xl border ${statusColor} cursor-pointer hover:shadow-md transition-all hover:scale-[1.02]`}
-                                                    title={`Ver expediente completo de ${student.name}`}
-                                                >
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="text-2xl">{student.avatar}</div>
-                                                            <div>
-                                                                <span className={`font-bold text-sm block ${textStatusColor}`}>{student.name}</span>
-                                                                <span className={`text-xs block opacity-80 ${textStatusColor}`}>{statusLabel}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex gap-4 items-center">
-                                                            {insightWorld && (
-                                                                <div className="flex flex-col items-end">
-                                                                    <span className="text-[10px] font-bold text-sky-400 uppercase tracking-tighter mb-0.5">Nota Proyecto</span>
-                                                                    <div className="w-14 bg-white border-2 border-sky-100 rounded-lg py-1 text-sm font-black text-sky-800 text-center shadow-sm">
-                                                                        {getProjectGrade(student, insightWorld.id)}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                            <div className="flex flex-col items-end">
-                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-0.5">Global</span>
-                                                                <span className="text-sm font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md min-w-[32px] text-center">{calculateGlobalGrade(student)}</span>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <span className={`text-sm font-bold ${textStatusColor}`}>{Math.round(progressVal)}%</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="w-full bg-white/50 rounded-full h-2 overflow-hidden shadow-inner">
-                                                        <div className={`${bgFillColor} h-2 rounded-full`} style={{ width: `${progressVal}%` }}></div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    )}
-
-                                    <div className="p-4 bg-sky-50 rounded-xl border border-sky-100 mt-6">
-                                        <h4 className="font-bold text-sky-800 mb-2 flex items-center gap-2">
-                                            <BrainCircuit className="w-4 h-4" /> Sugerencia del Tutor IA
-                                        </h4>
-                                        <p className="text-sm text-sky-700 leading-relaxed">
-                                            Recuerda que puedes usar el <strong>Análisis de IA</strong> en la pestaña de estudiantes para generar misiones especiales de repaso para los alumnos marcados en "Requiere Práctica" o "En Riesgo".
-                                        </p>
-                                    </div>
+                                        }}
+                                        className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl border border-sky-200 transition-all font-black text-[9px] uppercase tracking-widest disabled:opacity-60"
+                                        title="Reporte para Docente — todos los alumnos visibles"
+                                    >
+                                        <BrainCircuit className="w-4 h-4" />
+                                        <span className="hidden xl:block">{isGeneratingTeacherBulk ? 'Generando...' : 'Reporte Docente'}</span>
+                                    </button>
+                                    <button
+                                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
+                                        onClick={async () => {
+                                            const visibleStudents = students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId);
+                                            if (visibleStudents.length === 0) { alert('No hay alumnos en este salón.'); return; }
+                                            setIsGeneratingParentBulk(true);
+                                            try {
+                                                const worldFilter = bulkReportWorldId === 'global' ? null : bulkReportWorldId;
+                                                const items = await Promise.all(visibleStudents.map(async (st) => {
+                                                    const prog = calculateStudentProgress(st.id, progress, worlds);
+                                                    try {
+                                                        const res = await fetch('/api/ai/generate-report', {
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ studentId: st.id, studentName: st.name, reportType: 'parent', worldFilter })
+                                                        });
+                                                        const data = await res.json();
+                                                        const wTitle = worldFilter ? worlds.find(w => w.id === worldFilter)?.title : undefined;
+                                                        return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: Array.isArray(data.paragraphs) ? data.paragraphs.join('\n\n') : (data.report || ''), worldTitle: wTitle, homeActivity: data.homeActivity };
+                                                    } catch {
+                                                        return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: 'No disponible' };
+                                                    }
+                                                }));
+                                                const clsLabel = selectedClassroomId === "all" ? "Todos los Alumnos" : (classrooms.find(c => c.id === selectedClassroomId)?.name || 'Salón');
+                                                const scopeLabel = bulkReportWorldId === 'global' ? clsLabel : `${clsLabel} — ${worlds.find(w => w.id === bulkReportWorldId)?.title}`;
+                                                openReportWindow('parent', scopeLabel, items);
+                                            } finally {
+                                                setIsGeneratingParentBulk(false);
+                                            }
+                                        }}
+                                        className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl border border-slate-200 transition-all font-black text-[9px] uppercase tracking-widest disabled:opacity-60"
+                                        title="Reporte para Padres — todos los alumnos visibles"
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                        <span className="hidden xl:block">{isGeneratingParentBulk ? 'Generando...' : 'Reporte Padres'}</span>
+                                    </button>
+                                    {/* ─────────────────────────── */}
+                                    <button
+                                        onClick={() => {
+                                            if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
+                                            if (studentsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxStudents} alumno(s) en tu plan actual.`);
+                                            setStudentName("");
+                                            setStudentAvatar("🧑🏻");
+                                            setShowAddStudentModal(true);
+                                        }}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all active:scale-95 border border-indigo-400/20"
+                                    >
+                                        <UserPlus className="w-3.5 h-3.5" /> Nuevo Alumno
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                )}
+                        </header>
 
-            </main>
+                        <div className="p-0"> {/* Unified Content Area (Zero Padding Top) */}
+
+
+
+                        {/* Student Grid Container with Side Padding */}
+                        <div className="px-6 pb-6">
+                            {students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId).length === 0 ? (
+                                <div className="p-16 text-center text-slate-400 bg-white/60 backdrop-blur-xl rounded-3xl border border-white shadow-xl mt-4">
+                                    <Users className="w-16 h-16 mx-auto mb-4 text-slate-200" />
+                                    <h3 className="text-slate-400 font-black uppercase tracking-tight">Sin Alumnos</h3>
+                                    <p className="text-xs mt-2 font-bold max-w-xs mx-auto text-slate-400">Haz clic en "Nuevo Alumno" para iniciar la supervisión táctica de este salón.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 mt-4">
+                                    {students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId).map(student => {
+                                    const avg = student.globalActivityAverage ?? 0;
+                                    const calculatedProgress = calculateStudentProgress(student.id, progress, worlds);
+                                    const hasNoData = avg === 0 && calculatedProgress === 0;
+                                    const isAtRisk = !hasNoData && avg < 6 && avg > 0; // Solo si tiene calificación y es menor a 6
+                                    const needsPractice = !hasNoData && avg >= 6 && avg < 8;
+                                    const isOnline = student.lastSeen ? (new Date().getTime() - new Date(student.lastSeen).getTime() < 120000) : false;
+                                    
+                                    return (
+                                        <div
+                                            key={student.id}
+                                            onClick={() => { setAiReport(null); setActiveStudentProfileId(student.id); }}
+                                            className="relative group bg-white rounded-[1.5rem] overflow-hidden border-2 border-indigo-50 shadow-xl shadow-indigo-100/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 cursor-pointer flex flex-col items-center p-4"
+                                        >
+                                            {/* Status Badge - Industrial/Tactical */}
+                                            {hasNoData ? (
+                                                <div className="absolute top-4 right-4 bg-slate-100 text-slate-500 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 shadow-lg">
+                                                    <BrainCircuit className="w-3.5 h-3.5" /> RECLUTA
+                                                </div>
+                                            ) : isAtRisk ? (
+                                                <div className="absolute top-4 right-4 bg-rose-600 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 shadow-lg animate-pulse">
+                                                    <AlertTriangle className="w-3.5 h-3.5" /> CRÍTICO
+                                                </div>
+                                            ) : needsPractice ? (
+                                                <div className="absolute top-4 right-4 bg-amber-500 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 shadow-lg">
+                                                    <BrainCircuit className="w-3.5 h-3.5" /> REFUERZO
+                                                </div>
+                                            ) : (
+                                                <div className="absolute top-4 right-4 bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 border border-emerald-200">
+                                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" /> ÓPTIMO
+                                                </div>
+                                            )}
+
+                                            {/* Avatar Area - High Impact */}
+                                            <div className="relative mb-3 mt-4">
+                                                <div className={`w-20 h-20 rounded-[1.5rem] flex items-center justify-center text-4xl transition-all duration-500 shadow-2xl border-4 border-white ${
+                                                    isOnline 
+                                                        ? (isAtRisk ? 'bg-rose-100 shadow-rose-200' : needsPractice ? 'bg-amber-100 shadow-amber-200' : 'bg-indigo-100 shadow-indigo-100') 
+                                                        : 'bg-slate-200 grayscale opacity-60'
+                                                }`}>
+                                                    {student.avatar}
+                                                </div>
+                                                <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center ${isOnline ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.6)]' : 'bg-slate-400'}`}>
+                                                    <Activity className="w-3 h-3 text-white p-0.5" />
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Datos Básicos - High Contrast */}
+                                            <h4 className={`font-black text-center text-lg w-full truncate px-2 transition-colors ${isOnline ? 'text-slate-900' : 'text-slate-400'}`} title={student.name}>
+                                                {student.name}
+                                            </h4>
+                                            
+                                            <div className={`mt-1 mb-4 flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${isOnline ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-100 text-slate-400'}`}>
+                                                {isOnline ? (
+                                                    <> <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> CONECTADO </>
+                                                ) : `DESCONECTADO: ${student.lastSeen ? new Date(student.lastSeen).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) : 'NUNCA'}`}
+                                            </div>
+
+                                            {/* Barra de progreso - Tactical Power Bar */}
+                                            <div className="w-full mt-auto space-y-2">
+                                                <div className="flex justify-between items-end">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Nivel de Dominio</span>
+                                                        <span className={`text-xl font-black italic leading-none ${isAtRisk ? 'text-rose-600' : needsPractice ? 'text-amber-600' : 'text-indigo-600'}`}>
+                                                            {Math.round(calculatedProgress)}%
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex -space-x-2">
+                                                        {Array.from({length: 3}).map((_, i) => (
+                                                            <div key={i} className={`w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-[8px] bg-indigo-50 text-indigo-600 font-bold shadow-sm ${i > 1 ? 'opacity-30' : ''}`}>
+                                                                {i + 1}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="h-4 w-full bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200/50 p-0.5">
+                                                    <div
+                                                        className={`h-full rounded-md transition-all duration-1000 shadow-inner ${
+                                                            calculatedProgress >= 80 ? 'bg-emerald-500' : 
+                                                            calculatedProgress >= 50 ? 'bg-indigo-600' : 
+                                                            'bg-rose-600'
+                                                        } ${isOnline ? 'opacity-100' : 'opacity-40 grayscale'}`}
+                                                        style={{ width: `${calculatedProgress}%` }}
+                                                    >
+                                                        <div className="w-full h-full bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] bg-[length:16px_16px] animate-[slide_1s_linear_infinite]" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Menú Hover - Tactical Management Overlay */}
+                                            <div className="absolute inset-0 bg-indigo-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10" onClick={(e) => e.stopPropagation()}>
+                                                <div className="text-center mb-4">
+                                                    <p className="text-indigo-300 text-[10px] font-black uppercase tracking-[0.3em]">Acción Directa</p>
+                                                    <h5 className="text-white font-black text-sm uppercase">{student.name.split(' ')[0]}</h5>
+                                                </div>
+                                                
+                                                <button onClick={() => { setAiReport(null); setActiveStudentProfileId(student.id); }} className="w-full flex items-center justify-center gap-3 bg-white text-indigo-950 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all hover:bg-indigo-50 hover:scale-105 active:scale-95 shadow-xl">
+                                                    <Activity className="w-4 h-4" /> Ver Analítica
+                                                </button>
+                                                
+                                                <div className="grid grid-cols-2 gap-3 w-full">
+                                                    <button onClick={() => { setEditingStudent(student); setStudentName(student.name); setStudentAvatar(student.avatar); setSelectedClassroomInModal(student.classroomId || ""); setShowAddStudentModal(true); }} className="flex items-center justify-center bg-indigo-800 hover:bg-indigo-700 text-white py-3 rounded-xl transition-all border border-indigo-700 shadow-lg" title="Editar">
+                                                        <Pencil className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={() => setStudentToDelete(student)} className="flex items-center justify-center bg-rose-600 hover:bg-rose-500 text-white py-3 rounded-xl transition-all border border-rose-700 shadow-lg" title="Eliminar">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                                
+                                         </div>
+                                     </div>
+                                 )
+                             })}
+                         </div>
+                         )}
+                     </div>
+                 </div>
+             </div>
+         )}
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-sky-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-between items-center px-6 py-3 z-50">
-                <button onClick={() => setActiveTab("students")} className={`flex flex-col items-center gap-1 ${activeTab === 'students' ? 'text-sky-600' : 'text-slate-400'}`}>
+            <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-slate-900/80 backdrop-blur-2xl border border-white/5 shadow-2xl rounded-2xl flex justify-between items-center px-8 py-4 z-50">
+                <button onClick={() => setActiveTab("students")} className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'students' ? 'text-indigo-400 scale-110' : 'text-slate-500'}`}>
                     <Users className="w-5 h-5" />
-                    <span className="text-[10px] font-bold">Alumnos</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Salón</span>
                 </button>
-                <button onClick={() => setActiveTab("library")} className={`flex flex-col items-center gap-1 ${activeTab === 'library' ? 'text-sky-600' : 'text-slate-400'}`}>
+                <button onClick={() => setActiveTab("library")} className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'library' ? 'text-indigo-400 scale-110' : 'text-slate-500'}`}>
                     <Library className="w-5 h-5" />
-                    <span className="text-[10px] font-bold">Mapas</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Mapas</span>
                 </button>
-                <button onClick={() => setActiveTab("insights")} className={`flex flex-col items-center gap-1 ${activeTab === 'insights' ? 'text-sky-600' : 'text-slate-400'}`}>
-                    <BrainCircuit className="w-5 h-5" />
-                    <span className="text-[10px] font-bold">Análisis</span>
-                </button>
-                <button onClick={() => setActiveTab("raid")} className={`flex flex-col items-center gap-1 ${activeTab === 'raid' ? 'text-red-600' : 'text-slate-400'}`}>
+                <button onClick={() => setActiveTab("raid")} className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'raid' ? 'text-rose-400 scale-110' : 'text-slate-500'}`}>
                     <Swords className="w-5 h-5" />
-                    <span className="text-[10px] font-bold">Raid</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Raid</span>
                 </button>
-                <button onClick={() => setActiveTab("messages")} className={`flex flex-col items-center gap-1 ${activeTab === 'messages' ? 'text-cyan-600' : 'text-slate-400'}`}>
+                <button onClick={() => setActiveTab("messages")} className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'messages' ? 'text-cyan-400 scale-110' : 'text-slate-500'}`}>
                     <MessageSquare className="w-5 h-5" />
-                    <span className="text-[10px] font-bold">Msgs</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Msgs</span>
                 </button>
-                <button onClick={() => signOut({ callbackUrl: "/" })} className="flex flex-col items-center gap-1 text-slate-400">
+                <button onClick={() => signOut({ callbackUrl: "/" })} className="flex flex-col items-center gap-1.5 text-slate-500 hover:text-rose-400 transition-all">
                     <LogOut className="w-5 h-5" />
-                    <span className="text-[10px] font-bold">Salir</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Salir</span>
                 </button>
             </nav>
 
 
             {/* Upload Engine Modal */}
             {showUploadModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+                    <div className="bg-slate-900/90 border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl">
                         <button
                             onClick={() => setShowUploadModal(false)}
-                            className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition"
+                            className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
                         >
-                            <X className="w-5 h-5 text-slate-600" />
+                            <X className="w-5 h-5 text-slate-400" />
                         </button>
                         <UploadEngine
                             onSuccess={() => {
@@ -1561,15 +1669,25 @@ export default function TeacherDashboard() {
                 </div>
             )}
 
+            {showAiGeneratorModal && (
+                <AiProjectGenerator 
+                    onClose={() => setShowAiGeneratorModal(false)}
+                    onSuccess={() => {
+                        setShowAiGeneratorModal(false);
+                        setActiveTab("library");
+                    }}
+                />
+            )}
+
             {/* Bulk Upload Modal */}
             {showBulkModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+                    <div className="bg-slate-900/90 border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl">
                         <button
                             onClick={() => setShowBulkModal(false)}
-                            className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition"
+                            className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
                         >
-                            <X className="w-5 h-5 text-slate-600" />
+                            <X className="w-5 h-5 text-slate-400" />
                         </button>
                         <BulkEvidenceUploader onClose={() => setShowBulkModal(false)} />
                     </div>
@@ -1580,20 +1698,20 @@ export default function TeacherDashboard() {
 
             {/* Delete Confirmation Modal */}
             {worldToDelete && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-md p-8 relative shadow-2xl text-center transform transition-all scale-100 animate-in fade-in zoom-in-95 duration-200">
-                        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 text-red-600">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
+                    <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-md p-8 relative shadow-2xl text-center transform transition-all scale-100 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500 border border-rose-500/20">
                             <AlertTriangle className="w-10 h-10" />
                         </div>
-                        <h3 className="text-2xl font-bold text-slate-800 mb-2">¿Eliminar Aventura?</h3>
-                        <p className="text-slate-600 mb-6 font-medium">
-                            Estás a punto de borrar permanentemente <span className="font-bold text-slate-800">{worldToDelete.title}</span>.
-                            Esta acción eliminará todos los niveles y el progreso de los estudiantes asociados a este mapa. No se puede deshacer.
+                        <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">¿Eliminar Aventura?</h3>
+                        <p className="text-slate-400 mb-6 font-medium text-sm">
+                            Estás a punto de borrar permanentemente <span className="font-bold text-white">{worldToDelete.title}</span>.
+                            Esta acción eliminará todos los niveles y el progreso. No se puede deshacer.
                         </p>
                         <div className="flex gap-4 w-full">
                             <button
                                 onClick={() => setWorldToDelete(null)}
-                                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors"
+                                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl transition-colors border border-white/5"
                             >
                                 Cancelar
                             </button>
@@ -1602,7 +1720,7 @@ export default function TeacherDashboard() {
                                     deleteWorld(worldToDelete.id);
                                     setWorldToDelete(null);
                                 }}
-                                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-red-200 transition-transform active:scale-95"
+                                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-rose-600/20 transition-transform active:scale-95"
                             >
                                 Sí, Eliminar
                             </button>
@@ -1613,38 +1731,38 @@ export default function TeacherDashboard() {
 
             {/* Add/Edit Student Modal */}
             {(showAddStudentModal || editingStudent) && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 relative shadow-2xl">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+                    <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-md p-6 md:p-8 relative shadow-2xl">
                         <button
                             onClick={() => { setShowAddStudentModal(false); setEditingStudent(null); setStudentName(""); setStudentAvatar("🧑🏻"); }}
-                            className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition"
+                            className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
                         >
-                            <X className="w-5 h-5 text-slate-600" />
+                            <X className="w-5 h-5 text-slate-400" />
                         </button>
-                        <h3 className="text-xl font-bold text-slate-800 mb-6">
+                        <h3 className="text-xl font-black text-white mb-6 uppercase tracking-tight">
                             {editingStudent ? "Editar Alumno" : "Agregar Alumno"}
                         </h3>
                         <div className="space-y-5">
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Nombre del Alumno</label>
+                                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Nombre del Alumno</label>
                                 <input
                                     type="text"
                                     value={studentName}
                                     onChange={(e) => setStudentName(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-medium text-slate-800"
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition font-medium text-white placeholder:text-slate-600"
                                     placeholder="Ej. María López"
                                     autoFocus
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Avatar</label>
-                                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Avatar</label>
+                                <div className="grid grid-cols-6 gap-2">
                                     {AVATAR_OPTIONS.map((emoji) => (
                                         <button
                                             key={emoji}
                                             type="button"
                                             onClick={() => setStudentAvatar(emoji)}
-                                            className={`w-10 h-10 text-xl rounded-lg flex items-center justify-center transition-all ${studentAvatar === emoji ? 'bg-sky-100 ring-2 ring-sky-500 scale-110' : 'bg-slate-50 hover:bg-slate-100'}`}
+                                            className={`w-10 h-10 text-xl rounded-lg flex items-center justify-center transition-all ${studentAvatar === emoji ? 'bg-indigo-600 ring-2 ring-indigo-400 scale-110 shadow-lg' : 'bg-white/5 hover:bg-white/10 text-white'}`}
                                         >
                                             {emoji}
                                         </button>
@@ -1652,22 +1770,22 @@ export default function TeacherDashboard() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Grupo / Salón</label>
+                                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Asignar a Salón</label>
                                 <select
                                     value={selectedClassroomInModal}
                                     onChange={(e) => setSelectedClassroomInModal(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none transition font-medium text-slate-800"
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition font-medium text-white"
                                 >
-                                    <option value="">Sin Grupo (General)</option>
+                                    <option value="" className="bg-slate-900 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Sin Salón (General)</option>
                                     {classrooms.map(cls => (
-                                        <option key={cls.id} value={cls.id}>{cls.emoji} {cls.name}</option>
+                                        <option key={cls.id} value={cls.id} className="bg-slate-900">{cls.emoji} {cls.name}</option>
                                     ))}
                                 </select>
                             </div>
                             <button
                                 onClick={handleSaveStudent}
                                 disabled={!studentName.trim() || savingStudent}
-                                className="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl shadow-lg shadow-sky-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-4 rounded-xl shadow-lg shadow-indigo-600/20 transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest text-[10px]"
                             >
                                 {savingStudent ? "Guardando..." : (editingStudent ? "Guardar Cambios" : "Agregar Alumno")}
                             </button>
@@ -1834,171 +1952,242 @@ export default function TeacherDashboard() {
             {/* Ficha Descriptiva Modal */}
             {activeStudentProfileId && (() => {
                 const s = students.find(s => s.id === activeStudentProfileId);
-                // If a map doesn't exist or isn't active, show a global fallback.
-                const sContext = getStudentContext(s?.id || "");
                 const globalProgress = s ? calculateStudentProgress(s.id, progress, worlds) : 0;
+                
+                const selectedWorldInProfile = worlds.find(w => w.id === profileScopeWorldId);
+                const displayProgress = profileScopeWorldId === 'global' ? globalProgress : (selectedWorldInProfile && s ? calculateStudentProgressForWorld(s.id, progress, selectedWorldInProfile) : 0);
+                
+                const displayGrade = profileScopeWorldId === 'global' 
+                    ? s?.globalActivityAverage 
+                    : s?.automaticProjectGrades?.find((g: any) => g.worldId === profileScopeWorldId)?.averageGrade;
+
+                const getSpecificContext = () => {
+                    if (!s) return null;
+                    if (profileScopeWorldId === 'global') return null; // We'll handle 'global' natively below
+                    if (!selectedWorldInProfile) return null;
+
+                    const levelsDone = progress[s.id]?.[selectedWorldInProfile.id] || [];
+                    let targetLevelId = levelsDone.length > 0 ? Math.max(...levelsDone) + 1 : 1;
+                    if (targetLevelId > selectedWorldInProfile.days.length) {
+                        targetLevelId = selectedWorldInProfile.days.length;
+                    }
+                    const stuckLevel = selectedWorldInProfile.days.find(d => d.dayNumber === targetLevelId);
+                    return { student: s, level: stuckLevel, world: selectedWorldInProfile };
+                };
+                
+                const sSpecificContext = getSpecificContext();
 
                 return (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-8 relative shadow-2xl">
-                            <button
-                                onClick={() => setActiveStudentProfileId(null)}
-                                className="sticky top-0 float-right p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors z-10"
-                            >
-                                <X className="w-5 h-5 text-slate-600" />
-                            </button>
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fade-in">
+                        <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative">
+                            <div className="p-8 pb-4 shrink-0 overflow-y-auto max-h-[90vh] scrollbar-hide flex-1">
+                                <button
+                                    onClick={() => setActiveStudentProfileId(null)}
+                                    className="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors z-10"
+                                >
+                                    <X className="w-5 h-5 text-slate-600" />
+                                </button>
 
-                            <div className="flex flex-col items-center mb-6">
-                                <div className="text-6xl mb-4 bg-slate-100 rounded-full w-24 h-24 flex items-center justify-center">{s?.avatar}</div>
-                                <h2 className="text-2xl font-bold text-slate-800">{s?.name}</h2>
-                                <p className="text-slate-500 text-sm">Ficha Descriptiva en Tiempo Real</p>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="p-4 bg-sky-50 border border-sky-100 rounded-xl">
-                                    <div className="flex justify-between font-bold text-sky-900 mb-2">
-                                        <span>Progreso Global (Todos los Mapas)</span>
-                                        <span>{globalProgress}%</span>
-                                    </div>
-                                    <div className="w-full bg-white/60 rounded-full h-2">
-                                        <div className={`${getClassColor(globalProgress)} h-2 rounded-full`} style={{ width: `${globalProgress}%` }}></div>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-slate-50 p-4 border border-slate-100 rounded-xl flex items-center justify-between">
-                                        <span className="text-slate-600 font-bold">Gemas</span>
-                                        <span className="text-sky-600 font-black text-lg">💎 {s?.gems || 0}</span>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 border border-slate-100 rounded-xl flex items-center justify-between">
-                                        <span className="text-slate-600 font-bold">Experiencia</span>
-                                        <span className="text-orange-500 font-black text-lg">✨ {s?.xp || 0}</span>
-                                    </div>
+                                <div className="flex flex-col items-center mb-6">
+                                    <div className="text-6xl mb-4 bg-slate-50 rounded-full w-24 h-24 flex items-center justify-center shadow-inner border border-slate-100">{s?.avatar}</div>
+                                    <h2 className="text-2xl font-bold text-slate-800">{s?.name}</h2>
+                                    <p className="text-slate-500 text-sm">Expediente Unificado del Alumno</p>
+                                    <span className="mt-1 text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-mono tracking-wider font-bold">Código: {s?.studentCode || 'N/A'}</span>
                                 </div>
 
-                                <div className="bg-white border text-sm text-slate-600 border-slate-200 rounded-xl p-4">
-                                    <h4 className="font-bold text-slate-800 mb-2">Estado Actual del Alumno:</h4>
-                                    {sContext ? (
-                                        <p>
-                                            El alumno se encuentra activo en el mapa <strong>"{sContext.world.title}"</strong>, trabajando actualmente en el nivel <strong>{sContext.level?.title || "Final"}</strong>.
-                                        </p>
-                                    ) : (
-                                        <p>El alumno no tiene progreso reciente visible en los mapas activos.</p>
-                                    )}
-                                </div>
+                                <div className="space-y-4">
+                                    {/* Project Scope Filter */}
+                                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col gap-2">
+                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-1">Mostrar Analítica Para:</label>
+                                        <select 
+                                            value={profileScopeWorldId}
+                                            onChange={(e) => {
+                                                setProfileScopeWorldId(e.target.value);
+                                                setAiReport(null); // Reset report when changing context
+                                                setIsGeneratingReport(false);
+                                            }}
+                                            className="w-full bg-white border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2 font-bold focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                        >
+                                            <option value="global">🌍 Todos los Proyectos (Global)</option>
+                                            {s?.assignedWorlds && s.assignedWorlds.length > 0 && (
+                                                <optgroup label="Proyectos Asignados">
+                                                    {s.assignedWorlds.map((w: any) => (
+                                                        <option key={w.id} value={w.id}>🗺️ {w.title || "Sin título"}</option>
+                                                    ))}
+                                                </optgroup>
+                                            )}
+                                        </select>
+                                    </div>
 
-                                {/* Análisis Pedagógico — Powered by AI */}
-                                <div className="bg-sky-50 border border-sky-100 rounded-xl p-4 text-sm mt-4">
-                                    <h4 className="font-bold text-sky-900 mb-2 flex items-center gap-2">
-                                        <BrainCircuit className="w-4 h-4" /> Reporte Pedagógico IA
-                                    </h4>
-                                    {aiReport ? (
-                                        <div className="prose prose-sm prose-sky max-w-none">
-                                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{aiReport}</ReactMarkdown>
+                                    {/* Progress Bar */}
+                                    <div className="p-4 bg-sky-50 border border-sky-100 rounded-xl">
+                                        <div className="flex justify-between font-bold text-sky-900 mb-2">
+                                            <span>Progreso {profileScopeWorldId === 'global' ? 'Global (Todos)' : `del Proyecto`}</span>
+                                            <span>{Math.round(displayProgress)}%</span>
                                         </div>
-                                    ) : isGeneratingReport ? (
-                                        <div className="flex items-center gap-3 p-4">
-                                            <div className="animate-spin h-5 w-5 border-2 border-sky-600 border-t-transparent rounded-full"></div>
-                                            <span className="text-sky-700 font-medium">Generando reporte con IA...</span>
+                                        <div className="w-full bg-white/60 rounded-full h-2">
+                                            <div className={`${getClassColor(displayProgress)} h-2 rounded-full transition-all duration-500`} style={{ width: `${displayProgress}%` }}></div>
                                         </div>
-                                    ) : (
-                                        <>
-                                            <p className="text-sky-800 leading-relaxed italic mb-3">
-                                                {globalProgress >= 70 ? (
-                                                    "El alumno demuestra un dominio sólido de los conceptos fundamentales."
-                                                ) : globalProgress >= 30 ? (
-                                                    "El alumno comprende la teoría básica pero necesita refuerzo práctico."
-                                                ) : (
-                                                    "El alumno muestra dificultades. Se recomienda intervención."
-                                                )}
+                                    </div>
+
+                                    {/* Dynamic Metrics */}
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="bg-slate-50 p-3 border border-slate-100 rounded-xl flex flex-col items-center justify-center text-center">
+                                            <span className="text-[10px] text-slate-500 font-black uppercase tracking-wider mb-1">Calificación</span>
+                                            <span className={`text-2xl font-black ${displayGrade !== undefined && displayGrade !== null ? (displayGrade >= 8 ? 'text-emerald-500' : displayGrade >= 6 ? 'text-amber-500' : 'text-rose-500') : 'text-slate-400'}`}>
+                                                {displayGrade !== undefined && displayGrade !== null ? displayGrade.toFixed(1) : 'S/D'}
+                                            </span>
+                                        </div>
+                                        <div className="bg-slate-50 p-3 border border-slate-100 rounded-xl flex flex-col items-center justify-center text-center">
+                                            <span className="text-[10px] text-slate-500 font-black uppercase tracking-wider mb-1">Gemas Total</span>
+                                            <span className="text-sky-600 font-black text-xl flex items-center justify-center gap-1">💎 {s?.gems || 0}</span>
+                                        </div>
+                                        <div className="bg-slate-50 p-3 border border-slate-100 rounded-xl flex flex-col items-center justify-center text-center">
+                                            <span className="text-[10px] text-slate-500 font-black uppercase tracking-wider mb-1">XP Total</span>
+                                            <span className="text-orange-500 font-black text-xl flex items-center justify-center gap-1">✨ {s?.xp || 0}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Quick Admin Actions */}
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <button
+                                            onClick={() => { if(s) { setStudentForAssignMap(s); setShowAssignMapModal(true); setActiveStudentProfileId(null); }}}
+                                            className="flex flex-col items-center gap-1 p-3 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-xl transition-colors group"
+                                        >
+                                            <Map className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
+                                            <span className="text-[10px] font-bold text-indigo-600">Mapas</span>
+                                        </button>
+                                        <button
+                                            onClick={() => { if(s) { setEditingStudent(s); setStudentName(s.name); setStudentAvatar(s.avatar); setSelectedClassroomInModal(s.classroomId || ""); setShowAddStudentModal(true); setActiveStudentProfileId(null); }}}
+                                            className="flex flex-col items-center gap-1 p-3 bg-sky-50 hover:bg-sky-100 border border-sky-100 rounded-xl transition-colors group"
+                                        >
+                                            <Pencil className="w-4 h-4 text-sky-500 group-hover:scale-110 transition-transform" />
+                                            <span className="text-[10px] font-bold text-sky-600">Editar</span>
+                                        </button>
+                                        <button
+                                            onClick={() => { if(s) { setStudentToDelete(s); setActiveStudentProfileId(null); }}}
+                                            className="flex flex-col items-center gap-1 p-3 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-colors group"
+                                        >
+                                            <Trash2 className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
+                                            <span className="text-[10px] font-bold text-red-500">Eliminar</span>
+                                        </button>
+                                    </div>
+
+                                    <div className="bg-white border text-sm text-slate-600 border-slate-200 rounded-xl p-4">
+                                        <h4 className="font-bold text-slate-800 mb-2">Estado Actual en la Plataforma:</h4>
+                                        {profileScopeWorldId === 'global' ? (
+                                            <p className="leading-snug">
+                                                El alumno está inscrito en <strong>{s?.assignedWorlds?.length || 0} proyectos activos</strong>. Selecciona un proyecto en el menú superior para ver su sesión exacta.
                                             </p>
-                                            <div className="flex flex-col gap-2">
-                                                <button
-                                                    onClick={async () => {
-                                                        setIsGeneratingReport(true);
-                                                        try {
-                                                            const res = await fetch('/api/ai/generate-report', {
-                                                                method: 'POST',
-                                                                headers: { 'Content-Type': 'application/json' },
-                                                                body: JSON.stringify({ studentId: s?.id, studentName: s?.name, reportType: 'teacher' })
-                                                            });
-                                                            const data = await res.json();
-                                                            setAiReport(data.report);
-                                                        } catch (e) {
-                                                            setAiReport('Error al generar el reporte.');
-                                                        }
-                                                        setIsGeneratingReport(false);
-                                                    }}
-                                                    className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
-                                                >
-                                                    <BrainCircuit className="w-4 h-4" /> Generar Reporte para Docente (IA)
-                                                </button>
-                                                <button
-                                                    onClick={async () => {
-                                                        setIsGeneratingReport(true);
-                                                        try {
-                                                            const res = await fetch('/api/ai/generate-report', {
-                                                                method: 'POST',
-                                                                headers: { 'Content-Type': 'application/json' },
-                                                                body: JSON.stringify({ studentId: s?.id, studentName: s?.name, reportType: 'parent' })
-                                                            });
-                                                            const data = await res.json();
+                                        ) : sSpecificContext ? (
+                                            <p className="leading-snug">
+                                                Activado en proyecto <strong>"{sSpecificContext.world.title}"</strong>, sesión recomendada actualmente: <strong>{sSpecificContext.level?.title || "Sesión Final"}</strong>.
+                                            </p>
+                                        ) : (
+                                            <p className="opacity-60 italic">El alumno no tiene progreso reciente en este proyecto.</p>
+                                        )}
+                                    </div>
 
-                                                            // Generate PDF logic here conceptually
-                                                            const doc = new jsPDF();
-                                                            doc.setFont("helvetica", "bold");
-                                                            doc.setFontSize(20);
-                                                            doc.text("Reporte para Padres", 105, 20, { align: "center" });
-
-                                                            doc.setFont("helvetica", "normal");
-                                                            doc.setFontSize(12);
-                                                            const splitTitle = doc.splitTextToSize(data.title || "Reporte de Desempeño", 180);
-                                                            doc.text(splitTitle, 20, 40);
-
-                                                            let y = 50;
-                                                            if (Array.isArray(data.paragraphs)) {
-                                                                data.paragraphs.forEach((p: string) => {
-                                                                    const lines = doc.splitTextToSize(p, 170);
-                                                                    doc.text(lines, 20, y);
-                                                                    y += (lines.length * 7) + 5;
-                                                                });
-                                                            } else {
-                                                                const lines = doc.splitTextToSize(data.report || "", 170);
-                                                                doc.text(lines, 20, y);
-                                                                y += (lines.length * 7) + 5;
-                                                            }
-
-                                                            if (data.homeActivity) {
-                                                                doc.setFont("helvetica", "bold");
-                                                                doc.text("Actividad sugerida en casa:", 20, y);
-                                                                y += 10;
-                                                                doc.setFont("helvetica", "normal");
-                                                                const lines = doc.splitTextToSize(data.homeActivity, 170);
-                                                                doc.text(lines, 20, y);
-                                                            }
-
-                                                            doc.save(`Reporte_${s?.name.replace(/\s+/g, '_')}.pdf`);
-
-                                                        } catch (e) {
-                                                            console.error("PDF Generate Error", e);
-                                                            alert('Error al generar el PDF para padres.');
-                                                        }
-                                                        setIsGeneratingReport(false);
-                                                    }}
-                                                    className="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
-                                                >
-                                                    <FileText className="w-4 h-4" /> Exportar Reporte para Padres (PDF)
-                                                </button>
+                                    {/* Análisis Pedagógico — Powered by AI */}
+                                    <div className="bg-sky-50 border border-sky-100 rounded-xl p-4 text-sm mt-4">
+                                        <h4 className="font-bold text-sky-900 mb-2 flex items-center gap-2">
+                                            <BrainCircuit className="w-4 h-4" /> Reporte Pedagógico IA {profileScopeWorldId === 'global' ? '(General)' : `(Específico)`}
+                                        </h4>
+                                        {aiReport ? (
+                                            <div className="prose prose-sm prose-sky max-w-none">
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{aiReport}</ReactMarkdown>
                                             </div>
-                                        </>
-                                    )}
+                                        ) : isGeneratingReport ? (
+                                            <div className="flex items-center gap-3 p-4">
+                                                <div className="animate-spin h-5 w-5 border-2 border-sky-600 border-t-transparent rounded-full"></div>
+                                                <span className="text-sky-700 font-medium">Generando reporte con IA...</span>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <p className="text-sky-800 leading-relaxed italic mb-3">
+                                                    {displayProgress >= 70 ? (
+                                                        "El alumno demuestra un dominio sólido de los conceptos analizados."
+                                                    ) : displayProgress >= 30 ? (
+                                                        "El alumno comprende la teoría básica pero necesita refuerzo práctico."
+                                                    ) : (
+                                                        "El alumno muestra inconsistencias. Se recomienda intervención o tutoría."
+                                                    )}
+                                                </p>
+                                                <div className="flex flex-col gap-2">
+                                                    {/* Teacher report — shows inline */}
+                                                    <button
+                                                        onClick={async () => {
+                                                            setIsGeneratingReport(true);
+                                                            try {
+                                                                const payload = {
+                                                                    studentId: s?.id,
+                                                                    studentName: s?.name,
+                                                                    reportType: 'teacher',
+                                                                    worldFilter: profileScopeWorldId === 'global' ? null : profileScopeWorldId
+                                                                };
+                                                                const res = await fetch('/api/ai/generate-report', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify(payload)
+                                                                });
+                                                                const data = await res.json();
+                                                                setAiReport(data.report);
+                                                            } catch (e) {
+                                                                setAiReport('Error al generar el reporte.');
+                                                            }
+                                                            setIsGeneratingReport(false);
+                                                        }}
+                                                        className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                                    >
+                                                        <BrainCircuit className="w-4 h-4" /> Generar Reporte para Docente (IA)
+                                                    </button>
+                                                    {/* Parent report — opens print window as PDF */}
+                                                    <button
+                                                        onClick={async () => {
+                                                            setIsGeneratingReport(true);
+                                                            try {
+                                                                const res = await fetch('/api/ai/generate-report', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({
+                                                                        studentId: s?.id,
+                                                                        studentName: s?.name,
+                                                                        reportType: 'parent',
+                                                                        worldFilter: profileScopeWorldId === 'global' ? null : profileScopeWorldId
+                                                                    })
+                                                                });
+                                                                const data = await res.json();
+                                                                const scopeWorld = profileScopeWorldId !== 'global' ? worlds.find(w => w.id === profileScopeWorldId) : null;
+                                                                openReportWindow('parent', s?.name || 'Alumno', [{
+                                                                    studentName: s?.name || '',
+                                                                    xp: s?.xp || 0,
+                                                                    gems: s?.gems || 0,
+                                                                    progress: Math.round(displayProgress),
+                                                                    aiText: Array.isArray(data.paragraphs) ? data.paragraphs.join('\n\n') : (data.report || ''),
+                                                                    worldTitle: scopeWorld?.title,
+                                                                    homeActivity: data.homeActivity
+                                                                }]);
+                                                            } catch (e) {
+                                                                console.error("PDF Generate Error", e);
+                                                                alert('Error al generar el reporte para padres.');
+                                                            }
+                                                            setIsGeneratingReport(false);
+                                                        }}
+                                                        className="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                                    >
+                                                        <FileText className="w-4 h-4" /> Exportar Reporte para Padres (PDF)
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Expediente de Evidencias (AI Feedback Hub) */}
+                            {/* Expediente de Evidencias (AI Feedback Hub) — Agrupado por Proyecto */}
                             <div className="mt-6">
                                 <h3 className="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
                                     <BookOpen className="w-5 h-5 text-sky-500" />
-                                    Expediente de Evidencias IA
+                                    Evidencias por Proyecto
                                 </h3>
                                 {isFetchingEvidence ? (
                                     <div className="flex items-center justify-center p-8 bg-slate-50 rounded-xl">
@@ -2008,52 +2197,72 @@ export default function TeacherDashboard() {
                                     <div className="p-6 bg-slate-50 border border-slate-100 rounded-xl text-center">
                                         <p className="text-slate-500 font-medium">Aún no hay evidencias escaneadas.</p>
                                     </div>
-                                ) : (
-                                    <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
-                                        {studentEvidence.map((entry, idx) => (
-                                            <div key={idx} className={`p-4 rounded-xl border ${entry.isCorrect ? 'bg-green-50/50 border-green-100' : 'bg-red-50/50 border-red-100'}`}>
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${entry.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                            {entry.isCorrect ? 'Correcto' : 'Por Mejorar'}
-                                                        </span>
-                                                        <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                                                            Tema: {entry.topic || entry.world?.theme || 'Desconocido'}
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-xs text-slate-400 font-medium">
-                                                        {new Date(entry.createdAt).toLocaleDateString()}
-                                                    </span>
-                                                </div>
+                                ) : (() => {
+                                    const filteredEvidence = profileScopeWorldId === 'global' 
+                                        ? studentEvidence 
+                                        : studentEvidence.filter(entry => entry.worldId === profileScopeWorldId);
 
-                                                <div className="mt-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                                    <p className="text-xs text-slate-500 font-bold mb-1">Lo que escribió/escaneó el alumno:</p>
-                                                    <p className="text-sm text-slate-700 italic border-l-2 border-sky-200 pl-3 py-1">
-                                                        "{entry.studentAnswer}"
-                                                    </p>
-                                                </div>
-
-                                                <div className="mt-3 flex items-start gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0 border border-slate-100">
-                                                        🤖
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-slate-500 font-bold mb-1">Diagnóstico de la IA:</p>
-                                                        <p className="text-sm text-slate-800 flex-1 leading-relaxed font-medium">
-                                                            {entry.feedback}
-                                                        </p>
-                                                        {entry.emotionDetected && (
-                                                            <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-white border border-slate-100 rounded-md shadow-sm">
-                                                                <span className="text-xs text-slate-500">Tono detectado:</span>
-                                                                <span className="text-xs font-bold text-sky-600">{entry.emotionDetected}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
+                                    if (filteredEvidence.length === 0) {
+                                        return (
+                                            <div className="p-6 bg-slate-50 border border-slate-100 rounded-xl text-center">
+                                                <p className="text-slate-500 font-medium">No hay evidencias o misiones completadas para este proyecto en particular.</p>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
+                                        );
+                                    }
+
+                                    // Group evidence by world/project
+                                    const grouped: Record<string, typeof studentEvidence> = {};
+                                    filteredEvidence.forEach(entry => {
+                                        const key = entry.world?.title || entry.world?.theme || entry.topic || 'Sin Proyecto';
+                                        if (!grouped[key]) grouped[key] = [];
+                                        grouped[key].push(entry);
+                                    });
+
+                                    return (
+                                        <div className="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                                            {Object.entries(grouped).map(([projectName, entries]) => (
+                                                <details key={projectName} className="bg-white border border-slate-100 rounded-xl overflow-hidden group/details" open>
+                                                    <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-slate-50 transition-colors select-none">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-sm">🗺️</span>
+                                                            <span className="font-bold text-sm text-slate-800">{projectName}</span>
+                                                            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{entries.length}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[10px] font-bold text-green-600">{entries.filter(e => e.isCorrect).length} ✓</span>
+                                                            <span className="text-[10px] font-bold text-red-500">{entries.filter(e => !e.isCorrect).length} ✗</span>
+                                                        </div>
+                                                    </summary>
+                                                    <div className="border-t border-slate-100 p-3 space-y-3">
+                                                        {entries.map((entry, idx) => (
+                                                            <div key={idx} className={`p-3 rounded-lg border text-sm ${entry.isCorrect ? 'bg-green-50/50 border-green-100' : 'bg-red-50/50 border-red-100'}`}>
+                                                                <div className="flex justify-between items-center mb-2">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${entry.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                                            {entry.isCorrect ? '✓ Correcto' : '✗ Por Mejorar'}
+                                                                        </span>
+                                                                        {entry.grade !== null && entry.grade !== undefined && (
+                                                                            <span className="text-[10px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">{entry.grade}/10</span>
+                                                                        )}
+                                                                    </div>
+                                                                    <span className="text-[10px] text-slate-400">{new Date(entry.createdAt).toLocaleDateString()}</span>
+                                                                </div>
+                                                                <p className="text-xs text-slate-600 italic border-l-2 border-sky-200 pl-2 py-0.5 mb-2">"{entry.studentAnswer}"</p>
+                                                                <div className="flex items-start gap-2">
+                                                                    <span className="text-sm flex-shrink-0">🤖</span>
+                                                                    <p className="text-xs text-slate-700 leading-relaxed">{entry.feedback}</p>
+                                                                </div>
+                                                                {entry.emotionDetected && (
+                                                                    <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] text-slate-500 bg-white border border-slate-100 px-1.5 py-0.5 rounded">Tono: <strong className="text-sky-600">{entry.emotionDetected}</strong></span>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </details>
+                                            ))}
+                                        </div>
+                                    );
+                                })()}
                             </div>
 
                             <div className="mt-6 flex gap-3">
@@ -2077,8 +2286,142 @@ export default function TeacherDashboard() {
                             </div>
                         </div>
                     </div>
+                </div>
                 )
             })()}
+
+            {/* Global Stats Modal */}
+            {showGlobalStatsModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowGlobalStatsModal(false)}>
+                    <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            onClick={() => setShowGlobalStatsModal(false)}
+                            className="sticky top-0 float-right p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors z-10"
+                        >
+                            <X className="w-5 h-5 text-slate-600" />
+                        </button>
+
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="bg-sky-50 p-3 rounded-xl">
+                                <TrendingUp className="w-6 h-6 text-sky-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black text-sky-900">Estadísticas por Salón</h2>
+                                <p className="text-sky-600/70 text-xs font-medium">Resumen de rendimiento y alertas del aula</p>
+                            </div>
+                        </div>
+
+                        {/* Filter selectors */}
+                        <div className="flex flex-wrap gap-3 mb-6">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-bold text-sky-400 uppercase tracking-wider ml-1">Proyecto / Mapa</label>
+                                <select
+                                    value={effectiveInsightWorldId}
+                                    onChange={e => setSelectedInsightWorldId(e.target.value)}
+                                    className="bg-white border-2 border-sky-100 rounded-xl px-4 py-2 text-sm font-bold text-sky-800 focus:ring-4 focus:ring-sky-100 focus:border-sky-400 outline-none transition-all shadow-sm"
+                                >
+                                    {worlds.map(w => (
+                                        <option key={w.id} value={w.id}>
+                                            🗺️ {w.title || w.theme}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider ml-1">Filtro por Salón</label>
+                                <select
+                                    value={insightClassroomId}
+                                    onChange={e => setInsightClassroomId(e.target.value)}
+                                    className="bg-white border-2 border-emerald-100 rounded-xl px-4 py-2 text-sm font-bold text-emerald-800 focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 outline-none transition-all shadow-sm"
+                                >
+                                    <option value="all">🏫 Todos los Salones</option>
+                                    {classrooms.map(cls => (
+                                        <option key={cls.id} value={cls.id}>
+                                            {cls.emoji} {cls.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Summary Cards */}
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-center">
+                                <span className="text-2xl font-black text-emerald-700">{metrics.average}</span>
+                                <p className="text-[10px] font-bold text-emerald-500 uppercase mt-1">Promedio</p>
+                            </div>
+                            <div className="bg-sky-50 border border-sky-100 rounded-xl p-4 text-center">
+                                <span className="text-2xl font-black text-sky-700">{metrics.completion}%</span>
+                                <p className="text-[10px] font-bold text-sky-500 uppercase mt-1">Completado</p>
+                            </div>
+                            <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-center">
+                                <span className="text-2xl font-black text-red-700">{atRiskStudents.length}</span>
+                                <p className="text-[10px] font-bold text-red-500 uppercase mt-1">En Riesgo</p>
+                            </div>
+                        </div>
+
+                        {/* Alerts & Warnings */}
+                        {(atRiskStudents.length > 0 || strugglingStudents.length > 0) && (
+                            <div className="bg-white border border-red-100 rounded-xl p-4 mb-6">
+                                <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-3">
+                                    <AlertTriangle className="w-4 h-4 text-red-500" /> Sistema de Alerta Temprana
+                                </h3>
+                                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                                    {atRiskStudents.map(student => (
+                                        <div key={student.id} onClick={() => { setShowGlobalStatsModal(false); setAiReport(null); setActiveStudentProfileId(student.id); }} className="flex items-center justify-between p-2.5 bg-red-50 rounded-lg border border-red-100 cursor-pointer hover:shadow-sm transition-all">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xl">{student.avatar}</span>
+                                                <span className="font-bold text-sm text-red-800">{student.name}</span>
+                                            </div>
+                                            <span className="text-[10px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">Alto Riesgo</span>
+                                        </div>
+                                    ))}
+                                    {strugglingStudents.map(student => (
+                                        <div key={student.id} onClick={() => { setShowGlobalStatsModal(false); setAiReport(null); setActiveStudentProfileId(student.id); }} className="flex items-center justify-between p-2.5 bg-yellow-50 rounded-lg border border-yellow-100 cursor-pointer hover:shadow-sm transition-all">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xl">{student.avatar}</span>
+                                                <span className="font-bold text-sm text-yellow-800">{student.name}</span>
+                                            </div>
+                                            <span className="text-[10px] font-bold bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full">Vigilancia</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Student Performance List */}
+                        <div className="bg-white border border-slate-100 rounded-xl p-4">
+                            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-3">
+                                <TrendingUp className="w-4 h-4 text-sky-500" /> Rendimiento Individual
+                            </h3>
+                            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                                {insightStudents.map(student => {
+                                    const progressVal = calculateStudentProgress(student.id, progress, worlds);
+                                    let statusColor = progressVal < 30 ? 'bg-red-500' : progressVal < 70 ? 'bg-yellow-500' : 'bg-green-500';
+                                    let statusLabel = progressVal < 30 ? 'En Riesgo' : progressVal < 70 ? 'Práctica' : 'Buen Ritmo';
+                                    return (
+                                        <div key={student.id} onClick={() => { setShowGlobalStatsModal(false); setAiReport(null); setActiveStudentProfileId(student.id); }} className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg border border-slate-100 cursor-pointer hover:shadow-sm hover:bg-white transition-all">
+                                            <span className="text-xl">{student.avatar}</span>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="font-bold text-sm text-slate-800 truncate">{student.name}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[9px] font-bold text-white px-1.5 py-0.5 rounded-full ${statusColor}`}>{statusLabel}</span>
+                                                        <span className="text-xs font-black text-slate-600">{Math.round(progressVal)}%</span>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                                    <div className={`${statusColor} h-1.5 rounded-full`} style={{ width: `${progressVal}%` }}></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* AI Hint Modal */}
             {studentForHintId && (() => {
@@ -2198,7 +2541,7 @@ export default function TeacherDashboard() {
 
             {/* ADD GRADE MODAL */}
             {showAddGradeModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[70]">
                     <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
                         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-sky-50">
                             <h3 className="font-bold text-xl text-sky-900 flex items-center gap-2">
@@ -2241,13 +2584,60 @@ export default function TeacherDashboard() {
                 </div>
             )}
 
+            {/* DELETE CLASSROOM CONFIRMATION MODAL */}
+            {classroomToDelete && (() => {
+                const cls = classrooms.find(c => c.id === classroomToDelete);
+                return (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[70]">
+                        <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl">
+                            <div className="p-6 border-b border-rose-100 bg-rose-50 flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
+                                    <Trash2 className="w-5 h-5 text-rose-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg text-rose-900">Eliminar Salón</h3>
+                                    <p className="text-sm text-rose-600">Esta acción no se puede deshacer</p>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <p className="text-slate-700 text-sm mb-1">¿Estás seguro de que quieres eliminar el salón</p>
+                                <p className="font-black text-slate-900 text-base mb-3">
+                                    {cls?.emoji} {cls?.name}
+                                </p>
+                                <p className="text-xs text-slate-500 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                                    ⚠️ Los alumnos del salón <strong>no serán eliminados</strong>, solo quedarán sin salón asignado.
+                                </p>
+                            </div>
+                            <div className="px-6 pb-6 flex gap-3">
+                                <button
+                                    onClick={() => setClassroomToDelete(null)}
+                                    disabled={savingStudent}
+                                    className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all disabled:opacity-50"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmDeleteClassroom}
+                                    disabled={savingStudent}
+                                    className="flex-1 px-4 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {savingStudent ? 'Eliminando...' : (
+                                        <><Trash2 className="w-4 h-4" /> Sí, eliminar</>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* ADD CLASSROOM MODAL */}
             {showAddClassroomModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
                     <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
                         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-sky-50">
                             <h3 className="font-bold text-xl text-sky-900 flex items-center gap-2">
-                                <Plus className="w-5 h-5" /> {editingClassroom ? "Editar Grupo" : "Nuevo Grupo"}
+                                <Plus className="w-5 h-5" /> {editingClassroom ? "Editar Salón" : "Nuevo Salón"}
                             </h3>
                             <button onClick={() => { setShowAddClassroomModal(false); setEditingClassroom(null); setNewClassName(""); setNewClassDescription(""); setNewClassEmoji("📚"); setSelectedGradeIdInModal(""); }} className="text-slate-400 hover:text-slate-600">
                                 <X className="w-6 h-6" />
@@ -2255,10 +2645,10 @@ export default function TeacherDashboard() {
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Nombre Corto del Grupo</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Nombre del Salón / Clase</label>
                                 <input
                                     type="text"
-                                    placeholder="Ej. Grupo A, Sabatino, Avanzado..."
+                                    placeholder="Ej. 1º Primaria, 3º A, Salón de Computo..."
                                     value={newClassName}
                                     onChange={(e) => setNewClassName(e.target.value)}
                                     className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-500 outline-none"
@@ -2268,20 +2658,32 @@ export default function TeacherDashboard() {
                                 <label className="block text-sm font-bold text-slate-700 mb-1">Descripción / Detalles (Opcional)</label>
                                 <input
                                     type="text"
-                                    placeholder="Ej. Club de Matemáticas, Los Leones..."
+                                    placeholder="Ej. Ciclo 2024, Turno Matutino..."
                                     value={newClassDescription}
                                     onChange={(e) => setNewClassDescription(e.target.value)}
                                     className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-500 outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Perteneciente al Grado (Opcional)</label>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="block text-sm font-bold text-slate-700">Nivel / Grado</label>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(Opcional)</span>
+                                        <button 
+                                            onClick={() => setShowAddGradeModal(true)} 
+                                            className="p-1 bg-sky-100 text-sky-600 rounded-lg hover:bg-sky-200 transition-colors"
+                                            title="Crear Nuevo Nivel"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                </div>
                                 <select
                                     value={selectedGradeIdInModal}
                                     onChange={(e) => setSelectedGradeIdInModal(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-sky-500 bg-white text-xs"
                                 >
-                                    <option value="">Sin Grado (Independiente)</option>
+                                    <option value="">Independiente (Sin Grado)</option>
                                     {grades.map(g => (
                                         <option key={g.id} value={g.id}>{g.name}</option>
                                     ))}
@@ -2307,7 +2709,7 @@ export default function TeacherDashboard() {
                                 disabled={savingStudent || !newClassName.trim()}
                                 className="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-sky-200 transition-all disabled:opacity-50"
                             >
-                                {savingStudent ? "Creando..." : "Crear Grupo"}
+                                    {savingStudent ? "Creando..." : "Crear Salón"}
                             </button>
                         </div>
                     </div>
@@ -2317,93 +2719,187 @@ export default function TeacherDashboard() {
             {/* Visual World Builder Modal (View/Edit Map + Download Teacher Guide PDF) */}
             {/* ════════════ JEFE DE INCURSIÓN (Raid Boss) ════════════ */}
             {activeTab === 'raid' && (
-                <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-3xl shadow-xl border border-red-200 p-6">
-                    <h2 className="text-xl font-bold text-red-800 flex items-center gap-2 mb-4">
-                        ⚔️ Jefe de Incursión
-                    </h2>
+                <div className="animate-fade-in space-y-6 pb-20">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        
+                        {/* PANEL DE MONITOREO - Battle Status Soft Atmosphere */}
+                        <div className="flex flex-col h-full">
+                            <div className="bg-white/40 backdrop-blur-3xl rounded-[3rem] p-8 border border-white/60 shadow-sm relative overflow-hidden flex-1 group">
+                                {/* Decorative Glow Background - Pastel */}
+                                <div className="absolute top-0 right-0 w-80 h-80 bg-rose-100/40 blur-[100px] rounded-full -mr-20 -mt-20 group-hover:bg-rose-200/50 transition-colors duration-1000" />
+                                
+                                <div className="relative z-10 flex flex-col h-full">
+                                    <div className="flex items-center justify-between mb-10">
+                                        <div className="bg-rose-50 p-3 rounded-2xl border border-rose-100 shadow-sm">
+                                            <Swords className="w-6 h-6 text-rose-500" />
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Estado del Salón</span>
+                                            <p className="text-emerald-500 text-xs font-black flex items-center justify-end gap-1.5">
+                                                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" /> MISIÓN ACTIVA
+                                            </p>
+                                        </div>
+                                    </div>
 
-                    {/* Current Boss Status */}
-                    {currentRaidBoss && (
-                        <div className="bg-white rounded-2xl p-4 border border-red-200 mb-4 flex items-center gap-4">
-                            <div className="text-4xl bg-red-100 w-14 h-14 rounded-full flex items-center justify-center shadow-sm">{currentRaidBoss.imageUrl}</div>
-                            <div className="flex-1">
-                                <h3 className="font-bold text-slate-800">{currentRaidBoss.name}</h3>
-                                <div className="w-full bg-slate-200 rounded-full h-3 mt-1 overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all"
-                                        style={{ width: `${Math.max(0, (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) * 100)}%` }}
-                                    />
+                                    {currentRaidBoss ? (
+                                        <div className="flex flex-col items-center justify-center flex-1 space-y-8 animate-in fade-in zoom-in duration-700">
+                                            {/* Boss Avatar Visual - Light Style */}
+                                            <div className="relative">
+                                                <div className="absolute inset-0 bg-rose-200/30 rounded-full blur-[40px] animate-pulse"></div>
+                                                <div className="w-36 h-36 bg-white rounded-full flex items-center justify-center text-7xl shadow-xl border-4 border-rose-50 relative z-10 group-hover:scale-110 transition-transform duration-700">
+                                                    {currentRaidBoss.imageUrl}
+                                                </div>
+                                                <div className={`absolute -inset-2 rounded-full border-2 animate-ping opacity-20 ${ (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) < 0.3 ? 'border-rose-400' : 'border-indigo-400' }`} />
+                                            </div>
+
+                                            <div className="text-center w-full max-w-sm">
+                                                <h3 className="text-2xl font-black text-indigo-950 tracking-tight mb-2 drop-shadow-sm">{currentRaidBoss.name}</h3>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">Jefe de la Incursión Semanal</p>
+                                                
+                                                {/* Premium Soft Health Bar */}
+                                                <div className="relative h-5 bg-slate-100 rounded-full overflow-hidden border border-slate-50 mb-3 shadow-inner p-1">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all duration-1000 ease-out shadow-sm ${
+                                                            (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) < 0.3 ? 'bg-gradient-to-r from-rose-500 to-rose-400 shadow-rose-100' : 
+                                                            (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) < 0.6 ? 'bg-gradient-to-r from-amber-500 to-amber-300 shadow-amber-100' : 
+                                                            'bg-gradient-to-r from-indigo-500 to-sky-400 shadow-indigo-100'
+                                                        }`}
+                                                        style={{ width: `${Math.max(0, (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) * 100)}%` }}
+                                                    >
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-full h-full animate-[shimmer_2s_infinite]" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex justify-between items-center px-1">
+                                                    <span className="text-slate-400 text-[10px] font-black uppercase tracking-tighter italic">Salud del Objetivo</span>
+                                                    <span className="text-indigo-900 font-black text-sm tracking-widest tabular-nums font-mono">
+                                                        {currentRaidBoss.currentHealth.toLocaleString()} <span className="text-slate-400 text-[10px]">/ {currentRaidBoss.maxHealth.toLocaleString()} HP</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4 w-full">
+                                                <div className="bg-white/50 p-4 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col items-center group/card transition-all hover:bg-white/80">
+                                                    <span className="text-slate-400 text-[9px] font-black uppercase mb-1">Daño Total</span>
+                                                    <span className="text-rose-500 font-black text-2xl drop-shadow-sm">
+                                                        {(currentRaidBoss.maxHealth - currentRaidBoss.currentHealth).toLocaleString()}
+                                                    </span>
+                                                </div>
+                                                <div className="bg-white/50 p-4 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col items-center group/card transition-all hover:bg-white/80">
+                                                    <span className="text-slate-400 text-[9px] font-black uppercase mb-1">Progreso IA</span>
+                                                    <span className="text-indigo-600 font-black text-2xl drop-shadow-sm">
+                                                        {Math.round((1 - (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth)) * 100)}%
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <button
+                                                onClick={handleResetBoss}
+                                                disabled={isResettingBoss}
+                                                className="mt-4 px-8 py-3 bg-slate-900 hover:bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-slate-200 active:scale-95"
+                                            >
+                                                {isResettingBoss ? "Reiniciando Sistema..." : "🔄 Resetear Ciclo de Jefe"}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center flex-1 text-center py-20">
+                                            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                                                <Activity className="w-8 h-8 text-slate-300" />
+                                            </div>
+                                            <p className="text-slate-500 font-black uppercase tracking-widest text-sm">Laboratorio Inactivo</p>
+                                            <p className="text-slate-400 text-xs mt-2 font-medium">Configura una nueva meta grupal para desbloquear la incursión.</p>
+                                        </div>
+                                    )}
                                 </div>
-                                <p className="text-xs text-slate-500 mt-1">{currentRaidBoss.currentHealth.toLocaleString()} / {currentRaidBoss.maxHealth.toLocaleString()} HP</p>
-                            </div>
-                            <button
-                                onClick={handleResetBoss}
-                                disabled={isResettingBoss}
-                                className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
-                            >
-                                {isResettingBoss ? "Reiniciando..." : "🔄 Reiniciar Vida"}
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Create / Configure Boss Form */}
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-sm font-bold text-slate-700 block mb-1">Nombre del Jefe</label>
-                            <input
-                                type="text"
-                                value={raidBossName}
-                                onChange={(e) => setRaidBossName(e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm"
-                                placeholder="Ej: Dragón del Caos"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="text-sm font-bold text-slate-700 block mb-2">Avatar del Jefe</label>
-                            <div className="flex flex-wrap gap-2">
-                                {MONSTER_EMOJIS.map(emoji => (
-                                    <button
-                                        key={emoji}
-                                        onClick={() => { setRaidBossEmoji(emoji); setRaidBossName(MONSTER_NAMES[emoji] || emoji); }}
-                                        className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center border-2 transition-all hover:scale-110 ${raidBossEmoji === emoji ? 'border-red-500 bg-red-50 scale-110 shadow-md' : 'border-slate-200 bg-white'}`}
-                                    >
-                                        {emoji}
-                                    </button>
-                                ))}
                             </div>
                         </div>
 
-                        <div>
-                            <label className="text-sm font-bold text-slate-700 block mb-2">Vida del Jefe (HP)</label>
-                            <div className="flex flex-wrap gap-2 mb-2">
-                                {HP_PRESETS.map(preset => (
-                                    <button
-                                        key={preset.value}
-                                        onClick={() => setRaidBossHP(preset.value)}
-                                        className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${raidBossHP === preset.value ? 'border-red-500 bg-red-50 text-red-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}
-                                    >
-                                        {preset.label} ({preset.value.toLocaleString()})
-                                    </button>
-                                ))}
-                            </div>
-                            <input
-                                type="number"
-                                value={raidBossHP}
-                                onChange={(e) => setRaidBossHP(Number(e.target.value))}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm"
-                                min={100}
-                                step={100}
-                            />
-                        </div>
+                        {/* PANEL TÁCTICO - Operations Hub */}
+                        <div className="flex flex-col h-full">
+                            <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/60 shadow-sm flex-1 flex flex-col">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="bg-slate-100 p-3 rounded-2xl text-slate-800">
+                                        <Target className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-black text-slate-800 tracking-tight">Centro de Operaciones</h2>
+                                        <p className="text-slate-500 text-xs font-medium">Configuración de Desafíos Escolares</p>
+                                    </div>
+                                </div>
 
-                        <button
-                            onClick={handleCreateBoss}
-                            disabled={isCreatingBoss || !raidBossName.trim()}
-                            className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold py-3 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                        >
-                            {isCreatingBoss ? "Creando..." : currentRaidBoss ? "⚔️ Reemplazar con Nuevo Jefe" : "⚔️ Crear Jefe de Incursión"}
-                        </button>
+                                <div className="space-y-8 flex-1">
+                                    {/* Boss Selector Gallery */}
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Selección de Identidad</label>
+                                        <div className="grid grid-cols-6 gap-3">
+                                            {MONSTER_EMOJIS.map(emoji => (
+                                                <button
+                                                    key={emoji}
+                                                    onClick={() => { setRaidBossEmoji(emoji); setRaidBossName(MONSTER_NAMES[emoji] || emoji); }}
+                                                    className={`w-full aspect-square rounded-2xl text-xl flex items-center justify-center border transition-all hover:bg-slate-50 ${raidBossEmoji === emoji ? 'border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-100 scale-110' : 'border-slate-100 bg-white shadow-sm'}`}
+                                                    title={MONSTER_NAMES[emoji]}
+                                                >
+                                                    {emoji}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="col-span-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Nombre del Objetivo</label>
+                                            <input
+                                                type="text"
+                                                value={raidBossName}
+                                                onChange={(e) => setRaidBossName(e.target.value)}
+                                                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 outline-none transition-all text-sm font-bold text-slate-800"
+                                                placeholder="Ej: El Guardián del Conocimiento"
+                                            />
+                                        </div>
+
+                                        <div className="col-span-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-3">Nivel de Salud (HP)</label>
+                                            <div className="grid grid-cols-4 gap-2 mb-4">
+                                                {HP_PRESETS.map(preset => (
+                                                    <button
+                                                        key={preset.value}
+                                                        onClick={() => setRaidBossHP(preset.value)}
+                                                        className={`py-2.5 rounded-xl text-[10px] font-black border uppercase tracking-tighter transition-all ${raidBossHP === preset.value ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white text-slate-500 border-slate-100 hover:border-indigo-200'}`}
+                                                    >
+                                                        {preset.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <input
+                                                type="range"
+                                                value={raidBossHP}
+                                                onChange={(e) => setRaidBossHP(Number(e.target.value))}
+                                                min={100}
+                                                max={15000}
+                                                step={100}
+                                                className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                            />
+                                            <div className="flex justify-between mt-2">
+                                                <span className="text-[10px] font-bold text-slate-400">100 HP</span>
+                                                <span className="text-sm font-black text-indigo-600">{raidBossHP.toLocaleString()} HP</span>
+                                                <span className="text-[10px] font-bold text-slate-400">15,000 HP</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleCreateBoss}
+                                    disabled={isCreatingBoss || !raidBossName.trim()}
+                                    className="w-full mt-8 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-3xl shadow-xl shadow-indigo-100 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-widest text-sm"
+                                >
+                                    {isCreatingBoss ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : <Target className="w-5 h-5" />}
+                                    {currentRaidBoss ? "Redesplegar Objetivo" : "Activar Incursión"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
@@ -2601,23 +3097,87 @@ export default function TeacherDashboard() {
 
             {/* ═══ MESSAGES TAB ═══ */}
             {activeTab === 'messages' && (
-                <StudentMessagesPanel />
+                <StudentMessagesPanel 
+                    students={students} 
+                    progress={progress} 
+                    worlds={worlds} 
+                    onSendHint={handleSendDirectMessage}
+                />
             )}
 
-
-        </div >
+            </main>
+        </div>
     );
 }
 
-function StudentMessagesPanel() {
-    const [messages, setMessages] = useState<any[]>([]);
+function StudentMessagesPanel({ students, progress, worlds, onSendHint }: { students: Student[], progress: any, worlds: LearningWorld[], onSendHint: (studentId: string, text: string) => void }) {
+    const [allMessages, setAllMessages] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedStudentId, setSelectedStudentId] = useState<string | null>(students.length > 0 ? students[0].id : null);
+    const [replyText, setReplyText] = useState("");
 
     const fetchMessages = async () => {
+        if (!selectedStudentId) return;
+        setLoading(true);
         try {
-            const res = await fetch('/api/gamification/buffs/history');
-            const data = await res.json();
-            if (Array.isArray(data)) setMessages(data);
+            // Fetch both Student Activity (Buffs) and Teacher Direct Messages (Hints)
+            const [buffsRes, hintsRes] = await Promise.all([
+                fetch('/api/gamification/buffs/history'),
+                selectedStudentId === 'all' 
+                    ? fetch('/api/messages') 
+                    : selectedStudentId === 'social'
+                        ? Promise.resolve({ json: () => Promise.resolve([]) }) as any // No hints in social mode
+                        : fetch(`/api/hints?studentId=${selectedStudentId}`)
+            ]);
+
+            const buffsData = await buffsRes.json();
+            const hintsData = selectedStudentId === 'social' ? [] : await hintsRes.json();
+
+            let integrated: any[] = [];
+
+            // Add buffs
+            if (Array.isArray(buffsData)) {
+                if (selectedStudentId === 'social') {
+                    // Show ALL buffs for the school
+                    integrated = buffsData.map(m => ({
+                        ...m,
+                        type: 'buff',
+                        fromName: m.fromName,
+                        targetName: m.targetName,
+                        isFromTeacher: false
+                    }));
+                } else if (selectedStudent) {
+                    // Show buffs for specific student
+                    integrated = buffsData
+                        .filter(m => m.targetId === selectedStudentId || m.fromName === selectedStudent.name)
+                        .map(m => ({
+                            ...m,
+                            type: 'buff',
+                            fromName: m.fromName,
+                            isFromTeacher: false
+                        }));
+                }
+            }
+
+            // Add teacher hints
+            if (Array.isArray(hintsData)) {
+                integrated = [
+                    ...integrated,
+                    ...hintsData.map(m => ({
+                        ...m,
+                        type: 'hint',
+                        fromName: 'Tú (Docente)',
+                        isFromTeacher: true,
+                        // Existing hints use 'message' or 'text'
+                        message: m.message || m.text || ''
+                    }))
+                ];
+            }
+
+            // Sort by date
+            integrated.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+            
+            setAllMessages(integrated);
         } catch (e) {
             console.error("Error fetching messages:", e);
         } finally {
@@ -2627,88 +3187,182 @@ function StudentMessagesPanel() {
 
     useEffect(() => {
         fetchMessages();
-        const interval = setInterval(fetchMessages, 120000);
+        const interval = setInterval(fetchMessages, 30000); // More frequent updates
         return () => clearInterval(interval);
-    }, []);
+    }, [selectedStudentId]);
+
+    const selectedStudent = students.find(s => s.id === selectedStudentId);
+
+    const handleQuickReply = (template: string) => {
+        if (!selectedStudentId) return;
+        onSendHint(selectedStudentId, template);
+        // Optimistically add the message to the list or just re-fetch
+        setTimeout(fetchMessages, 500);
+        setReplyText("");
+    };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                        <MessageSquare className="w-6 h-6 text-cyan-600" /> Mensajes entre Alumnos
-                    </h2>
-                    <p className="text-slate-500 text-sm mt-1">Historial de mensajes de ánimo enviados entre compañeros.</p>
+        <div className="flex bg-white/40 backdrop-blur-3xl border border-white/60 shadow-sm overflow-hidden h-[85vh] animate-in fade-in slide-in-from-bottom-8 duration-700 mx-6 mb-6 rounded-3xl">
+            
+            {/* SIDEBAR - Contact List Tactical Style */}
+            <div className="w-80 border-r border-white/40 flex flex-col bg-white/20">
+                <div className="p-8 border-b border-white/40 bg-white/40 shadow-sm relative z-10">
+                    <h3 className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Users className="w-3.5 h-3.5" /> Terminal de Enlace
+                    </h3>
+                    <p className="text-slate-900 font-black mt-1 uppercase tracking-tighter text-sm">Directorio Táctico</p>
                 </div>
-                <button
-                    onClick={() => { setLoading(true); fetchMessages(); }}
-                    className="px-4 py-2 bg-cyan-50 text-cyan-700 rounded-xl font-bold text-sm hover:bg-cyan-100 transition"
-                >
-                    Actualizar
-                </button>
+                
+                <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
+                    {/* Tactical Selectors: Global & Social */}
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                        <button
+                            onClick={() => setSelectedStudentId('all')}
+                            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl transition-all duration-300 group border-2 ${selectedStudentId === 'all' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200 border-transparent' : 'bg-white/60 text-slate-500 hover:text-indigo-600 hover:bg-white border-white/60 shadow-sm'}`}
+                        >
+                            <div className="w-10 h-10 bg-white/60 rounded-xl flex items-center justify-center text-xl shadow-inner border border-white/60 group-hover:scale-110 transition-transform">
+                                🌍
+                            </div>
+                            <span className="text-[8px] font-black uppercase tracking-widest text-center">Global</span>
+                        </button>
+
+                        <button
+                            onClick={() => setSelectedStudentId('social')}
+                            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl transition-all duration-300 group border-2 ${selectedStudentId === 'social' ? 'bg-cyan-600 text-white shadow-xl shadow-cyan-200 border-transparent' : 'bg-white/60 text-slate-500 hover:text-cyan-600 hover:bg-white border-white/60 shadow-sm'}`}
+                        >
+                            <div className="w-10 h-10 bg-white/60 rounded-xl flex items-center justify-center text-xl shadow-inner border border-white/60 group-hover:scale-110 transition-transform">
+                                🛰️
+                            </div>
+                            <span className="text-[8px] font-black uppercase tracking-widest text-center">Muro Social</span>
+                        </button>
+                    </div>
+
+                    <div className="h-px bg-white/20 my-2" />
+
+                    {students.map(student => {
+                        const prog = calculateStudentProgress(student.id, progress, worlds);
+                        const isSelected = selectedStudentId === student.id;
+                        const isOnline = student.lastSeen ? (new Date().getTime() - new Date(student.lastSeen).getTime() < 120000) : false;
+                        return (
+                            <button
+                                key={student.id}
+                                onClick={() => setSelectedStudentId(student.id)}
+                                className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all duration-300 group ${isSelected ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200' : 'hover:bg-white/60 text-slate-500 hover:text-indigo-600 border border-transparent'}`}
+                            >
+                                <div className="relative shrink-0">
+                                    <span className={`text-2xl transition-all ${isOnline ? '' : 'opacity-60 grayscale'}`}>{student.avatar}</span>
+                                    <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 ${isSelected ? 'border-indigo-600' : 'border-white'} ${isOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse' : 'bg-slate-400'}`} />
+                                </div>
+                                <div className="flex-1 text-left min-w-0">
+                                    <p className={`text-xs font-black truncate transition-colors ${isSelected ? 'text-white' : isOnline ? 'text-slate-900' : 'text-slate-500'}`}>{student.name}</p>
+                                    <div className={`text-[8px] font-black uppercase tracking-widest mt-1 ${isSelected ? 'text-indigo-100' : isOnline ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                        {isOnline ? 'En Línea' : 'Desconectado'} • Progreso: <span className={isSelected ? 'text-white' : 'text-indigo-600'}>{prog}%</span>
+                                    </div>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
-            {loading ? (
-                <div className="text-center py-12">
-                    <div className="animate-spin h-8 w-8 border-3 border-cyan-600 border-t-transparent rounded-full mx-auto mb-3" />
-                    <p className="text-slate-500 font-medium">Cargando mensajes...</p>
-                </div>
-            ) : messages.length === 0 ? (
-                <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200">
-                    <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                    <p className="text-slate-500 font-bold">Sin mensajes aún</p>
-                    <p className="text-slate-400 text-sm">Los alumnos no han enviado mensajes de ánimo todavía.</p>
-                </div>
-            ) : (
-                <div className="space-y-3 max-h-[70vh] overflow-y-auto">
-                    {messages.map((msg) => (
-                        <div key={msg.id} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-start gap-3">
-                            <span className="text-2xl shrink-0">{msg.fromAvatar}</span>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-bold text-slate-700 text-sm">{msg.fromName}</span>
-                                    <span className="text-slate-400 text-xs">→</span>
-                                    <span className="text-2xl shrink-0">{msg.targetAvatar}</span>
-                                    <span className="font-bold text-slate-700 text-sm">{msg.targetName}</span>
+            {/* MAIN CHAT AREA */}
+            <div className="flex-1 flex flex-col bg-transparent relative">
+                {selectedStudentId === 'social' || selectedStudentId === 'all' || selectedStudent ? (
+                    <>
+                        {/* Chat Header Tactical */}
+                        <div className={`p-6 border-b border-white/40 flex items-center justify-between bg-white/40 backdrop-blur-md ${selectedStudentId === 'social' ? 'bg-cyan-50/40' : ''}`}>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center text-3xl shadow-inner border border-white/60">
+                                    {selectedStudentId === 'all' ? '🌍' : selectedStudentId === 'social' ? '🛰️' : selectedStudent?.avatar}
                                 </div>
-                                <p className="text-slate-600 text-sm mt-1 bg-cyan-50 px-3 py-1.5 rounded-xl inline-block">&quot;{msg.message}&quot;</p>
-                                <p className="text-slate-400 text-xs mt-1">
-                                    {new Date(msg.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                </p>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-900 tracking-tight uppercase">
+                                        {selectedStudentId === 'all' ? 'Comunicación Global (Salón)' : selectedStudentId === 'social' ? 'Muro de Interacción Social' : selectedStudent?.name}
+                                    </h3>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${selectedStudentId === 'all' ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]' : selectedStudentId === 'social' ? 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.3)]' : calculateStudentProgress(selectedStudent?.id || "", progress, worlds) < 30 ? 'bg-rose-500' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]'}`} />
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                            {selectedStudentId === 'all' ? 'Mensaje Maestro para Todos' : selectedStudentId === 'social' ? 'Bitácora de Interacciones Peer-to-Peer' : 'Canal de Retroalimentación IA'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onClick={fetchMessages} className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-xl transition-all border border-slate-200">
+                                <RotateCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                            </button>
+                        </div>
+
+                        {/* Messages Thread - Tactical Bubbles */}
+                        <div className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-hide">
+                            {allMessages.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
+                                    <MessageSquare className="w-16 h-16 text-slate-400 mb-4" />
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em]">Sin registros tácticos</p>
+                                </div>
+                            ) : (
+                                allMessages.map((msg, idx) => {
+                                    const isFromTeacher = msg.isFromTeacher;
+                                    return (
+                                        <div key={idx} className={`flex flex-col ${isFromTeacher ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                                            <div className={`max-w-[85%] p-4 rounded-2xl border transition-all ${isFromTeacher 
+                                                ? 'bg-indigo-600 border-indigo-500 text-white rounded-tr-none' 
+                                                : msg.type === 'buff' && selectedStudentId === 'social'
+                                                    ? 'bg-cyan-50 border-cyan-200 text-cyan-900 rounded-tl-none shadow-sm'
+                                                    : 'bg-white border-slate-200 text-slate-800 rounded-tl-none shadow-sm'
+                                            }`}>
+                                                <p className="text-[11px] font-medium leading-relaxed">
+                                                    {msg.type === 'buff' && <span className="mr-2">✨</span>}
+                                                    {msg.message}
+                                                </p>
+                                            </div>
+                                            <span className="text-[8px] font-black text-slate-600 mt-2 uppercase tracking-widest">
+                                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {isFromTeacher ? 'Docente' : (msg.targetName && selectedStudentId === 'social' ? `${msg.fromName} para ${msg.targetName}` : msg.fromName)}
+                                            </span>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+
+                        {/* Composer & Quick Actions */}
+                        <div className="p-6 bg-white/40 border-t border-white/40">
+                            <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+                                <button onClick={() => handleQuickReply("¡Felicidades por tu excelente avance hoy! Sigue así. ✨")} className="shrink-0 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-xl text-[9px] font-black hover:bg-emerald-100 transition border border-emerald-100 uppercase tracking-widest">
+                                    Felicitar
+                                </button>
+                                <button onClick={() => handleQuickReply("He notado que te falta poco para terminar este nivel. ¡Tú puedes! 🚀")} className="shrink-0 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl text-[9px] font-black hover:bg-indigo-100 transition border border-indigo-100 uppercase tracking-widest">
+                                    Motivar
+                                </button>
+                                <button onClick={() => handleQuickReply("Recuerda completar las actividades pendientes. ¿Necesitas ayuda? 💡")} className="shrink-0 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-xl text-[9px] font-black hover:bg-amber-100 transition border border-amber-100 uppercase tracking-widest">
+                                    Recordatorio
+                                </button>
+                            </div>
+                            
+                            <div className="flex items-end gap-3 bg-white p-2 rounded-2xl border border-slate-200 focus-within:border-indigo-300 transition-all shadow-inner">
+                                <textarea
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    placeholder={selectedStudentId === 'all' ? "Terminal de envío global para todo el salón..." : `Terminal de envío a ${selectedStudent?.name.split(' ')[0] || "Seleccionado"}...`}
+                                    className="flex-1 bg-transparent border-none outline-none text-xs font-medium py-3 px-4 resize-none h-12 max-h-32 text-slate-700 placeholder:text-slate-400"
+                                />
+                                <button
+                                    onClick={() => { if(replyText.trim() && selectedStudentId) { onSendHint(selectedStudentId, replyText); setReplyText(""); } }}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl shadow-lg shadow-indigo-600/20 transition-all active:scale-90 border border-indigo-400/20"
+                                >
+                                    <Send className="w-4 h-4" />
+                                </button>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
+                    </>
+                ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center p-12 opacity-10">
+                        <MessageSquare className="w-20 h-20 text-white mb-4" />
+                        <h3 className="text-sm font-black text-white uppercase tracking-[0.4em]">Enlace No Establecido</h3>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
 
-function getClassColor(progress: number) {
-    if (progress < 30) return "bg-red-500";
-    if (progress < 70) return "bg-yellow-500";
-    return "bg-green-500";
-}
 
-function calculateStudentProgress(studentId: string, progressObj: Record<string, Record<string, number[]>>, worlds: LearningWorld[]): number {
-    if (!worlds || worlds.length === 0) return 0;
-
-    let totalLevels = 0;
-    let completedLevels = 0;
-
-    for (const world of worlds) {
-        totalLevels += world.days?.length || 0;
-        const studentWorldProgress = progressObj[studentId]?.[world.id] || [];
-        completedLevels += studentWorldProgress.length;
-    }
-
-    if (totalLevels === 0) return 0;
-    return Math.round((completedLevels / totalLevels) * 100);
-}
-
-function calculateStudentProgressForWorld(studentId: string, progressObj: Record<string, Record<string, number[]>>, world: LearningWorld): number {
-    const totalLevels = world.days?.length || 0;
-    if (totalLevels === 0) return 0;
-    const completedLevels = (progressObj[studentId]?.[world.id] || []).length;
-    return Math.round((completedLevels / totalLevels) * 100);
-}

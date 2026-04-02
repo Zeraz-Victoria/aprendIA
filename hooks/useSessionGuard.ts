@@ -47,9 +47,9 @@ export function useSessionGuard() {
             }
         };
 
-        // Check immediately and then every 60 seconds
+        // Check immediately and then every 30 seconds to maintain "Online" status
         validateSession();
-        const interval = setInterval(validateSession, 60000);
+        const interval = setInterval(validateSession, 30000);
         return () => clearInterval(interval);
     }, [session]);
 }

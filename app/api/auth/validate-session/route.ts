@@ -28,6 +28,15 @@ export async function POST(req: Request) {
         }
 
         const valid = user.activeSessionToken === sessionToken;
+
+        if (valid) {
+            // Update lastSeen to act as an active heartbeat
+            await prisma.user.update({
+                where: { id: userId },
+                data: { lastSeen: new Date() }
+            });
+        }
+
         return NextResponse.json({ 
             valid, 
             reason: valid ? null : "token_mismatch" 

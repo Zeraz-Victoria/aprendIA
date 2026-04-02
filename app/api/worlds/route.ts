@@ -16,9 +16,17 @@ export async function GET(req: Request) {
         let whereClause: any;
 
         if (role === 'STUDENT' && userId) {
-            // Students only see worlds explicitly assigned to them
+            // Students see worlds assigned to them OR their classroom
+            const userWithClassroom = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { classroomId: true }
+            });
+
             whereClause = {
-                assignedStudents: { some: { id: userId } }
+                OR: [
+                    { assignedStudents: { some: { id: userId } } },
+                    userWithClassroom?.classroomId ? { classrooms: { some: { id: userWithClassroom.classroomId } } } : {}
+                ]
             };
         } else if (role === 'TEACHER') {
             whereClause = { teacherId: userId };
@@ -110,22 +118,29 @@ export async function POST(req: Request) {
             });
         });
 
-        // Auto-assign new world to ALL students in the same school
+        // Auto-assign: respect classroom selection
         if (schoolId) {
-            const allStudents = await prisma.user.findMany({
-                where: { schoolId, role: 'STUDENT' },
+            let studentFilter: any = { schoolId, role: 'STUDENT' };
+
+            // If specific classrooms were selected, only assign to students in those classrooms
+            if (classroomIds && classroomIds.length > 0) {
+                studentFilter = { classroomId: { in: classroomIds }, role: 'STUDENT' };
+            }
+
+            const targetStudents = await prisma.user.findMany({
+                where: studentFilter,
                 select: { id: true }
             });
-            if (allStudents.length > 0) {
+            if (targetStudents.length > 0) {
                 await prisma.world.update({
                     where: { id: newWorld.id },
                     data: {
                         assignedStudents: {
-                            connect: allStudents.map(s => ({ id: s.id }))
+                            connect: targetStudents.map(s => ({ id: s.id }))
                         }
                     }
                 });
-                console.log(`Auto-assigned world "${title}" to ${allStudents.length} students.`);
+                console.log(`Assigned world "${title}" to ${targetStudents.length} students (${classroomIds?.length > 0 ? `classrooms: ${classroomIds.join(',')}` : 'global'}).`);
             }
         }
 

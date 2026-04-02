@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { theme, topic, difficulty = "Básico", session_title, session_start, session_development, session_end } = await req.json();
+    const { theme, topic, difficulty = "Básico", sessionCount = 3, session_title, session_start, session_development, session_end } = await req.json();
 
     if (!theme || !topic) {
       return NextResponse.json({ error: 'theme and topic are required' }, { status: 400 });
@@ -34,11 +34,12 @@ export async function POST(req: Request) {
     console.log("Payload:", { theme, topic, difficulty });
 
     // Attempt to fetch from Cache first to save AI API tokens
+    const cacheKeyTopic = `${topic.toLowerCase().trim()}_s${sessionCount}`;
     //@ts-ignore
     const cachedPrompt = await prisma.aIPromptCache.findUnique({
       where: {
         topic_theme: {
-          topic: topic.toLowerCase().trim(),
+          topic: cacheKeyTopic,
           theme: theme.toLowerCase().trim()
         }
       }
@@ -82,16 +83,24 @@ CIERRE: """ ${session_end || `Validación metacognitiva del tema ${topic}`} """
 
 # INSTRUCCIONES DE Y CREACIÓN Y EXPANSIÓN:
 El texto anterior es un resumen didáctico extremadamente conciso. Tu tarea es INVENTAR y EXPANDIR este concepto en un nivel de juego completo.
+Debes estructurarlo OBLIGATORIAMENTE en EXACTAMENTE ${sessionCount} sesiones (niveles) interconectados de dificultad progresiva.
 1. NARRATIVA DE ENTRADA: Crea una historia envolvente de aventura basada en el resumen didáctico. Transforma el concepto aburrido en una intro emocionante.
 2. DESAFÍO TÉCNICO: Diseña un problema matemático o lógico jugable que evalúe directamente el concepto del resumen. Asegúrate de incluir la respuesta correcta y una pista socrática para ayudar al alumno si se equivoca.
 3. METACOGNICIÓN: Inventa una reflexión de cierre motivadora relacionada al desarrollo.
 4. CUMPLIMIENTO NEM: Clasifica el nivel en la Fase correspondiente (1-6) y extrae o inventa el PDA directamente relacionado al tema.
 
 # FORMATO DE SALIDA (JSON ÚNICAMENTE):
-Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiquetas markdown.
+Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiquetas markdown. Asegúrate de generar EXACTAMENTE ${sessionCount} objetos consecutivos dentro del arreglo "mapa_interactivo".
    Toda respuesta de generación de niveles debe seguir esta estructura estricta:
    {
-     "metadatos_nem": { "fase": "1-6", "metodologia": "Seleccionada", "pda": "PDA_Original" },
+     "metadatos_nem": { 
+        "fase": "1-6", 
+        "metodologia": "Seleccionada", 
+        "pda": "PDA_Original",
+        "proposito": "Propósito del proyecto",
+        "diagnostico": "Problemática inicial",
+        "contenidos": "Contenidos de la fase"
+     },
      "mapa_interactivo": [{
        "sesion_id": "ID",
        "paso_1_inicio": { 
@@ -241,7 +250,7 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
       //@ts-ignore
       await prisma.aIPromptCache.create({
         data: {
-          topic: topic.toLowerCase().trim(),
+          topic: cacheKeyTopic,
           theme: theme.toLowerCase().trim(),
           response: JSON.stringify(days)
         }
@@ -255,6 +264,14 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
       theme: "custom", // Internal enum mapping could go here
       title: `Aventura de ${topic}`,
       days: days,
+      pedagogy: {
+        topic: topic,
+        pda: parsedResponse.metadatos_nem?.pda || "Inferencia didáctica",
+        grade: `Fase ${parsedResponse.metadatos_nem?.fase || "3"}`,
+        proposito: parsedResponse.metadatos_nem?.proposito || "",
+        diagnostico: parsedResponse.metadatos_nem?.diagnostico || "",
+        contenidos: parsedResponse.metadatos_nem?.contenidos || ""
+      },
       createdAt: new Date().toISOString()
     });
 

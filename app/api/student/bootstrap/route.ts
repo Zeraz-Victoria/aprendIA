@@ -28,7 +28,12 @@ export async function GET() {
                 where: { id: studentId },
                 include: {
                     assignedWorlds: true,
-                    projectGrades: true
+                    projectGrades: true,
+                    classroom: {
+                        include: {
+                            worlds: true
+                        }
+                    }
                 }
             }),
 
@@ -75,6 +80,19 @@ export async function GET() {
             return NextResponse.json({ error: 'Student not found' }, { status: 404 });
         }
 
+        // COMBINE INDIVIDUAL AND CLASSROOM WORLDS - NO DUPLICATES
+        const individualWorlds = student.assignedWorlds || [];
+        const classroomWorlds = (student as any).classroom?.worlds || [];
+        
+        // Merge without duplicates by ID
+        const worldMap = new Map();
+        [...individualWorlds, ...classroomWorlds].forEach(w => {
+            if (!worldMap.has(w.id)) {
+                worldMap.set(w.id, w);
+            }
+        });
+        const allWorlds = Array.from(worldMap.values());
+
         // Compute activity grades for this student
         const evidenceStats = await prisma.evidenceEntry.groupBy({
             by: ['worldId'],
@@ -84,9 +102,9 @@ export async function GET() {
 
         const automaticProjectGrades: any[] = [];
         let totalProjectGradesSum = 0;
-        const assignedWorldsCount = student.assignedWorlds?.length || 0;
+        const assignedWorldsCount = allWorlds.length;
 
-        student.assignedWorlds?.forEach((world: any) => {
+        allWorlds.forEach((world: any) => {
             const stats = evidenceStats.find((s: any) => s.worldId === world.id);
             const sumGrades = stats?._sum?.grade || 0;
             let totalLevels = 8;
@@ -119,7 +137,7 @@ export async function GET() {
         });
 
         // Parse assigned worlds for frontend
-        const parsedWorlds = student.assignedWorlds?.map((w: any) => ({
+        const parsedWorlds = allWorlds.map((w: any) => ({
             ...w,
             days: w.daysJson ? JSON.parse(w.daysJson) : (w.days || []),
             pedagogy: w.pedagogyJson ? JSON.parse(w.pedagogyJson) : undefined
@@ -128,6 +146,7 @@ export async function GET() {
         return NextResponse.json({
             user: {
                 ...student,
+                assignedWorlds: parsedWorlds, // Sync individual + classroom worlds
                 automaticProjectGrades,
                 globalActivityAverage
             },

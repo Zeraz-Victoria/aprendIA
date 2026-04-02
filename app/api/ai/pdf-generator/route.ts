@@ -98,7 +98,10 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
     "fase": "1-6",
     "metodologia": "ABP|STEAM|Proyectos Comunitarios|Otro",
     "campo_formativo": "Campo formativo principal",
-    "pda_listado": ["PDA 1", "PDA 2"]
+    "pda_listado": ["PDA 1", "PDA 2"],
+    "proposito": "Propósito general del proyecto",
+    "diagnostico": "Breve diagnóstico o problemática identificada",
+    "contenidos": "Contenidos curriculares abordados"
   },
   "sesiones_extraidas": [
     {
@@ -239,7 +242,10 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
       pedagogy: {
         topic: p.datos_generales?.campo_formativo || "General",
         pda: (p.datos_generales?.pda_listado || []).join(', '),
-        grade: `Fase ${p.datos_generales?.fase || "?"}`
+        grade: `Fase ${p.datos_generales?.fase || "?"}`,
+        proposito: p.datos_generales?.proposito || "",
+        diagnostico: p.datos_generales?.diagnostico || "",
+        contenidos: p.datos_generales?.contenidos || ""
       },
       days: mappedDays,
       createdAt: new Date().toISOString()

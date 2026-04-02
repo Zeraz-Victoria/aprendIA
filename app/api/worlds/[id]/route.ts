@@ -35,7 +35,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
         const { id } = await params;
         const body = await req.json();
-        const { title, theme, days, pedagogy, classroomIds } = body;
+        const { title, theme, days, pedagogy, classroomIds, studentIds } = body;
+        const schoolId = (session.user as any)?.schoolId;
 
         if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
@@ -53,9 +54,48 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
                         }
                     })
                 },
-                include: { classrooms: true }
+                include: {
+                    classrooms: true,
+                    assignedStudents: { select: { id: true, name: true } }
+                }
             });
         });
+
+        // Resync assignedStudents when classrooms change
+        if (classroomIds !== undefined && schoolId) {
+            let targetStudentIds: string[] = [];
+
+            if (classroomIds.length > 0) {
+                // Specific classrooms selected — only those students
+                const classroomStudents = await prisma.user.findMany({
+                    where: { classroomId: { in: classroomIds }, role: 'STUDENT' },
+                    select: { id: true }
+                });
+                targetStudentIds = classroomStudents.map(s => s.id);
+            } else {
+                // Global — all school students
+                const allStudents = await prisma.user.findMany({
+                    where: { schoolId, role: 'STUDENT' },
+                    select: { id: true }
+                });
+                targetStudentIds = allStudents.map(s => s.id);
+            }
+
+            // Also include individually-selected students
+            if (studentIds && studentIds.length > 0) {
+                const combined = new Set([...targetStudentIds, ...studentIds]);
+                targetStudentIds = Array.from(combined);
+            }
+
+            await prisma.world.update({
+                where: { id },
+                data: {
+                    assignedStudents: {
+                        set: targetStudentIds.map(sId => ({ id: sId }))
+                    }
+                }
+            });
+        }
 
         const parsedWorld = {
             ...updatedWorld,

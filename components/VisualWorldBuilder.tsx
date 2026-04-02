@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Swords, Save, Settings, X, GripVertical, FileText, Target, Sparkles, Bot, Download } from "lucide-react";
+import { Plus, Swords, Save, Settings, X, GripVertical, FileText, Target, Sparkles, Bot, Download, Users, ChevronDown } from "lucide-react";
 import { useLearning, LearningWorld } from "@/contexts/LearningContext";
 import { LevelContent, DayContent, BossDayContent } from "@/types/learning-world";
 import jsPDF from "jspdf";
@@ -30,12 +30,28 @@ function safeParsePromptText(text: string | undefined): string {
 
 
 export default function VisualWorldBuilder({ onClose, initialWorld, initialShowAIPrompt = false }: { onClose: () => void, initialWorld?: LearningWorld, initialShowAIPrompt?: boolean }) {
-    const { addWorld, updateWorld, setActiveWorld, classrooms } = useLearning();
+    const { addWorld, updateWorld, setActiveWorld, classrooms, students } = useLearning();
     const [title, setTitle] = useState(initialWorld?.title || "Nueva Aventura Épica");
     const [theme, setTheme] = useState(initialWorld?.theme || "detective");
     const [selectedClassrooms, setSelectedClassrooms] = useState<string[]>(
         initialWorld?.classrooms?.map((c: any) => c.id) || []
     );
+
+    // Compute which students are individually assigned (not via a classroom already assigned to this world)
+    const initialAssignedClassroomIds = initialWorld?.classrooms?.map((c: any) => c.id) || [];
+    const [selectedStudents, setSelectedStudents] = useState<string[]>(() => {
+        const allAssigned = initialWorld?.assignedStudents?.map((s: any) => s.id) || [];
+        if (initialAssignedClassroomIds.length === 0) return allAssigned; // global — don't pre-mark everyone
+        // Only mark as "individual" those who are NOT in an assigned classroom
+        const classroomStudentIds = new Set(
+            students
+                .filter(s => s.classroomId && initialAssignedClassroomIds.includes(s.classroomId))
+                .map(s => s.id)
+        );
+        return allAssigned.filter((id: string) => !classroomStudentIds.has(id));
+    });
+    const [showStudentPicker, setShowStudentPicker] = useState(false);
+    const [studentSearch, setStudentSearch] = useState("");
 
     // AI Generator State
     const [showAIPrompt, setShowAIPrompt] = useState(initialShowAIPrompt);
@@ -261,7 +277,8 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                 theme,
                 title,
                 days: nodes,
-                classroomIds: selectedClassrooms
+                classroomIds: selectedClassrooms,
+                studentIds: selectedStudents
             };
             updateWorld(updatedWorld);
             setActiveWorld(updatedWorld.id);
@@ -272,7 +289,8 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                 title,
                 days: nodes,
                 createdAt: new Date().toISOString(),
-                classroomIds: selectedClassrooms
+                classroomIds: selectedClassrooms,
+                studentIds: selectedStudents
             };
             addWorld(newWorld);
             setActiveWorld(newWorld.id);
@@ -280,96 +298,153 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
         onClose();
     };
 
-    const handleDownloadCompleteMapPdf = async () => {
+    const handleDownloadCompleteMapPdf = () => {
         setIsDownloadingPdf(true);
         try {
-            const element = document.getElementById("full-map-pdf-container");
-            if (!element) return;
+            const pedagogy = initialWorld?.pedagogy;
 
-            element.style.display = "block";
-            element.style.position = "absolute";
-            element.style.top = "0";
-            element.style.left = "0";
-            element.style.width = "900px";
-            element.style.zIndex = "9990";
-            element.style.overflow = "visible";
+            const sessionHtml = nodes.map((node, idx) => {
+                const isBoss = node.type === 'boss_fight';
+                const day = node as DayContent;
+                const boss = node as BossDayContent;
+                const miniGame = day.content?.miniGame;
+                const practice = day.content?.practiceProblem;
+                const explanation = day.content?.explanation;
 
-            await new Promise(resolve => setTimeout(resolve, 600));
+                const headerColor = isBoss ? '#dc2626' : '#4f46e5';
+                const typeLabel = isBoss ? '⚔️ Batalla Final' : node.type === 'concept_story' ? '📖 Historia Conceptual' : '✏️ Práctica Guiada';
 
-            // PDF setup
-            const pdfWidth = 210;  // A4 mm
-            const pdfPageHeight = 297;
-            const margin = 10;
-            const contentWidth = pdfWidth - (margin * 2);
-            const maxContentHeight = pdfPageHeight - (margin * 2);
+                return `
+                <div style="border:2px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:32px;page-break-inside:avoid;">
+                    <div style="background:${headerColor};padding:16px 24px;display:flex;align-items:center;gap:16px;">
+                        <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:18px;flex-shrink:0;">${idx + 1}</div>
+                        <div>
+                            <div style="color:white;font-size:18px;font-weight:900;">${node.title}</div>
+                            <div style="color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">${typeLabel}</div>
+                        </div>
+                        ${day.pda_objetivo ? `<div style="margin-left:auto;text-align:right;"><div style="color:rgba(255,255,255,0.6);font-size:9px;font-weight:700;text-transform:uppercase;">Objetivo PDA</div><div style="color:white;font-size:11px;max-width:220px;">${day.pda_objetivo}</div></div>` : ''}
+                    </div>
+                    <div style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+                        ${isBoss ? `
+                            <div>
+                                <div style="font-size:10px;font-weight:900;color:#ef4444;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">⚔️ Problema del Jefe Final</div>
+                                <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:16px;font-size:13px;line-height:1.7;white-space:pre-wrap;">${boss.originalProblemText || ''}</div>
+                                ${boss.tipo_evidencia_requerida ? `<div style="margin-top:8px;font-size:11px;color:#64748b;"><strong>Evidencia requerida:</strong> ${boss.tipo_evidencia_requerida}</div>` : ''}
+                            </div>
+                        ` : `
+                            ${day.narrative ? `
+                                <div>
+                                    <div style="font-size:10px;font-weight:900;color:#6366f1;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📖 Historia / Narrativa (Lo que lee el alumno)</div>
+                                    <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:16px;font-size:13px;line-height:1.7;white-space:pre-wrap;">${day.narrative}</div>
+                                </div>
+                            ` : ''}
+                            ${explanation ? `
+                                <div>
+                                    <div style="font-size:10px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🧠 Explicación Teórica</div>
+                                    <div style="display:flex;flex-direction:column;gap:8px;">
+                                        ${(explanation.chunks || []).map(chunk => `<div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:13px;">${chunk}</div>`).join('')}
+                                        ${explanation.analogy ? `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:13px;color:#92400e;"><strong>💡 Analogía:</strong> ${explanation.analogy}</div>` : ''}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${practice ? `
+                                <div>
+                                    <div style="font-size:10px;font-weight:900;color:#059669;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">✏️ Problema de Práctica</div>
+                                    <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+                                        <div style="font-size:13px;color:#1e293b;font-weight:600;">${practice.statement}</div>
+                                        ${practice.hint ? `<div style="font-size:12px;color:#047857;"><strong>Pista:</strong> ${practice.hint}</div>` : ''}
+                                        <div style="font-size:13px;font-weight:900;color:#065f46;">✅ Respuesta correcta: ${practice.correctValue}</div>
+                                        ${practice.tipo_evidencia_requerida ? `<div style="font-size:11px;color:#64748b;"><strong>Tipo de evidencia:</strong> ${practice.tipo_evidencia_requerida}</div>` : ''}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${miniGame ? `
+                                <div>
+                                    <div style="font-size:10px;font-weight:900;color:#d97706;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🎮 Minijuego — ${miniGame.type || 'Actividad'}</div>
+                                    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;font-size:13px;">
+                                        ${miniGame.question ? `<div><strong>Pregunta:</strong> ${miniGame.question}</div>` : ''}
+                                        ${miniGame.options && miniGame.options.length > 0 ? `
+                                            <div><strong>Opciones:</strong>
+                                            <ul style="margin:4px 0 0 20px;padding:0;">
+                                                ${miniGame.options.map(opt => `<li style="color:${opt === miniGame.correctAnswer ? '#065f46' : '#374151'};font-weight:${opt === miniGame.correctAnswer ? '700' : '400'};">${opt} ${opt === miniGame.correctAnswer ? '✅' : ''}</li>`).join('')}
+                                            </ul></div>
+                                        ` : ''}
+                                        ${miniGame.pairs && miniGame.pairs.length > 0 ? `
+                                            <div><strong>Pares a conectar:</strong>
+                                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;">
+                                                ${miniGame.pairs.map(p => `<div style="background:white;border:1px solid #fde68a;border-radius:6px;padding:6px 10px;font-size:12px;"><strong>${p.concept}</strong> → ${p.definition}</div>`).join('')}
+                                            </div></div>
+                                        ` : ''}
+                                        ${miniGame.words && miniGame.words.length > 0 ? `<div><strong>Palabras:</strong> ${miniGame.words.join(', ')}</div>` : ''}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${day.glosario && day.glosario.length > 0 ? `
+                                <div>
+                                    <div style="font-size:10px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📚 Glosario</div>
+                                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                                        ${day.glosario.map((g: any) => `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:12px;"><strong>${g.term || g.palabra}:</strong> ${g.definition || g.definicion}</div>`).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${day.cierre_metacognicion ? `
+                                <div>
+                                    <div style="font-size:10px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🪞 Cierre Metacognitivo</div>
+                                    <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:16px;font-size:13px;font-style:italic;color:#374151;">${day.cierre_metacognicion}</div>
+                                </div>
+                            ` : ''}
+                        `}
+                    </div>
+                </div>`;
+            }).join('');
 
-            const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+            const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Guía Docente — ${title}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: white; color: #1e293b; padding: 40px; max-width: 900px; margin: 0 auto; }
+        @media print {
+            body { padding: 20px; }
+            button { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align:center;border-bottom:4px solid #4f46e5;padding-bottom:32px;margin-bottom:40px;">
+        <div style="font-size:11px;font-weight:900;color:#818cf8;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Guía Docente Completa</div>
+        <h1 style="font-size:32px;font-weight:900;color:#1e1b4b;margin-bottom:10px;">${title}</h1>
+        <p style="font-size:15px;color:#64748b;">Tema Visual: <strong style="color:#334155;">${theme}</strong> &nbsp;•&nbsp; ${nodes.length} sesiones</p>
+        ${pedagogy ? `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px;text-align:left;">
+            ${pedagogy.pda ? `<div style="background:#eef2ff;padding:12px 16px;border-radius:10px;"><div style="font-size:10px;font-weight:900;color:#6366f1;text-transform:uppercase;margin-bottom:4px;">PDA</div><div style="font-size:13px;">${pedagogy.pda}</div></div>` : ''}
+            ${pedagogy.contenidos ? `<div style="background:#f8fafc;padding:12px 16px;border-radius:10px;"><div style="font-size:10px;font-weight:900;color:#64748b;text-transform:uppercase;margin-bottom:4px;">Contenidos</div><div style="font-size:13px;">${pedagogy.contenidos}</div></div>` : ''}
+            ${pedagogy.proposito ? `<div style="background:#ecfdf5;padding:12px 16px;border-radius:10px;grid-column:span 2;"><div style="font-size:10px;font-weight:900;color:#059669;text-transform:uppercase;margin-bottom:4px;">Propósito</div><div style="font-size:13px;">${pedagogy.proposito}</div></div>` : ''}
+        </div>` : ''}
+    </div>
 
-            // Capture each child section individually to avoid cutting text
-            const sections = element.querySelectorAll("[data-pdf-section]");
-            let currentY = margin;
+    <div style="text-align:center;margin-bottom:32px;">
+        <button onclick="window.print()" style="background:#4f46e5;color:white;border:none;padding:14px 32px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;">🖨️ Guardar / Imprimir como PDF</button>
+    </div>
 
-            for (let i = 0; i < sections.length; i++) {
-                const section = sections[i] as HTMLElement;
+    ${sessionHtml}
+</body>
+</html>`;
 
-                // Safari workaround + capture
-                await toCanvas(section, { pixelRatio: 2, backgroundColor: '#ffffff', skipFonts: false }).catch(() => { });
-                const sectionCanvas = await toCanvas(section, { pixelRatio: 2, backgroundColor: '#ffffff', skipFonts: false });
-
-                const scale = contentWidth / sectionCanvas.width; // mm per pixel
-                const sectionHeightMm = sectionCanvas.height * scale;
-
-                // If section won't fit on current page, start a new page
-                if (currentY + sectionHeightMm > pdfPageHeight - margin && currentY > margin + 5) {
-                    pdf.addPage();
-                    currentY = margin;
-                }
-
-                // If section is taller than a full page, we need to slice it
-                if (sectionHeightMm > maxContentHeight) {
-                    const pageHeightInPx = maxContentHeight / scale;
-                    const totalSlices = Math.ceil(sectionCanvas.height / pageHeightInPx);
-
-                    for (let s = 0; s < totalSlices; s++) {
-                        if (s > 0) { pdf.addPage(); currentY = margin; }
-
-                        const sliceCanvas = document.createElement("canvas");
-                        sliceCanvas.width = sectionCanvas.width;
-                        const sliceH = Math.min(pageHeightInPx, sectionCanvas.height - (s * pageHeightInPx));
-                        sliceCanvas.height = sliceH;
-
-                        const ctx = sliceCanvas.getContext("2d");
-                        if (ctx) {
-                            ctx.fillStyle = "#ffffff";
-                            ctx.fillRect(0, 0, sliceCanvas.width, sliceH);
-                            ctx.drawImage(sectionCanvas, 0, s * pageHeightInPx, sectionCanvas.width, sliceH, 0, 0, sliceCanvas.width, sliceH);
-                        }
-
-                        const imgData = sliceCanvas.toDataURL("image/jpeg", 0.92);
-                        pdf.addImage(imgData, "JPEG", margin, currentY, contentWidth, sliceH * scale);
-                        currentY += sliceH * scale + 4;
-                    }
-                } else {
-                    const imgData = sectionCanvas.toDataURL("image/jpeg", 0.92);
-                    pdf.addImage(imgData, "JPEG", margin, currentY, contentWidth, sectionHeightMm);
-                    currentY += sectionHeightMm + 4; // 4mm gap between sections
-                }
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert('El navegador bloqueó la ventana emergente. Permite las ventanas emergentes para este sitio e intenta de nuevo.');
+                return;
             }
-
-            pdf.save(`Guia-Docente-${title.replace(/\s+/g, '-')}.pdf`);
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
 
         } catch (error: any) {
-            console.error("Error generating PDF:", error);
-            alert(`Hubo un error al generar la guía en PDF: ${error?.message || 'Error desconocido'}`);
+            console.error("Error generating PDF guide:", error);
+            alert(`Error al generar la guía: ${error?.message || 'Error desconocido'}`);
         } finally {
-            const element = document.getElementById("full-map-pdf-container");
-            if (element) {
-                element.style.display = "none";
-                element.style.position = "absolute";
-                element.style.top = "-9999px";
-                element.style.left = "-9999px";
-                element.style.zIndex = "";
-            }
             setIsDownloadingPdf(false);
         }
     };
@@ -433,6 +508,74 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                                         <span>{c.emoji}</span> <span className="max-w-[100px] truncate">{c.name}</span>
                                     </button>
                                 ))}
+
+                                {/* Individual student picker toggle */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowStudentPicker(!showStudentPicker)}
+                                        className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 border ${
+                                            selectedStudents.length > 0
+                                                ? 'bg-emerald-600 text-white shadow-sm'
+                                                : 'bg-white border-slate-200 hover:border-emerald-300 text-slate-600'
+                                        }`}
+                                    >
+                                        <Users className="w-3.5 h-3.5" />
+                                        {selectedStudents.length > 0 ? `${selectedStudents.length} alumno${selectedStudents.length !== 1 ? 's' : ''}` : 'Individuales'}
+                                        <ChevronDown className={`w-3 h-3 transition-transform ${showStudentPicker ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    {showStudentPicker && (
+                                        <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden">
+                                            <div className="p-2 border-b border-slate-100">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Buscar alumno..."
+                                                    value={studentSearch}
+                                                    onChange={e => setStudentSearch(e.target.value)}
+                                                    className="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-200 outline-none focus:border-emerald-400"
+                                                />
+                                            </div>
+                                            <div className="max-h-52 overflow-y-auto">
+                                                {students
+                                                    .filter(s => s.name?.toLowerCase().includes(studentSearch.toLowerCase()))
+                                                    .map(s => (
+                                                        <button
+                                                            key={s.id}
+                                                            onClick={() => {
+                                                                if (selectedStudents.includes(s.id)) {
+                                                                    setSelectedStudents(selectedStudents.filter(id => id !== s.id));
+                                                                } else {
+                                                                    setSelectedStudents([...selectedStudents, s.id]);
+                                                                }
+                                                            }}
+                                                            className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 transition-colors ${
+                                                                selectedStudents.includes(s.id) ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-slate-700'
+                                                            }`}
+                                                        >
+                                                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                                                                selectedStudents.includes(s.id) ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300'
+                                                            }`}>
+                                                                {selectedStudents.includes(s.id) && <span className="text-white text-[8px] font-black">✓</span>}
+                                                            </div>
+                                                            <span className="text-lg">{s.avatar || '🧑'}</span>
+                                                            <span className="truncate">{s.name}</span>
+                                                        </button>
+                                                    ))
+                                                }
+                                            </div>
+                                            {selectedStudents.length > 0 && (
+                                                <div className="p-2 border-t border-slate-100">
+                                                    <button
+                                                        onClick={() => setSelectedStudents([])}
+                                                        className="w-full text-xs text-rose-500 font-bold hover:text-rose-700 py-1"
+                                                    >
+                                                        Quitar todos
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -637,70 +780,194 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
             {/* Hidden Container for PDF Download (Complete Map / Teacher Guide) */}
             <div
                 id="full-map-pdf-container"
-                className="bg-white p-10 text-black"
+                className="bg-white p-10 text-black font-sans"
                 style={{ display: "none", position: "absolute", top: "-9999px", left: "-9999px", width: "900px", minHeight: "100vh" }}
             >
-                <div data-pdf-section className="border-b-4 border-indigo-600 pb-6 mb-8 text-center">
-                    <h1 className="text-4xl font-black text-indigo-900 mb-2">{title}</h1>
-                    <p className="text-xl text-slate-600 font-medium">Guía Docente Completa • Tema: {theme}</p>
+                {/* Cover */}
+                <div data-pdf-section className="border-b-4 border-indigo-600 pb-8 mb-10 text-center">
+                    <p className="text-xs font-black uppercase tracking-widest text-indigo-400 mb-2">Guía Docente Completa</p>
+                    <h1 className="text-4xl font-black text-indigo-900 mb-3">{title}</h1>
+                    <p className="text-lg text-slate-500 font-medium">Tema Visual: <span className="font-bold text-slate-700">{theme}</span> • {nodes.length} sesiones</p>
+                    {initialWorld?.pedagogy && (
+                        <div className="mt-6 grid grid-cols-2 gap-4 text-left text-sm">
+                            {initialWorld.pedagogy.pda && (
+                                <div className="bg-indigo-50 p-3 rounded-xl">
+                                    <p className="font-black text-indigo-600 text-xs uppercase mb-1">PDA</p>
+                                    <p className="text-slate-700">{initialWorld.pedagogy.pda}</p>
+                                </div>
+                            )}
+                            {initialWorld.pedagogy.contenidos && (
+                                <div className="bg-slate-50 p-3 rounded-xl">
+                                    <p className="font-black text-slate-500 text-xs uppercase mb-1">Contenidos</p>
+                                    <p className="text-slate-700">{initialWorld.pedagogy.contenidos}</p>
+                                </div>
+                            )}
+                            {initialWorld.pedagogy.proposito && (
+                                <div className="bg-emerald-50 p-3 rounded-xl col-span-2">
+                                    <p className="font-black text-emerald-600 text-xs uppercase mb-1">Propósito</p>
+                                    <p className="text-slate-700">{initialWorld.pedagogy.proposito}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
-                <div className="space-y-12">
-                    {nodes.map((node, idx) => (
-                        <div key={idx} data-pdf-section className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 shadow-sm break-inside-avoid">
-                            <div className="flex items-center gap-4 mb-4 border-b border-slate-200 pb-4">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl ${node.type === 'boss_fight' ? 'bg-red-500' : 'bg-indigo-500'}`}>
-                                    {idx + 1}
+                {/* Sessions */}
+                <div className="space-y-14">
+                    {nodes.map((node, idx) => {
+                        const day = node as DayContent;
+                        const boss = node as BossDayContent;
+                        const isBoss = node.type === 'boss_fight';
+                        const miniGame = day.content?.miniGame;
+                        const practice = day.content?.practiceProblem;
+                        const explanation = day.content?.explanation;
+
+                        return (
+                            <div key={idx} data-pdf-section className="border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                                {/* Session header */}
+                                <div className={`flex items-center gap-4 px-6 py-4 ${isBoss ? 'bg-red-600' : 'bg-indigo-600'}`}>
+                                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-black text-xl">
+                                        {idx + 1}
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-black text-white">{node.title}</h2>
+                                        <p className="text-xs text-white/70 font-bold uppercase tracking-widest">
+                                            {isBoss ? '⚔️ Batalla Final' : node.type === 'concept_story' ? '📖 Historia Conceptual' : '✏️ Práctica Guiada'}
+                                        </p>
+                                    </div>
+                                    {(node as DayContent).pda_objetivo && (
+                                        <div className="ml-auto text-right">
+                                            <p className="text-[10px] text-white/60 uppercase font-bold mb-0.5">Objetivo PDA</p>
+                                            <p className="text-xs text-white font-medium max-w-xs">{(node as DayContent).pda_objetivo}</p>
+                                        </div>
+                                    )}
                                 </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-slate-800">{node.title}</h2>
-                                    <p className="text-sm font-bold tracking-wide text-indigo-500 uppercase">{node.type.replace('_', ' ')}</p>
+
+                                <div className="p-6 space-y-5">
+                                    {/* Boss fight */}
+                                    {isBoss && (
+                                        <div>
+                                            <p className="text-xs font-black text-red-500 uppercase tracking-widest mb-2">⚔️ Problema del Jefe Final</p>
+                                            <div className="bg-red-50 border border-red-200 rounded-xl p-4 whitespace-pre-wrap text-slate-800 text-sm leading-relaxed">
+                                                {boss.originalProblemText || 'Sin contenido.'}
+                                            </div>
+                                            {boss.tipo_evidencia_requerida && (
+                                                <p className="mt-2 text-xs text-slate-500"><span className="font-bold">Evidencia requerida:</span> {boss.tipo_evidencia_requerida}</p>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Story / Narrative */}
+                                    {!isBoss && day.narrative && (
+                                        <div>
+                                            <p className="text-xs font-black text-indigo-500 uppercase tracking-widest mb-2">📖 Historia / Narrativa (Lo que lee el alumno)</p>
+                                            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 whitespace-pre-wrap text-slate-800 text-sm leading-relaxed">
+                                                {day.narrative}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Explanation chunks */}
+                                    {!isBoss && explanation && (
+                                        <div>
+                                            <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">🧠 Explicación Teórica</p>
+                                            <div className="space-y-2">
+                                                {(explanation.chunks || []).map((chunk, ci) => (
+                                                    <div key={ci} className="bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm text-slate-700">
+                                                        {chunk}
+                                                    </div>
+                                                ))}
+                                                {explanation.analogy && (
+                                                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-sm text-amber-800">
+                                                        <span className="font-black">💡 Analogía: </span>{explanation.analogy}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Practice problem */}
+                                    {!isBoss && practice && (
+                                        <div>
+                                            <p className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2">✏️ Problema de Práctica</p>
+                                            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2">
+                                                <p className="text-sm text-slate-800 font-medium">{practice.statement}</p>
+                                                {practice.hint && (
+                                                    <p className="text-xs text-emerald-700"><span className="font-black">Pista:</span> {practice.hint}</p>
+                                                )}
+                                                <p className="text-sm font-black text-emerald-800">✅ Respuesta correcta: {practice.correctValue}</p>
+                                                {practice.tipo_evidencia_requerida && (
+                                                    <p className="text-xs text-slate-500"><span className="font-bold">Tipo de evidencia:</span> {practice.tipo_evidencia_requerida}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Mini game */}
+                                    {!isBoss && miniGame && (
+                                        <div>
+                                            <p className="text-xs font-black text-amber-600 uppercase tracking-widest mb-2">🎮 Minijuego — {miniGame.type || 'Actividad'}</p>
+                                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2 text-sm">
+                                                {miniGame.question && <p className="font-medium text-slate-800"><span className="font-black">Pregunta:</span> {miniGame.question}</p>}
+                                                {miniGame.options && miniGame.options.length > 0 && (
+                                                    <div>
+                                                        <p className="font-black text-slate-600 text-xs mb-1">Opciones:</p>
+                                                        <ul className="list-disc list-inside space-y-0.5">
+                                                            {miniGame.options.map((opt, oi) => (
+                                                                <li key={oi} className={opt === miniGame.correctAnswer ? 'text-emerald-700 font-bold' : 'text-slate-700'}>{opt} {opt === miniGame.correctAnswer ? '✅' : ''}</li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                {miniGame.pairs && miniGame.pairs.length > 0 && (
+                                                    <div>
+                                                        <p className="font-black text-slate-600 text-xs mb-1">Pares a conectar:</p>
+                                                        <div className="grid grid-cols-2 gap-1">
+                                                            {miniGame.pairs.map((p, pi) => (
+                                                                <div key={pi} className="text-xs bg-white border border-amber-200 rounded px-2 py-1">
+                                                                    <span className="font-bold">{p.concept}</span> → {p.definition}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {miniGame.words && miniGame.words.length > 0 && (
+                                                    <p><span className="font-black">Palabras:</span> {miniGame.words.join(', ')}</p>
+                                                )}
+                                                {miniGame.feedbackSuccess && <p className="text-emerald-700 text-xs"><span className="font-black">Msg. éxito:</span> {miniGame.feedbackSuccess}</p>}
+                                                {miniGame.feedbackError && <p className="text-red-600 text-xs"><span className="font-black">Msg. error:</span> {miniGame.feedbackError}</p>}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Glossary */}
+                                    {!isBoss && day.glosario && day.glosario.length > 0 && (
+                                        <div>
+                                            <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">📚 Glosario</p>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {day.glosario.map((g: any, gi: number) => (
+                                                    <div key={gi} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs">
+                                                        <span className="font-black text-slate-700">{g.term || g.palabra}: </span>
+                                                        <span className="text-slate-600">{g.definition || g.definicion}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Metacognitive closure */}
+                                    {!isBoss && day.cierre_metacognicion && (
+                                        <div>
+                                            <p className="text-xs font-black text-purple-500 uppercase tracking-widest mb-2">🪞 Cierre Metacognitivo</p>
+                                            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 text-sm text-slate-700 italic">
+                                                {day.cierre_metacognicion}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-
-                            <div className="prose prose-lg max-w-none">
-                                {node.type === 'boss_fight' ? (
-                                    <>
-                                        <h3 className="text-lg font-bold text-slate-800">Problema Inicial (Texto del Jefe):</h3>
-                                        <div className="bg-white p-4 border border-slate-300 rounded-lg whitespace-pre-wrap">
-                                            {(node as BossDayContent).originalProblemText}
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <h3 className="text-lg font-bold text-slate-800 mt-2">Teoría / Historia:</h3>
-                                        <div className="bg-white p-4 border border-slate-300 rounded-lg whitespace-pre-wrap">
-                                            {(node as DayContent).narrative || "Sin historia configurada."}
-                                        </div>
-
-                                        {(node.type as string) === 'guided_practice' && (node as DayContent).content?.practiceProblem && (
-                                            <div className="mt-4 border-t border-dashed border-slate-300 pt-4">
-                                                <h3 className="text-lg font-bold text-slate-800 mt-2 text-emerald-700">Práctica / Ejercicio Sugerido:</h3>
-                                                <div className="bg-emerald-50 p-4 border border-emerald-200 rounded-lg whitespace-pre-wrap text-emerald-900">
-                                                    {(node as DayContent).content?.practiceProblem?.statement || ""}
-                                                    <br /><br />
-                                                    <strong>Respuesta Correcta:</strong> {(node as DayContent).content?.practiceProblem?.correctValue || "N/A"}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {(node as DayContent).content?.miniGame && (
-                                            <div className="mt-4 border-t border-dashed border-slate-300 pt-4">
-                                                <h3 className="text-lg font-bold text-slate-800 mt-2 text-amber-700">Minijuego:</h3>
-                                                <div className="bg-amber-50 p-4 border border-amber-200 rounded-lg text-amber-900">
-                                                    <strong>Pregunta:</strong> {(node as DayContent).content?.miniGame?.question || "N/A"}
-                                                    <br />
-                                                    <strong>Opciones:</strong> {((node as DayContent).content?.miniGame?.options || []).join(', ') || "N/A"}
-                                                    <br />
-                                                    <strong>Respuesta:</strong> {(node as DayContent).content?.miniGame?.correctAnswer || "N/A"}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 

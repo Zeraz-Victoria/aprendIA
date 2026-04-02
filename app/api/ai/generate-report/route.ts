@@ -10,7 +10,7 @@ export async function POST(req: Request) {
         const session = await getServerSession(authOptions);
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { studentId, studentName, reportType = 'teacher' } = await req.json();
+        const { studentId, studentName, reportType = 'teacher', worldFilter } = await req.json();
 
         if (!studentId) {
             return NextResponse.json({ error: "Missing studentId" }, { status: 400 });
@@ -18,7 +18,10 @@ export async function POST(req: Request) {
 
         // Fetch all evidence entries for this student
         const entries = await prisma.evidenceEntry.findMany({
-            where: { studentId },
+            where: { 
+                studentId,
+                ...(worldFilter ? { worldId: worldFilter } : {})
+            },
             orderBy: { createdAt: "desc" },
             take: 50, // Last 50 entries max
             include: { world: { select: { title: true, theme: true } } }

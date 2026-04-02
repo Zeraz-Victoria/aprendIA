@@ -214,3 +214,12 @@ export function getTheme(key?: string): GameTheme {
     if (key && key in THEMES) return THEMES[key as ThemeKey];
     return THEMES.clasico;
 }
+
+// Map color palette for the Teacher Dashboard
+export const THEME_COLORS: Record<ThemeKey, string> = {
+    fuego: '#f97316',
+    hielo: '#06b6d4',
+    selva: '#10b981',
+    neon: '#d946ef',
+    clasico: '#4f46e5'
+};

@@ -33,6 +33,7 @@ export async function GET() {
         // Enrich with target student info
         const enrichedBuffs = buffs.map(b => ({
             id: b.id,
+            targetId: b.targetId,
             fromName: b.fromName,
             fromAvatar: b.fromAvatar,
             message: b.message,

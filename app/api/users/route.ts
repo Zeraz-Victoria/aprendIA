@@ -84,7 +84,19 @@ export async function GET() {
         const students = await prisma.user.findMany({
             where: whereClause,
             orderBy: { name: 'asc' },
-            include: {
+            select: {
+                id: true,
+                name: true,
+                avatar: true,
+                status: true,
+                lives: true,
+                gems: true,
+                streak: true,
+                xp: true,
+                classroomId: true,
+                activeFrame: true,
+                studentCode: true,
+                lastSeen: true,
                 assignedWorlds: true,
                 projectGrades: true
             }
@@ -100,21 +112,37 @@ export async function GET() {
             _sum: { grade: true }
         });
 
-        // Map stats to students
+        // Pre-parse the number of levels for each world involved
+        const worldLevelsCount: Record<string, number> = {};
+        
+        // Map stats to students efficiently via a Map
+        const statsMap = new Map();
+        evidenceStats.forEach(s => {
+            const key = `${s.studentId}_${s.worldId}`;
+            statsMap.set(key, s._sum?.grade || 0);
+        });
+
         const studentsWithStats = students.map((student: any) => {
             const studentProjectGrades: any[] = [];
             let totalProjectGradesSum = 0;
             const assignedWorldsCount = student.assignedWorlds?.length || 0;
 
             student.assignedWorlds?.forEach((world: any) => {
-                const stats = evidenceStats.find((s: any) => s.studentId === student.id && s.worldId === world.id);
-                const sumGrades = stats?._sum?.grade || 0;
+                const key = `${student.id}_${world.id}`;
+                const sumGrades = statsMap.get(key) || 0;
                 
                 let totalLevels = 8;
-                try {
-                    const days = JSON.parse(world.daysJson);
-                    totalLevels = Array.isArray(days) ? days.length : 8;
-                } catch (e) {}
+                if (worldLevelsCount[world.id] !== undefined) {
+                    totalLevels = worldLevelsCount[world.id];
+                } else {
+                    try {
+                        const days = JSON.parse(world.daysJson);
+                        totalLevels = Array.isArray(days) ? days.length : 8;
+                        worldLevelsCount[world.id] = totalLevels;
+                    } catch (e) {
+                         worldLevelsCount[world.id] = 8;
+                    }
+                }
 
                 const projectGrade = parseFloat((sumGrades / totalLevels).toFixed(1));
                 studentProjectGrades.push({
