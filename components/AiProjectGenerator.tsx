@@ -43,12 +43,51 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                 })
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || "Error al generar el mundo");
+            if (!response.ok && response.status !== 524) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.error || `Error del servidor (${response.status})`);
+            }
+            if (response.status === 524) {
+                throw new Error("El servidor tardó demasiado en responder (Timeout). Intenta generar menos sesiones o vuelve a intentarlo.");
             }
 
-            const data = await response.json();
+            const contentType = response.headers.get("content-type") || "";
+            let data;
+
+            if (contentType.includes("x-ndjson")) {
+                const reader = response.body?.getReader();
+                if (!reader) throw new Error("No stream support in browser");
+                const decoder = new TextDecoder();
+                let buffer = "";
+                let finalData = null;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || "";
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        try {
+                            const parsed = JSON.parse(line);
+                            if (parsed.error) throw new Error(parsed.error);
+                            if (parsed.type === 'progress') {
+                                setLoadingStatus(parsed.message);
+                            } else if (parsed.type === 'done') {
+                                finalData = parsed.data;
+                            }
+                        } catch (e: any) {
+                            if (e.message !== "Unexpected end of JSON input" && !e.message.includes("Unexpected token")) throw e;
+                        }
+                    }
+                }
+                if (!finalData) throw new Error("La generación de IA fue interrumpida. Intenta nuevamente.");
+                data = finalData;
+            } else {
+                data = await response.json();
+                if (data.error) throw new Error(data.error);
+            }
 
             // Create the world object
             const newWorld = {

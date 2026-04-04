@@ -181,168 +181,173 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
 REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionCount} elementos y el arreglo "secuencia_didactica" también EXACTAMENTE ${sessionCount} elementos. Ambas deben empalmar lógicamente. Ningún valor numérico debe fallar. Retorna SOLO el JSON.
 `;
 
-    console.log("Calling Google AI...");
-    const result = await model.generateContent(prompt);
-    let responseText = result.response.text();
+    console.log("Calling Google AI (Stream mode)...");
 
-    console.log("Raw AI Response completed. Length:", responseText.length);
-    console.log("Raw AI Response Snip:", responseText.substring(0, 100)); // Debugging log
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          const result = await model.generateContentStream(prompt);
+          let responseText = '';
+          let currentSessionCount = 0;
 
-    // Clean up markdown if the model hallucinated it
-    responseText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
+          // Iniciar barra de progreso
+          controller.enqueue(encoder.encode(JSON.stringify({
+            type: 'progress',
+            session: 0,
+            message: "Inicializando marco curricular NEM..."
+          }) + '\n'));
 
-    // A robust function to escape quotes used inside string values but preserve structural JSON quotes
-    const escapeUnsafeQuotes = (jsonStr: string) => {
-      let isInsideString = false;
-      let result = '';
+          for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            responseText += chunkText;
 
-      for (let i = 0; i < jsonStr.length; i++) {
-        const char = jsonStr[i];
-        const prevChar = i > 0 ? jsonStr[i - 1] : '';
-
-        if (char === '"' && prevChar !== '\\\\') {
-          // Look behind for : { [ , or look ahead for : } ] , to detect structural boundaries
-          const prevNonSpace = jsonStr.substring(0, i).trim().slice(-1);
-          const nextNonSpaceIndex = jsonStr.substring(i + 1).search(/[^\s]/);
-          const nextNonSpace = nextNonSpaceIndex !== -1 ? jsonStr[i + 1 + nextNonSpaceIndex] : '';
-
-          const isStartOfString = /[:\\[\\{,]/.test(prevNonSpace);
-          const isEndOfString = /[:\\}\\]\,]/.test(nextNonSpace);
-
-          if (isStartOfString || isEndOfString) {
-            isInsideString = !isInsideString;
-            result += char;
-          } else {
-            // It's an inner quote inside a string value
-            result += '\\\\"';
-          }
-        } else {
-          result += char;
-        }
-      }
-      return result;
-    };
-
-    let parsedResponse;
-    try {
-      // Intentar primero el JSON puro que generó la IA (suele venir perfecto con Gemini 2.5 Flash)
-      parsedResponse = JSON.parse(responseText);
-      console.log("JSON parsed successfully on first try");
-    } catch (initialError) {
-      console.log("JSON Parse inicial falló, intentando sanear comillas...");
-      responseText = escapeUnsafeQuotes(responseText);
-      try {
-        parsedResponse = JSON.parse(responseText);
-        console.log("JSON parsed successfully on second try");
-      } catch (parseError) {
-        console.error("Failed to parse AI JSON after escaping:", parseError);
-        console.error("Attempted to parse:", responseText);
-        return NextResponse.json({ error: 'AI returned malformed JSON structure', raw: responseText }, { status: 500 });
-      }
-    }
-
-    try {
-      // If Gemini wrapped the whole response in an array despite instructions:
-      if (Array.isArray(parsedResponse) && parsedResponse.length > 0 && parsedResponse[0].mapa_interactivo) {
-        parsedResponse = parsedResponse[0];
-      }
-
-      // If the root is nested inside a `response` or `data` wrapper
-      if (parsedResponse.response && parsedResponse.response.mapa_interactivo) {
-        parsedResponse = parsedResponse.response;
-      }
-    } catch (wrapperError) {
-      console.error("Error un-wrapping AI response:", wrapperError);
-    }
-
-    // Adapt new strict JSON format to old Data Schema to avoid frontend breakage
-    let days: any[] = [];
-    const interactiveMap = parsedResponse.mapa_interactivo || parsedResponse.mapa_aprendizaje || parsedResponse.mapa_de_juego || (Array.isArray(parsedResponse) ? parsedResponse : []);
-    const planoDidactico = parsedResponse.plano_didactico || {};
-
-    console.log("=== DEBUG GENERATOR ===");
-    console.log("IS ARRAY?", Array.isArray(interactiveMap));
-    console.log("INTERACTIVE MAP DUMP:", JSON.stringify(interactiveMap).substring(0, 300));
-
-    if (interactiveMap && Array.isArray(interactiveMap)) {
-      interactiveMap.forEach((nivel: any, index: number) => {
-          // Preserve ALL chunks from AI response (6 theory sections per session)
-          const rawChunks = nivel.content?.explanation?.chunks;
-          const chunks = Array.isArray(rawChunks) && rawChunks.length > 0
-            ? rawChunks
-            : [nivel.paso_1_inicio?.oraculo || "Explora el mapa."];
-
-          days.push({
-            dayNumber: index + 1,
-            type: nivel.type || "guided_practice",
-            title: nivel.title || nivel.titulo || "Sesión Interactiva",
-            narrative: nivel.narrative || nivel.narrativa || "(Historia AI)",
-            // Propagate session planning fields for generate-day usage
-            session_start: nivel.session_start || "",
-            session_development: nivel.session_development || "",
-            session_end: nivel.session_end || "",
-            content: {
-              explanation: {
-                chunks: chunks,
-                analogy: nivel.content?.explanation?.analogy || nivel.paso_3_cierre?.metacognicion || ""
-              },
-              miniGame: nivel.content?.miniGame,
-              practiceProblem: {
-                statement: nivel.content?.practiceProblem?.statement || nivel.paso_2_desarrollo?.instruccion || "Reto final",
-                correctValue: nivel.content?.practiceProblem?.correctValue || nivel.paso_2_desarrollo?.valor_correcto || "N/A",
-                hint: nivel.content?.practiceProblem?.hint || nivel.paso_2_desarrollo?.pista_socratica || ""
-              }
+            // Estimate progress by counting occurrences of `"numero":` (number of sessions generated)
+            const matches = responseText.match(/"numero"\s*:/g);
+            if (matches && matches.length > currentSessionCount) {
+              currentSessionCount = matches.length;
+              controller.enqueue(encoder.encode(JSON.stringify({
+                type: 'progress',
+                session: currentSessionCount,
+                message: `Estructurando sesión ${currentSessionCount} de ${sessionCount}...`
+              }) + '\n'));
             }
-          });
-      });
-      // Mark the last element as Boss Fight
-      if (days.length > 0) {
-        days[days.length - 1].type = "boss_fight";
-        days[days.length - 1].originalProblemText = days[days.length - 1].content.practiceProblem.statement;
-        days[days.length - 1].hints = [days[days.length - 1].content.practiceProblem.hint];
-      }
-    } else if (Array.isArray(parsedResponse)) {
-      // Fallback in case Gemini hallucinates the old format
-      days = parsedResponse;
-    }
+          }
 
-    if (days.length === 0) {
-      console.error("AI generated 0 days for topic:", topic);
-      return NextResponse.json({ 
-        error: 'La IA no pudo estructurar los niveles del mapa. Intenta con un tema más específico o reintenta en unos segundos.',
-        raw: responseText 
-      }, { status: 422 });
-    }
+          console.log("Raw AI Response Stream completed. Length:", responseText.length);
 
-    // Save to Cache so future requests don't hit the Gemini API
-    try {
-      //@ts-ignore
-      await prisma.aIPromptCache.create({
-        data: {
-          topic: cacheKeyTopic,
-          theme: theme.toLowerCase().trim(),
-          response: JSON.stringify(days)
+          // Finalizamos stream, ahora a limpiar el markdown y parsear
+          responseText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
+
+          const escapeUnsafeQuotes = (jsonStr: string) => {
+            let isInsideString = false;
+            let result = '';
+            for (let i = 0; i < jsonStr.length; i++) {
+              const char = jsonStr[i];
+              const prevChar = i > 0 ? jsonStr[i - 1] : '';
+              if (char === '"' && prevChar !== '\\\\') {
+                const prevNonSpace = jsonStr.substring(0, i).trim().slice(-1);
+                const nextNonSpaceIndex = jsonStr.substring(i + 1).search(/[^\s]/);
+                const nextNonSpace = nextNonSpaceIndex !== -1 ? jsonStr[i + 1 + nextNonSpaceIndex] : '';
+                const isStartOfString = /[:\\[\\{,]/.test(prevNonSpace);
+                const isEndOfString = /[:\\}\\]\,]/.test(nextNonSpace);
+                if (isStartOfString || isEndOfString) { isInsideString = !isInsideString; result += char; }
+                else { result += '\\\\"'; }
+              } else { result += char; }
+            }
+            return result;
+          };
+
+          let parsedResponse;
+          try {
+            parsedResponse = JSON.parse(responseText);
+          } catch (initialError) {
+            console.log("JSON Parse inicial falló, intentando sanear comillas...");
+            responseText = escapeUnsafeQuotes(responseText);
+            try {
+              parsedResponse = JSON.parse(responseText);
+            } catch (parseError) {
+              throw new Error("La IA retornó una estructura JSON malformada que no se pudo reparar.");
+            }
+          }
+
+          try {
+            if (Array.isArray(parsedResponse) && parsedResponse.length > 0 && parsedResponse[0].mapa_interactivo) {
+              parsedResponse = parsedResponse[0];
+            }
+            if (parsedResponse.response && parsedResponse.response.mapa_interactivo) {
+              parsedResponse = parsedResponse.response;
+            }
+          } catch (wrapperError) {}
+
+          let days: any[] = [];
+          const interactiveMap = parsedResponse.mapa_interactivo || parsedResponse.mapa_aprendizaje || parsedResponse.mapa_de_juego || (Array.isArray(parsedResponse) ? parsedResponse : []);
+          const planoDidactico = parsedResponse.plano_didactico || {};
+
+          if (interactiveMap && Array.isArray(interactiveMap)) {
+            interactiveMap.forEach((nivel: any, index: number) => {
+                const rawChunks = nivel.content?.explanation?.chunks;
+                const chunks = Array.isArray(rawChunks) && rawChunks.length > 0 ? rawChunks : [nivel.paso_1_inicio?.oraculo || "Explora el mapa."];
+                days.push({
+                  dayNumber: index + 1,
+                  type: nivel.type || "guided_practice",
+                  title: nivel.title || nivel.titulo || "Sesión Interactiva",
+                  narrative: nivel.narrative || nivel.narrativa || "(Historia AI)",
+                  session_start: nivel.session_start || "",
+                  session_development: nivel.session_development || "",
+                  session_end: nivel.session_end || "",
+                  content: {
+                    explanation: { chunks: chunks, analogy: nivel.content?.explanation?.analogy || nivel.paso_3_cierre?.metacognicion || "" },
+                    miniGame: nivel.content?.miniGame,
+                    practiceProblem: {
+                      statement: nivel.content?.practiceProblem?.statement || nivel.paso_2_desarrollo?.instruccion || "Reto final",
+                      correctValue: nivel.content?.practiceProblem?.correctValue || nivel.paso_2_desarrollo?.valor_correcto || "N/A",
+                      hint: nivel.content?.practiceProblem?.hint || nivel.paso_2_desarrollo?.pista_socratica || ""
+                    }
+                  }
+                });
+            });
+            if (days.length > 0) {
+              days[days.length - 1].type = "boss_fight";
+              days[days.length - 1].originalProblemText = days[days.length - 1].content.practiceProblem.statement;
+              days[days.length - 1].hints = [days[days.length - 1].content.practiceProblem.hint];
+            }
+          } else if (Array.isArray(parsedResponse)) {
+            days = parsedResponse;
+          }
+
+          if (days.length === 0) {
+            throw new Error('La IA no pudo estructurar los niveles del mapa. Intenta con un tema más específico.');
+          }
+
+          // Check if variable is defined before using it
+          const safeTopic = topic ? topic.toLowerCase().trim() : 'generico';
+          const safeCacheKey = `${safeTopic}_s${sessionCount}`;
+          try {
+            //@ts-ignore
+            await prisma.aIPromptCache.create({
+              data: {
+                topic: safeCacheKey,
+                theme: theme.toLowerCase().trim(),
+                response: JSON.stringify(days)
+              }
+            });
+          } catch (cacheError) { console.log('Cache save skipped'); }
+
+          const payload = {
+            id: crypto.randomUUID(),
+            theme: "custom",
+            title: `Aventura de ${topic}`,
+            days: days,
+            pedagogy: {
+              topic: topic,
+              pda: planoDidactico.estructura_curricular?.pda || parsedResponse.metadatos_nem?.pda || "Inferencia didáctica",
+              grade: `Fase ${planoDidactico.encabezado?.fase || parsedResponse.metadatos_nem?.fase || "3"}`,
+              proposito: planoDidactico.estructura_curricular?.proposito || parsedResponse.metadatos_nem?.proposito || "",
+              diagnostico: planoDidactico.diagnostico_pedagogico || parsedResponse.metadatos_nem?.diagnostico || "",
+              contenidos: planoDidactico.estructura_curricular?.campos_formativos?.[0] || parsedResponse.metadatos_nem?.contenidos || "",
+              planoOficial: planoDidactico
+            },
+            createdAt: new Date().toISOString()
+          };
+
+          controller.enqueue(encoder.encode(JSON.stringify({ type: 'done', data: payload }) + '\n'));
+          controller.close();
+
+        } catch (error: any) {
+          console.error("Stream Generator Error:", error);
+          controller.enqueue(encoder.encode(JSON.stringify({ error: error.message || "Error interno del servidor en la generación" }) + '\n'));
+          controller.close();
         }
-      });
-    } catch (cacheError) {
-      console.error("Failed to save to aiPromptCache (non-fatal):", cacheError);
-    }
+      }
+    });
 
-    return NextResponse.json({
-      id: crypto.randomUUID(),
-      theme: "custom", // Internal enum mapping could go here
-      title: `Aventura de ${topic}`,
-      days: days,
-      pedagogy: {
-        topic: topic,
-        pda: planoDidactico.estructura_curricular?.pda || parsedResponse.metadatos_nem?.pda || "Inferencia didáctica",
-        grade: `Fase ${planoDidactico.encabezado?.fase || parsedResponse.metadatos_nem?.fase || "3"}`,
-        proposito: planoDidactico.estructura_curricular?.proposito || parsedResponse.metadatos_nem?.proposito || "",
-        diagnostico: planoDidactico.diagnostico_pedagogico || parsedResponse.metadatos_nem?.diagnostico || "",
-        contenidos: planoDidactico.estructura_curricular?.campos_formativos?.[0] || parsedResponse.metadatos_nem?.contenidos || "",
-        planoOficial: planoDidactico // Attach full official plan here
-      },
-      createdAt: new Date().toISOString()
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'application/x-ndjson',
+        'Cache-Control': 'no-cache, no-transform',
+        'Transfer-Encoding': 'chunked',
+      }
     });
 
   } catch (error: unknown) {
