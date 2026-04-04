@@ -91,6 +91,19 @@ Tu misión es transformar el tema matemático o problemática indicada en un pro
 - La planeación debe estar conectada a la Metodología solicitada (${metodologia}) y dividida en ${sessionCount} partes.
 - Inmediatamente después, genera el "mapa_interactivo" que traduzca esta planeación rigurosa a un juego visual con la temática "${theme}".
 
+# 3. REGLAS DE CONTENIDO TEÓRICO (CRÍTICO):
+El campo "explanation.chunks" es el corazón de la experiencia de aprendizaje del alumno. Es OBLIGATORIO cumplir:
+- Debes generar EXACTAMENTE 6 chunks (párrafos/secciones) de teoría POR SESIÓN.
+- Cada chunk debe tener MÍNIMO 3 oraciones completas y sustanciales. No generes chunks de una sola oración.
+- Los 6 chunks deben seguir esta progresión pedagógica estricta:
+  1. "¿Qué es?": Definición completa y clara del concepto central de esa sesión.
+  2. "¿Por qué importa?": Relevancia en la vida cotidiana del alumno, con un ejemplo concreto.
+  3. "¿Cómo funciona?": El procedimiento o razonamiento, explicado paso a paso con listas si aplica.
+  4. "Ejemplo resuelto": Un caso completo resuelto con datos reales, mostrando cada paso.
+  5. "Conexión con el mundo real": Cómo este concepto aparece en tecnología, naturaleza, economía o comunidad.
+  6. "¿Sabías que...?": Un dato histórico, récord, paradoja o curiosidad asombrosa relacionada con el tema.
+- Usa formato Markdown dentro de los chunks: **negritas** para términos clave, listas numeradas o con guiones para procedimientos, y encabezados ## para el título de cada sección.
+
 # FORMATO DE SALIDA (JSON ÚNICAMENTE):
 Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con esta estructura exacta:
 
@@ -127,7 +140,17 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
        "session_end": "Instrucción del CIERRE para validación.",
        "narrative": "Narrativa de apertura para este nivel (del tema visual).",
        "content": {
-          "explanation": { "chunks": ["Explicación teórica de la sesión adaptada a niño"], "analogy": "Dato curioso" },
+          "explanation": { 
+             "chunks": [
+               "## ¿Qué es? — [REEMPLAZAR: Definición completa del concepto de esta sesión, mínimo 3 oraciones]",
+               "## ¿Por qué importa? — [REEMPLAZAR: Relevancia con ejemplo cotidiano del alumno, mínimo 3 oraciones]",
+               "## ¿Cómo funciona? — [REEMPLAZAR: Procedimiento paso a paso con listas, mínimo 3 oraciones]",
+               "## Ejemplo resuelto — [REEMPLAZAR: Caso concreto resuelto completamente con datos reales]",
+               "## Conexión con el mundo real — [REEMPLAZAR: Aparición del concepto en tecnología, naturaleza o comunidad]",
+               "## ¿Sabías que...? — [REEMPLAZAR: Dato histórico curioso, récord o paradoja asombrosa del tema]"
+             ],
+             "analogy": "Dato curioso o analogía ingeniosa que conecte el tema con algo que un niño de Fase ${phase} ya conoce" 
+          },
           "miniGame": { 
              "type": "multiple_choice",
              "question": "Pregunta de opción múltiple basada en la sesión",
