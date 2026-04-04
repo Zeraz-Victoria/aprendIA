@@ -334,9 +334,12 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
         lines.forEach((line, i) => {
             const trimmed = line.trim();
 
-            // Detect headings
-            if (trimmed.startsWith("###") || trimmed.startsWith("**")) {
-                const headingText = trimmed.replace(/^#+\s*/, "").replace(/\*\*/g, "").trim();
+            // Detect headings: matches `# `, `## `, `### `, etc. OR lines completely wrapped in `**`
+            const isMarkdownHeading = /^(#+)\s+/.test(trimmed);
+            const isBoldHeading = trimmed.startsWith("**") && trimmed.endsWith("**") && trimmed.length > 4;
+            
+            if (isMarkdownHeading || isBoldHeading) {
+                const headingText = trimmed.replace(/^#+\s*/, "").replace(/\*\*/g, "").replace(/:$/, "").trim();
 
                 if (currentSection) {
                     sections.push(currentSection);

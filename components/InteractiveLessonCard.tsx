@@ -308,12 +308,27 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
         }
     };
 
+    // Determine presentation type early to adapt chunks
+    const formats: PresentationType[] = ["flashcards", "mind_map", "synoptic_chart", "infographic", "crossword"];
+    const stored = (data as any).presentationType;
+    const effectiveType: PresentationType = stored && stored !== "text"
+        ? stored
+        : data.type === "concept_story"
+            ? formats[((data.dayNumber || 1) - 1) % formats.length]
+            : "text";
+
     // For AI-generated levels with rich chunks, show narrative first then all explanation chunks.
     // For PDF-uploaded levels, keep using only the narrative (they embed all content in it).
     const hasRichChunks = (data.content?.explanation?.chunks?.length || 0) > 1;
-    const chunks = hasRichChunks
+    let chunks = hasRichChunks
         ? [data.narrative, ...(data.content?.explanation?.chunks || [])].filter(Boolean) as string[]
         : (data.narrative ? [data.narrative] : (data.content?.explanation?.chunks || [""]));
+
+    // If using a visual renderer (flashcards, mind maps, etc), we MUST pass the entire combined document
+    // so it can extract all headers at once. Otherwise, pagination breaks the visualizer into 1 element per page.
+    if (effectiveType !== "text") {
+        chunks = [chunks.join("\n\n")];
+    }
 
     const currentChunk = chunks[currentChunkIndex];
 
@@ -890,14 +905,6 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 {data.type === 'guided_practice' && <span className="absolute -top-3 -right-3 z-10 bg-teal-500 text-white text-xs px-2 py-1 rounded font-bold shadow-sm">Teoría</span>}
                                 {/* Use TheoryRenderer for interactive formats, fallback to PedagogicalWrapper */}
                                 {(() => {
-                                    const formats: PresentationType[] = ["flashcards", "mind_map", "synoptic_chart", "infographic", "crossword"];
-                                    const stored = (data as any).presentationType;
-                                    const effectiveType: PresentationType = stored && stored !== "text"
-                                        ? stored
-                                        : data.type === "concept_story"
-                                            ? formats[((data.dayNumber || 1) - 1) % formats.length]
-                                            : "text";
-
                                     if (effectiveType !== "text") {
                                         return (
                                             <div className="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl">
