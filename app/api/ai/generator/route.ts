@@ -345,8 +345,7 @@ REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionC
     return new Response(stream, {
       headers: {
         'Content-Type': 'application/x-ndjson',
-        'Cache-Control': 'no-cache, no-transform',
-        'Transfer-Encoding': 'chunked',
+        'Cache-Control': 'no-cache, no-transform'
       }
     });
 
