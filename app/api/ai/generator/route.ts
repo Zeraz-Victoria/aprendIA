@@ -6,6 +6,9 @@ import { authOptions } from '../../auth/[...nextauth]/route';
 
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
+export const maxDuration = 120;
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     const { theme, topic, dificultad = "Básico", metodologia = "ABP", diagnostico = "Ninguno", sessionCount = 3, session_title, session_start, session_development, session_end, phase = "3" } = await req.json();
@@ -263,14 +266,24 @@ REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionC
 
     if (interactiveMap && Array.isArray(interactiveMap)) {
       interactiveMap.forEach((nivel: any, index: number) => {
+          // Preserve ALL chunks from AI response (6 theory sections per session)
+          const rawChunks = nivel.content?.explanation?.chunks;
+          const chunks = Array.isArray(rawChunks) && rawChunks.length > 0
+            ? rawChunks
+            : [nivel.paso_1_inicio?.oraculo || "Explora el mapa."];
+
           days.push({
             dayNumber: index + 1,
-            type: nivel.type || "guided_practice", // Fallback for all items currently
+            type: nivel.type || "guided_practice",
             title: nivel.title || nivel.titulo || "Sesión Interactiva",
             narrative: nivel.narrative || nivel.narrativa || "(Historia AI)",
+            // Propagate session planning fields for generate-day usage
+            session_start: nivel.session_start || "",
+            session_development: nivel.session_development || "",
+            session_end: nivel.session_end || "",
             content: {
               explanation: {
-                chunks: [nivel.content?.explanation?.chunks?.[0] || nivel.paso_1_inicio?.oraculo || "Explora el mapa."],
+                chunks: chunks,
                 analogy: nivel.content?.explanation?.analogy || nivel.paso_3_cierre?.metacognicion || ""
               },
               miniGame: nivel.content?.miniGame,

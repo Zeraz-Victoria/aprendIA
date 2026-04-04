@@ -17,6 +17,7 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
     const [difficulty, setDifficulty] = useState<"Básico" | "Intermedio" | "Avanzado">("Básico");
     const [metodologia, setMetodologia] = useState<string>("ABP");
     const [diagnostico, setDiagnostico] = useState<string>("");
+    const [phase, setPhase] = useState<string>("3");
     const [sessionCount, setSessionCount] = useState<number>(3);
     const [isGenerating, setIsGenerating] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState("Iniciando IA...");
@@ -34,9 +35,10 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                 body: JSON.stringify({
                     topic,
                     theme: selectedTheme,
-                    difficulty,
+                    dificultad: difficulty,
                     metodologia,
                     diagnostico,
+                    phase,
                     sessionCount
                 })
             });
@@ -208,6 +210,28 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                     placeholder="Problemática del aula (ej. Alimentación, bullying...)"
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-sky-100 focus:border-sky-400 outline-none transition-all placeholder:text-slate-400"
                                 />
+                            </div>
+
+                            {/* Fase NEM */}
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <Compass className="w-4 h-4 text-indigo-500" />
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Fase NEM</label>
+                                </div>
+                                <div className="grid grid-cols-6 gap-2">
+                                    {["1", "2", "3", "4", "5", "6"].map(p => (
+                                        <button
+                                            key={p}
+                                            type="button"
+                                            onClick={() => setPhase(p)}
+                                            className={`py-2 rounded-xl text-xs font-bold transition-all border-2 ${phase === p
+                                                ? 'bg-violet-50 border-violet-500 text-violet-700 shadow-md'
+                                                : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
+                                        >
+                                            Fase {p}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
 
                             {/* Número de Sesiones */}
