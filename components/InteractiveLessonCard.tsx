@@ -320,20 +320,18 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     // For AI-generated levels with rich chunks, show narrative first then all explanation chunks.
     // For PDF-uploaded levels, keep using only the narrative (they embed all content in it).
     const hasRichChunks = (data.content?.explanation?.chunks?.length || 0) > 1;
-    let chunks = hasRichChunks
+    const baseChunks: string[] = hasRichChunks
         ? [data.narrative, ...(data.content?.explanation?.chunks || [])].filter(Boolean) as string[]
         : (data.narrative ? [data.narrative] : (data.content?.explanation?.chunks || [""]));
 
-    // If using a visual renderer (flashcards, mind maps, etc), we MUST pass the entire combined document
-    // so it can extract all headers at once. Otherwise, pagination breaks the visualizer into 1 element per page.
-    if (effectiveType !== "text") {
-        chunks = [chunks.join("\n\n")];
-    }
+    // If using a visual renderer (flashcards, mind maps, etc), we paginate everything at once
+    // but preserve baseChunks for the TheoryRenderer to use as sections natively!
+    const paginationChunks = effectiveType !== "text" ? [baseChunks.join("\n\n")] : baseChunks;
 
-    const currentChunk = chunks[currentChunkIndex];
+    const currentChunk = paginationChunks[currentChunkIndex];
 
     const handleNextChunk = () => {
-        if (currentChunkIndex < chunks.length - 1) {
+        if (currentChunkIndex < paginationChunks.length - 1) {
             setCurrentChunkIndex(prev => prev + 1);
         } else {
             // Reached the end of the narrative
@@ -912,6 +910,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                                     presentationType={effectiveType}
                                                     title={data.title}
                                                     content={(currentChunk || "").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
+                                                    rawChunks={baseChunks.map(c => (c || "").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName))}
                                                     glossary={(data as any).glosario}
                                                     accentColor="teal"
                                                 />
@@ -943,7 +942,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                     onClick={handleNextChunk}
                                     className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg shadow-teal-200 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                                 >
-                                    {currentChunkIndex < chunks.length - 1 ?
+                                    {currentChunkIndex < paginationChunks.length - 1 ?
                                         "Continuar Leyendo" :
                                         (data.type === "boss_fight" ? "¡Enfrentar al Jefe!" :
                                             (data.type === "guided_practice" || data.content?.miniGame ? "¡Listo para el Reto!" : "Finalizar Lección"))
@@ -984,7 +983,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 <h1 className="text-3xl font-bold text-center mb-6 text-slate-900 border-b-2 border-teal-200 pb-4">{data.title}</h1>
 
                 <div className="space-y-6 prose prose-lg max-w-none mb-10">
-                    {chunks.map((chunk, idx) => (
+                    {baseChunks.map((chunk: string, idx: number) => (
                         <div key={idx} className="mb-4">
                             <GlossaryWrapper
                                 text={(chunk || "")

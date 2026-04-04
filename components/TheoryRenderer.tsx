@@ -23,6 +23,7 @@ interface TheoryRendererProps {
     presentationType?: PresentationType;
     title?: string;
     content: string;          // markdown content
+    rawChunks?: string[];     // explicit chunks from AI to use as fallback if markdown headers fail
     glossary?: { palabra: string; definicion: string }[];
     accentColor?: string;     // Tailwind color class base e.g. "orange" "cyan"
 }
@@ -316,7 +317,7 @@ function CrosswordGame({ words, accentColor }: { words: { palabra: string; defin
 // ═══════════════════════════════════════════
 // MAIN RENDERER
 // ═══════════════════════════════════════════
-export default function TheoryRenderer({ presentationType = "text", title = "Teoría", content, glossary = [], accentColor = "teal" }: TheoryRendererProps) {
+export default function TheoryRenderer({ presentationType = "text", title = "Teoría", content, rawChunks, glossary = [], accentColor = "teal" }: TheoryRendererProps) {
     // Parse structured data from the content for interactive formats
     const structuredData = useMemo(() => {
         // Try to split content into sections for interactive views
@@ -393,12 +394,21 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
             });
         }
 
-        // If no sections were parsed, create a single card from the full content
+        // If no sections were parsed (AI didn't use ## or ** headers nicely), fallback securely to rawChunks!
         if (flashcards.length === 0) {
-            flashcards.push({ front: title, back: content.substring(0, 300) + "..." });
-            sections.push({ heading: title, items: lines.slice(0, 5) });
-            infographicSteps.push({ icon: "📌", heading: title, text: content.substring(0, 200) });
-            mindMapBranches.push({ label: title, children: lines.slice(0, 4) });
+            const fallbackChunks = rawChunks && rawChunks.length > 1 
+                ? rawChunks 
+                : [content]; // ultimate fallback
+
+            fallbackChunks.forEach((chunk, idx) => {
+                const label = fallbackChunks.length > 1 ? `Sección ${idx + 1}` : (title || "Teoría");
+                const cardFront = fallbackChunks.length > 1 && title ? `${title} (${label})` : (title || "Teoría");
+                
+                flashcards.push({ front: cardFront, back: chunk.length > 3000 ? chunk.substring(0, 3000) + "..." : chunk });
+                sections.push({ heading: label, items: [chunk] });
+                infographicSteps.push({ icon: "📌", heading: label, text: chunk.substring(0, 400) + "..." });
+                mindMapBranches.push({ label: label, children: [chunk.substring(0, 100) + "..."] });
+            });
         }
 
         // Add glossary as extra flashcards
@@ -407,7 +417,7 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
         });
 
         return { flashcards, sections, infographicSteps, mindMapBranches, introText: introText.trim() };
-    }, [content, title, glossary]);
+    }, [content, title, glossary, rawChunks]);
 
     // Format-specific badges
     const formatLabel: Record<string, { icon: string; name: string }> = {
