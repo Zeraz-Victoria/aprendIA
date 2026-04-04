@@ -318,97 +318,98 @@ function CrosswordGame({ words, accentColor }: { words: { palabra: string; defin
 // MAIN RENDERER
 // ═══════════════════════════════════════════
 export default function TheoryRenderer({ presentationType = "text", title = "Teoría", content, rawChunks, glossary = [], accentColor = "teal" }: TheoryRendererProps) {
-    // Parse structured data from the content for interactive formats
     const structuredData = useMemo(() => {
-        // Try to split content into sections for interactive views
-        const lines = content.split("\n").filter(l => l.trim());
-
         const flashcards: { front: string; back: string }[] = [];
         const sections: { heading: string; items: string[] }[] = [];
         const infographicSteps: { icon: string; heading: string; text: string }[] = [];
         const mindMapBranches: { label: string; children: string[] }[] = [];
         let introText = "";
 
-        let currentSection: { heading: string; items: string[] } | null = null;
         const icons = ["📌", "🧩", "💡", "🎯", "📐", "🔬", "📊", "✏️"];
 
-        lines.forEach((line, i) => {
-            const trimmed = line.trim();
+        // Strategy 1: The AI perfectly segmented chunks natively via the backend. Use this first!
+        if (rawChunks && rawChunks.length > 1) {
+            rawChunks.forEach((chunk, idx) => {
+                if (!chunk.trim()) return;
 
-            // Detect headings: matches `# `, `## `, `### `, etc. OR lines completely wrapped in `**`
-            const isMarkdownHeading = /^(#+)\s+/.test(trimmed);
-            const isBoldHeading = trimmed.startsWith("**") && trimmed.endsWith("**") && trimmed.length > 4;
-            
-            if (isMarkdownHeading || isBoldHeading) {
-                const headingText = trimmed.replace(/^#+\s*/, "").replace(/\*\*/g, "").replace(/:$/, "").trim();
+                let heading = idx === 0 ? "Introducción" : `Sección ${idx}`;
+                let body = chunk.trim();
 
-                if (currentSection) {
-                    sections.push(currentSection);
-                    // Also create a flashcard from the section
-                    if (currentSection.items.length > 0) {
-                        flashcards.push({
-                            front: currentSection.heading,
-                            back: currentSection.items.join("\n")
-                        });
+                // Advanced regex to extract heading and body even if they are on the same line
+                // Matches "## Title — Body" or "## Title: Body" or "**Title**: Body"
+                const inlineMatch = chunk.match(/^(?:##+\s+|\*\*)([^*\n]+?)(?:\*\*|)?\s*[-—:]+\s+([\s\S]*)/);
+                if (inlineMatch && inlineMatch[1].length < 60) {
+                    heading = inlineMatch[1].trim();
+                    body = inlineMatch[2].trim();
+                } else {
+                    // Try "## Title \n Body"
+                    const blockMatch = chunk.match(/^(?:##+\s+|\*\*)([^*\n]+?)(?:\*\*|)?\s*[\r\n]+([\s\S]*)/);
+                    if (blockMatch && blockMatch[1].length < 60) {
+                        heading = blockMatch[1].trim();
+                        body = blockMatch[2].trim();
+                    } else if (idx === 0) {
+                        // Narrative rarely has a heading
+                        introText += body + "\n\n";
+                        return; // skip adding narrative as a flashcard unless it's the only one
                     }
-                    // Infographic step
-                    infographicSteps.push({
-                        icon: icons[sections.length % icons.length],
-                        heading: currentSection.heading,
-                        text: currentSection.items.join(" ")
-                    });
-                    // Mind map branch
-                    mindMapBranches.push({
-                        label: currentSection.heading,
-                        children: currentSection.items.slice(0, 4)
-                    });
                 }
 
-                currentSection = { heading: headingText, items: [] };
-            } else if (currentSection && trimmed.length > 0) {
-                const cleanLine = trimmed.replace(/^[-•▸*]\s*/, "");
-                if (cleanLine.length > 0) {
-                    currentSection.items.push(cleanLine);
-                }
-            } else if (!currentSection && trimmed.length > 0) {
-                // If we haven't hit a header yet, this is part of the intro text (historia_inicio)
-                introText += trimmed + "\n\n";
-            }
-        });
+                // Split lists if present
+                const rawItems = body.split("\n").map(l => l.trim()).filter(Boolean);
+                const strippedItems = rawItems.map(l => l.replace(/^[-•▸*]\s*/, "").replace(/^\d+\.\s*/, ""));
+                const items = rawItems.length > 1 ? strippedItems : [body];
 
-        // Push last section
-        if (currentSection && (currentSection as any).items?.length > 0) {
-            sections.push(currentSection);
-            flashcards.push({
-                front: (currentSection as any).heading,
-                back: (currentSection as any).items.join("\n")
+                flashcards.push({ front: heading, back: body });
+                sections.push({ heading: heading, items: items });
+                infographicSteps.push({ icon: icons[idx % icons.length] || "📌", heading: heading, text: body });
+                mindMapBranches.push({ label: heading, children: items.slice(0, 4) });
             });
-            infographicSteps.push({
-                icon: icons[sections.length % icons.length],
-                heading: (currentSection as any).heading,
-                text: (currentSection as any).items.join(" ")
-            });
-            mindMapBranches.push({
-                label: (currentSection as any).heading,
-                children: (currentSection as any).items.slice(0, 4)
-            });
-        }
+        } 
+        // Strategy 2: Fallback to old fragile markdown regex if chunks aren't passed
+        else {
+            const lines = content.split("\n").filter(l => l.trim());
+            let currentSection: { heading: string; items: string[] } | null = null;
 
-        // If no sections were parsed (AI didn't use ## or ** headers nicely), fallback securely to rawChunks!
-        if (flashcards.length === 0) {
-            const fallbackChunks = rawChunks && rawChunks.length > 1 
-                ? rawChunks 
-                : [content]; // ultimate fallback
-
-            fallbackChunks.forEach((chunk, idx) => {
-                const label = fallbackChunks.length > 1 ? `Sección ${idx + 1}` : (title || "Teoría");
-                const cardFront = fallbackChunks.length > 1 && title ? `${title} (${label})` : (title || "Teoría");
+            lines.forEach((line) => {
+                const trimmed = line.trim();
+                const isMarkdownHeading = /^(#+)\s+/.test(trimmed);
+                const isBoldHeading = trimmed.startsWith("**") && trimmed.endsWith("**") && trimmed.length > 4;
                 
-                flashcards.push({ front: cardFront, back: chunk.length > 3000 ? chunk.substring(0, 3000) + "..." : chunk });
-                sections.push({ heading: label, items: [chunk] });
-                infographicSteps.push({ icon: "📌", heading: label, text: chunk.substring(0, 400) + "..." });
-                mindMapBranches.push({ label: label, children: [chunk.substring(0, 100) + "..."] });
+                if (isMarkdownHeading || isBoldHeading) {
+                    const headingText = trimmed.replace(/^#+\s*/, "").replace(/\*\*/g, "").replace(/:$/, "").trim();
+
+                    if (currentSection) {
+                        sections.push(currentSection);
+                        if (currentSection.items.length > 0) {
+                            flashcards.push({ front: currentSection.heading, back: currentSection.items.join("\n") });
+                        }
+                        infographicSteps.push({ icon: icons[sections.length % icons.length], heading: currentSection.heading, text: currentSection.items.join(" ") });
+                        mindMapBranches.push({ label: currentSection.heading, children: currentSection.items.slice(0, 4) });
+                    }
+                    currentSection = { heading: headingText, items: [] };
+                } else if (currentSection && trimmed.length > 0) {
+                    const cleanLine = trimmed.replace(/^[-•▸*]\s*/, "");
+                    if (cleanLine.length > 0) {
+                        currentSection.items.push(cleanLine);
+                    }
+                } else if (!currentSection && trimmed.length > 0) {
+                    introText += trimmed + "\n\n";
+                }
             });
+
+            if (currentSection && (currentSection as any).items?.length > 0) {
+                sections.push(currentSection);
+                flashcards.push({ front: (currentSection as any).heading, back: (currentSection as any).items.join("\n") });
+                infographicSteps.push({ icon: icons[sections.length % icons.length], heading: (currentSection as any).heading, text: (currentSection as any).items.join(" ") });
+                mindMapBranches.push({ label: (currentSection as any).heading, children: (currentSection as any).items.slice(0, 4) });
+            }
+
+            if (flashcards.length === 0) {
+                flashcards.push({ front: title || "Teoría", back: content.substring(0, 3000) });
+                sections.push({ heading: title || "Teoría", items: [content] });
+                infographicSteps.push({ icon: "📌", heading: title || "Teoría", text: content });
+                mindMapBranches.push({ label: title || "Teoría", children: [content] });
+            }
         }
 
         // Add glossary as extra flashcards
