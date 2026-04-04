@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Swords, Save, Settings, X, GripVertical, FileText, Target, Sparkles, Bot, Download, Users, ChevronDown } from "lucide-react";
+import { Plus, Swords, Save, Settings, X, GripVertical, FileText, Target, Sparkles, Bot, Download, Users, ChevronDown, Compass, BookOpen } from "lucide-react";
 import { useLearning, LearningWorld } from "@/contexts/LearningContext";
 import { LevelContent, DayContent, BossDayContent } from "@/types/learning-world";
 import jsPDF from "jspdf";
 import { toCanvas } from "html-to-image";
+import { THEME_LIST, ThemeKey } from "@/lib/themes";
 
 
 function safeParsePromptText(text: string | undefined): string {
@@ -57,6 +58,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
     const [showAIPrompt, setShowAIPrompt] = useState(initialShowAIPrompt);
     const [aiTopic, setAiTopic] = useState("");
     const [aiDifficulty, setAiDifficulty] = useState("Básico");
+    const [aiPhase, setAiPhase] = useState("3"); // Phase 1-6
     const [isGenerating, setIsGenerating] = useState(false);
     const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
@@ -104,7 +106,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
             const res = await fetch('/api/ai/generator', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ theme, topic: aiTopic, difficulty: aiDifficulty })
+                body: JSON.stringify({ theme, topic: aiTopic, difficulty: aiDifficulty, phase: aiPhase })
             });
             const data = await res.json();
             if (data.days) {
@@ -996,17 +998,55 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                                     className="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all font-medium"
                                 />
                             </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Fase / Grado</label>
+                                    <select
+                                        value={aiPhase}
+                                        onChange={(e) => setAiPhase(e.target.value)}
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-all font-medium text-slate-700"
+                                    >
+                                        <option value="1">Fase 1 (Inicial)</option>
+                                        <option value="2">Fase 2 (Preescolar)</option>
+                                        <option value="3">Fase 3 (1º y 2º Primaria)</option>
+                                        <option value="4">Fase 4 (3º y 4º Primaria)</option>
+                                        <option value="5">Fase 5 (5º y 6º Primaria)</option>
+                                        <option value="6">Fase 6 (Secundaria)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Dificultad</label>
+                                    <select
+                                        value={aiDifficulty}
+                                        onChange={(e) => setAiDifficulty(e.target.value)}
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-all text-sm font-medium"
+                                    >
+                                        <option value="Básico">Fácil (Básico)</option>
+                                        <option value="Intermedio">Intermedio (Retador)</option>
+                                        <option value="Avanzado">Avanzado (Olimpiada)</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Dificultad sugerida</label>
-                                <select
-                                    value={aiDifficulty}
-                                    onChange={(e) => setAiDifficulty(e.target.value)}
-                                    className="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-all"
-                                >
-                                    <option value="Básico">Fácil (Básico)</option>
-                                    <option value="Intermedio">Intermedio (Retador)</option>
-                                    <option value="Avanzado">Avanzado (Olimpiada)</option>
-                                </select>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Tema Visual</label>
+                                <div className="grid grid-cols-5 gap-2">
+                                    {THEME_LIST.map((t) => (
+                                        <button
+                                            key={t.key}
+                                            onClick={() => setTheme(t.key)}
+                                            className={`flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all ${
+                                                theme === t.key 
+                                                    ? 'border-amber-500 bg-amber-50 shadow-sm scale-105' 
+                                                    : 'border-slate-100 bg-slate-50 hover:border-amber-200 hover:bg-white'
+                                            }`}
+                                        >
+                                            <span className="text-2xl mb-1">{t.emoji}</span>
+                                            <span className="text-[9px] font-bold text-slate-600 truncate w-full text-center">{t.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 

@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { theme, topic, difficulty = "Básico", sessionCount = 3, session_title, session_start, session_development, session_end } = await req.json();
+    const { theme, topic, difficulty = "Básico", sessionCount = 3, session_title, session_start, session_development, session_end, phase = "3" } = await req.json();
 
     if (!theme || !topic) {
       return NextResponse.json({ error: 'theme and topic are required' }, { status: 400 });
@@ -84,10 +84,15 @@ CIERRE: """ ${session_end || `Validación metacognitiva del tema ${topic}`} """
 # INSTRUCCIONES DE Y CREACIÓN Y EXPANSIÓN:
 El texto anterior es un resumen didáctico extremadamente conciso. Tu tarea es INVENTAR y EXPANDIR este concepto en un nivel de juego completo.
 Debes estructurarlo OBLIGATORIAMENTE en EXACTAMENTE ${sessionCount} sesiones (niveles) interconectados de dificultad progresiva.
-1. NARRATIVA DE ENTRADA: Crea una historia envolvente de aventura basada en el resumen didáctico. Transforma el concepto aburrido en una intro emocionante.
+
+NIVEL DE LENGUAJE Y DIFICULTAD (NEM Fase ${phase} y Dificultad ${difficulty}):
+El contenido debe generarse ESPECÍFICAMENTE para alumnos cursando la Fase ${phase} de la NEM y con un nivel de desafío cognitivo "${difficulty}". 
+Ajusta de manera estricta el vocabulario, la extensión de los textos, las explicaciones teóricas y la dificultad matemática/lógica para que sea completamente adecuado para este nivel.
+
+1. NARRATIVA DE ENTRADA: Crea una historia envolvente de aventura basada en el resumen didáctico y el tema visual "${theme}". Transforma el concepto aburrido en una intro emocionante.
 2. DESAFÍO TÉCNICO: Diseña un problema matemático o lógico jugable que evalúe directamente el concepto del resumen. Asegúrate de incluir la respuesta correcta y una pista socrática para ayudar al alumno si se equivoca.
 3. METACOGNICIÓN: Inventa una reflexión de cierre motivadora relacionada al desarrollo.
-4. CUMPLIMIENTO NEM: Clasifica el nivel en la Fase correspondiente (1-6) y extrae o inventa el PDA directamente relacionado al tema.
+4. CUMPLIMIENTO NEM: Clasifica el nivel en la Fase ${phase} y extrae o inventa el PDA directamente relacionado al tema.
 
 # FORMATO DE SALIDA (JSON ÚNICAMENTE):
 Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiquetas markdown. Asegúrate de generar EXACTAMENTE ${sessionCount} objetos consecutivos dentro del arreglo "mapa_interactivo".
