@@ -19,6 +19,7 @@ export interface LearningWorld {
     proposito?: string;
     diagnostico?: string;
     contenidos?: string;
+    planoOficial?: any;
   };
   createdAt: string;
   classrooms?: { id: string; name?: string }[];

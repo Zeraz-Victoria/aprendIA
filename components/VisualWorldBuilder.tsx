@@ -424,7 +424,40 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
             ${pedagogy.pda ? `<div style="background:#eef2ff;padding:12px 16px;border-radius:10px;"><div style="font-size:10px;font-weight:900;color:#6366f1;text-transform:uppercase;margin-bottom:4px;">PDA</div><div style="font-size:13px;">${pedagogy.pda}</div></div>` : ''}
             ${pedagogy.contenidos ? `<div style="background:#f8fafc;padding:12px 16px;border-radius:10px;"><div style="font-size:10px;font-weight:900;color:#64748b;text-transform:uppercase;margin-bottom:4px;">Contenidos</div><div style="font-size:13px;">${pedagogy.contenidos}</div></div>` : ''}
             ${pedagogy.proposito ? `<div style="background:#ecfdf5;padding:12px 16px;border-radius:10px;grid-column:span 2;"><div style="font-size:10px;font-weight:900;color:#059669;text-transform:uppercase;margin-bottom:4px;">Propósito</div><div style="font-size:13px;">${pedagogy.proposito}</div></div>` : ''}
-        </div>` : ''}
+        </div>
+        ${pedagogy.planoOficial?.secuencia_didactica ? `
+        <div style="margin-top:40px;text-align:left;">
+            <h2 style="font-size:20px;font-weight:900;color:#1e1b4b;margin-bottom:20px;border-bottom:2px solid #e2e8f0;padding-bottom:8px;">Plano Didáctico Oficial (NEM)</h2>
+            ${pedagogy.planoOficial.secuencia_didactica.map((seq: any) => `
+                <div style="margin-bottom:24px;background:#f8fafc;padding:20px;border-radius:12px;border:1px solid #e2e8f0;page-break-inside:avoid;">
+                    <div style="font-size:16px;font-weight:900;color:#4f46e5;margin-bottom:12px;">Sesión ${seq.numero}: ${seq.titulo}</div>
+                    <div style="font-size:12px;color:#64748b;margin-bottom:16px;"><strong>Duración:</strong> ${seq.duracion} | <strong>Evidencia:</strong> ${seq.evidencia}</div>
+                    
+                    <div style="margin-bottom:12px;">
+                        <strong style="font-size:12px;color:#0f172a;">INICIO:</strong>
+                        <ul style="font-size:13px;color:#334155;margin-left:20px;margin-top:6px;line-height:1.5;">
+                            ${seq.inicio ? seq.inicio.map((i: string) => `<li>${i}</li>`).join('') : ''}
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-bottom:12px;">
+                        <strong style="font-size:12px;color:#0f172a;">DESARROLLO (Modelaje y Acción):</strong>
+                        <ul style="font-size:13px;color:#334155;margin-left:20px;margin-top:6px;line-height:1.5;">
+                            ${seq.desarrollo ? seq.desarrollo.map((d: string) => `<li>${d}</li>`).join('') : ''}
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <strong style="font-size:12px;color:#0f172a;">CIERRE:</strong>
+                        <ul style="font-size:13px;color:#334155;margin-left:20px;margin-top:6px;line-height:1.5;">
+                            ${seq.cierre ? seq.cierre.map((c: string) => `<li>${c}</li>`).join('') : ''}
+                        </ul>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        <div style="page-break-after:always; margin-top:40px;"></div>
+        ` : ''}` : ''}
     </div>
 
     <div style="text-align:center;margin-bottom:32px;">

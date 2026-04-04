@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { theme, topic, difficulty = "Básico", sessionCount = 3, session_title, session_start, session_development, session_end, phase = "3" } = await req.json();
+    const { theme, topic, dificultad = "Básico", metodologia = "ABP", diagnostico = "Ninguno", sessionCount = 3, session_title, session_start, session_development, session_end, phase = "3" } = await req.json();
 
     if (!theme || !topic) {
       return NextResponse.json({ error: 'theme and topic are required' }, { status: 400 });
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     }
 
     console.log("=== AUTO-GENERATOR INIT ===");
-    console.log("Payload:", { theme, topic, difficulty });
+    console.log("Payload:", { theme, topic, dificultad, metodologia });
 
     // Attempt to fetch from Cache first to save AI API tokens
     const cacheKeyTopic = `${topic.toLowerCase().trim()}_s${sessionCount}`;
@@ -67,60 +67,79 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
-# ROL Y DIRECTIVA SOBERANA
-ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
-Actúa como un Motor de Transpiler Pedagógico de alta fidelidad para la Nueva Escuela Mexicana (NEM). Tu única función es convertir DATOS CRUDOS de una planeación en un objeto JSON estructurado.
+# PERFIL: DOCTOR EN PEDAGOGÍA Y ESPECIALISTA DE ÉLITE NEM 2022
+Tu misión es transformar el tema matemático o problemática indicada en un proyecto de impacto social y una aventura gamificada.
 
-# FUENTE DE VERDAD ABSOLUTA (SEGMENTO DE PLANEACIÓN):
-A continuación se presentan los fragmentos EXACTOS extraídos del PDF o planeación. Queda ESTRICTAMENTE PROHIBIDO usar información o temas que no estén en estos bloques:
+# 1. DATOS DE ENTRADA:
+- Tema / Problemática: ${topic}
+- Diagnóstico de Aula: ${diagnostico}
+- Metodología NEM: ${metodologia}
+- Fase NEM: ${phase}
+- Nivel de Complejidad: ${dificultad}
+- Tema Visual para Gamificación: ${theme}
+- Sesiones Requeridas: EXACTAMENTE ${sessionCount} sesiones progresivas.
 
---- DATOS DE LA SESIÓN ---
-TÍTULO: ${session_title || topic}
-INICIO: """ ${session_start || `Basado en el tema original: ${topic}`} """
-DESARROLLO: """ ${session_development || `Desarrolla la temática educativa gamificada de: ${theme} con la NEM`} """
-CIERRE: """ ${session_end || `Validación metacognitiva del tema ${topic}`} """
---- FIN DE DATOS ---
-
-# INSTRUCCIONES DE Y CREACIÓN Y EXPANSIÓN:
-El texto anterior es un resumen didáctico extremadamente conciso. Tu tarea es INVENTAR y EXPANDIR este concepto en un nivel de juego completo.
-Debes estructurarlo OBLIGATORIAMENTE en EXACTAMENTE ${sessionCount} sesiones (niveles) interconectados de dificultad progresiva.
-
-NIVEL DE LENGUAJE Y DIFICULTAD (NEM Fase ${phase} y Dificultad ${difficulty}):
-El contenido debe generarse ESPECÍFICAMENTE para alumnos cursando la Fase ${phase} de la NEM y con un nivel de desafío cognitivo "${difficulty}". 
-Ajusta de manera estricta el vocabulario, la extensión de los textos, las explicaciones teóricas y la dificultad matemática/lógica para que sea completamente adecuado para este nivel.
-
-1. NARRATIVA DE ENTRADA: Crea una historia envolvente de aventura basada en el resumen didáctico y el tema visual "${theme}". Transforma el concepto aburrido en una intro emocionante.
-2. DESAFÍO TÉCNICO: Diseña un problema matemático o lógico jugable que evalúe directamente el concepto del resumen. Asegúrate de incluir la respuesta correcta y una pista socrática para ayudar al alumno si se equivoca.
-3. METACOGNICIÓN: Inventa una reflexión de cierre motivadora relacionada al desarrollo.
-4. CUMPLIMIENTO NEM: Clasifica el nivel en la Fase ${phase} y extrae o inventa el PDA directamente relacionado al tema.
+# 2. INSTRUCCIONES DE CALIDAD (EL ESTÁNDAR DE EXCELENCIA):
+- Debes generar una Planeación Didáctica Oficial (NEM 2022) con rigor doctoral.
+- La planeación debe estar conectada a la Metodología solicitada (${metodologia}) y dividida en ${sessionCount} partes.
+- Inmediatamente después, genera el "mapa_interactivo" que traduzca esta planeación rigurosa a un juego visual con la temática "${theme}".
 
 # FORMATO DE SALIDA (JSON ÚNICAMENTE):
-Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiquetas markdown. Asegúrate de generar EXACTAMENTE ${sessionCount} objetos consecutivos dentro del arreglo "mapa_interactivo".
-   Toda respuesta de generación de niveles debe seguir esta estructura estricta:
-   {
-     "metadatos_nem": { 
-        "fase": "1-6", 
-        "metodologia": "Seleccionada", 
-        "pda": "PDA_Original",
-        "proposito": "Propósito del proyecto",
-        "diagnostico": "Problemática inicial",
-        "contenidos": "Contenidos de la fase"
-     },
-     "mapa_interactivo": [{
-       "sesion_id": "ID",
-       "paso_1_inicio": { 
-          "narrativa": "Actividad de Inicio transcrita",
-          "oraculo": "Teoría necesaria para el alumno (Aula Invertida)"
-       },
-       "paso_2_desarrollo": { 
-         "componente_ui": "LOGIC_PUZZLE|TEXT_MASTER|CONCEPT_SORT|TRIVIA",
-         "instruccion": "Actividad de Desarrollo transcrita",
-         "valor_correcto": "Dato_Docente",
-         "pista_socratica": "Pregunta guía ante un error"
-       },
-       "paso_3_cierre": { "metacognicion": "Actividad de Cierre transcrita" }
-     }]
-   }
+Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con esta estructura exacta:
+
+{
+  "plano_didactico": {
+    "encabezado": { "proyecto": "Título", "fase": "${phase}", "metodologia": "${metodologia}", "num_sesiones": ${sessionCount} },
+    "diagnostico_pedagogico": "Análisis sociocrítico",
+    "estructura_curricular": {
+      "campos_formativos": ["..."],
+      "ejes_articuladores": ["..."],
+      "proposito": "...",
+      "pda": "..."
+    },
+    "secuencia_didactica": [
+      {
+        "numero": 1,
+        "titulo": "...",
+        "duracion": "60 min",
+        "inicio": ["..."],
+        "desarrollo": ["Modelaje Docente: ...", "Acción del Alumno: ..."],
+        "cierre": ["..."],
+        "recursos": ["..."],
+        "evidencia": "..."
+      }
+    ]
+  },
+  "mapa_interactivo": [
+    {
+       "session_id": 1,
+       "type": "concept_story",
+       "title": "Título corto y gamificado basado en la sesión 1",
+       "session_start": "Instrucción de INICIO o narrativa envolvente adaptada a la temática visual.",
+       "session_development": "Instrucción del DESARROLLO adaptado al Reto/Puzzle del juego.",
+       "session_end": "Instrucción del CIERRE para validación.",
+       "narrative": "Narrativa de apertura para este nivel (del tema visual).",
+       "content": {
+          "explanation": { "chunks": ["Explicación teórica de la sesión adaptada a niño"], "analogy": "Dato curioso" },
+          "miniGame": { 
+             "type": "multiple_choice",
+             "question": "Pregunta de opción múltiple basada en la sesión",
+             "options": ["Correcta", "Mala 1", "Mala 2", "Mala 3"],
+             "correctAnswer": "Correcta",
+             "feedbackSuccess": "¡Excelente!",
+             "feedbackError": "Pista socrática"
+          },
+          "practiceProblem": { 
+             "statement": "Reto final para anotar en cuaderno (Evidencia)",
+             "correctValue": "Respuesta correcta",
+             "hint": "Pista final"
+          }
+       }
+    }
+  ]
+}
+
+REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionCount} elementos y el arreglo "secuencia_didactica" también EXACTAMENTE ${sessionCount} elementos. Ambas deben empalmar lógicamente. Ningún valor numérico debe fallar. Retorna SOLO el JSON.
 `;
 
     console.log("Calling Google AI...");
@@ -197,39 +216,35 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
       console.error("Error un-wrapping AI response:", wrapperError);
     }
 
-    // Adapt new JSON format to old Data Schema to avoid frontend breakage
+    // Adapt new strict JSON format to old Data Schema to avoid frontend breakage
     let days: any[] = [];
-    const interactiveMap = parsedResponse.mapa_aprendizaje || parsedResponse.mapa_de_juego || parsedResponse.mapa_interactivo || (Array.isArray(parsedResponse) ? parsedResponse : []);
+    const interactiveMap = parsedResponse.mapa_interactivo || parsedResponse.mapa_aprendizaje || parsedResponse.mapa_de_juego || (Array.isArray(parsedResponse) ? parsedResponse : []);
+    const planoDidactico = parsedResponse.plano_didactico || {};
 
     console.log("=== DEBUG GENERATOR ===");
     console.log("IS ARRAY?", Array.isArray(interactiveMap));
-    console.log("INTERACTIVE MAP DUMP:", JSON.stringify(interactiveMap, null, 2));
+    console.log("INTERACTIVE MAP DUMP:", JSON.stringify(interactiveMap).substring(0, 300));
 
     if (interactiveMap && Array.isArray(interactiveMap)) {
-      let globalIndex = 1;
-      interactiveMap.forEach((etapa: any) => {
-        // En V4 map_interactivo itera niveles directo. En V3 estaba anidado bajo "niveles:"
-        const arrToIterate = etapa.niveles && Array.isArray(etapa.niveles) ? etapa.niveles : [etapa];
-
-        arrToIterate.forEach((nivel: any) => {
+      interactiveMap.forEach((nivel: any, index: number) => {
           days.push({
-            dayNumber: globalIndex++,
-            type: "guided_practice", // Fallback for all items currently
-            title: nivel.titulo_nivel || nivel.config_nivel?.titulo || nivel.sesion_id || "Nivel",
-            narrative: nivel.paso_1_inicio?.narrativa || nivel.config_nivel?.narrativa_inicio || nivel.paso_1_inicio?.narrativa_contexto || nivel.contexto_narrativo || "",
+            dayNumber: index + 1,
+            type: nivel.type || "guided_practice", // Fallback for all items currently
+            title: nivel.title || nivel.titulo || "Sesión Interactiva",
+            narrative: nivel.narrative || nivel.narrativa || "(Historia AI)",
             content: {
               explanation: {
-                chunks: [nivel.paso_1_inicio?.oraculo || nivel.config_nivel?.oraculo_teoria?.contenido_html || nivel.paso_1_inicio?.oraculo_teoria || ""],
-                analogy: nivel.paso_3_cierre?.metacognicion || nivel.cierre_formativo?.actividad_reflexion || ""
+                chunks: [nivel.content?.explanation?.chunks?.[0] || nivel.paso_1_inicio?.oraculo || "Explora el mapa."],
+                analogy: nivel.content?.explanation?.analogy || nivel.paso_3_cierre?.metacognicion || ""
               },
+              miniGame: nivel.content?.miniGame,
               practiceProblem: {
-                statement: nivel.paso_2_desarrollo?.instruccion || nivel.interaccion_desarrollo?.validacion?.pregunta || nivel.interaccion_desarrollo?.instruccion_docente || nivel.paso_2_desarrollo?.datos_juego?.pregunta || nivel.paso_2_desarrollo?.instruccion_fiel || "Pregunta no definida",
-                correctValue: (nivel.paso_2_desarrollo?.valor_correcto || nivel.interaccion_desarrollo?.validacion?.respuesta_esperada || nivel.paso_2_desarrollo?.datos_juego?.respuesta_correcta) ?? "N/A",
-                hint: nivel.paso_2_desarrollo?.pista_socratica || nivel.interaccion_desarrollo?.validacion?.pista_socratica || nivel.paso_2_desarrollo?.datos_juego?.pista_socratica || ""
+                statement: nivel.content?.practiceProblem?.statement || nivel.paso_2_desarrollo?.instruccion || "Reto final",
+                correctValue: nivel.content?.practiceProblem?.correctValue || nivel.paso_2_desarrollo?.valor_correcto || "N/A",
+                hint: nivel.content?.practiceProblem?.hint || nivel.paso_2_desarrollo?.pista_socratica || ""
               }
             }
           });
-        });
       });
       // Mark the last element as Boss Fight
       if (days.length > 0) {
@@ -271,11 +286,12 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
       days: days,
       pedagogy: {
         topic: topic,
-        pda: parsedResponse.metadatos_nem?.pda || "Inferencia didáctica",
-        grade: `Fase ${parsedResponse.metadatos_nem?.fase || "3"}`,
-        proposito: parsedResponse.metadatos_nem?.proposito || "",
-        diagnostico: parsedResponse.metadatos_nem?.diagnostico || "",
-        contenidos: parsedResponse.metadatos_nem?.contenidos || ""
+        pda: planoDidactico.estructura_curricular?.pda || parsedResponse.metadatos_nem?.pda || "Inferencia didáctica",
+        grade: `Fase ${planoDidactico.encabezado?.fase || parsedResponse.metadatos_nem?.fase || "3"}`,
+        proposito: planoDidactico.estructura_curricular?.proposito || parsedResponse.metadatos_nem?.proposito || "",
+        diagnostico: planoDidactico.diagnostico_pedagogico || parsedResponse.metadatos_nem?.diagnostico || "",
+        contenidos: planoDidactico.estructura_curricular?.campos_formativos?.[0] || parsedResponse.metadatos_nem?.contenidos || "",
+        planoOficial: planoDidactico // Attach full official plan here
       },
       createdAt: new Date().toISOString()
     });

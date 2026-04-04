@@ -235,7 +235,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
         <div className="w-full max-w-3xl mx-auto p-6">
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Centro de Creación de Mundos</h2>
-                <p className="text-slate-500 mt-2">Sube un examen (PDF o Word) y la IA generará una aventura interactiva para Jimena.</p>
+                <p className="text-slate-500 mt-2">Sube un examen (PDF o Word) y la IA generará una aventura interactiva.</p>
             </div>
 
             <div
@@ -375,7 +375,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                                     ) : (
                                         <>
                                             <h3 className="text-xl font-bold text-slate-700">Arrastra tu planeación (PDF o Word) aquí</h3>
-                                            <p className="text-slate-400 text-sm mt-2">Jimena transformará el contenido en una aventura interactiva.</p>
+                                            <p className="text-slate-400 text-sm mt-2">AprendIA transformará el contenido en una aventura interactiva.</p>
                                         </>
                                     )}
                                 </div>

@@ -15,6 +15,8 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
     const [topic, setTopic] = useState("");
     const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("clasico");
     const [difficulty, setDifficulty] = useState<"Básico" | "Intermedio" | "Avanzado">("Básico");
+    const [metodologia, setMetodologia] = useState<string>("ABP");
+    const [diagnostico, setDiagnostico] = useState<string>("");
     const [sessionCount, setSessionCount] = useState<number>(3);
     const [isGenerating, setIsGenerating] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState("Iniciando IA...");
@@ -33,6 +35,8 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                     topic,
                     theme: selectedTheme,
                     difficulty,
+                    metodologia,
+                    diagnostico,
                     sessionCount
                 })
             });
@@ -170,6 +174,40 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                         </button>
                                     ))}
                                 </div>
+                            </div>
+
+                            {/* Metodología NEM */}
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <Layers className="w-4 h-4 text-indigo-500" />
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Metodología Oficial (Doctoral)</label>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {[
+                                        { key: "ABP", label: "ABP (Problemas)" },
+                                        { key: "STEAM", label: "STEAM" },
+                                        { key: "Proyectos Comunitarios", label: "Comunitarios" },
+                                        { key: "Aprendizaje Servicio", label: "Ap. Servicio" }
+                                    ].map(met => (
+                                        <button
+                                            key={met.key}
+                                            type="button"
+                                            onClick={() => setMetodologia(met.key)}
+                                            className={`p-2 rounded-xl text-xs font-bold transition-all border-2 ${metodologia === met.key
+                                                ? 'bg-sky-50 border-sky-500 text-sky-700'
+                                                : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
+                                        >
+                                            {met.label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <input
+                                    type="text"
+                                    value={diagnostico}
+                                    onChange={(e) => setDiagnostico(e.target.value)}
+                                    placeholder="Problemática del aula (ej. Alimentación, bullying...)"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-sky-100 focus:border-sky-400 outline-none transition-all placeholder:text-slate-400"
+                                />
                             </div>
 
                             {/* Número de Sesiones */}
