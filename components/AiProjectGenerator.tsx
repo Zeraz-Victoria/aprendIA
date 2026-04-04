@@ -222,15 +222,15 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                 <input 
                                     type="range" 
                                     min="1" 
-                                    max="10" 
+                                    max="25" 
                                     value={sessionCount}
                                     onChange={(e) => setSessionCount(Number(e.target.value))}
                                     className="w-full accent-indigo-600 custom-range"
                                 />
                                 <div className="flex justify-between text-[10px] text-slate-400 font-bold px-1 mt-1">
-                                    <span>Rapidez (1-3)</span>
-                                    <span>Equilibrio (4-7)</span>
-                                    <span>Profundo (8-10)</span>
+                                    <span>Rápido (1-5)</span>
+                                    <span>Equilibrio (6-14)</span>
+                                    <span>Doctoral (15-25)</span>
                                 </div>
                                 <style dangerouslySetInnerHTML={{__html: `
                                     .custom-range {

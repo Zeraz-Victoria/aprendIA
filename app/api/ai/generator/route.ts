@@ -64,7 +64,14 @@ export async function POST(req: Request) {
     }
 
     console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      generationConfig: {
+        maxOutputTokens: 32768, // Sufficient for up to 25 sessions without truncation
+        temperature: 0.4,
+        responseMimeType: "application/json",
+      }
+    });
 
     const prompt = `
 # PERFIL: DOCTOR EN PEDAGOGÍA Y ESPECIALISTA DE ÉLITE NEM 2022
