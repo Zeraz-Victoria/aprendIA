@@ -104,6 +104,12 @@ El campo "explanation.chunks" es el corazón de la experiencia de aprendizaje de
   6. "¿Sabías que...?": Un dato histórico, récord, paradoja o curiosidad asombrosa relacionada con el tema.
 - Usa formato Markdown dentro de los chunks: **negritas** para términos clave, listas numeradas o con guiones para procedimientos, y encabezados ## para el título de cada sección.
 
+# 4. REGLAS DE MINIJUEGO (VARIEDAD OBLIGATORIA):
+Cada sesión debe tener un minijuego de tipo DIFERENTE. Sigue esta rotación estricta por número de sesión:
+- Sesiones 1, 4, 7, 10, 13, 16, 19, 22, 25 → tipo: "word_search". Genera el campo "words" con un array de 8-10 palabras clave del tema (cada palabra DEBE tener mínimo 4 letras). Ejemplo: {"type":"word_search","words":["FRACCION","NUMERADOR","DENOMINADOR","EQUIVALENTE","SIMPLIFICAR","DECIMAL","PORCENTAJE","MIXTO"]}
+- Sesiones 2, 5, 8, 11, 14, 17, 20, 23 → tipo: "memory_match". Genera el campo "pairs" con 5-6 pares de concepto-definición. Ejemplo: {"type":"memory_match","pairs":[{"concept":"Numerador","definition":"Número de arriba en una fracción"},{"concept":"Denominador","definition":"Número de abajo en una fracción"},...]}
+- Sesiones 3, 6, 9, 12, 15, 18, 21, 24 → tipo: "multiple_choice". Genera "question", "options" (4 opciones), "correctAnswer", "feedbackSuccess", "feedbackError".
+
 # FORMATO DE SALIDA (JSON ÚNICAMENTE):
 Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con esta estructura exacta:
 

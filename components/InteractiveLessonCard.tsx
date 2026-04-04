@@ -308,8 +308,13 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
         }
     };
 
-    // Always use the full narrative if available so the student sees the exact same theory as the teacher
-    const chunks = data.narrative ? [data.narrative] : (data.content?.explanation?.chunks || [""]);
+    // For AI-generated levels with rich chunks, show narrative first then all explanation chunks.
+    // For PDF-uploaded levels, keep using only the narrative (they embed all content in it).
+    const hasRichChunks = (data.content?.explanation?.chunks?.length || 0) > 1;
+    const chunks = hasRichChunks
+        ? [data.narrative, ...(data.content?.explanation?.chunks || [])].filter(Boolean) as string[]
+        : (data.narrative ? [data.narrative] : (data.content?.explanation?.chunks || [""]));
+
     const currentChunk = chunks[currentChunkIndex];
 
     const handleNextChunk = () => {
