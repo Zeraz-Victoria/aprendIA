@@ -321,8 +321,14 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     // For PDF-uploaded levels, keep using only the narrative (they embed all content in it).
     const hasRichChunks = (data.content?.explanation?.chunks?.length || 0) > 1;
     const baseChunks: string[] = hasRichChunks
-        ? [data.narrative, ...(data.content?.explanation?.chunks || [])].filter(Boolean) as string[]
-        : (data.narrative ? [data.narrative] : (data.content?.explanation?.chunks || [""]));
+        ? [
+            data.narrative, 
+            ...(data.content?.explanation?.chunks || []),
+            data.content?.explanation?.analogy ? `## 💡 Analogía\n${data.content.explanation.analogy}` : null
+          ].filter(Boolean) as string[]
+        : (data.narrative 
+            ? [data.narrative, data.content?.explanation?.analogy ? `## 💡 Analogía\n${data.content.explanation.analogy}` : null].filter(Boolean) as string[]
+            : (data.content?.explanation?.chunks || [""]));
 
     // If using a visual renderer (flashcards, mind maps, etc), we paginate everything at once
     // but preserve baseChunks for the TheoryRenderer to use as sections natively!
