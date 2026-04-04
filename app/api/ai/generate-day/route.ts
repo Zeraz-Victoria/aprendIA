@@ -56,6 +56,7 @@ Eres un Diseñador Instruccional Senior especializado en la Nueva Escuela Mexica
 - TÍTULO DE LA SESIÓN: ${day.title || pedagogy.topic}
 - CONTENIDO PEDAGÓGICO: ${day.session_start || documentText?.substring(0, 800) || "Sin contenido previo."}
 - FASE ESCOLAR: ${pedagogy.grade || "Fase General"}
+- TEMA VISUAL NARRATIVO: ${theme || "clasico"}
 - PDA (Proceso de Desarrollo de Aprendizaje): ${pedagogy.pda || "PDA General"}
 - TIPO DE NIVEL: ${day.type || "concept_story"}
 - NÚMERO DE NIVEL: ${day.dayNumber}
@@ -64,10 +65,9 @@ Eres un Diseñador Instruccional Senior especializado en la Nueva Escuela Mexica
 
 ## 1. NARRATIVA DE APERTURA (historia_inicio)
 Escribe un párrafo envolvente (80-120 palabras) que:
-- Conecte con la vida cotidiana del alumno
-- Presente una situación problema o pregunta detonadora real
-- Use vocabulario accesible pero preciso
-- NO uses elementos de fantasía a menos que la planeación los mencione
+- Conecte con la vida cotidiana del alumno y use fuertemente elementos del tema visual (${theme || 'clasico'}).
+- Presente una situación problema o pregunta detonadora real.
+- Use vocabulario accesible pero preciso.
 
 ## 2. ORÁCULO DE TEORÍA (oraculo_teoria)
 Este es el bloque MÁS IMPORTANTE. Debe ser una explicación COMPLETA que permita aprendizaje autónomo.

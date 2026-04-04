@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { UploadCloud, FileText, CheckCircle, Loader2, Palette } from "lucide-react";
+import { UploadCloud, FileText, CheckCircle, Loader2, Palette, Compass, Brain } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
 import { THEME_LIST, ThemeKey, THEME_COLORS } from "@/lib/themes";
 // @ts-expect-error - mammoth browser version lacks official types
@@ -302,18 +302,72 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
 
                                 <div className="w-full max-w-[90%] mx-auto text-center overflow-hidden">
                                      {file ? (
-                                        <div className="flex flex-col items-center gap-4">
-                                            <div>
+                                         <div className="flex flex-col items-center gap-6 w-full mt-4">
+                                            <div className="text-center">
                                                 <h3 className="text-base font-bold text-slate-800 break-all leading-snug" title={file.name}>{file.name}</h3>
                                                 <p className="text-slate-500 text-sm mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                             </div>
                                             
                                             {!isUploading && !uploadSuccess && (
+                                                <div className="w-full max-w-lg space-y-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100" onClick={e => e.stopPropagation()}>
+                                                    {/* Tema Visual */}
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <Compass className="w-4 h-4 text-indigo-500" />
+                                                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Tema Visual del Juego</label>
+                                                        </div>
+                                                        <div className="grid grid-cols-5 gap-2">
+                                                            {THEME_LIST.map(t => (
+                                                                <button
+                                                                    key={t.key}
+                                                                    type="button"
+                                                                    onClick={() => { setSelectedTheme(t.key); setSelectedColor(THEME_COLORS[t.key]); }}
+                                                                    className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all group ${selectedTheme === t.key 
+                                                                        ? 'bg-indigo-50 border-indigo-500 scale-105' 
+                                                                        : 'bg-white border-slate-100 hover:border-indigo-200 hover:bg-slate-50'}`}
+                                                                    title={t.label}
+                                                                >
+                                                                    <span className="text-xl group-hover:scale-125 transition-transform">{t.emoji}</span>
+                                                                    <span className="text-[8px] font-black uppercase mt-1 text-slate-400">{t.key}</span>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Dificultad */}
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <Brain className="w-4 h-4 text-indigo-500" />
+                                                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Dificultad Sugerida</label>
+                                                        </div>
+                                                        <div className="flex gap-3">
+                                                            {[
+                                                                { key: "facil", label: "Fácil (Básico)" },
+                                                                { key: "medio", label: "Medio" },
+                                                                { key: "alto", label: "Alto" }
+                                                            ].map(level => (
+                                                                <button
+                                                                    key={level.key}
+                                                                    type="button"
+                                                                    onClick={() => setVocabularyLevel(level.key as "facil" | "medio" | "alto")}
+                                                                    className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all border-2 ${vocabularyLevel === level.key 
+                                                                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-md' 
+                                                                        : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'}`}
+                                                                >
+                                                                    {level.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {!isUploading && !uploadSuccess && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleUpload(); }}
-                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-indigo-100 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 border-2 border-indigo-400/20"
+                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 w-full max-w-lg rounded-2xl font-bold text-base shadow-xl shadow-indigo-100 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 border-2 border-indigo-400/20"
                                                 >
-                                                    <UploadCloud className="w-4 h-4" />
+                                                    <UploadCloud className="w-5 h-5" />
                                                     Generar con IA
                                                 </button>
                                             )}
