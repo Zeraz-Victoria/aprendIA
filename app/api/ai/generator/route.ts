@@ -181,40 +181,24 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
 REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionCount} elementos y el arreglo "secuencia_didactica" también EXACTAMENTE ${sessionCount} elementos. Ambas deben empalmar lógicamente. Ningún valor numérico debe fallar. Retorna SOLO el JSON.
 `;
 
-    console.log("Calling Google AI (Stream mode)...");
+    console.log("Calling Google AI (Non-stream mode)...");
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const result = await model.generateContentStream(prompt);
-          let responseText = '';
-          let currentSessionCount = 0;
-
-          // Iniciar barra de progreso
+          // Enviar progreso inicial al frontend
           controller.enqueue(encoder.encode(JSON.stringify({
             type: 'progress',
             session: 0,
-            message: "Inicializando marco curricular NEM..."
+            message: "Consultando a la IA... esto puede tardar un momento."
           }) + '\n'));
 
-          for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            responseText += chunkText;
+          const result = await model.generateContent(prompt);
+          const responseText_raw = result.response.text();
+          let responseText = responseText_raw;
 
-            // Estimate progress by counting occurrences of `"numero":` (number of sessions generated)
-            const matches = responseText.match(/"numero"\s*:/g);
-            if (matches && matches.length > currentSessionCount) {
-              currentSessionCount = matches.length;
-              controller.enqueue(encoder.encode(JSON.stringify({
-                type: 'progress',
-                session: currentSessionCount,
-                message: `Estructurando sesión ${currentSessionCount} de ${sessionCount}...`
-              }) + '\n'));
-            }
-          }
-
-          console.log("Raw AI Response Stream completed. Length:", responseText.length);
+          console.log("Raw AI Response completed. Length:", responseText.length);
 
           // Finalizamos stream, ahora a limpiar el markdown y parsear
           responseText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
