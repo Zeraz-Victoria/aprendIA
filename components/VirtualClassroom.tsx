@@ -438,7 +438,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                                     onClick={() => addItemToRoom(itemId)}
                                     disabled={avail <= 0}
                                     className={`aspect-square rounded-lg flex flex-col items-center justify-center transition-all border p-0.5 overflow-hidden relative
-                                        ${avail > 0 ? 'bg-white/5 border-white/10 hover:border-sky-400/50 hover:bg-sky-500/10' : 'bg-white/[0.02] border-white/5 opacity-40 cursor-not-allowed'}`}
+                                        ${avail > 0 ? 'bg-white/5 border-white/10 hover:border-[#AD74C3]/50 hover:bg-[#7A3A8E]/10' : 'bg-white/[0.02] border-white/5 opacity-40 cursor-not-allowed'}`}
                                 >
                                     <img src={info?.image} alt={info?.label} className="w-10 h-10 object-contain" />
                                     <span className="text-[6px] text-white/50 font-bold truncate w-full text-center">{info?.label}</span>
@@ -460,7 +460,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                         <div className="mt-3 p-2 bg-white/5 rounded-lg border border-white/10">
                             <p className="text-[8px] text-white/40 mb-1.5 font-bold uppercase tracking-wider">Mi mueble</p>
                             <div className="grid grid-cols-3 gap-1">
-                                <button onClick={rotateSelected} className="flex items-center justify-center gap-0.5 bg-sky-600/60 hover:bg-sky-500/60 text-white px-1.5 py-1.5 rounded-lg text-[8px] font-bold transition">
+                                <button onClick={rotateSelected} className="flex items-center justify-center gap-0.5 bg-[#522566]/60 hover:bg-[#7A3A8E]/60 text-white px-1.5 py-1.5 rounded-lg text-[8px] font-bold transition">
                                     <RotateCw className="w-3 h-3" /> Girar
                                 </button>
                                 <button onClick={flipSelected} className="flex items-center justify-center gap-0.5 bg-violet-600/60 hover:bg-violet-500/60 text-white px-1.5 py-1.5 rounded-lg text-[8px] font-bold transition">
@@ -504,7 +504,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                             <>
                                 {!isEditing ? (
                                     <button onClick={() => setIsEditing(true)}
-                                        className="flex items-center gap-1 bg-sky-600/70 text-white px-2.5 py-1 rounded-lg font-bold text-[10px] ml-1">
+                                        className="flex items-center gap-1 bg-[#522566]/70 text-white px-2.5 py-1 rounded-lg font-bold text-[10px] ml-1">
                                         <Edit3 className="w-3 h-3" /> Mis Objetos
                                     </button>
                                 ) : (
@@ -609,7 +609,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                                             }} 
                                         />
                                         {isSelected && isEditing && (
-                                            <div className="absolute inset-0 border-2 border-sky-400 rounded-lg border-dashed animate-pulse pointer-events-none" />
+                                            <div className="absolute inset-0 border-2 border-[#AD74C3] rounded-lg border-dashed animate-pulse pointer-events-none" />
                                         )}
                                     </div>
                                 );
@@ -685,7 +685,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                         <Orbit className="w-3 h-3 text-white/30" />
                         <input type="range" min={-45} max={45} value={roomRotation}
                             onChange={(e) => setRoomRotation(Number(e.target.value))}
-                            className="flex-1 h-1 appearance-none bg-white/10 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-400" />
+                            className="flex-1 h-1 appearance-none bg-white/10 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#AD74C3]" />
                         <button onClick={() => setRoomRotation(0)} className="text-[7px] text-white/30 hover:text-white/60 transition">Reset</button>
                     </div>
                     <div className="flex items-center gap-3 text-[9px] text-white/25 font-medium">

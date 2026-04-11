@@ -46,7 +46,7 @@ function safeParsePromptText(text: string | undefined): string {
 
 const renderSafeContent = (content: any) => {
     if (typeof content === 'object' && content !== null) {
-        return <pre className="whitespace-pre-wrap text-sm bg-gray-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-4 rounded-xl overflow-x-auto my-4 border border-slate-200 shadow-inner max-w-full">{JSON.stringify(content, null, 2)}</pre>;
+        return <pre className="whitespace-pre-wrap text-sm bg-gray-100 dark:bg-[#522566] text-[#522566] dark:text-slate-200 p-4 rounded-xl overflow-x-auto my-4 border border-[#EADFF0] shadow-inner max-w-full">{JSON.stringify(content, null, 2)}</pre>;
     }
     return (
         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
@@ -81,12 +81,12 @@ function PollinationsImage({ src, alt }: { src?: string; alt?: string }) {
     return status === "error" || !fixedSrc ? (
         <div className="w-full rounded-xl bg-gradient-to-br from-teal-100 to-cyan-100 border-2 border-dashed border-teal-200 p-6 text-center my-4">
             <ImageIcon className="w-12 h-12 text-teal-300 mx-auto mb-3" />
-            <p className="text-teal-600 font-medium text-sm italic">{alt || "Ilustración"}</p>
+            <p className="text-[#522566] font-medium text-sm italic">{alt || "Ilustración"}</p>
         </div>
     ) : (
         <div className="my-4 relative">
             {status === "loading" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-teal-50 rounded-xl animate-pulse">
+                <div className="absolute inset-0 flex items-center justify-center bg-[#F8EDFB] rounded-xl animate-pulse">
                     <Sparkles className="w-8 h-8 text-teal-300 animate-spin" />
                 </div>
             )}
@@ -576,8 +576,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
 
         return (
             <div className="space-y-6 animate-fade-in-up">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-teal-100 dark:border-slate-700">
-                    <div className="bg-teal-50 dark:bg-slate-700 p-6 rounded-xl border border-teal-100 dark:border-slate-600">
+                <div className="bg-white dark:bg-[#522566] p-6 rounded-2xl shadow-sm border border-teal-100 dark:border-[#7A3A8E]">
+                    <div className="bg-[#F8EDFB] dark:bg-[#7A3A8E] p-6 rounded-xl border border-teal-100 dark:border-[#7A3A8E]">
                         <div className="prose prose-sky dark:prose-invert prose-lg max-w-full break-words min-w-0 overflow-hidden">
                             {renderSafeContent(
                                 (statement || "Resuelve el siguiente acertijo.")
@@ -594,7 +594,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             <div className="mt-4 flex justify-end">
                                 <button
                                     onClick={() => handleSpeak((statement || "Resuelve el siguiente acertijo.").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName))}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${isSpeaking ? 'bg-teal-200 text-teal-700 animate-pulse' : 'bg-teal-100 text-teal-600 hover:bg-teal-200'}`}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${isSpeaking ? 'bg-teal-200 text-teal-700 animate-pulse' : 'bg-[#EADFF0] text-[#522566] hover:bg-teal-200'}`}
                                     title="Leer en voz alta"
                                 >
                                     <Volume2 className="w-4 h-4" />
@@ -621,7 +621,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     if (!ejemplosText) return null;
 
                     return (
-                        <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 p-6 rounded-r-xl shadow-sm my-6">
+                        <div className="bg-[#F8EDFB] dark:bg-blue-900/30 border-l-4 border-blue-500 p-6 rounded-r-xl shadow-sm my-6">
                             <div className="flex items-center gap-2 font-bold text-blue-800 dark:text-blue-300 mb-2">
                                 <span className="text-xl">💡</span>
                                 <span className="uppercase tracking-wider text-sm">Ejemplo de Resolución</span>
@@ -639,7 +639,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     <button
                         type="button"
                         onClick={onComplete}
-                        className="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-600/30 transition-transform active:scale-95"
+                        className="flex-1 bg-[#522566] hover:bg-[#522566] text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-600/30 transition-transform active:scale-95"
                     >
                         📝 Subir Evidencia
                     </button>
@@ -701,12 +701,12 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
 
         return (
             <div className="space-y-6 animate-fade-in-up">
-                <h2 className="text-2xl font-bold text-center text-slate-900 mb-6 font-display">
+                <h2 className="text-2xl font-bold text-center text-[#522566] mb-6 font-display">
                     ¡Mini-Desafío! 🧠
                 </h2>
 
                 <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-teal-100 text-center w-full max-w-full">
-                    <p className="text-xl text-slate-700 mb-8 break-words whitespace-pre-wrap w-full max-w-full overflow-hidden relative">
+                    <p className="text-xl text-[#7A3A8E] mb-8 break-words whitespace-pre-wrap w-full max-w-full overflow-hidden relative">
                         {data.content?.miniGame?.question}
                     </p>
 
@@ -722,8 +722,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             ${feedback === 'success' && option === data.content?.miniGame?.correctAnswer
                                         ? 'bg-green-100 border-green-500 text-green-700 scale-105'
                                         : disabledOptions[option]
-                                            ? 'bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed'
-                                            : 'bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100 hover:border-teal-400'}
+                                            ? 'bg-[#EADFF0] border-[#EADFF0] text-[#AD74C3] opacity-60 cursor-not-allowed'
+                                            : 'bg-[#F8EDFB] border-teal-200 text-teal-700 hover:bg-[#EADFF0] hover:border-teal-400'}
                             ${feedback === 'error' && option !== data.content?.miniGame?.correctAnswer ? 'opacity-50' : ''}
                         `}
                             >
@@ -773,8 +773,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     <div className="text-center animate-fade-in-up">
                         <div className="text-8xl mb-6 animate-bounce">💀</div>
                         <h2 className="text-5xl font-black text-red-500 mb-4 tracking-wider">GAME OVER</h2>
-                        <p className="text-slate-300 text-lg mb-2">¡Se acabaron tus vidas!</p>
-                        <p className="text-slate-400 text-sm mb-8">Tus vidas se recargarán automáticamente...</p>
+                        <p className="text-[#AD74C3] text-lg mb-2">¡Se acabaron tus vidas!</p>
+                        <p className="text-[#AD74C3] text-sm mb-8">Tus vidas se recargarán automáticamente...</p>
                         <div className="w-32 h-32 mx-auto relative mb-6">
                             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="#334155" strokeWidth="8" />
@@ -832,15 +832,15 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 </div>
             )}
 
-            <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border-4 border-amber-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
-                <div className="bg-amber-100 dark:bg-slate-800 p-3 sm:p-4 flex justify-between items-start border-b border-amber-200 dark:border-slate-700 gap-2">
+            <div className="bg-white dark:bg-[#522566] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border-4 border-amber-200 dark:border-[#7A3A8E] flex flex-col max-h-[90vh]">
+                <div className="bg-amber-100 dark:bg-[#522566] p-3 sm:p-4 flex justify-between items-start border-b border-amber-200 dark:border-[#7A3A8E] gap-2">
                     <h3 className="font-bold text-base sm:text-xl text-amber-900 dark:text-amber-100 flex items-start gap-2 min-w-0 flex-1">
                         <span className="text-xl sm:text-2xl flex-shrink-0 mt-0.5">{data.type === 'guided_practice' ? '🎯' : (data.type === 'boss_fight' ? '👹' : '🎒')}</span> 
                         <span className="break-words leading-tight">{data.title}</span>
                     </h3>
                     <div className="flex gap-2 items-center">
                         {/* Inline Lives/Gems/Streak */}
-                        <div className="flex items-center gap-2 sm:gap-3 mr-1 sm:mr-2 bg-white/60 dark:bg-slate-700/60 px-2 sm:px-3 py-1 rounded-full">
+                        <div className="flex items-center gap-2 sm:gap-3 mr-1 sm:mr-2 bg-white/60 dark:bg-[#7A3A8E]/60 px-2 sm:px-3 py-1 rounded-full">
                             <div className="flex gap-0.5 sm:gap-1 animate-fade-in-up">
                                 {/* Painted hearts for current lives */}
                                 {Array.from({ length: Math.max(stats.lives, 0) }).map((_, i) => (
@@ -848,12 +848,12 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 ))}
                                 {/* Empty hearts for lost lives */}
                                 {Array.from({ length: Math.max(0, 3 - stats.lives) }).map((_, i) => (
-                                    <Heart key={`empty-${i}`} className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-slate-300 fill-slate-200" />
+                                    <Heart key={`empty-${i}`} className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-[#AD74C3] fill-slate-200" />
                                 ))}
                             </div>
                             <div className="hidden sm:flex items-center gap-0.5">
-                                <Diamond className="w-4 h-4 text-blue-500 fill-blue-400" />
-                                <span className="text-xs font-bold text-blue-600">{stats.gems}</span>
+                                <Diamond className="w-4 h-4 text-[#7A3A8E] fill-blue-400" />
+                                <span className="text-xs font-bold text-[#522566]">{stats.gems}</span>
                             </div>
                             <div className="hidden sm:flex items-center gap-0.5">
                                 <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
@@ -862,7 +862,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                         </div>
 
                         {(data.type === 'guided_practice' || data.content?.miniGame) && showActivity && !isTeacherUnlocked && (
-                            <button type="button" onClick={() => setShowTeacherAuth(!showTeacherAuth)} className="text-slate-500 hover:text-slate-700 bg-white/50 px-3 py-1 rounded-full text-xs font-bold transition-colors">
+                            <button type="button" onClick={() => setShowTeacherAuth(!showTeacherAuth)} className="text-[#AD74C3] hover:text-[#7A3A8E] bg-white/50 px-3 py-1 rounded-full text-xs font-bold transition-colors">
                                 👁️ Docente
                             </button>
                         )}
@@ -873,17 +873,17 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 </div>
 
                 {showTeacherAuth && !isTeacherUnlocked && (
-                    <div className="bg-slate-800 p-4 text-white flex gap-3 items-center justify-center animate-fade-in-up">
-                        <span className="text-sm font-bold text-slate-300">Contraseña Docente:</span>
+                    <div className="bg-[#522566] p-4 text-white flex gap-3 items-center justify-center animate-fade-in-up">
+                        <span className="text-sm font-bold text-[#AD74C3]">Contraseña Docente:</span>
                         <input
                             type="password"
-                            className="text-black px-3 py-1.5 rounded-lg text-sm w-32 outline-none focus:ring-2 focus:ring-teal-500"
+                            className="text-black px-3 py-1.5 rounded-lg text-sm w-32 outline-none focus:ring-2 focus:ring-[#AD74C3]"
                             value={teacherPassword}
                             onChange={e => setTeacherPassword(e.target.value)}
                             placeholder="****"
                             onKeyDown={e => e.key === 'Enter' && handleRevealAnswer()}
                         />
-                        <button type="button" onClick={handleRevealAnswer} className="bg-teal-600 hover:bg-teal-500 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                        <button type="button" onClick={handleRevealAnswer} className="bg-[#522566] hover:bg-[#7A3A8E] px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">
                             Desbloquear
                         </button>
                     </div>
@@ -906,12 +906,12 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     {!showActivity ? (
                         <div className="space-y-6">
                             <div className="relative">
-                                {data.type === 'guided_practice' && <span className="absolute -top-3 -right-3 z-10 bg-teal-500 text-white text-xs px-2 py-1 rounded font-bold shadow-sm">Teoría</span>}
+                                {data.type === 'guided_practice' && <span className="absolute -top-3 -right-3 z-10 bg-[#7A3A8E] text-white text-xs px-2 py-1 rounded font-bold shadow-sm">Teoría</span>}
                                 {/* Use TheoryRenderer for interactive formats, fallback to PedagogicalWrapper */}
                                 {(() => {
                                     if (effectiveType !== "text") {
                                         return (
-                                            <div className="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl">
+                                            <div className="bg-[#522566] rounded-2xl p-5 border border-[#7A3A8E] shadow-xl">
                                                 <TheoryRenderer
                                                     presentationType={effectiveType}
                                                     title={data.title}
@@ -938,7 +938,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                     <button
                                         type="button"
                                         onClick={() => setCurrentChunkIndex(prev => prev - 1)}
-                                        className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-3 rounded-xl font-bold text-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                                        className="bg-[#EADFF0] hover:bg-slate-300 text-[#7A3A8E] px-5 py-3 rounded-xl font-bold text-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                                     >
                                         <ChevronLeft /> Atrás
                                     </button>
@@ -946,7 +946,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 <button
                                     type="button"
                                     onClick={handleNextChunk}
-                                    className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg shadow-teal-200 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                                    className="bg-[#522566] hover:bg-[#522566] text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg shadow-teal-200 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                                 >
                                     {currentChunkIndex < paginationChunks.length - 1 ?
                                         "Continuar Leyendo" :
@@ -961,7 +961,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             <button
                                 type="button"
                                 onClick={() => { setShowActivity(false); setCurrentChunkIndex(0); }}
-                                className="flex items-center gap-2 text-teal-600 hover:text-slate-800 font-bold text-sm transition-colors"
+                                className="flex items-center gap-2 text-[#522566] hover:text-[#522566] font-bold text-sm transition-colors"
                             >
                                 <ChevronLeft className="w-4 h-4" /> Volver a la Lectura
                             </button>
@@ -973,10 +973,10 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
 
             {/* Loading Overlay */}
             {isDownloading && (
-                <div className="fixed inset-0 bg-slate-900/90 z-[9999] flex flex-col items-center justify-center backdrop-blur-sm">
-                    <Sparkles className="w-16 h-16 text-sky-400 animate-spin mb-6" />
+                <div className="fixed inset-0 bg-[#522566]/90 z-[9999] flex flex-col items-center justify-center backdrop-blur-sm">
+                    <Sparkles className="w-16 h-16 text-[#AD74C3] animate-spin mb-6" />
                     <h2 className="text-3xl font-bold text-white mb-2">Construyendo Documento...</h2>
-                    <p className="text-slate-300 text-lg">Añadiendo historia y minijuegos. Esto tomará unos segundos.</p>
+                    <p className="text-[#AD74C3] text-lg">Añadiendo historia y minijuegos. Esto tomará unos segundos.</p>
                 </div>
             )}
 
@@ -986,7 +986,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                 className="absolute top-[-9999px] left-[-9999px] bg-white w-[800px] p-8 text-black min-h-screen"
                 style={{ display: "none" }}
             >
-                <h1 className="text-3xl font-bold text-center mb-6 text-slate-900 border-b-2 border-teal-200 pb-4">{data.title}</h1>
+                <h1 className="text-3xl font-bold text-center mb-6 text-[#522566] border-b-2 border-teal-200 pb-4">{data.title}</h1>
 
                 <div className="space-y-6 prose prose-lg max-w-none mb-10">
                     {baseChunks.map((chunk: string, idx: number) => (
@@ -1006,10 +1006,10 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     ))}
                 </div>
 
-                <div className="border-t-4 border-teal-500 pt-6 mt-8">
-                    <h2 className="text-2xl font-bold text-slate-900 mb-4">Actividad Práctica</h2>
+                <div className="border-t-4 border-[#7A3A8E] pt-6 mt-8">
+                    <h2 className="text-2xl font-bold text-[#522566] mb-4">Actividad Práctica</h2>
                     {data.type === 'guided_practice' ? (
-                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                        <div className="bg-[#F8EDFB] p-6 rounded-xl border border-[#EADFF0]">
                             <div className="prose max-w-none">
                                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
                                     {(data.content?.practiceProblem?.statement || "")
@@ -1028,7 +1028,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             </div>
                         </div>
                     ) : data.content?.miniGame ? (
-                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                        <div className="bg-[#F8EDFB] p-6 rounded-xl border border-[#EADFF0]">
                             <h3 className="text-xl font-bold mb-4">{data.content.miniGame.question || "Resuelve el reto de la clase"}</h3>
                             {data.content.miniGame.type === 'word_search' && data.content.miniGame.words && (
                                 <div className="mb-6">

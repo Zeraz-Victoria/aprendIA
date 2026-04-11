@@ -222,8 +222,8 @@ export default function StudentPage() {
     // Consistent loading for SSR + client
     if (!mounted || status === "loading" || !currentUser) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <div className="animate-pulse text-teal-600 font-bold text-xl">Cargando tu aventura...</div>
+            <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8EDFB' }} className="">
+                <div className="font-semibold text-sm" style={{ color: '#7A3A8E' }} className="">Cargando tu aventura...</div>
             </div>
         );
     }
@@ -340,7 +340,7 @@ export default function StudentPage() {
                     {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
                         <button
                             onClick={() => setSelectedMapId(null)}
-                            className="bg-teal-700/80 hover:bg-teal-600 rounded-xl shadow border border-teal-500 text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start"
+                            className="rounded-xl shadow border" style={{ background: 'rgba(82,37,102,0.8)', borderColor: '#AD74C3' }} className=" text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start"
                             title="Mundos"
                         >
                             <span className="text-base">🗺️</span> <span className="hidden sm:inline">Mundos</span>
@@ -349,7 +349,7 @@ export default function StudentPage() {
 
                     {selectedMapId && currentUser.assignedWorlds && (
                         <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 rounded-xl border border-slate-700 shadow-inner shrink-0 cursor-default">
-                            <MapPin className="w-3.5 h-3.5 text-teal-400" />
+                            <MapPin className="w-3.5 h-3.5 text-[#AD74C3]" />
                             <span className="text-white font-bold text-xs truncate max-w-[150px] lg:max-w-[200px]">
                                 {currentUser.assignedWorlds.find(w => w.id === selectedMapId)?.title || 'Aventura'}
                             </span>
@@ -452,7 +452,7 @@ export default function StudentPage() {
             {showStore && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden relative shadow-2xl flex flex-col">
-                        <button onClick={() => setShowStore(false)} className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition z-10">
+                        <button onClick={() => setShowStore(false)} className="absolute top-4 right-4 p-2 rounded-full hover:opacity-80" style={{ background: '#EADFF0' }} className=" transition z-10">
                             <X className="w-5 h-5 text-slate-600" />
                         </button>
                         <RewardsStore onClose={() => setShowStore(false)} />
@@ -463,7 +463,7 @@ export default function StudentPage() {
             {showLeaderboard && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="w-full max-w-md relative">
-                        <button onClick={() => setShowLeaderboard(false)} className="absolute -top-4 -right-4 p-2 bg-white rounded-full hover:bg-slate-100 shadow-md transition z-10">
+                        <button onClick={() => setShowLeaderboard(false)} className="absolute -top-4 -right-4 p-2 bg-white rounded-full shadow-md" style={{ background: '#EADFF0' }} className="hover:opacity-80 transition z-10">
                             <X className="w-5 h-5 text-slate-600" />
                         </button>
                         <Leaderboard />
@@ -548,7 +548,7 @@ export default function StudentPage() {
                                                 </p>
                                             )}
 
-                                            <div className="bg-slate-50 rounded-xl p-3 text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                                            <div className="rounded-xl p-3 text-sm" style={{ background: '#F8EDFB', color: '#7A3A8E' }} className=" leading-relaxed whitespace-pre-line">
                                                 {detailedFeedback || ev.feedback}
                                             </div>
 

@@ -19,7 +19,6 @@ export default function Home() {
 
   useEffect(() => { setMounted(true); }, []);
 
-  // Redirect after mount to avoid hydration mismatch
   useEffect(() => {
     if (mounted && status === "authenticated" && session?.user) {
       const role = (session.user as any)?.role;
@@ -28,11 +27,13 @@ export default function Home() {
     }
   }, [mounted, status, session, router]);
 
-  // Show a consistent loading state for both server and client
   if (!mounted || status === "loading" || (status === "authenticated" && session?.user)) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="animate-pulse text-sky-600 font-bold text-xl">Cargando...</div>
+      <div style={{ background: '#F8EDFB' }} className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-[#EADFF0] border-t-[#7A3A8E] animate-spin" />
+          <p style={{ color: '#7A3A8E' }} className="font-semibold text-sm tracking-wide">Cargando...</p>
+        </div>
       </div>
     );
   }
@@ -44,7 +45,6 @@ export default function Home() {
     setIsLoggingIn(true);
     setError("");
 
-    // Clear any stale session
     await signOut({ redirect: false });
 
     const res = await signIn("credentials", {
@@ -60,58 +60,97 @@ export default function Home() {
       setError(loginRole === 'STUDENT' ? "Usuario no encontrado. Verifica tu nombre y tu código secreto." : "Credenciales incorrectas.");
       setIsLoggingIn(false);
     }
-    // On success, useSession will update and the redirect logic above fires
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-slate-50 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] pointer-events-none"></div>
-      <div className="absolute bottom-10 right-10 text-sky-900/10 animate-bounce-slow pointer-events-none">
-        <Sparkles className="w-32 h-32" />
+    <main
+      style={{ background: 'linear-gradient(160deg, #F8EDFB 0%, #EADFF0 50%, #D4AFDF 100%)' }}
+      className="flex min-h-screen flex-col items-center justify-center p-8 relative overflow-hidden"
+    >
+      {/* Background decorative circles */}
+      <div className="absolute top-[-80px] left-[-80px] w-[320px] h-[320px] rounded-full opacity-30"
+        style={{ background: 'radial-gradient(circle, #AD74C3, transparent)' }} />
+      <div className="absolute bottom-[-60px] right-[-60px] w-[280px] h-[280px] rounded-full opacity-20"
+        style={{ background: 'radial-gradient(circle, #7A3A8E, transparent)' }} />
+      <div className="absolute bottom-10 right-16 pointer-events-none opacity-20">
+        <Sparkles style={{ color: '#522566' }} className="w-28 h-28 animate-bounce-slow" />
       </div>
 
       <div className="z-10 w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
-          <div className="bg-gradient-to-r from-sky-600 to-sky-700 p-8 text-center shadow-inner">
-            <h2 className="text-4xl md:text-5xl font-black font-serif text-white mb-2 tracking-tighter drop-shadow-md">
-              Aprend<span className="text-sky-300 transition-colors">IA</span>
-            </h2>
-            <p className="text-sky-100 font-medium text-sm">Ingresa a tu aula virtual</p>
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden" style={{ boxShadow: '0 25px 60px rgba(82,37,102,0.18)' }}>
+          
+          {/* Header */}
+          <div
+            style={{ background: 'linear-gradient(135deg, #522566 0%, #7A3A8E 100%)' }}
+            className="p-8 text-center relative overflow-hidden"
+          >
+            {/* Geometric decorations */}
+            <div className="absolute top-[-20px] right-[-20px] w-28 h-28 rounded-full opacity-10" style={{ background: '#AD74C3' }} />
+            <div className="absolute bottom-[-10px] left-[-10px] w-16 h-16 rounded-full opacity-10" style={{ background: '#EADFF0' }} />
+            
+            <div className="relative z-10">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+                style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                <BookOpen className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black text-white mb-2 tracking-tighter drop-shadow-sm">
+                Aprend<span style={{ color: '#EADFF0' }}>IA</span>
+              </h1>
+              <p style={{ color: 'rgba(234,223,240,0.85)' }} className="font-medium text-sm">
+                Ingresa a tu aula virtual
+              </p>
+            </div>
           </div>
 
-          <div className="p-8">
-            <form onSubmit={handleLogin} className="space-y-6">
+          {/* Form */}
+          <div className="p-8" style={{ background: '#ffffff' }}>
+            <form onSubmit={handleLogin} className="space-y-5">
 
-              {/* Role Selection Tabs */}
-              <div className="flex bg-slate-100 rounded-xl p-1 shadow-inner">
+              {/* Role Tabs */}
+              <div className="flex rounded-2xl p-1.5 gap-1" style={{ background: '#EADFF0' }}>
                 <button
                   type="button"
                   onClick={() => setLoginRole("STUDENT")}
-                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginRole === "STUDENT" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                  className="flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-200"
+                  style={loginRole === "STUDENT"
+                    ? { background: '#522566', color: 'white', boxShadow: '0 4px 12px rgba(82,37,102,0.3)' }
+                    : { background: 'transparent', color: '#7A3A8E' }
+                  }
                 >
                   🧑‍🎓 Soy Alumno
                 </button>
                 <button
                   type="button"
                   onClick={() => setLoginRole("TEACHER")}
-                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginRole === "TEACHER" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                  className="flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-200"
+                  style={loginRole === "TEACHER"
+                    ? { background: '#522566', color: 'white', boxShadow: '0 4px 12px rgba(82,37,102,0.3)' }
+                    : { background: 'transparent', color: '#7A3A8E' }
+                  }
                 >
                   🎓 Soy Maestro
                 </button>
               </div>
 
+              {/* Name Field */}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">
+                <label className="block text-sm font-bold mb-2" style={{ color: '#522566' }}>
                   Tu Nombre
                 </label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#AD74C3' }} />
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-medium text-slate-800"
+                    className="w-full pl-12 pr-4 py-3 rounded-xl outline-none transition font-medium"
+                    style={{
+                      background: '#F8EDFB',
+                      border: '1.5px solid #EADFF0',
+                      color: '#522566',
+                    }}
+                    onFocus={e => { e.target.style.borderColor = '#AD74C3'; e.target.style.boxShadow = '0 0 0 3px rgba(173,116,195,0.15)'; }}
+                    onBlur={e => { e.target.style.borderColor = '#EADFF0'; e.target.style.boxShadow = 'none'; }}
                     placeholder={loginRole === "STUDENT" ? "Ej. Sofía, Diego..." : "Ej. Maestro Carlos"}
                     autoFocus
                     disabled={isLoggingIn}
@@ -121,18 +160,21 @@ export default function Home() {
 
               {/* Student Codes */}
               {loginRole === "STUDENT" && (
-                <div className="grid grid-cols-2 gap-3 animate-fade-in-up">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                    <label className="block text-sm font-bold mb-2" style={{ color: '#522566' }}>
                       Código de Clase
                     </label>
                     <div className="relative">
-                      <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                      <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#AD74C3' }} />
                       <input
                         type="text"
                         value={classCode}
                         onChange={(e) => setClassCode(e.target.value.toUpperCase())}
-                        className="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase text-sm"
+                        className="w-full pl-10 pr-3 py-3 rounded-xl outline-none transition font-mono font-bold tracking-wider uppercase text-sm"
+                        style={{ background: '#F8EDFB', border: '1.5px solid #EADFF0', color: '#522566' }}
+                        onFocus={e => { e.target.style.borderColor = '#AD74C3'; e.target.style.boxShadow = '0 0 0 3px rgba(173,116,195,0.15)'; }}
+                        onBlur={e => { e.target.style.borderColor = '#EADFF0'; e.target.style.boxShadow = 'none'; }}
                         placeholder="Opcional"
                         disabled={isLoggingIn}
                         maxLength={10}
@@ -140,16 +182,19 @@ export default function Home() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                    <label className="block text-sm font-bold mb-2" style={{ color: '#522566' }}>
                       Código Secreto <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                      <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#AD74C3' }} />
                       <input
                         type="text"
                         value={studentCode}
                         onChange={(e) => setStudentCode(e.target.value.toUpperCase())}
-                        className="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-mono font-bold text-slate-800 tracking-wider uppercase text-sm"
+                        className="w-full pl-10 pr-3 py-3 rounded-xl outline-none transition font-mono font-bold tracking-wider uppercase text-sm"
+                        style={{ background: '#F8EDFB', border: '1.5px solid #EADFF0', color: '#522566' }}
+                        onFocus={e => { e.target.style.borderColor = '#AD74C3'; e.target.style.boxShadow = '0 0 0 3px rgba(173,116,195,0.15)'; }}
+                        onBlur={e => { e.target.style.borderColor = '#EADFF0'; e.target.style.boxShadow = 'none'; }}
                         placeholder="Ej. DA8AXE"
                         disabled={isLoggingIn}
                         maxLength={6}
@@ -161,17 +206,20 @@ export default function Home() {
 
               {/* Teacher Password */}
               {loginRole === "TEACHER" && (
-                <div className="animate-fade-in-up">
-                  <label className="block text-sm font-bold text-slate-700 mb-2 flex justify-between">
-                    Contraseña <span className="text-xs font-normal text-slate-500">Obligatorio</span>
+                <div>
+                  <label className="block text-sm font-bold mb-2 flex justify-between" style={{ color: '#522566' }}>
+                    Contraseña <span className="text-xs font-normal" style={{ color: '#AD74C3' }}>Obligatorio</span>
                   </label>
                   <div className="relative">
-                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#AD74C3' }} />
                     <input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition font-medium text-slate-800"
+                      className="w-full pl-12 pr-4 py-3 rounded-xl outline-none transition font-medium"
+                      style={{ background: '#F8EDFB', border: '1.5px solid #EADFF0', color: '#522566' }}
+                      onFocus={e => { e.target.style.borderColor = '#AD74C3'; e.target.style.boxShadow = '0 0 0 3px rgba(173,116,195,0.15)'; }}
+                      onBlur={e => { e.target.style.borderColor = '#EADFF0'; e.target.style.boxShadow = 'none'; }}
                       placeholder="Tu contraseña..."
                       disabled={isLoggingIn}
                     />
@@ -180,7 +228,7 @@ export default function Home() {
               )}
 
               {error && (
-                <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg text-center border border-red-100">
+                <p className="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-xl text-center border border-red-100">
                   {error}
                 </p>
               )}
@@ -188,13 +236,24 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={!name.trim() || (loginRole === "STUDENT" && !studentCode.trim()) || (loginRole === "TEACHER" && !password.trim()) || isLoggingIn}
-                className="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg shadow-sky-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
+                className="w-full font-bold py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-white disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                style={{
+                  background: 'linear-gradient(135deg, #522566 0%, #7A3A8E 100%)',
+                  boxShadow: '0 8px 24px rgba(82,37,102,0.35)',
+                }}
               >
-                {isLoggingIn ? "Ingresando..." : <>Ingresar <ArrowRight className="w-5 h-5" /></>}
+                {isLoggingIn ? (
+                  <>
+                    <div className="w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                    Ingresando...
+                  </>
+                ) : (
+                  <>Ingresar <ArrowRight className="w-5 h-5" /></>
+                )}
               </button>
 
               <div className="text-center">
-                <p className="text-xs text-slate-400">
+                <p className="text-xs" style={{ color: '#AD74C3' }}>
                   {loginRole === "STUDENT" ? "Pide el código secreto a tu profesor." : "Ingresa con tu nombre registrado."}
                 </p>
               </div>
@@ -203,7 +262,7 @@ export default function Home() {
         </div>
       </div>
 
-      <footer className="absolute bottom-4 text-center text-slate-400 text-sm font-semibold">
+      <footer className="absolute bottom-4 text-center text-sm font-semibold" style={{ color: '#AD74C3' }}>
         © 2025 AprendIA • Learning Engine
       </footer>
     </main>

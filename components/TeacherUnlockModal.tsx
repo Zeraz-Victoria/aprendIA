@@ -61,12 +61,12 @@ export default function TeacherUnlockModal({
 
     return (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60] backdrop-blur-sm animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm p-6 flex flex-col items-center justify-center space-y-4 shadow-2xl border-4 border-slate-200 dark:border-slate-700 animate-in zoom-in-95">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-2">
+            <div className="bg-white dark:bg-[#522566] rounded-3xl w-full max-w-sm p-6 flex flex-col items-center justify-center space-y-4 shadow-2xl border-4 border-[#EADFF0] dark:border-[#7A3A8E] animate-in zoom-in-95">
+                <div className="w-16 h-16 bg-[#EADFF0] dark:bg-[#522566] rounded-full flex items-center justify-center mb-2">
                     <span className="text-3xl">👨‍🏫</span>
                 </div>
-                <h4 className="font-bold text-lg text-slate-700 dark:text-slate-200">Autorización Docente</h4>
-                <p className="text-sm text-center text-slate-500 mb-2">
+                <h4 className="font-bold text-lg text-[#7A3A8E] dark:text-slate-200">Autorización Docente</h4>
+                <p className="text-sm text-center text-[#AD74C3] mb-2">
                     Pide a tu maestro que ingrese su PIN para autorizarte y guardar tu avance.
                 </p>
 
@@ -78,7 +78,7 @@ export default function TeacherUnlockModal({
 
                 <input
                     type="password"
-                    className="mt-2 p-3 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-center text-3xl tracking-[0.5em] focus:border-sky-500 outline-none w-full font-mono shadow-inner transition-colors"
+                    className="mt-2 p-3 rounded-xl border-2 border-[#EADFF0] dark:border-[#7A3A8E] bg-[#F8EDFB] dark:bg-[#522566] text-center text-3xl tracking-[0.5em] focus:border-[#7A3A8E] outline-none w-full font-mono shadow-inner transition-colors"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="****"
@@ -92,14 +92,14 @@ export default function TeacherUnlockModal({
                     <button
                         onClick={onClose}
                         disabled={isLoading}
-                        className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                        className="flex-1 py-3 px-4 rounded-xl font-bold text-[#7A3A8E] bg-[#EADFF0] dark:bg-[#522566] dark:text-[#AD74C3] hover:bg-[#EADFF0] dark:hover:bg-[#7A3A8E] transition-colors disabled:opacity-50"
                     >
                         Regresar
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={!password.trim() || isLoading}
-                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-sky-600 hover:bg-sky-700 transition-colors shadow-lg shadow-sky-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-[#522566] hover:bg-[#522566] transition-colors shadow-lg shadow-sky-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {isLoading && <Clock className="w-5 h-5 animate-spin" />}
                         {isLoading ? "Validando..." : "Autorizar"}

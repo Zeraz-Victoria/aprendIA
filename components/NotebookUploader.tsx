@@ -30,12 +30,12 @@ function PollinationsImage({ src, alt }: { src?: string; alt?: string }) {
   return status === "error" || !fixedSrc ? (
     <div className="w-full rounded-xl bg-gradient-to-br from-teal-100 to-cyan-100 border-2 border-dashed border-teal-200 p-6 text-center my-4">
       <ImageIcon className="w-12 h-12 text-teal-300 mx-auto mb-3" />
-      <p className="text-teal-600 font-medium text-sm italic">{alt || "Ilustración"}</p>
+      <p className="text-[#522566] font-medium text-sm italic">{alt || "Ilustración"}</p>
     </div>
   ) : (
     <div className="my-4 relative">
       {status === "loading" && (
-        <div className="absolute inset-0 flex items-center justify-center bg-teal-50 rounded-xl animate-pulse">
+        <div className="absolute inset-0 flex items-center justify-center bg-[#F8EDFB] rounded-xl animate-pulse">
           <Sparkles className="w-8 h-8 text-teal-300 animate-spin" />
         </div>
       )}
@@ -265,15 +265,15 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border-4 border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
+      <div className="bg-white dark:bg-[#522566] rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border-4 border-[#EADFF0] dark:border-[#7A3A8E] flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="bg-slate-100 dark:bg-slate-800 p-4 flex justify-between items-center border-b border-slate-200 dark:border-slate-700">
-          <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <Camera className="w-5 h-5 text-teal-500" />
+        <div className="bg-[#EADFF0] dark:bg-[#522566] p-4 flex justify-between items-center border-b border-[#EADFF0] dark:border-[#7A3A8E]">
+          <h3 className="font-bold text-lg text-[#522566] dark:text-slate-100 flex items-center gap-2">
+            <Camera className="w-5 h-5 text-[#7A3A8E]" />
             Escanear Libreta
           </h3>
-          <button onClick={onClose} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors">
-            <X className="w-5 h-5 text-slate-500" />
+          <button onClick={onClose} className="p-2 hover:bg-[#EADFF0] dark:hover:bg-[#7A3A8E] rounded-full transition-colors">
+            <X className="w-5 h-5 text-[#AD74C3]" />
           </button>
         </div>
 
@@ -284,25 +284,25 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
 
           {step === "idle" && !showTeacherAuth && (
             <div className="w-full flex flex-col gap-6 items-center">
-              <h4 className="text-xl font-bold text-slate-700 dark:text-slate-200 text-center">
+              <h4 className="text-xl font-bold text-[#7A3A8E] dark:text-slate-200 text-center">
                 ¿Cómo quieres enviar tu evidencia?
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border-4 border-dashed border-teal-300 cursor-pointer hover:bg-teal-50 transition-colors group"
+                  className="flex flex-col items-center justify-center p-6 bg-[#F8EDFB] dark:bg-[#522566] rounded-3xl border-4 border-dashed border-teal-300 cursor-pointer hover:bg-[#F8EDFB] transition-colors group"
                 >
-                  <Camera className="w-12 h-12 text-teal-400 group-hover:text-teal-600 mb-4 transition-colors" />
-                  <span className="font-bold text-slate-600 text-center">Subir Foto</span>
+                  <Camera className="w-12 h-12 text-[#AD74C3] group-hover:text-[#522566] mb-4 transition-colors" />
+                  <span className="font-bold text-[#7A3A8E] text-center">Subir Foto</span>
                 </div>
 
                 <div
                   onClick={() => setStep("text_input")}
-                  className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border-4 border-dashed border-emerald-300 cursor-pointer hover:bg-emerald-50 transition-colors group"
+                  className="flex flex-col items-center justify-center p-6 bg-[#F8EDFB] dark:bg-[#522566] rounded-3xl border-4 border-dashed border-emerald-300 cursor-pointer hover:bg-emerald-50 transition-colors group"
                 >
                   <span className="text-5xl mb-3">📝</span>
-                  <span className="font-bold text-slate-600 text-center">Escribir</span>
+                  <span className="font-bold text-[#7A3A8E] text-center">Escribir</span>
                 </div>
               </div>
 
@@ -317,7 +317,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
 
               <button
                 onClick={() => setStep("manual_upload")}
-                className="mt-4 text-sm font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline underline-offset-4 transition-colors"
+                className="mt-4 text-sm font-bold text-[#AD74C3] hover:text-[#7A3A8E] dark:hover:text-[#AD74C3] underline underline-offset-4 transition-colors"
               >
                 No tengo cámara, mi maestro subirá la foto
               </button>
@@ -331,14 +331,14 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
               </div>
               <div>
                 <h4 className="text-2xl font-black text-amber-600 mb-2">¡Aviso Importante!</h4>
-                <p className="text-slate-600 dark:text-slate-300 font-medium">
-                  Pídele a tu maestro que tome la foto, pero <strong className="text-slate-800 dark:text-slate-100">antes asegúrate de ESCRIBIR TU NOMBRE COMPLETO en grande hasta arriba de tu hoja de la libreta</strong> para que la IA pueda reconocerte.
+                <p className="text-[#7A3A8E] dark:text-[#AD74C3] font-medium">
+                  Pídele a tu maestro que tome la foto, pero <strong className="text-[#522566] dark:text-slate-100">antes asegúrate de ESCRIBIR TU NOMBRE COMPLETO en grande hasta arriba de tu hoja de la libreta</strong> para que la IA pueda reconocerte.
                 </p>
               </div>
               <div className="flex gap-3 w-full mt-4">
                 <button
                   onClick={() => setStep("idle")}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200"
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-[#7A3A8E] bg-[#EADFF0] hover:bg-[#EADFF0]"
                 >
                   Regresar
                 </button>
@@ -407,10 +407,10 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
 
           {step === "text_input" && (
             <div className="w-full h-full flex flex-col gap-4">
-              <h4 className="font-bold text-slate-700">Escribe tu respuesta o razonamiento:</h4>
+              <h4 className="font-bold text-[#7A3A8E]">Escribe tu respuesta o razonamiento:</h4>
               <div className="relative flex-1">
                 <textarea
-                  className="w-full h-full p-4 pb-16 rounded-2xl border-2 border-teal-100 focus:border-teal-400 outline-none resize-none font-medium text-slate-700 bg-slate-50/50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
+                  className="w-full h-full p-4 pb-16 rounded-2xl border-2 border-teal-100 focus:border-teal-400 outline-none resize-none font-medium text-[#7A3A8E] bg-[#F8EDFB]/50 dark:bg-[#522566] dark:text-slate-200 dark:border-[#7A3A8E]"
                   placeholder="Escribe o dicta tu respuesta..."
                   value={textEvidence}
                   onChange={e => setTextEvidence(e.target.value)}
@@ -420,14 +420,14 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep("idle")}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200"
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-[#7A3A8E] bg-[#EADFF0] hover:bg-[#EADFF0]"
                 >
                   Regresar
                 </button>
                 <button
                   onClick={handleAnalyze}
                   disabled={!textEvidence.trim()}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-lg disabled:opacity-50"
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-[#522566] hover:bg-[#522566] shadow-lg disabled:opacity-50"
                 >
                   Enviar
                 </button>
@@ -443,13 +443,13 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
               <div className="flex gap-3">
                 <button
                   onClick={() => { setStep("idle"); setImagePreview(null); }}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-[#7A3A8E] bg-[#EADFF0] hover:bg-[#EADFF0] transition-colors flex items-center justify-center gap-2"
                 >
                   <RefreshCw className="w-4 h-4" /> Retomar
                 </button>
                 <button
                   onClick={handleAnalyze}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-teal-600 hover:bg-teal-700 transition-colors shadow-lg shadow-teal-500/30 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-[#522566] hover:bg-[#522566] transition-colors shadow-lg shadow-teal-500/30 flex items-center justify-center gap-2"
                 >
                   <Upload className="w-4 h-4" /> Analizar
                 </button>
@@ -467,30 +467,30 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                 </div>
               </div>
               <div className="text-center space-y-2">
-                <h4 className="text-lg font-bold text-slate-700 dark:text-slate-200 animate-pulse">Analizando procedimiento...</h4>
-                <p className="text-slate-500 text-sm">Identificando números y fórmulas</p>
+                <h4 className="text-lg font-bold text-[#7A3A8E] dark:text-slate-200 animate-pulse">Analizando procedimiento...</h4>
+                <p className="text-[#AD74C3] text-sm">Identificando números y fórmulas</p>
               </div>
             </div>
           )}
 
           {step === "feedback" && feedback && (
             <div className="text-center space-y-6">
-              <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center ${feedback.correct ? 'bg-green-100 text-green-600' : (feedback.canAdvance ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600')}`}>
+              <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center ${feedback.correct ? 'bg-green-100 text-green-600' : (feedback.canAdvance ? 'bg-[#EADFF0] text-[#522566]' : 'bg-amber-100 text-amber-600')}`}>
                 {feedback.correct ? <CheckCircle className="w-12 h-12" /> : (feedback.canAdvance ? <Sparkles className="w-12 h-12" /> : <AlertCircle className="w-12 h-12" />)}
               </div>
 
               <div className="space-y-4">
                 {feedback.grade !== undefined && (
-                  <div className="inline-block px-4 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-lg border-2 border-slate-200 dark:border-slate-700 shadow-sm">
+                  <div className="inline-block px-4 py-1 rounded-full bg-[#EADFF0] dark:bg-[#522566] text-[#7A3A8E] dark:text-[#AD74C3] font-bold text-lg border-2 border-[#EADFF0] dark:border-[#7A3A8E] shadow-sm">
                     Calificación: <span className={feedback.grade >= 6 ? 'text-green-500' : 'text-amber-500'}>{feedback.grade}/10</span>
                   </div>
                 )}
 
-                <h4 className={`text-2xl font-bold ${feedback.correct ? 'text-green-700 dark:text-green-400' : (feedback.canAdvance ? 'text-blue-700 dark:text-blue-400' : 'text-amber-700 dark:text-amber-400')}`}>
+                <h4 className={`text-2xl font-bold ${feedback.correct ? 'text-green-700 dark:text-green-400' : (feedback.canAdvance ? 'text-blue-700 dark:text-[#AD74C3]' : 'text-amber-700 dark:text-amber-400')}`}>
                   {feedback.correct ? "¡Excelente Trabajo!" : (feedback.canAdvance ? "¡Bien hecho, pero puedes mejorar!" : "Revisión necesaria")}
                 </h4>
 
-                <div className={`p-4 rounded-xl text-left text-sm ${feedback.correct ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200' : (feedback.canAdvance ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800')}`}>
+                <div className={`p-4 rounded-xl text-left text-sm ${feedback.correct ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200' : (feedback.canAdvance ? 'bg-[#F8EDFB] dark:bg-blue-900/20 text-blue-800 dark:text-blue-200' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800')}`}>
                   <p className="font-semibold mb-2 flex items-center gap-2">
                     <Sparkles className="w-4 h-4" /> Feedback de tu Tutor IA:
                   </p>
@@ -505,7 +505,7 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                       setFeedback(null);
                       setStep("idle");
                     }}
-                    className="w-full py-4 rounded-xl font-bold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-xl font-bold border-2 border-[#EADFF0] dark:border-[#7A3A8E] text-[#7A3A8E] dark:text-slate-200 hover:bg-[#F8EDFB] dark:hover:bg-[#522566] transition-colors flex items-center justify-center gap-2"
                   >
                     <RefreshCw className="w-5 h-5" /> Intentar de nuevo
                   </button>
@@ -517,14 +517,14 @@ export default function NotebookUploader({ context, narrative, studentName = "Av
                           setFeedback(null);
                           setStep("idle");
                         }}
-                        className="w-full py-4 rounded-xl font-bold border-2 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/30 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-4 rounded-xl font-bold border-2 border-blue-200 text-blue-700 hover:bg-[#F8EDFB] dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/30 transition-colors flex items-center justify-center gap-2"
                       >
                         <RefreshCw className="w-5 h-5" /> Corregir para sacar 10
                       </button>
                     )}
                     <button
                       onClick={() => onComplete(true)}
-                      className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 ${feedback.correct ? 'bg-green-600 hover:bg-green-700 shadow-green-500/30' : 'bg-teal-600 hover:bg-teal-700 shadow-teal-500/30'} flex items-center justify-center gap-2`}
+                      className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 ${feedback.correct ? 'bg-green-600 hover:bg-green-700 shadow-green-500/30' : 'bg-[#522566] hover:bg-[#522566] shadow-teal-500/30'} flex items-center justify-center gap-2`}
                     >
                       Avanzar Siguiente Reto
                     </button>

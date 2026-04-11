@@ -69,17 +69,17 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
     };
 
     return (
-        <div className="p-6 sm:p-8 bg-slate-50 min-h-[60vh] flex flex-col">
+        <div className="p-6 sm:p-8 bg-[#F8EDFB] min-h-[60vh] flex flex-col">
             <header className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800">
-                        <ShoppingBag className="text-sky-600" />
+                    <h2 className="text-2xl font-bold flex items-center gap-2 text-[#522566]">
+                        <ShoppingBag className="text-[#522566]" />
                         Tienda de Recompensas
                     </h2>
-                    <p className="text-slate-500 text-sm mt-1">Gasta tus gemas en objetos exclusivos.</p>
+                    <p className="text-[#AD74C3] text-sm mt-1">Gasta tus gemas en objetos exclusivos.</p>
                 </div>
-                <div className="flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold">
-                    <Diamond className="fill-blue-500 text-blue-500 w-5 h-5" />
+                <div className="flex items-center gap-2 bg-[#EADFF0] text-blue-800 px-4 py-2 rounded-full font-bold">
+                    <Diamond className="fill-blue-500 text-[#7A3A8E] w-5 h-5" />
                     {stats.gems} Gemas
                 </div>
             </header>
@@ -104,38 +104,38 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
                     const canAfford = stats.gems >= item.cost;
 
                     return (
-                        <div key={item.id} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <div key={item.id} className="bg-white rounded-2xl p-5 border border-[#EADFF0] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                             <div>
-                                <div className="text-4xl mb-3 text-center bg-slate-50 rounded-xl py-6 border border-slate-100 relative">
+                                <div className="text-4xl mb-3 text-center bg-[#F8EDFB] rounded-xl py-6 border border-[#EADFF0] relative">
                                     {item.icon}
                                     {isFurniture && ownedCount > 0 && (
-                                        <span className="absolute top-2 right-2 bg-sky-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                        <span className="absolute top-2 right-2 bg-[#522566] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                                             x{ownedCount}
                                         </span>
                                     )}
                                 </div>
                                 <div className="flex justify-between items-start mb-1">
-                                    <h3 className="font-bold text-slate-800">{item.name}</h3>
-                                    <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">{item.type}</span>
+                                    <h3 className="font-bold text-[#522566]">{item.name}</h3>
+                                    <span className="text-xs bg-[#EADFF0] text-[#AD74C3] px-2 py-1 rounded-full">{item.type}</span>
                                 </div>
-                                <p className="text-slate-500 text-sm mb-4 leading-tight">{item.description}</p>
+                                <p className="text-[#AD74C3] text-sm mb-4 leading-tight">{item.description}</p>
                             </div>
 
                             <button
                                 onClick={() => handlePurchase(item)}
                                 disabled={isOwned || !canAfford}
                                 className={`w-full py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors ${isOwned
-                                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                    ? "bg-[#EADFF0] text-[#AD74C3] cursor-not-allowed"
                                     : canAfford
-                                        ? "bg-sky-600 hover:bg-sky-700 text-white shadow-md shadow-sky-200"
-                                        : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                        ? "bg-[#522566] hover:bg-[#522566] text-white shadow-md shadow-[#EADFF0]"
+                                        : "bg-[#EADFF0] text-[#AD74C3] cursor-not-allowed"
                                     }`}
                             >
                                 {isOwned ? (
                                     "Adquirido"
                                 ) : (
                                     <>
-                                        <Diamond className={`w-4 h-4 ${canAfford ? 'fill-white text-white' : 'fill-slate-400 text-slate-400'}`} />
+                                        <Diamond className={`w-4 h-4 ${canAfford ? 'fill-white text-white' : 'fill-slate-400 text-[#AD74C3]'}`} />
                                         {item.cost} {isFurniture && ownedCount > 0 ? `(+1 más)` : ''}
                                     </>
                                 )}
@@ -147,13 +147,13 @@ export default function RewardsStore({ onClose }: { onClose: () => void }) {
 
             {/* Displaying owned items briefly */}
             {studentInventory.length > 0 && (
-                <div className="mt-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-                    <h4 className="text-sm font-bold text-slate-700 mb-2">Tus objetos:</h4>
+                <div className="mt-4 p-4 bg-white rounded-xl border border-[#EADFF0] shadow-sm">
+                    <h4 className="text-sm font-bold text-[#7A3A8E] mb-2">Tus objetos:</h4>
                     <div className="flex gap-2 flex-wrap">
                         {studentInventory.map(id => {
                             const item = STORE_ITEMS.find(i => i.id === id);
                             return item ? (
-                                <span key={id} className="text-xl bg-slate-50 px-2 py-1 border border-slate-100 rounded-lg" title={item.name}>
+                                <span key={id} className="text-xl bg-[#F8EDFB] px-2 py-1 border border-[#EADFF0] rounded-lg" title={item.name}>
                                     {item.icon}
                                 </span>
                             ) : null;

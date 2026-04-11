@@ -22,8 +22,11 @@ export default function LoginPage() {
 
     if (status === "loading") {
         return (
-            <div className="min-h-screen bg-[#fdf6e3] flex items-center justify-center">
-                <div className="animate-pulse text-sky-600 font-bold text-xl">Revisando credenciales...</div>
+            <div style={{ background: '#F8EDFB' }} className="min-h-screen flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border-4 border-[#EADFF0] border-t-[#7A3A8E] animate-spin" />
+                    <p style={{ color: '#7A3A8E' }} className="font-semibold text-sm">Revisando credenciales...</p>
+                </div>
             </div>
         );
     }

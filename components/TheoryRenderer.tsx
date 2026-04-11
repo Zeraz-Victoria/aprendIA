@@ -39,7 +39,7 @@ function FlashcardsView({ cards, accentColor }: { cards: { front: string; back: 
 
     return (
         <div className="flex flex-col items-center gap-4 w-full">
-            <div className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+            <div className="text-xs font-bold uppercase tracking-widest text-[#AD74C3] flex items-center gap-2">
                 <Lightbulb className="w-4 h-4" /> Tarjeta {currentIndex + 1} de {cards.length}
             </div>
 
@@ -66,21 +66,21 @@ function FlashcardsView({ cards, accentColor }: { cards: { front: string; back: 
                 <button
                     onClick={(e) => { e.stopPropagation(); setIsFlipped(false); setCurrentIndex(Math.max(0, currentIndex - 1)); }}
                     disabled={currentIndex === 0}
-                    className="p-2 rounded-full bg-slate-700 text-white disabled:opacity-30 hover:bg-slate-600 transition"
+                    className="p-2 rounded-full bg-[#7A3A8E] text-white disabled:opacity-30 hover:bg-slate-600 transition"
                 >
                     <ChevronLeft className="w-5 h-5" />
                 </button>
 
                 <div className="flex gap-1.5 flex-wrap justify-center max-w-[200px]">
                     {cards.map((_, i) => (
-                        <div key={i} className={`w-2 h-2 rounded-full transition ${i === currentIndex ? 'bg-teal-400' : 'bg-slate-600'}`} />
+                        <div key={i} className={`w-2 h-2 rounded-full transition ${i === currentIndex ? 'bg-[#AD74C3]' : 'bg-slate-600'}`} />
                     ))}
                 </div>
 
                 <button
                     onClick={(e) => { e.stopPropagation(); setIsFlipped(false); setCurrentIndex(Math.min(cards.length - 1, currentIndex + 1)); }}
                     disabled={currentIndex === cards.length - 1}
-                    className="p-2 rounded-full bg-slate-700 text-white disabled:opacity-30 hover:bg-slate-600 transition"
+                    className="p-2 rounded-full bg-[#7A3A8E] text-white disabled:opacity-30 hover:bg-slate-600 transition"
                 >
                     <ChevronRight className="w-5 h-5" />
                 </button>
@@ -107,15 +107,15 @@ function SynopticChart({ title, sections, accentColor }: { title: string; sectio
 
                 <div className="space-y-3 pl-4 border-l-4 border-dashed" style={{ borderColor: `var(--tw-${accentColor}-500, #94a3b8)` }}>
                     {sections.map((section, sIdx) => (
-                        <div key={sIdx} className="bg-slate-800/80 rounded-2xl p-4 border border-slate-700/50 shadow">
+                        <div key={sIdx} className="bg-[#522566]/80 rounded-2xl p-4 border border-[#7A3A8E]/50 shadow">
                             <h4 className={`font-bold text-${accentColor}-300 text-sm mb-2 flex items-center gap-2`}>
                                 <span className={`w-3 h-3 rounded-full bg-${accentColor}-500 inline-block`} />
                                 {section.heading}
                             </h4>
                             <ul className="space-y-1.5">
                                 {section.items.map((item, iIdx) => (
-                                    <li key={iIdx} className="text-slate-300 text-sm flex items-start gap-2">
-                                        <span className="text-slate-500 mt-0.5">▸</span>
+                                    <li key={iIdx} className="text-[#AD74C3] text-sm flex items-start gap-2">
+                                        <span className="text-[#AD74C3] mt-0.5">▸</span>
                                         <span>{item}</span>
                                     </li>
                                 ))}
@@ -149,13 +149,13 @@ function MindMap({ centerTopic, branches, accentColor }: { centerTopic: string; 
             {/* Branches */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {branches.map((branch, bIdx) => (
-                    <div key={bIdx} className="bg-slate-800/80 rounded-2xl p-4 border border-slate-700/50 shadow hover:scale-[1.02] transition-transform">
+                    <div key={bIdx} className="bg-[#522566]/80 rounded-2xl p-4 border border-[#7A3A8E]/50 shadow hover:scale-[1.02] transition-transform">
                         <div className={`bg-gradient-to-r ${colors[bIdx % colors.length]} text-white font-bold px-4 py-2 rounded-xl text-xs mb-3 shadow`}>
                             {branch.label}
                         </div>
                         <ul className="space-y-1.5 pl-2">
                             {branch.children.map((child, cIdx) => (
-                                <li key={cIdx} className="text-slate-300 text-xs flex items-start gap-2">
+                                <li key={cIdx} className="text-[#AD74C3] text-xs flex items-start gap-2">
                                     <span className="text-yellow-400 mt-0.5">★</span>
                                     <span>{child}</span>
                                 </li>
@@ -196,9 +196,9 @@ function Infographic({ title, steps, accentColor }: { title: string; steps: { ic
                             )}
                         </div>
 
-                        <div className="bg-slate-800/80 rounded-2xl p-4 border border-slate-700/50 flex-1 mb-3 shadow">
+                        <div className="bg-[#522566]/80 rounded-2xl p-4 border border-[#7A3A8E]/50 flex-1 mb-3 shadow">
                             <h4 className={`font-bold text-${accentColor}-300 text-sm mb-1`}>{step.heading}</h4>
-                            <p className="text-slate-300 text-xs leading-relaxed">{step.text}</p>
+                            <p className="text-[#AD74C3] text-xs leading-relaxed">{step.text}</p>
                         </div>
                     </div>
                 ))}
@@ -246,8 +246,8 @@ function CrosswordGame({ words, accentColor }: { words: { palabra: string; defin
 
             <div className="space-y-3">
                 {words.map((word, idx) => (
-                    <div key={idx} className="bg-slate-800/80 rounded-2xl p-4 border border-slate-700/50 shadow">
-                        <p className="text-slate-300 text-xs mb-2 font-medium">
+                    <div key={idx} className="bg-[#522566]/80 rounded-2xl p-4 border border-[#7A3A8E]/50 shadow">
+                        <p className="text-[#AD74C3] text-xs mb-2 font-medium">
                             <span className={`text-${accentColor}-400 font-black`}>{idx + 1}.</span> {word.definicion}
                         </p>
 
@@ -266,7 +266,7 @@ function CrosswordGame({ words, accentColor }: { words: { palabra: string; defin
                                             maxLength={1}
                                             inputMode="text"
                                             autoComplete="off"
-                                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-slate-700 border border-slate-600 text-white text-center font-bold text-sm uppercase focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 outline-none transition"
+                                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#7A3A8E] border border-[#7A3A8E] text-white text-center font-bold text-sm uppercase focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 outline-none transition"
                                             value={(answers[idx] || {})[cIdx] || ""}
                                             onChange={(e) => {
                                                 const val = e.target.value.slice(-1);

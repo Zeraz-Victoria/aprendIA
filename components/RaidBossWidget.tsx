@@ -119,16 +119,16 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
         if (!showModal) return null;
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl w-full max-w-sm overflow-hidden relative shadow-2xl border-2 border-slate-700 p-8 text-center">
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl w-full max-w-sm overflow-hidden relative shadow-2xl border-2 border-[#7A3A8E] p-8 text-center">
                     <button
                         onClick={closeModal}
                         className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition z-10 text-white"
                     >
                         <X className="w-5 h-5" />
                     </button>
-                    <Swords className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+                    <Swords className="w-16 h-16 mx-auto text-[#7A3A8E] mb-4" />
                     <h2 className="text-xl font-black text-white mb-2">Sin Raid Boss Activo</h2>
-                    <p className="text-slate-400 text-sm">Tu maestro aún no ha convocado un Jefe de Incursión. ¡Pídele que active uno para que todo el grupo pueda atacar juntos!</p>
+                    <p className="text-[#AD74C3] text-sm">Tu maestro aún no ha convocado un Jefe de Incursión. ¡Pídele que active uno para que todo el grupo pueda atacar juntos!</p>
                 </div>
             </div>
         );
@@ -139,11 +139,11 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
             {/* Floating Widget Icon */}
             {!showModal && (
                 <div
-                    className={`fixed bottom-6 right-6 z-40 ${boss.status === 'DEFEATED' ? 'bg-slate-500 border-slate-600' : 'bg-red-600 border-red-800'} border-4 rounded-full w-20 h-20 shadow-[0_0_20px_rgba(220,38,38,0.5)] cursor-pointer hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center ${boss.status === 'DEFEATED' ? '' : 'animate-bounce'}`}
+                    className={`fixed bottom-6 right-6 z-40 ${boss.status === 'DEFEATED' ? 'bg-slate-500 border-[#7A3A8E]' : 'bg-red-600 border-red-800'} border-4 rounded-full w-20 h-20 shadow-[0_0_20px_rgba(220,38,38,0.5)] cursor-pointer hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center ${boss.status === 'DEFEATED' ? '' : 'animate-bounce'}`}
                     onClick={() => setShowModal(true)}
                 >
                     <span className={`text-4xl absolute z-10 ${boss.status === 'DEFEATED' ? 'grayscale opacity-50' : ''}`}>{boss.imageUrl}</span>
-                    <div className={`absolute -top-2 -right-2 ${boss.status === 'DEFEATED' ? 'bg-slate-400 text-slate-800' : 'bg-yellow-400 text-red-900'} text-xs font-black px-2 py-1 rounded-full border-2 ${boss.status === 'DEFEATED' ? 'border-slate-600' : 'border-red-800'} shadow-md transform rotate-12`}>
+                    <div className={`absolute -top-2 -right-2 ${boss.status === 'DEFEATED' ? 'bg-slate-400 text-[#522566]' : 'bg-yellow-400 text-red-900'} text-xs font-black px-2 py-1 rounded-full border-2 ${boss.status === 'DEFEATED' ? 'border-[#7A3A8E]' : 'border-red-800'} shadow-md transform rotate-12`}>
                         {boss.status === 'DEFEATED' ? 'K.O.' : 'RAID!'}
                     </div>
                     <div className="absolute inset-1 rounded-full border-[6px] border-red-900/40"></div>
@@ -170,7 +170,7 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
                             {/* Boss Avatar Area */}
                             <div className="relative w-40 h-40 mx-auto mb-6">
                                 <div className={`absolute inset-0 bg-red-500 rounded-full blur-2xl opacity-50 ${attacking ? 'animate-pulse scale-110' : ''}`}></div>
-                                <div className={`w-full h-full bg-slate-800 border-4 border-slate-700 rounded-full flex items-center justify-center text-7xl relative z-10 shadow-2xl transition-transform ${attacking ? 'scale-90 rotate-6' : ''}`}>
+                                <div className={`w-full h-full bg-[#522566] border-4 border-[#7A3A8E] rounded-full flex items-center justify-center text-7xl relative z-10 shadow-2xl transition-transform ${attacking ? 'scale-90 rotate-6' : ''}`}>
                                     {boss.imageUrl}
                                 </div>
                                 {damageAnim && (
@@ -183,7 +183,7 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
                             <h3 className="text-2xl font-bold text-white mb-4">{boss.name}</h3>
 
                             {/* Health Bar */}
-                            <div className="bg-slate-800 rounded-full h-8 w-full border-2 border-slate-900 relative overflow-hidden shadow-inner mb-2">
+                            <div className="bg-[#522566] rounded-full h-8 w-full border-2 border-[#522566] relative overflow-hidden shadow-inner mb-2">
                                 <div
                                     className="h-full bg-gradient-to-r from-red-600 to-orange-500 transition-all duration-500 ease-out"
                                     style={{ width: `${healthPercent}%` }}
@@ -192,7 +192,7 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
                                     {boss.currentHealth.toLocaleString()} / {boss.maxHealth.toLocaleString()}
                                 </div>
                             </div>
-                            <p className="text-slate-400 text-xs text-right font-medium">Salud del Jefe</p>
+                            <p className="text-[#AD74C3] text-xs text-right font-medium">Salud del Jefe</p>
                         </div>
 
                         {/* Top Contributors */}
@@ -228,8 +228,8 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
                                     {boss.currentHealth <= 0 ? "¡DERROTADO!" : "¡ATACAR!"}
                                 </button>
 
-                                <p className="mt-4 text-slate-300 font-medium flex items-center gap-1">
-                                    Costo: <span className="font-bold text-blue-400">5</span> <span className="text-xl">💎</span>
+                                <p className="mt-4 text-[#AD74C3] font-medium flex items-center gap-1">
+                                    Costo: <span className="font-bold text-[#AD74C3]">5</span> <span className="text-xl">💎</span>
                                 </p>
                                 {stats.gems < 5 && boss.currentHealth > 0 && (
                                     <p className="text-red-400 text-xs mt-1 font-bold">No tienes suficientes gemas.</p>

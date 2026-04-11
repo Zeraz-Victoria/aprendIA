@@ -85,10 +85,10 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
 
     return (
         <div className="p-8">
-            <h2 className="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-                <UploadCloud className="text-sky-600" /> Carga Masiva de Evidencias
+            <h2 className="text-2xl font-bold text-[#522566] mb-2 flex items-center gap-2">
+                <UploadCloud className="text-[#522566]" /> Carga Masiva de Evidencias
             </h2>
-            <p className="text-slate-500 mb-8">
+            <p className="text-[#AD74C3] mb-8">
                 Sube fotos de las libretas o exámenes. La IA las clasificará y asignará el puntaje a cada alumno.
             </p>
 
@@ -98,7 +98,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                         <select
                             value={selectedWorldId}
                             onChange={(e) => { setSelectedWorldId(e.target.value); setSelectedLevelId(""); }}
-                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-sky-400 focus:border-sky-400 w-full"
+                            className="flex-1 bg-white border border-[#EADFF0] rounded-xl px-4 py-3 text-[#7A3A8E] font-medium focus:ring-2 focus:ring-sky-400 focus:border-[#AD74C3] w-full"
                         >
                             <option value="">Selecciona un Mapa / Nivel</option>
                             {worlds.map(w => (
@@ -109,7 +109,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                             value={selectedLevelId}
                             onChange={(e) => setSelectedLevelId(e.target.value)}
                             disabled={!selectedWorldId}
-                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium focus:ring-2 focus:ring-sky-400 focus:border-sky-400 disabled:opacity-50 w-full"
+                            className="flex-1 bg-white border border-[#EADFF0] rounded-xl px-4 py-3 text-[#7A3A8E] font-medium focus:ring-2 focus:ring-sky-400 focus:border-[#AD74C3] disabled:opacity-50 w-full"
                         >
                             <option value="">Selecciona la Actividad</option>
                             {selectedWorldId && worlds.find(w => w.id === selectedWorldId)?.days.map(d => (
@@ -118,30 +118,30 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                         </select>
                     </div>
 
-                    <div className="border-4 border-dashed border-slate-200 rounded-3xl p-12 text-center hover:bg-slate-50 transition cursor-pointer relative">
+                    <div className="border-4 border-dashed border-[#EADFF0] rounded-3xl p-12 text-center hover:bg-[#F8EDFB] transition cursor-pointer relative">
                         <input type="file" multiple accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleFileSelect} />
-                        <ImageIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                        <p className="font-bold text-slate-600">Arrastra las fotos aquí</p>
-                        <p className="text-sm text-slate-400">o haz clic para explorar</p>
+                        <ImageIcon className="w-16 h-16 text-[#AD74C3] mx-auto mb-4" />
+                        <p className="font-bold text-[#7A3A8E]">Arrastra las fotos aquí</p>
+                        <p className="text-sm text-[#AD74C3]">o haz clic para explorar</p>
                     </div>
 
                     {files.length > 0 && (
-                        <div className="bg-slate-50 rounded-xl p-4">
-                            <p className="font-bold text-slate-700 mb-2">{files.length} Archivos seleccionados:</p>
-                            <ul className="text-sm text-slate-500 space-y-1 max-h-32 overflow-y-auto">
+                        <div className="bg-[#F8EDFB] rounded-xl p-4">
+                            <p className="font-bold text-[#7A3A8E] mb-2">{files.length} Archivos seleccionados:</p>
+                            <ul className="text-sm text-[#AD74C3] space-y-1 max-h-32 overflow-y-auto">
                                 {files.map((f, i) => <li key={i}>• {f.name}</li>)}
                             </ul>
                         </div>
                     )}
 
                     <div className="flex justify-end gap-4">
-                        <button onClick={onClose} className="px-6 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-lg">
+                        <button onClick={onClose} className="px-6 py-2 text-[#AD74C3] font-bold hover:bg-[#EADFF0] rounded-lg">
                             Cancelar
                         </button>
                         <button
                             onClick={handleProcess}
                             disabled={files.length === 0 || isProcessing || !selectedWorldId || !selectedLevelId}
-                            className={`px-6 py-2 rounded-xl font-bold font-bold shadow-lg flex items-center gap-2 transition-all ${isProcessing ? 'bg-sky-300 text-sky-800' : 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-200'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className={`px-6 py-2 rounded-xl font-bold font-bold shadow-lg flex items-center gap-2 transition-all ${isProcessing ? 'bg-sky-300 text-sky-800' : 'bg-[#522566] hover:bg-[#522566] text-white shadow-[#EADFF0]'} disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {isProcessing ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
                             {isProcessing ? `Evaluando ${processingProgress} de ${files.length} libretas...` : "Iniciar Evaluación Mágica"}
@@ -168,11 +168,11 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                                         {res.studentId ? res.calificacion : 'X'}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-800">{res.file}</p>
+                                        <p className="font-bold text-[#522566]">{res.file}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             {res.studentId ? (
-                                                <div className="bg-sky-50 px-2 py-0.5 rounded flex items-center gap-1">
-                                                    <UserCheck className="w-3 h-3 text-sky-600" />
+                                                <div className="bg-[#F8EDFB] px-2 py-0.5 rounded flex items-center gap-1">
+                                                    <UserCheck className="w-3 h-3 text-[#522566]" />
                                                     <span className="text-xs font-bold text-sky-700">
                                                         {res.studentName}
                                                     </span>
@@ -184,7 +184,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                                             )}
                                         </div>
                                         {res.feedback && (
-                                            <p className="text-sm text-slate-500 mt-2 bg-slate-50 p-2 rounded-lg italic border border-slate-100">
+                                            <p className="text-sm text-[#AD74C3] mt-2 bg-[#F8EDFB] p-2 rounded-lg italic border border-[#EADFF0]">
                                                 "{res.feedback}"
                                             </p>
                                         )}
@@ -202,7 +202,7 @@ export default function BulkEvidenceUploader({ onClose }: { onClose: () => void 
                     </div>
 
                     <div className="flex justify-end">
-                        <button onClick={onClose} className="bg-slate-800 hover:bg-slate-900 text-white px-8 py-3 rounded-xl font-bold">
+                        <button onClick={onClose} className="bg-[#522566] hover:bg-[#522566] text-white px-8 py-3 rounded-xl font-bold">
                             Finalizar y Guardar
                         </button>
                     </div>

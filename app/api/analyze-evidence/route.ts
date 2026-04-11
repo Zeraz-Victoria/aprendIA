@@ -77,7 +77,7 @@ export async function POST(req: Request) {
         }
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash', // Fast, multimodal
+            model: 'gemini-1.5-flash', // Fast, multimodal
             generationConfig: {
                 responseMimeType: "application/json",
             }
