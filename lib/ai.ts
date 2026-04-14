@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Modelos centralizados — cambiar aquí afecta toda la app
-export const AI_MODEL_FAST = 'gemini-1.5-flash';       // Rápido, estable, multimodal
+export const AI_MODEL_FAST = 'gemini-2.0-flash';       // Rápido, estable, multimodal
 export const AI_MODEL_FLASH = 'gemini-2.0-flash';      // Más capaz, para generación de contenido
-export const AI_MODEL_IMAGE = 'gemini-2.0-flash-exp';  // Para generación de imágenes
+export const AI_MODEL_IMAGE = 'gemini-2.0-flash';  // Para generación de imágenes
 
 export function getGenAI(): GoogleGenerativeAI {
     const key = process.env.AI_API_KEY;

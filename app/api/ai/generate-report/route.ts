@@ -54,7 +54,7 @@ export async function POST(req: Request) {
         }).join('\n');
 
         const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || "");
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
         const prompt = `# ROL Y DIRECTIVA SOBERANA
 ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
