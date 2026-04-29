@@ -114,6 +114,7 @@ interface LearningContextType {
 
   // Teacher Data
   students: Student[];
+  setStudents: React.Dispatch<React.SetStateAction<Student[]>>;
   addStudent: (name: string, avatar: string, classroomId?: string | null) => Promise<boolean>;
   updateStudent: (id: string, name: string, avatar: string, classroomId?: string | null) => Promise<boolean>;
   updateStudentAvatar: (newAvatar: string) => Promise<boolean>;
@@ -741,7 +742,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       currentUser, login, logout,
       stats, setStats, progress, inventory, markLevelComplete, purchaseItem, consumeItem,
       bootstrapExtras,
-      students, addStudent, updateStudent, updateStudentAvatar, updateStudentFrame, deleteStudent, toggleWorldAssignment, setProjectGrade,
+      students, setStudents, addStudent, updateStudent, updateStudentAvatar, updateStudentFrame, deleteStudent, toggleWorldAssignment, setProjectGrade,
       classrooms, addClassroom, updateClassroom, deleteClassroom, assignStudentToClassroom,
       grades, addGrade, updateGrade, deleteGrade
     }}>

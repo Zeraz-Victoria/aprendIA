@@ -9,14 +9,17 @@ import UploadEngine from "./UploadEngine";
 import VisualWorldBuilder from "./VisualWorldBuilder";
 import AiProjectGenerator from "./AiProjectGenerator";
 import BulkEvidenceUploader from "./BulkEvidenceUploader";
-import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare, RotateCcw, Sparkles, Search, GraduationCap, Layers, Globe, Activity, Target, PlusCircle, Share2 } from "lucide-react";
+import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare, RotateCcw, Sparkles, Search, GraduationCap, Layers, Globe, Activity, Target, PlusCircle, Share2, Star, Tool, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useSessionGuard } from "@/hooks/useSessionGuard";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import BehaviorTracker from "./BehaviorTracker";
+import TeacherToolkit from "./TeacherToolkit";
+import ClassStoryFeed from "./ClassStoryFeed";
 
-type Tab = "students" | "library" | "reports" | "raid" | "messages";
+type Tab = "students" | "library" | "reports" | "raid" | "messages" | "behavior" | "toolkit" | "story";
 
 // Helper functions moved to top for scope visibility
 function getClassColor(progress: number) {
@@ -48,7 +51,7 @@ function calculateStudentProgressForWorld(studentId: string, progressObj: Record
 export default function TeacherDashboard() {
     useSessionGuard();
     const {
-        students, worlds, activeWorldId, setActiveWorld, deleteWorld,
+        students, setStudents, worlds, activeWorldId, setActiveWorld, deleteWorld,
         addStudent, updateStudent, deleteStudent, progress, toggleWorldAssignment, setProjectGrade,
         classrooms, addClassroom, updateClassroom, deleteClassroom, assignStudentToClassroom,
         grades, addGrade, updateGrade, deleteGrade
@@ -1014,7 +1017,10 @@ export default function TeacherDashboard() {
                         {[
                             { id: 'students', label: 'Salón', icon: Users },
                             { id: 'library', label: 'Biblioteca', icon: Library },
+                            { id: 'story', label: 'Historia', icon: ImageIcon },
                             { id: 'raid', label: 'Incursión', icon: Swords },
+                            { id: 'behavior', label: 'Comportamiento', icon: Star },
+                            { id: 'toolkit', label: 'Herramientas', icon: Tool },
                             { id: 'messages', label: 'Mensajes', icon: MessageSquare },
                         ].map((tab) => (
                             <button
@@ -1626,21 +1632,51 @@ export default function TeacherDashboard() {
              </div>
          )}
 
+                {activeTab === 'behavior' && (
+                    <div className="flex flex-col h-full animate-fade-in bg-slate-50/50">
+                        <BehaviorTracker students={students} classroomId={selectedClassroomId} setStudents={setStudents} />
+                    </div>
+                )}
+
+                {activeTab === 'toolkit' && (
+                    <div className="flex flex-col h-full animate-fade-in bg-slate-50/50">
+                        <TeacherToolkit students={students} classroomId={selectedClassroomId} />
+                    </div>
+                )}
+
+                {activeTab === 'story' && (
+                    <div className="flex flex-col h-full animate-fade-in bg-slate-50/50">
+                        <ClassStoryFeed classroomId={selectedClassroomId} isTeacher={true} />
+                    </div>
+                )}
+
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-[#522566]/80 backdrop-blur-2xl border border-white/5 shadow-2xl rounded-2xl flex justify-between items-center px-8 py-4 z-50">
-                <button onClick={() => setActiveTab("students")} className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'students' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
+            <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-[#522566]/90 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-2xl flex justify-between items-center px-4 py-3 z-50 overflow-x-auto gap-4 custom-scrollbar">
+                <button onClick={() => setActiveTab("students")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'students' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
                     <Users className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Salón</span>
                 </button>
-                <button onClick={() => setActiveTab("library")} className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'library' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
+                <button onClick={() => setActiveTab("library")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'library' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
                     <Library className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Mapas</span>
                 </button>
-                <button onClick={() => setActiveTab("raid")} className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'raid' ? 'text-rose-400 scale-110' : 'text-[#AD74C3]'}`}>
+                <button onClick={() => setActiveTab("story")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'story' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
+                    <ImageIcon className="w-5 h-5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Feed</span>
+                </button>
+                <button onClick={() => setActiveTab("behavior")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'behavior' ? 'text-emerald-400 scale-110' : 'text-[#AD74C3]'}`}>
+                    <Star className="w-5 h-5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Puntos</span>
+                </button>
+                <button onClick={() => setActiveTab("toolkit")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'toolkit' ? 'text-amber-400 scale-110' : 'text-[#AD74C3]'}`}>
+                    <Tool className="w-5 h-5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Tools</span>
+                </button>
+                <button onClick={() => setActiveTab("raid")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'raid' ? 'text-rose-400 scale-110' : 'text-[#AD74C3]'}`}>
                     <Swords className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Raid</span>
                 </button>
-                <button onClick={() => setActiveTab("messages")} className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'messages' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
+                <button onClick={() => setActiveTab("messages")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'messages' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
                     <MessageSquare className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Msgs</span>
                 </button>

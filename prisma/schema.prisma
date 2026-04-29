@@ -55,6 +55,14 @@ model User {
   createdWorlds      World[]            @relation("TeacherWorlds")
   receivedMessages   TeacherMessage[]   @relation("MessageRecipients")
   assignedWorlds     World[]            @relation("StudentAssignedWorlds")
+
+  // Dojo Features Relations
+  behaviorLogsReceived BehaviorLog[]    @relation("BehaviorLogStudent")
+  behaviorLogsGiven    BehaviorLog[]    @relation("BehaviorLogTeacher")
+  parentChildren       ParentChild[]    @relation("ParentUser")
+  childParents         ParentChild[]    @relation("ChildUser")
+  classStoryPosts      ClassStoryPost[] @relation("ClassStoryTeacher")
+  portfolioItems       PortfolioItem[]  @relation("PortfolioStudent")
 }
 
 model Account {
@@ -346,6 +354,7 @@ enum Role {
   TEACHER
   STUDENT
   SUPERADMIN
+  PARENT
 }
 
 enum SubscriptionPlan {
@@ -357,4 +366,67 @@ enum SubscriptionPlan {
 enum SubscriptionStatus {
   ACTIVE
   SUSPENDED
+}
+
+// --- DOJO FEATURES MODELS ---
+
+model ParentChild {
+  id        String   @id @default(cuid())
+  parentId  String
+  childId   String
+  createdAt DateTime @default(now())
+
+  parent    User     @relation("ParentUser", fields: [parentId], references: [id], onDelete: Cascade)
+  child     User     @relation("ChildUser", fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([parentId, childId])
+}
+
+model BehaviorCategory {
+  id          String   @id @default(cuid())
+  name        String
+  icon        String   @default("⭐") // Emoji for the category
+  weight      Int      @default(1)    // e.g., 1 for positive, -1 for negative
+  isPositive  Boolean  @default(true)
+  teacherId   String?  // If null, it's a global category. If set, specific to a teacher.
+  createdAt   DateTime @default(now())
+
+  logs        BehaviorLog[]
+}
+
+model BehaviorLog {
+  id          String   @id @default(cuid())
+  studentId   String
+  teacherId   String
+  categoryId  String
+  note        String?
+  createdAt   DateTime @default(now())
+
+  student     User             @relation("BehaviorLogStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  teacher     User             @relation("BehaviorLogTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  category    BehaviorCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+}
+
+model ClassStoryPost {
+  id          String   @id @default(cuid())
+  teacherId   String
+  classroomId String?  // If null, it's a global school post
+  content     String
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+
+  teacher     User     @relation("ClassStoryTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  // Optionally relate to classroom
+}
+
+model PortfolioItem {
+  id          String   @id @default(cuid())
+  studentId   String
+  title       String
+  content     String?
+  imageUrl    String?
+  status      String   @default("APPROVED") // PENDING, APPROVED, REJECTED
+  createdAt   DateTime @default(now())
+
+  student     User     @relation("PortfolioStudent", fields: [studentId], references: [id], onDelete: Cascade)
 }
