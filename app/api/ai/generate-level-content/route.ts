@@ -8,9 +8,13 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
-const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
+
 
 export async function POST(req: Request) {
+    const apiKey = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '';
+    if (!apiKey) throw new Error('API Key missing');
+    const genAI = new GoogleGenerativeAI(apiKey);
+
     try {
         const session = await getServerSession(authOptions);
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

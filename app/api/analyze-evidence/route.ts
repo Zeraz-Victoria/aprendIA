@@ -6,9 +6,13 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { trackAICall } from "@/lib/ai-tracker";
 
 // Initialize the Gemini API
-const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
+
 
 export async function POST(req: Request) {
+    const apiKey = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '';
+    if (!apiKey) throw new Error('API Key missing');
+    const genAI = new GoogleGenerativeAI(apiKey);
+
     let dbSaveStatus = "skipped"; // Initialize dbSaveStatus here
     let responseText = ""; // Initialize responseText here for broader scope
 

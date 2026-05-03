@@ -53,7 +53,9 @@ export async function POST(req: Request) {
             return `${i + 1}. [Calificación: ${e.grade ?? 'N/A'}/10 - ${category}] Tema: ${e.topic || 'Desconocido'} | Feedback: "${(e.feedback || '').substring(0, 200)}"`;
         }).join('\n');
 
-        const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || "");
+        const apiKey = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '';
+        if (!apiKey) throw new Error('API Key missing');
+        const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
         const prompt = `# ROL Y DIRECTIVA SOBERANA

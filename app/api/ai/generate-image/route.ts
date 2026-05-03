@@ -7,9 +7,13 @@ import { trackAICall } from "@/lib/ai-tracker";
 export const maxDuration = 30;
 export const dynamic = 'force-dynamic';
 
-const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
+
 
 export async function GET(req: Request) {
+    const apiKey = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '';
+    if (!apiKey) throw new Error('API Key missing');
+    const genAI = new GoogleGenerativeAI(apiKey);
+
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
