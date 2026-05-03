@@ -17,7 +17,8 @@ export async function POST(req: Request) {
         }
 
         // Initialize Gemini inside the handler to ensure env vars are loaded in serverless context
-        const apiKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || '';
+        const rawApiKey = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '';
+    const apiKey = rawApiKey.replace(/['"]/g, '').trim();
         if (!apiKey) {
             console.error("CRITICAL: GEMINI_API_KEY or AI_API_KEY is not set in environment variables.");
             return NextResponse.json({ error: "Configuración del servidor incompleta (API Key faltante)" }, { status: 500 });

@@ -4,12 +4,17 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
 
-const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
+
 
 export const maxDuration = 120;
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+    const rawApiKey = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '';
+    const apiKey = rawApiKey.replace(/['"]/g, '').trim();
+    if (!apiKey) throw new Error('API Key missing');
+    const genAI = new GoogleGenerativeAI(apiKey);
+
   try {
     const { theme, topic, dificultad = "Básico", metodologia = "ABP", diagnostico = "Ninguno", sessionCount = 3, session_title, session_start, session_development, session_end, phase = "3" } = await req.json();
 
