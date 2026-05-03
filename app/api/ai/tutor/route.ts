@@ -8,7 +8,8 @@ import prisma from "@/lib/prisma";
 
 
 export async function POST(req: Request) {
-    const apiKey = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '';
+    const rawApiKey = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '';
+    const apiKey = rawApiKey.replace(/['"]/g, '').trim();
     if (!apiKey) throw new Error('API Key missing');
     const genAI = new GoogleGenerativeAI(apiKey);
 
