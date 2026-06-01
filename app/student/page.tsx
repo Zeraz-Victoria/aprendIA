@@ -222,8 +222,8 @@ export default function StudentPage() {
     // Consistent loading for SSR + client
     if (!mounted || status === "loading" || !currentUser) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8EDFB' }} className="">
-                <div className="font-semibold text-sm" style={{ color: '#7A3A8E' }} className="">Cargando tu aventura...</div>
+            <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8EDFB' }}>
+                <div className="font-semibold text-sm" style={{ color: '#7A3A8E' }}>Cargando tu aventura...</div>
             </div>
         );
     }
@@ -340,7 +340,7 @@ export default function StudentPage() {
                     {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
                         <button
                             onClick={() => setSelectedMapId(null)}
-                            className="rounded-xl shadow border" style={{ background: 'rgba(82,37,102,0.8)', borderColor: '#AD74C3' }} className=" text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start"
+                            style={{ background: 'rgba(82,37,102,0.8)', borderColor: '#AD74C3' }} className="rounded-xl shadow border text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start"
                             title="Mundos"
                         >
                             <span className="text-base">🗺️</span> <span className="hidden sm:inline">Mundos</span>
@@ -452,7 +452,7 @@ export default function StudentPage() {
             {showStore && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden relative shadow-2xl flex flex-col">
-                        <button onClick={() => setShowStore(false)} className="absolute top-4 right-4 p-2 rounded-full hover:opacity-80" style={{ background: '#EADFF0' }} className=" transition z-10">
+                        <button onClick={() => setShowStore(false)} style={{ background: '#EADFF0' }} className="absolute top-4 right-4 p-2 rounded-full hover:opacity-80 transition z-10">
                             <X className="w-5 h-5 text-slate-600" />
                         </button>
                         <RewardsStore onClose={() => setShowStore(false)} />
@@ -463,7 +463,7 @@ export default function StudentPage() {
             {showLeaderboard && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="w-full max-w-md relative">
-                        <button onClick={() => setShowLeaderboard(false)} className="absolute -top-4 -right-4 p-2 bg-white rounded-full shadow-md" style={{ background: '#EADFF0' }} className="hover:opacity-80 transition z-10">
+                        <button onClick={() => setShowLeaderboard(false)} style={{ background: '#EADFF0' }} className="absolute -top-4 -right-4 p-2 bg-white rounded-full shadow-md hover:opacity-80 transition z-10">
                             <X className="w-5 h-5 text-slate-600" />
                         </button>
                         <Leaderboard />
@@ -548,7 +548,7 @@ export default function StudentPage() {
                                                 </p>
                                             )}
 
-                                            <div className="rounded-xl p-3 text-sm" style={{ background: '#F8EDFB', color: '#7A3A8E' }} className=" leading-relaxed whitespace-pre-line">
+                                            <div style={{ background: '#F8EDFB', color: '#7A3A8E' }} className="rounded-xl p-3 text-sm leading-relaxed whitespace-pre-line">
                                                 {detailedFeedback || ev.feedback}
                                             </div>
 

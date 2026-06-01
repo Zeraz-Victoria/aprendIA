@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { trackAICall } from "@/lib/ai-tracker";
 
 // Initialize the Gemini API
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
         }
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash', // Fast, multimodal
+            model: 'gemini-2.5-flash', // Fast, multimodal
             generationConfig: {
                 responseMimeType: "application/json",
             }

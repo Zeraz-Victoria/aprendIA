@@ -9,7 +9,7 @@ import UploadEngine from "./UploadEngine";
 import VisualWorldBuilder from "./VisualWorldBuilder";
 import AiProjectGenerator from "./AiProjectGenerator";
 import BulkEvidenceUploader from "./BulkEvidenceUploader";
-import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare, RotateCcw, Sparkles, Search, GraduationCap, Layers, Globe, Activity, Target, PlusCircle, Share2, Star, Tool, Image as ImageIcon } from "lucide-react";
+import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare, RotateCcw, Sparkles, Search, GraduationCap, Layers, Globe, Activity, Target, PlusCircle, Share2, Star, Wrench, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useSessionGuard } from "@/hooks/useSessionGuard";
@@ -1020,7 +1020,7 @@ export default function TeacherDashboard() {
                             { id: 'story', label: 'Historia', icon: ImageIcon },
                             { id: 'raid', label: 'Incursión', icon: Swords },
                             { id: 'behavior', label: 'Comportamiento', icon: Star },
-                            { id: 'toolkit', label: 'Herramientas', icon: Tool },
+                             { id: 'toolkit', label: 'Herramientas', icon: Wrench },
                             { id: 'messages', label: 'Mensajes', icon: MessageSquare },
                         ].map((tab) => (
                             <button
@@ -1669,7 +1669,7 @@ export default function TeacherDashboard() {
                     <span className="text-[9px] font-black uppercase tracking-widest">Puntos</span>
                 </button>
                 <button onClick={() => setActiveTab("toolkit")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'toolkit' ? 'text-amber-400 scale-110' : 'text-[#AD74C3]'}`}>
-                    <Tool className="w-5 h-5" />
+                    <Wrench className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Tools</span>
                 </button>
                 <button onClick={() => setActiveTab("raid")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'raid' ? 'text-rose-400 scale-110' : 'text-[#AD74C3]'}`}>

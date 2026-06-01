@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from "@/lib/auth";
 import { trackAICall } from "@/lib/ai-tracker";
 
 export const maxDuration = 30;
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
 
     try {
         // Use Gemini's Imagen model
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
         const result = await model.generateContent({
             contents: [{
