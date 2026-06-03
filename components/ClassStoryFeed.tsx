@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Send, Image as ImageIcon, Heart } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Send, Image as ImageIcon, Heart, X } from "lucide-react";
 
 export default function ClassStoryFeed({ classroomId, isTeacher = false }: { classroomId?: string, isTeacher?: boolean }) {
     const [posts, setPosts] = useState<any[]>([]);
     const [newPost, setNewPost] = useState("");
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetch("/api/class-story")
@@ -21,17 +23,33 @@ export default function ClassStoryFeed({ classroomId, isTeacher = false }: { cla
             });
     }, [classroomId]);
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setSelectedImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handlePost = async () => {
-        if (!newPost.trim()) return;
+        if (!newPost.trim() && !selectedImage) return;
         const res = await fetch("/api/class-story", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: newPost, classroomId: classroomId === 'all' ? null : classroomId })
+            body: JSON.stringify({ 
+                content: newPost, 
+                imageUrl: selectedImage,
+                classroomId: classroomId === 'all' ? null : classroomId 
+            })
         });
         if (res.ok) {
             const post = await res.json();
             setPosts([post, ...posts]);
             setNewPost("");
+            setSelectedImage(null);
         }
     };
 
@@ -49,15 +67,46 @@ export default function ClassStoryFeed({ classroomId, isTeacher = false }: { cla
                                 className="w-full bg-slate-50 border border-[#EADFF0] rounded-xl p-4 text-[#522566] font-medium focus:outline-none focus:ring-2 focus:ring-[#AD74C3] resize-none"
                                 rows={3}
                             />
+                            
+                            {selectedImage && (
+                                <div className="mt-3 relative inline-block">
+                                    <img 
+                                        src={selectedImage} 
+                                        alt="Preview" 
+                                        className="h-24 w-auto rounded-xl object-contain border border-[#EADFF0]" 
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => setSelectedImage(null)}
+                                        className="absolute -top-2 -right-2 bg-rose-500 hover:bg-rose-600 text-white p-1 rounded-full transition-colors shadow-md cursor-pointer"
+                                        title="Eliminar foto"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            )}
+
                             <div className="flex justify-between items-center mt-3">
-                                <button className="text-[#AD74C3] hover:bg-[#F8EDFB] p-2 rounded-lg transition-colors flex items-center gap-2">
+                                <button 
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="text-[#AD74C3] hover:bg-[#F8EDFB] p-2 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                                >
                                     <ImageIcon className="w-5 h-5" />
                                     <span className="text-xs font-bold uppercase tracking-widest">Foto</span>
                                 </button>
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    ref={fileInputRef} 
+                                    className="hidden" 
+                                    onChange={handleImageChange} 
+                                />
+
                                 <button 
                                     onClick={handlePost}
-                                    disabled={!newPost.trim()}
-                                    className="bg-[#522566] hover:bg-[#7A3A8E] disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2 transition-transform active:scale-95 shadow-md shadow-[#522566]/20"
+                                    disabled={!newPost.trim() && !selectedImage}
+                                    className="bg-[#522566] hover:bg-[#7A3A8E] disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2 transition-transform active:scale-95 shadow-md shadow-[#522566]/20 cursor-pointer"
                                 >
                                     <Send className="w-4 h-4" /> Publicar
                                 </button>

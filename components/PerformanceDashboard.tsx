@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { 
     TrendingUp, Users, BookOpen, Clock, Activity, Award, Star, MessageSquare, 
     Search, X, FileText, ChevronRight, BrainCircuit, Sparkles, Filter, 
-    CheckCircle2, AlertTriangle, AlertCircle, Send, Plus
+    CheckCircle2, AlertTriangle, AlertCircle, Send, Plus, Pencil, Trash2, UserPlus, UploadCloud
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -129,14 +129,41 @@ export function ActivityRings({ outer, middle, inner, size = 160, showLabel = fa
     );
 }
 
-export default function PerformanceDashboard() {
+interface PerformanceDashboardProps {
+    selectedClassroomId: string;
+    setSelectedClassroomId: (val: string) => void;
+    isSuspended: boolean;
+    studentsLimitReached: boolean;
+    maxStudents: number;
+    onOpenAddClassroom: () => void;
+    onEditClassroom: (classroom: Classroom) => void;
+    onDeleteClassroom: (id: string) => void;
+    onOpenAddStudent: () => void;
+    onEditStudent: (student: Student) => void;
+    onDeleteStudent: (student: Student) => void;
+    onOpenBulkModal: () => void;
+}
+
+export default function PerformanceDashboard({
+    selectedClassroomId,
+    setSelectedClassroomId,
+    isSuspended,
+    studentsLimitReached,
+    maxStudents,
+    onOpenAddClassroom,
+    onEditClassroom,
+    onDeleteClassroom,
+    onOpenAddStudent,
+    onEditStudent,
+    onDeleteStudent,
+    onOpenBulkModal
+}: PerformanceDashboardProps) {
     const { 
         students, worlds, classrooms, progress, toggleWorldAssignment, 
         setProjectGrade 
     } = useLearning();
 
     // Filtros
-    const [selectedClassroomId, setSelectedClassroomId] = useState<string>("all");
     const [selectedWorldId, setSelectedWorldId] = useState<string>("all");
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -538,6 +565,142 @@ export default function PerformanceDashboard() {
         doc.save(`AprendIA_Reporte_Desempeno_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
+    const [bulkReportWorldId, setBulkReportWorldId] = useState("global");
+    const [isGeneratingTeacherBulk, setIsGeneratingTeacherBulk] = useState(false);
+    const [isGeneratingParentBulk, setIsGeneratingParentBulk] = useState(false);
+
+    const openReportWindow = (reportType: 'teacher' | 'parent', scopeLabel: string, reportItems: {
+        studentName: string;
+        xp: number;
+        gems: number;
+        progress: number;
+        aiText: string;
+        worldTitle?: string;
+        homeActivity?: string;
+    }[]) => {
+        const isParent = reportType === 'parent';
+        const today = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        const cardHtml = reportItems.map(item => `
+            <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:24px;page-break-inside:avoid;">
+                <div style="background:${isParent ? '#0f172a' : '#1e3a8a'};padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="color:white;font-size:16px;font-weight:900;">${item.studentName}</div>
+                        ${item.worldTitle ? `<div style="color:rgba(255,255,255,0.6);font-size:11px;">${item.worldTitle}</div>` : ''}
+                    </div>
+                    <div style="display:flex;gap:16px;">
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:900;color:#fbbf24;">${item.xp.toLocaleString()}</div>
+                            <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;">XP</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:900;color:#34d399;">${item.progress}%</div>
+                            <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;">Avance</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="padding:16px 20px;">
+                    <p style="font-size:13px;line-height:1.7;color:#374151;">${item.aiText}</p>
+                    ${isParent && item.homeActivity ? `
+                        <div style="margin-top:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;">
+                            <p style="font-size:11px;font-weight:900;color:#065f46;text-transform:uppercase;margin-bottom:4px;">Actividad en casa</p>
+                            <p style="font-size:13px;color:#1e293b;">${item.homeActivity}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>${isParent ? 'Reporte para Padres' : 'Reporte Docente'} — ${scopeLabel}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: white; color: #1e293b; padding: 40px; max-width: 900px; margin: 0 auto; }
+        @media print { body { padding: 20px; } button { display: none !important; } }
+    </style>
+</head>
+<body>
+    <div style="text-align:center;border-bottom:4px solid ${isParent ? '#0f172a' : '#1e3a8a'};padding-bottom:24px;margin-bottom:32px;">
+        <div style="font-size:11px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">AprendIA • ${today}</div>
+        <h1 style="font-size:28px;font-weight:900;color:#0f172a;margin-bottom:6px;">${isParent ? '📋 Reporte para Padres de Familia' : '🏫 Reporte para Docente'}</h1>
+        <p style="font-size:15px;color:#64748b;">Alcance: <strong>${scopeLabel}</strong> • ${reportItems.length} alumno${reportItems.length !== 1 ? 's' : ''}</p>
+    </div>
+    <div style="text-align:center;margin-bottom:28px;">
+        <button onclick="window.print()" style="background:${isParent ? '#0f172a' : '#1e3a8a'};color:white;border:none;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">🖨️ Guardar / Imprimir como PDF</button>
+    </div>
+    ${cardHtml}
+</body>
+</html>`;
+
+        const win = window.open('', '_blank');
+        if (!win) { alert('El navegador bloqueó la ventana. Permite los popups para este sitio.'); return; }
+        win.document.write(html);
+        win.document.close();
+    };
+
+    const handleGenerateTeacherBulkReport = async () => {
+        const visibleStudents = students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId);
+        if (visibleStudents.length === 0) { alert('No hay alumnos en este salón.'); return; }
+        setIsGeneratingTeacherBulk(true);
+        try {
+            const worldFilter = bulkReportWorldId === 'global' ? null : bulkReportWorldId;
+            const items = await Promise.all(visibleStudents.map(async (st) => {
+                const assigned = getStudentAssignedWorlds(st);
+                const prog = getStudentOverallProgress(st.id, assigned);
+                try {
+                    const res = await fetch('/api/ai/generate-report', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId: st.id, studentName: st.name, reportType: 'teacher', worldFilter })
+                    });
+                    const data = await res.json();
+                    const wTitle = worldFilter ? worlds.find(w => w.id === worldFilter)?.title : undefined;
+                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: data.report || '', worldTitle: wTitle };
+                } catch {
+                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: 'No disponible' };
+                }
+            }));
+            const clsLabel = selectedClassroomId === "all" ? "Todos los Alumnos" : (classrooms.find(c => c.id === selectedClassroomId)?.name || 'Salón');
+            const scopeLabel = bulkReportWorldId === 'global' ? clsLabel : `${clsLabel} — ${worlds.find(w => w.id === bulkReportWorldId)?.title}`;
+            openReportWindow('teacher', scopeLabel, items);
+        } finally {
+            setIsGeneratingTeacherBulk(false);
+        }
+    };
+
+    const handleGenerateParentBulkReport = async () => {
+        const visibleStudents = students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId);
+        if (visibleStudents.length === 0) { alert('No hay alumnos en este salón.'); return; }
+        setIsGeneratingParentBulk(true);
+        try {
+            const worldFilter = bulkReportWorldId === 'global' ? null : bulkReportWorldId;
+            const items = await Promise.all(visibleStudents.map(async (st) => {
+                const assigned = getStudentAssignedWorlds(st);
+                const prog = getStudentOverallProgress(st.id, assigned);
+                try {
+                    const res = await fetch('/api/ai/generate-report', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId: st.id, studentName: st.name, reportType: 'parent', worldFilter })
+                    });
+                    const data = await res.json();
+                    const wTitle = worldFilter ? worlds.find(w => w.id === worldFilter)?.title : undefined;
+                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: Array.isArray(data.paragraphs) ? data.paragraphs.join('\n\n') : (data.report || ''), worldTitle: wTitle, homeActivity: data.homeActivity };
+                } catch {
+                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: 'No disponible' };
+                }
+            }));
+            const clsLabel = selectedClassroomId === "all" ? "Todos los Alumnos" : (classrooms.find(c => c.id === selectedClassroomId)?.name || 'Salón');
+            const scopeLabel = bulkReportWorldId === 'global' ? clsLabel : `${clsLabel} — ${worlds.find(w => w.id === bulkReportWorldId)?.title}`;
+            openReportWindow('parent', scopeLabel, items);
+        } finally {
+            setIsGeneratingParentBulk(false);
+        }
+    };
+
     return (
         <div className="space-y-8 animate-fade-in pb-24 text-[#522566]">
             
@@ -549,8 +712,22 @@ export default function PerformanceDashboard() {
                 </div>
                 <div className="flex flex-wrap gap-2 w-full md:w-auto">
                     <button 
-                        onClick={handleDownloadPDFReport}
+                        onClick={onOpenBulkModal}
+                        className="flex items-center gap-2 bg-white text-[#7A3A8E] border border-[#EADFF0] hover:border-[#AD74C3] px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm"
+                    >
+                        <UploadCloud className="w-4 h-4" />
+                        Carga Masiva
+                    </button>
+                    <button 
+                        onClick={onOpenAddStudent}
                         className="flex items-center gap-2 bg-[#522566] hover:bg-[#6b2e82] text-white px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-md shadow-[#522566]/20"
+                    >
+                        <UserPlus className="w-4 h-4" />
+                        Nuevo Alumno
+                    </button>
+                    <button 
+                        onClick={handleDownloadPDFReport}
+                        className="flex items-center gap-2 bg-[#F8EDFB] hover:bg-[#EADFF0] text-[#7A3A8E] px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 border border-[#EADFF0]"
                     >
                         <FileText className="w-4 h-4" />
                         Exportar Reporte PDF
@@ -561,7 +738,39 @@ export default function PerformanceDashboard() {
             {/* BARRA DE FILTROS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white border border-[#EADFF0] p-5 rounded-3xl shadow-sm">
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-wider text-[#AD74C3]">Salón de Clases</label>
+                    <div className="flex justify-between items-center">
+                        <label className="text-[9px] font-black uppercase tracking-wider text-[#AD74C3]">Salón de Clases</label>
+                        <div className="flex gap-1.5">
+                            <button 
+                                onClick={onOpenAddClassroom}
+                                className="text-[#AD74C3] hover:text-[#522566] cursor-pointer" 
+                                title="Nuevo Salón"
+                            >
+                                <Plus className="w-3 h-3" />
+                            </button>
+                            {selectedClassroomId !== "all" && (
+                                <>
+                                    <button 
+                                        onClick={() => {
+                                            const cls = classrooms.find(c => c.id === selectedClassroomId);
+                                            if (cls) onEditClassroom(cls);
+                                        }}
+                                        className="text-[#AD74C3] hover:text-[#522566] cursor-pointer" 
+                                        title="Editar Salón"
+                                    >
+                                        <Pencil className="w-3 h-3" />
+                                    </button>
+                                    <button 
+                                        onClick={() => onDeleteClassroom(selectedClassroomId)}
+                                        className="text-[#AD74C3] hover:text-rose-500 cursor-pointer" 
+                                        title="Eliminar Salón"
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
                     <div className="relative">
                         <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AD74C3]" />
                         <select
@@ -642,6 +851,50 @@ export default function PerformanceDashboard() {
                         showLabel={true}
                     />
                 </div>
+
+            {/* SECCIÓN DE REPORTES EN LOTE AI */}
+            <div className="bg-white border border-[#EADFF0] p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-[#F8EDFB] rounded-2xl text-[#7A3A8E] border border-[#EADFF0]">
+                        <BrainCircuit className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h4 className="font-black text-sm text-[#522566]">Generación de Reportes Académicos por IA</h4>
+                        <p className="text-[10px] text-[#AD74C3] font-black uppercase tracking-wider">Genera reportes narrativos automáticos para todos los alumnos visibles</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full md:w-auto flex-wrap justify-end">
+                    <select
+                        value={bulkReportWorldId}
+                        onChange={e => setBulkReportWorldId(e.target.value)}
+                        className="px-3.5 py-2.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl text-xs font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none focus:ring-2 focus:ring-[#AD74C3] min-w-[150px] truncate"
+                    >
+                        <option value="global">🌐 Todos los Proyectos</option>
+                        {worlds.map(w => (
+                            <option key={w.id} value={w.id}>🗺️ {w.title}</option>
+                        ))}
+                    </select>
+
+                    <button
+                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
+                        onClick={handleGenerateTeacherBulkReport}
+                        className="px-5 py-2.5 bg-white text-[#522566] border border-[#EADFF0] hover:border-[#AD74C3] rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-sm"
+                    >
+                        <BrainCircuit className="w-4 h-4 text-[#7A3A8E]" />
+                        {isGeneratingTeacherBulk ? 'Generando...' : 'Reporte Docente'}
+                    </button>
+
+                    <button
+                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
+                        onClick={handleGenerateParentBulkReport}
+                        className="px-5 py-2.5 bg-white text-[#7A3A8E] border border-[#EADFF0] hover:border-[#AD74C3] rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-sm"
+                    >
+                        <FileText className="w-4 h-4 text-[#EC4899]" />
+                        {isGeneratingParentBulk ? 'Generando...' : 'Reporte Padres'}
+                    </button>
+                </div>
+            </div>
 
                 {/* Leyendas y Métricas del Grupo */}
                 <div className="flex-1 space-y-8 relative z-10 w-full">
@@ -831,6 +1084,26 @@ export default function PerformanceDashboard() {
                                     <div>
                                         <h3 className="font-black text-xl tracking-tight leading-none text-[#522566]">{selectedStudent.name}</h3>
                                         <p className="text-[10px] text-[#AD74C3] font-black uppercase tracking-widest mt-1.5">Código: {selectedStudent.studentCode || "—"}</p>
+                                    </div>
+                                    {/* Botones de Edición y Eliminación */}
+                                    <div className="flex justify-center gap-2 pt-2">
+                                        <button 
+                                            onClick={() => onEditStudent(selectedStudent)}
+                                            className="flex items-center justify-center bg-white border border-[#EADFF0] hover:border-[#AD74C3] text-[#7A3A8E] p-2.5 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+                                            title="Editar Alumno"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => {
+                                                setShowStudentModal(false);
+                                                onDeleteStudent(selectedStudent);
+                                            }}
+                                            className="flex items-center justify-center bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 p-2.5 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+                                            title="Eliminar Alumno"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
 

@@ -57,7 +57,7 @@ export default function TeacherDashboard() {
         classrooms, addClassroom, updateClassroom, deleteClassroom, assignStudentToClassroom,
         grades, addGrade, updateGrade, deleteGrade
     } = useLearning();
-    const [activeTab, setActiveTab] = useState<Tab>("students");
+    const [activeTab, setActiveTab] = useState<Tab>("reports");
     const [showGlobalStatsModal, setShowGlobalStatsModal] = useState(false);
     const [selectedInsightWorldId, setSelectedInsightWorldId] = useState<string>("");
     const [insightClassroomId, setInsightClassroomId] = useState<string>("all");
@@ -1016,13 +1016,12 @@ export default function TeacherDashboard() {
 
                     <nav className="hidden lg:flex items-center gap-1 p-1 rounded-2xl border" style={{ background: 'rgba(82,37,102,0.05)', borderColor: '#EADFF0' }}>
                         {[
-                            { id: 'students', label: 'Salón', icon: Users },
-                            { id: 'reports', label: 'Desempeño', icon: TrendingUp },
+                            { id: 'reports', label: 'Salón', icon: Users },
                             { id: 'library', label: 'Biblioteca', icon: Library },
                             { id: 'story', label: 'Historia', icon: ImageIcon },
                             { id: 'raid', label: 'Incursión', icon: Swords },
                             { id: 'behavior', label: 'Comportamiento', icon: Star },
-                             { id: 'toolkit', label: 'Herramientas', icon: Wrench },
+                            { id: 'toolkit', label: 'Herramientas', icon: Wrench },
                             { id: 'messages', label: 'Mensajes', icon: MessageSquare },
                         ].map((tab) => (
                             <button
@@ -1052,7 +1051,7 @@ export default function TeacherDashboard() {
                 </div>
             </header>
             {/* Main Content Area */}
-            <main className={`flex-1 overflow-y-auto w-full max-w-full overflow-x-hidden ${activeTab === 'messages' || activeTab === 'students' ? 'p-0' : 'p-6'}`}>
+            <main className={`flex-1 overflow-y-auto w-full max-w-full overflow-x-hidden ${activeTab === 'messages' || activeTab === 'reports' ? 'p-0' : 'p-6'}`}>
 
 
 
@@ -1310,333 +1309,50 @@ export default function TeacherDashboard() {
                 })()}
 
                 {/* STUDENTS TAB — Centro de Mando Unificado (Salón & Análisis) */}
-                {activeTab === 'students' && (
-                    <div className="flex flex-col h-full animate-fade-in">
-                        {/* Unified Tactical Nav Bar — Salón & Análisis */}
-                        <header className="sticky top-0 z-40 bg-white/40 backdrop-blur-3xl border-b border-[#EADFF0]/50 px-6 py-2 flex flex-wrap items-center justify-between gap-4 shadow-sm transition-all duration-300">
-                            <div className="flex items-center gap-6 flex-wrap">
-                                <div className="flex flex-col">
-                                </div>
-                                
-                                <div className="h-8 w-px bg-white/10 hidden sm:block" />
-
-                                {/* Filtros de Grupo Tácticos */}
-                                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
-                                    <select
-                                        value={selectedClassroomId}
-                                        onChange={(e) => setSelectedClassroomId(e.target.value)}
-                                        className="w-40 px-3 py-2 bg-white border border-[#EADFF0] rounded-xl text-[9px] font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none focus:ring-2 focus:ring-[#AD74C3] truncate"
-                                        title="Seleccionar Salón"
-                                    >
-                                        <option value="all">🏫 Todos los Salones</option>
-                                        {classrooms.map(cls => (
-                                            <option key={cls.id} value={cls.id}>
-                                                {cls.emoji} {cls.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    
-                                    <button onClick={() => setShowAddClassroomModal(true)} className="p-2 text-[#AD74C3] hover:text-[#522566] hover:bg-white rounded-xl transition-all border border-[#EADFF0]" title="Nuevo Salón">
-                                        <Plus className="w-4 h-4" />
-                                    </button>
-                                    
-                                    {selectedClassroomId !== "all" && (
-                                        <>
-                                            <div className="w-px h-6 bg-[#EADFF0] mx-1"></div>
-                                            <button 
-                                                onClick={() => {
-                                                    const cls = classrooms.find(c => c.id === selectedClassroomId);
-                                                    if (cls) {
-                                                        setEditingClassroom(cls);
-                                                        setNewClassName(cls.name);
-                                                        setNewClassEmoji(cls.emoji);
-                                                        setSelectedGradeIdInModal(cls.gradeId || "");
-                                                        setNewClassDescription(cls.description || "");
-                                                        setShowAddClassroomModal(true);
-                                                    }
-                                                }}
-                                                className="p-2 text-[#AD74C3] hover:text-amber-500 hover:bg-white rounded-xl transition-all border border-transparent hover:border-[#EADFF0]" 
-                                                title="Editar Salón Actual"
-                                            >
-                                                <Pencil className="w-4 h-4" />
-                                            </button>
-                                            <button 
-                                                onClick={() => handleDeleteClassroom(selectedClassroomId)}
-                                                className="p-2 text-[#AD74C3] hover:text-rose-500 hover:bg-white rounded-xl transition-all border border-transparent hover:border-[#EADFF0]" 
-                                                title="Eliminar Salón Actual"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-6">
-                                {/* Global Stats Dashboard Indicators (Neon Style) */}
-                                <div className="flex items-center gap-4">
-                                    <div className="flex flex-col items-end border-r border-white/10 pr-4">
-                                        <span className="text-[8px] font-black text-[#AD74C3] uppercase tracking-widest leading-none mb-1">Promedio</span>
-                                        <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg shadow-[0_0_15px_rgba(16,185,129,0.1)]">
-                                            <span className="text-xs font-black text-emerald-400 tabular-nums">{metrics.average}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-[8px] font-black text-[#AD74C3] uppercase tracking-widest leading-none mb-1">Cumplimiento</span>
-                                        <div className="px-3 py-1 bg-[#7A3A8E]/10 border border-[#7A3A8E]/20 rounded-lg shadow-[0_0_15px_rgba(79,70,229,0.1)]">
-                                            <span className="text-xs font-black text-[#AD74C3] tabular-nums">{metrics.completion}%</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 border-l border-white/10 pl-4">
-                                    <button 
-                                        onClick={() => setShowBulkModal(true)} 
-                                        className="flex items-center gap-3 px-4 py-2.5 bg-[#EADFF0] hover:bg-white text-[#AD74C3] hover:text-[#522566] rounded-xl border border-[#EADFF0] transition-all group font-black text-[9px] uppercase tracking-widest"
-                                        title="Subir evidencias en lote"
-                                    >
-                                        <UploadCloud className="w-4 h-4 transition-transform group-hover:scale-110" />
-                                        <span className="hidden xl:block">Carga Masiva</span>
-                                    </button>
-                                    {/* ── Bulk Report Controls ── */}
-                                    {/* Project filter for bulk reports */}
-                                    <select
-                                        value={bulkReportWorldId}
-                                        onChange={e => setBulkReportWorldId(e.target.value)}
-                                        className="w-36 min-w-0 px-2 py-2.5 bg-white border border-[#EADFF0] rounded-xl text-[9px] font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none focus:ring-2 focus:ring-[#AD74C3] truncate"
-                                        title="Filtrar reportes por proyecto"
-                                    >
-                                        <option value="global">🌐 Global</option>
-                                        {worlds.map(w => (
-                                            <option key={w.id} value={w.id}>{w.title}</option>
-                                        ))}
-                                    </select>
-                                    <button
-                                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
-                                        onClick={async () => {
-                                            const visibleStudents = students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId);
-                                            if (visibleStudents.length === 0) { alert('No hay alumnos en este salón.'); return; }
-                                            setIsGeneratingTeacherBulk(true);
-                                            try {
-                                                const worldFilter = bulkReportWorldId === 'global' ? null : bulkReportWorldId;
-                                                const items = await Promise.all(visibleStudents.map(async (st) => {
-                                                    const prog = calculateStudentProgress(st.id, progress, worlds);
-                                                    try {
-                                                        const res = await fetch('/api/ai/generate-report', {
-                                                            method: 'POST',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                            body: JSON.stringify({ studentId: st.id, studentName: st.name, reportType: 'teacher', worldFilter })
-                                                        });
-                                                        const data = await res.json();
-                                                        const wTitle = worldFilter ? worlds.find(w => w.id === worldFilter)?.title : undefined;
-                                                        return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: data.report || '', worldTitle: wTitle };
-                                                    } catch {
-                                                        return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: 'No disponible' };
-                                                    }
-                                                }));
-                                                const clsLabel = selectedClassroomId === "all" ? "Todos los Alumnos" : (classrooms.find(c => c.id === selectedClassroomId)?.name || 'Salón');
-                                                const scopeLabel = bulkReportWorldId === 'global' ? clsLabel : `${clsLabel} — ${worlds.find(w => w.id === bulkReportWorldId)?.title}`;
-                                                openReportWindow('teacher', scopeLabel, items);
-                                            } finally {
-                                                setIsGeneratingTeacherBulk(false);
-                                            }
-                                        }}
-                                        className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#F8EDFB] hover:bg-[#EADFF0] text-[#522566] rounded-xl border border-[#EADFF0] transition-all font-black text-[9px] uppercase tracking-widest disabled:opacity-60"
-                                        title="Reporte para Docente — todos los alumnos visibles"
-                                    >
-                                        <BrainCircuit className="w-4 h-4" />
-                                        <span className="hidden xl:block">{isGeneratingTeacherBulk ? 'Generando...' : 'Reporte Docente'}</span>
-                                    </button>
-                                    <button
-                                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
-                                        onClick={async () => {
-                                            const visibleStudents = students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId);
-                                            if (visibleStudents.length === 0) { alert('No hay alumnos en este salón.'); return; }
-                                            setIsGeneratingParentBulk(true);
-                                            try {
-                                                const worldFilter = bulkReportWorldId === 'global' ? null : bulkReportWorldId;
-                                                const items = await Promise.all(visibleStudents.map(async (st) => {
-                                                    const prog = calculateStudentProgress(st.id, progress, worlds);
-                                                    try {
-                                                        const res = await fetch('/api/ai/generate-report', {
-                                                            method: 'POST',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                            body: JSON.stringify({ studentId: st.id, studentName: st.name, reportType: 'parent', worldFilter })
-                                                        });
-                                                        const data = await res.json();
-                                                        const wTitle = worldFilter ? worlds.find(w => w.id === worldFilter)?.title : undefined;
-                                                        return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: Array.isArray(data.paragraphs) ? data.paragraphs.join('\n\n') : (data.report || ''), worldTitle: wTitle, homeActivity: data.homeActivity };
-                                                    } catch {
-                                                        return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: 'No disponible' };
-                                                    }
-                                                }));
-                                                const clsLabel = selectedClassroomId === "all" ? "Todos los Alumnos" : (classrooms.find(c => c.id === selectedClassroomId)?.name || 'Salón');
-                                                const scopeLabel = bulkReportWorldId === 'global' ? clsLabel : `${clsLabel} — ${worlds.find(w => w.id === bulkReportWorldId)?.title}`;
-                                                openReportWindow('parent', scopeLabel, items);
-                                            } finally {
-                                                setIsGeneratingParentBulk(false);
-                                            }
-                                        }}
-                                        className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#EADFF0] hover:bg-[#EADFF0] text-[#7A3A8E] rounded-xl border border-[#EADFF0] transition-all font-black text-[9px] uppercase tracking-widest disabled:opacity-60"
-                                        title="Reporte para Padres — todos los alumnos visibles"
-                                    >
-                                        <FileText className="w-4 h-4" />
-                                        <span className="hidden xl:block">{isGeneratingParentBulk ? 'Generando...' : 'Reporte Padres'}</span>
-                                    </button>
-                                    {/* ─────────────────────────── */}
-                                    <button
-                                        onClick={() => {
-                                            if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
-                                            if (studentsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxStudents} alumno(s) en tu plan actual.`);
-                                            setStudentName("");
-                                            setStudentAvatar("🧑🏻");
-                                            setShowAddStudentModal(true);
-                                        }}
-                                        className="bg-[#522566] hover:bg-[#522566] text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-[#522566]/20 flex items-center gap-2 transition-all active:scale-95 border border-[#AD74C3]/20"
-                                    >
-                                        <UserPlus className="w-3.5 h-3.5" /> Nuevo Alumno
-                                    </button>
-                                </div>
-                            </div>
-                        </header>
-
-                        <div className="p-0"> {/* Unified Content Area (Zero Padding Top) */}
-
-
-
-                        {/* Student Grid Container with Side Padding */}
-                        <div className="px-6 pb-6">
-                            {students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId).length === 0 ? (
-                                <div className="p-16 text-center text-[#AD74C3] bg-white/60 backdrop-blur-xl rounded-3xl border border-white shadow-xl mt-4">
-                                    <Users className="w-16 h-16 mx-auto mb-4 text-slate-200" />
-                                    <h3 className="text-[#AD74C3] font-black uppercase tracking-tight">Sin Alumnos</h3>
-                                    <p className="text-xs mt-2 font-bold max-w-xs mx-auto text-[#AD74C3]">Haz clic en "Nuevo Alumno" para iniciar la supervisión táctica de este salón.</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 mt-4">
-                                    {students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId).map(student => {
-                                    const avg = student.globalActivityAverage ?? 0;
-                                    const calculatedProgress = calculateStudentProgress(student.id, progress, worlds);
-                                    const hasNoData = avg === 0 && calculatedProgress === 0;
-                                    const isAtRisk = !hasNoData && avg < 6 && avg > 0; // Solo si tiene calificación y es menor a 6
-                                    const needsPractice = !hasNoData && avg >= 6 && avg < 8;
-                                    const isOnline = student.lastSeen ? (new Date().getTime() - new Date(student.lastSeen).getTime() < 120000) : false;
-                                    
-                                    return (
-                                        <div
-                                            key={student.id}
-                                            onClick={() => { setAiReport(null); setActiveStudentProfileId(student.id); }}
-                                            className="relative group bg-white rounded-[1.5rem] overflow-hidden border-2 border-[#EADFF0] shadow-xl shadow-[#EADFF0]/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 cursor-pointer flex flex-col items-center p-4"
-                                        >
-                                            {/* Status Badge - Industrial/Tactical */}
-                                            {hasNoData ? (
-                                                <div className="absolute top-4 right-4 bg-[#EADFF0] text-[#AD74C3] px-3 py-1.5 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 shadow-lg">
-                                                    <BrainCircuit className="w-3.5 h-3.5" /> RECLUTA
-                                                </div>
-                                            ) : isAtRisk ? (
-                                                <div className="absolute top-4 right-4 bg-rose-600 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 shadow-lg animate-pulse">
-                                                    <AlertTriangle className="w-3.5 h-3.5" /> CRÍTICO
-                                                </div>
-                                            ) : needsPractice ? (
-                                                <div className="absolute top-4 right-4 bg-amber-500 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 shadow-lg">
-                                                    <BrainCircuit className="w-3.5 h-3.5" /> REFUERZO
-                                                </div>
-                                            ) : (
-                                                <div className="absolute top-4 right-4 bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 border border-emerald-200">
-                                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" /> ÓPTIMO
-                                                </div>
-                                            )}
-
-                                            {/* Avatar Area - High Impact */}
-                                            <div className="relative mb-3 mt-4">
-                                                <div className={`w-20 h-20 rounded-[1.5rem] flex items-center justify-center text-4xl transition-all duration-500 shadow-2xl border-4 border-white ${
-                                                    isOnline 
-                                                        ? (isAtRisk ? 'bg-rose-100 shadow-rose-200' : needsPractice ? 'bg-amber-100 shadow-amber-200' : 'bg-[#EADFF0] shadow-[#EADFF0]') 
-                                                        : 'bg-[#EADFF0] grayscale opacity-60'
-                                                }`}>
-                                                    {student.avatar}
-                                                </div>
-                                                <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center ${isOnline ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.6)]' : 'bg-slate-400'}`}>
-                                                    <Activity className="w-3 h-3 text-white p-0.5" />
-                                                </div>
-                                            </div>
-                                            
-                                            {/* Datos Básicos - High Contrast */}
-                                            <h4 className={`font-black text-center text-lg w-full truncate px-2 transition-colors ${isOnline ? 'text-[#522566]' : 'text-[#AD74C3]'}`} title={student.name}>
-                                                {student.name}
-                                            </h4>
-                                            
-                                            <div className={`mt-1 mb-4 flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${isOnline ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-[#EADFF0] text-[#AD74C3]'}`}>
-                                                {isOnline ? (
-                                                    <> <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> CONECTADO </>
-                                                ) : `DESCONECTADO: ${student.lastSeen ? new Date(student.lastSeen).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) : 'NUNCA'}`}
-                                            </div>
-
-                                            {/* Barra de progreso - Tactical Power Bar */}
-                                            <div className="w-full mt-auto space-y-2">
-                                                <div className="flex justify-between items-end">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] font-black text-[#AD74C3] uppercase tracking-widest leading-none mb-1">Nivel de Dominio</span>
-                                                        <span className={`text-xl font-black italic leading-none ${isAtRisk ? 'text-rose-600' : needsPractice ? 'text-amber-600' : 'text-[#522566]'}`}>
-                                                            {Math.round(calculatedProgress)}%
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex -space-x-2">
-                                                        {Array.from({length: 3}).map((_, i) => (
-                                                            <div key={i} className={`w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-[8px] bg-[#F8EDFB] text-[#522566] font-bold shadow-sm ${i > 1 ? 'opacity-30' : ''}`}>
-                                                                {i + 1}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="h-4 w-full bg-[#EADFF0] rounded-lg overflow-hidden border-2 border-[#EADFF0]/50 p-0.5">
-                                                    <div
-                                                        className={`h-full rounded-md transition-all duration-1000 shadow-inner ${
-                                                            calculatedProgress >= 80 ? 'bg-emerald-500' : 
-                                                            calculatedProgress >= 50 ? 'bg-[#522566]' : 
-                                                            'bg-rose-600'
-                                                        } ${isOnline ? 'opacity-100' : 'opacity-40 grayscale'}`}
-                                                        style={{ width: `${calculatedProgress}%` }}
-                                                    >
-                                                        <div className="w-full h-full bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] bg-[length:16px_16px] animate-[slide_1s_linear_infinite]" />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Menú Hover - Tactical Management Overlay */}
-                                            <div className="absolute inset-0 backdrop-blur-md flex flex-col items-center justify-center p-6 gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10" style={{ background: 'rgba(82,37,102,0.93)' }} onClick={(e) => e.stopPropagation()}>
-                                                <div className="text-center mb-4">
-                                                    <p className="text-[#AD74C3] text-[10px] font-black uppercase tracking-[0.3em]">Acción Directa</p>
-                                                    <h5 className="text-white font-black text-sm uppercase">{student.name.split(' ')[0]}</h5>
-                                                </div>
-                                                
-                                                <button onClick={() => { setAiReport(null); setActiveStudentProfileId(student.id); }} className="w-full flex items-center justify-center gap-3 bg-white text-[#522566] py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all hover:bg-[#F8EDFB] hover:scale-105 active:scale-95 shadow-xl">
-                                                    <Activity className="w-4 h-4" /> Ver Analítica
-                                                </button>
-                                                
-                                                <div className="grid grid-cols-2 gap-3 w-full">
-                                                    <button onClick={() => { setEditingStudent(student); setStudentName(student.name); setStudentAvatar(student.avatar); setSelectedClassroomInModal(student.classroomId || ""); setShowAddStudentModal(true); }} className="flex items-center justify-center bg-[#522566] hover:bg-[#522566] text-white py-3 rounded-xl transition-all border border-[#7A3A8E] shadow-lg" title="Editar">
-                                                        <Pencil className="w-4 h-4" />
-                                                    </button>
-                                                    <button onClick={() => setStudentToDelete(student)} className="flex items-center justify-center bg-rose-600 hover:bg-rose-500 text-white py-3 rounded-xl transition-all border border-rose-700 shadow-lg" title="Eliminar">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                                
-                                         </div>
-                                     </div>
-                                 )
-                             })}
-                         </div>
-                         )}
-                     </div>
-                 </div>
-             </div>
-         )}
-
                 {activeTab === 'reports' && (
                     <div className="flex flex-col h-full animate-fade-in p-0">
-                        <PerformanceDashboard />
+                        <PerformanceDashboard 
+                            selectedClassroomId={selectedClassroomId}
+                            setSelectedClassroomId={setSelectedClassroomId}
+                            isSuspended={isSuspended}
+                            studentsLimitReached={studentsLimitReached}
+                            maxStudents={schoolInfo?.maxStudents || 25}
+                            onOpenAddClassroom={() => {
+                                setEditingClassroom(null);
+                                setNewClassName("");
+                                setNewClassEmoji("📚");
+                                setSelectedGradeIdInModal("");
+                                setNewClassDescription("");
+                                setShowAddClassroomModal(true);
+                            }}
+                            onEditClassroom={(cls) => {
+                                setEditingClassroom(cls);
+                                setNewClassName(cls.name);
+                                setNewClassEmoji(cls.emoji);
+                                setSelectedGradeIdInModal(cls.gradeId || "");
+                                setNewClassDescription(cls.description || "");
+                                setShowAddClassroomModal(true);
+                            }}
+                            onDeleteClassroom={handleDeleteClassroom}
+                            onOpenAddStudent={() => {
+                                if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
+                                if (studentsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo?.maxStudents || 25} alumno(s) en tu plan actual.`);
+                                setStudentName("");
+                                setStudentAvatar("🧑🏻");
+                                setEditingStudent(null);
+                                setSelectedClassroomInModal(selectedClassroomId);
+                                setShowAddStudentModal(true);
+                            }}
+                            onEditStudent={(student) => {
+                                setEditingStudent(student);
+                                setStudentName(student.name);
+                                setStudentAvatar(student.avatar);
+                                setSelectedClassroomInModal(student.classroomId || "");
+                                setShowAddStudentModal(true);
+                            }}
+                            onDeleteStudent={(student) => setStudentToDelete(student)}
+                            onOpenBulkModal={() => setShowBulkModal(true)}
+                        />
                     </div>
                 )}
 
@@ -1660,13 +1376,9 @@ export default function TeacherDashboard() {
 
             {/* Mobile Bottom Navigation */}
             <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-[#522566]/90 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-2xl flex justify-between items-center px-4 py-3 z-50 overflow-x-auto gap-4 custom-scrollbar">
-                <button onClick={() => setActiveTab("students")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'students' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
+                <button onClick={() => setActiveTab("reports")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'reports' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
                     <Users className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Salón</span>
-                </button>
-                <button onClick={() => setActiveTab("reports")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'reports' ? 'text-amber-400 scale-110' : 'text-[#AD74C3]'}`}>
-                    <TrendingUp className="w-5 h-5" />
-                    <span className="text-[9px] font-black uppercase tracking-widest">Desempeño</span>
                 </button>
                 <button onClick={() => setActiveTab("library")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'library' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
                     <Library className="w-5 h-5" />
