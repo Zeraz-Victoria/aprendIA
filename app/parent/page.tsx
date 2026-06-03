@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ClassStoryFeed from "@/components/ClassStoryFeed";
 import { 
@@ -16,7 +16,7 @@ interface RecentStudent {
     code: string;
 }
 
-export default function ParentPage() {
+function ParentPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -518,5 +518,17 @@ export default function ParentPage() {
                 </div>
             )}
         </main>
+    );
+}
+
+export default function ParentPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center text-[#AD74C3] font-bold text-lg">
+                Inicializando Portal Familiar...
+            </div>
+        }>
+            <ParentPageContent />
+        </Suspense>
     );
 }
