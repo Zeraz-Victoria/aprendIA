@@ -12,7 +12,7 @@ export default function Home() {
   const [classCode, setClassCode] = useState("");
   const [studentCode, setStudentCode] = useState("");
   const [password, setPassword] = useState("");
-  const [loginRole, setLoginRole] = useState<"STUDENT" | "TEACHER">("STUDENT");
+  const [loginRole, setLoginRole] = useState<"STUDENT" | "TEACHER" | "PARENT">("STUDENT");
   const [error, setError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -23,6 +23,7 @@ export default function Home() {
     if (mounted && status === "authenticated" && session?.user) {
       const role = (session.user as any)?.role;
       if (role === "SUPERADMIN") router.push("/superadmin");
+      else if (role === "PARENT") router.push("/parent");
       else router.push(role === "TEACHER" ? "/teacher" : "/student");
     }
   }, [mounted, status, session, router]);
@@ -111,24 +112,35 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setLoginRole("STUDENT")}
-                  className="flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-200"
+                  className="flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-200"
                   style={loginRole === "STUDENT"
                     ? { background: '#522566', color: 'white', boxShadow: '0 4px 12px rgba(82,37,102,0.3)' }
                     : { background: 'transparent', color: '#7A3A8E' }
                   }
                 >
-                  🧑‍🎓 Soy Alumno
+                  🧑‍🎓 Alumno
                 </button>
                 <button
                   type="button"
                   onClick={() => setLoginRole("TEACHER")}
-                  className="flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-200"
+                  className="flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-200"
                   style={loginRole === "TEACHER"
                     ? { background: '#522566', color: 'white', boxShadow: '0 4px 12px rgba(82,37,102,0.3)' }
                     : { background: 'transparent', color: '#7A3A8E' }
                   }
                 >
-                  🎓 Soy Maestro
+                  🎓 Maestro
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLoginRole("PARENT")}
+                  className="flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-200"
+                  style={loginRole === "PARENT"
+                    ? { background: '#522566', color: 'white', boxShadow: '0 4px 12px rgba(82,37,102,0.3)' }
+                    : { background: 'transparent', color: '#7A3A8E' }
+                  }
+                >
+                  👨‍👩‍👧‍👦 Familiar
                 </button>
               </div>
 
@@ -204,8 +216,8 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Teacher Password */}
-              {loginRole === "TEACHER" && (
+              {/* Teacher / Parent Password */}
+              {(loginRole === "TEACHER" || loginRole === "PARENT") && (
                 <div>
                   <label className="block text-sm font-bold mb-2 flex justify-between" style={{ color: '#522566' }}>
                     Contraseña <span className="text-xs font-normal" style={{ color: '#AD74C3' }}>Obligatorio</span>
@@ -235,7 +247,7 @@ export default function Home() {
 
               <button
                 type="submit"
-                disabled={!name.trim() || (loginRole === "STUDENT" && !studentCode.trim()) || (loginRole === "TEACHER" && !password.trim()) || isLoggingIn}
+                disabled={!name.trim() || (loginRole === "STUDENT" && !studentCode.trim()) || ((loginRole === "TEACHER" || loginRole === "PARENT") && !password.trim()) || isLoggingIn}
                 className="w-full font-bold py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-white disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                 style={{
                   background: 'linear-gradient(135deg, #522566 0%, #7A3A8E 100%)',
@@ -254,7 +266,7 @@ export default function Home() {
 
               <div className="text-center">
                 <p className="text-xs" style={{ color: '#AD74C3' }}>
-                  {loginRole === "STUDENT" ? "Pide el código secreto a tu profesor." : "Ingresa con tu nombre registrado."}
+                  {loginRole === "STUDENT" ? "Pide el código secreto a tu profesor." : "Ingresa con tu nombre registrado y contraseña."}
                 </p>
               </div>
             </form>
