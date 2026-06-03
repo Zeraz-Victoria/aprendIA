@@ -51,23 +51,23 @@ export function ActivityRings({ outer, middle, inner, size = 160, showLabel = fa
                 {/* Definiciones para degradados de color premium */}
                 <defs>
                     <linearGradient id="gradOuter" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#FF2D55" />
-                        <stop offset="100%" stopColor="#FF375F" />
+                        <stop offset="0%" stopColor="#7A3A8E" />
+                        <stop offset="100%" stopColor="#6B2E82" />
                     </linearGradient>
                     <linearGradient id="gradMiddle" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#30D158" />
-                        <stop offset="100%" stopColor="#34C759" />
+                        <stop offset="0%" stopColor="#AD74C3" />
+                        <stop offset="100%" stopColor="#8F4AA3" />
                     </linearGradient>
                     <linearGradient id="gradInner" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#BF5AF2" />
-                        <stop offset="100%" stopColor="#AF52DE" />
+                        <stop offset="0%" stopColor="#EC4899" />
+                        <stop offset="100%" stopColor="#F472B6" />
                     </linearGradient>
                 </defs>
 
-                {/* Anillo Exterior - Avance de Mapas (Fondo oscuro) */}
+                {/* Anillo Exterior - Avance de Mapas (Fondo claro) */}
                 <circle 
                     cx="80" cy="80" r={rOuter} 
-                    stroke="rgba(255, 45, 85, 0.12)" 
+                    stroke="rgba(122, 58, 142, 0.15)" 
                     strokeWidth="13" fill="transparent" 
                 />
                 {/* Anillo Exterior - Progreso */}
@@ -82,10 +82,10 @@ export function ActivityRings({ outer, middle, inner, size = 160, showLabel = fa
                     style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
                 />
 
-                {/* Anillo Medio - Promedio Académico (Fondo oscuro) */}
+                {/* Anillo Medio - Promedio Académico (Fondo claro) */}
                 <circle 
                     cx="80" cy="80" r={rMiddle} 
-                    stroke="rgba(48, 209, 88, 0.12)" 
+                    stroke="rgba(173, 116, 195, 0.15)" 
                     strokeWidth="13" fill="transparent" 
                 />
                 {/* Anillo Medio - Progreso */}
@@ -100,10 +100,10 @@ export function ActivityRings({ outer, middle, inner, size = 160, showLabel = fa
                     style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1)' }}
                 />
 
-                {/* Anillo Interior - Entrega de Evidencias (Fondo oscuro) */}
+                {/* Anillo Interior - Entrega de Evidencias (Fondo claro) */}
                 <circle 
                     cx="80" cy="80" r={rInner} 
-                    stroke="rgba(191, 90, 242, 0.12)" 
+                    stroke="rgba(236, 72, 153, 0.15)" 
                     strokeWidth="13" fill="transparent" 
                 />
                 {/* Anillo Interior - Progreso */}
@@ -121,8 +121,8 @@ export function ActivityRings({ outer, middle, inner, size = 160, showLabel = fa
 
             {showLabel && (
                 <div className="absolute flex flex-col items-center justify-center text-center pointer-events-none">
-                    <span className="text-[10px] font-black tracking-widest text-[#AD74C3] uppercase leading-none mb-1">PROMEDIO</span>
-                    <span className="text-2xl font-black text-white leading-none tracking-tight">{Math.round((outPct + midPct + innPct) / 3)}%</span>
+                    <span className="text-[10px] font-black tracking-widest text-[#7A3A8E] uppercase leading-none mb-1">PROMEDIO</span>
+                    <span className="text-2xl font-black text-[#522566] leading-none tracking-tight">{Math.round((outPct + midPct + innPct) / 3)}%</span>
                 </div>
             )}
         </div>
@@ -626,14 +626,14 @@ export default function PerformanceDashboard() {
                 </div>
             </div>
 
-            {/* SECCIÓN GRUPAL (OLED STYLE GLASS CARD) */}
-            <div className="relative overflow-hidden bg-slate-950 text-white rounded-[3rem] p-8 sm:p-12 border border-slate-800 shadow-2xl flex flex-col lg:flex-row items-center gap-12">
+            {/* SECCIÓN GRUPAL (LIGHT GLASS CARD) */}
+            <div className="relative overflow-hidden bg-white/70 backdrop-blur-md text-[#522566] border border-[#EADFF0] shadow-xl rounded-[3rem] p-8 sm:p-12 flex flex-col lg:flex-row items-center gap-12">
                 {/* Glow decorativo de fondo */}
-                <div className="absolute right-0 top-0 w-[400px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
-                <div className="absolute left-0 bottom-0 w-[300px] h-[300px] bg-purple-500/10 blur-[100px] rounded-full pointer-events-none" />
+                <div className="absolute right-0 top-0 w-[400px] h-[400px] bg-[#EADFF0]/30 blur-[100px] rounded-full pointer-events-none" />
+                <div className="absolute left-0 bottom-0 w-[300px] h-[300px] bg-[#F8EDFB]/30 blur-[100px] rounded-full pointer-events-none" />
 
                 {/* Anillos de Actividad del Grupo */}
-                <div className="relative shrink-0 flex items-center justify-center bg-black/40 border border-white/5 p-8 rounded-full shadow-inner">
+                <div className="relative shrink-0 flex items-center justify-center bg-[#F8EDFB] border border-[#EADFF0] p-8 rounded-full shadow-sm">
                     <ActivityRings 
                         outer={groupMetrics.progress} 
                         middle={groupMetrics.academic} 
@@ -647,57 +647,57 @@ export default function PerformanceDashboard() {
                 <div className="flex-1 space-y-8 relative z-10 w-full">
                     <div>
                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#AD74C3]">Métricas Generales de Aula</span>
-                        <h3 className="text-3xl font-black text-white tracking-tight mt-1">Desempeño Promedio del Grupo</h3>
+                        <h3 className="text-3xl font-black text-[#522566] tracking-tight mt-1">Desempeño Promedio del Grupo</h3>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         {/* Anillo Exterior Legend */}
-                        <div className="flex items-start gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all">
-                            <div className="w-3.5 h-3.5 rounded-full bg-[#FF2D55] shrink-0 mt-1 shadow-[0_0_10px_#FF2D55]" />
+                        <div className="flex items-start gap-4 p-4 bg-white border border-[#EADFF0] rounded-2xl hover:bg-[#F8EDFB]/50 transition-all shadow-sm">
+                            <div className="w-3.5 h-3.5 rounded-full bg-[#7A3A8E] shrink-0 mt-1 shadow-sm" />
                             <div>
-                                <h4 className="text-xs font-black uppercase tracking-wider text-slate-300">Avance de Mapas</h4>
-                                <p className="text-2xl font-black text-white tracking-tight mt-1">{groupMetrics.progress}%</p>
-                                <p className="text-[9px] text-slate-400 mt-1">Niveles completados en las aventuras activas.</p>
+                                <h4 className="text-xs font-black uppercase tracking-wider text-[#7A3A8E]">Avance de Mapas</h4>
+                                <p className="text-2xl font-black text-[#522566] tracking-tight mt-1">{groupMetrics.progress}%</p>
+                                <p className="text-[9px] text-[#AD74C3] mt-1">Niveles completados en las aventuras activas.</p>
                             </div>
                         </div>
 
                         {/* Anillo Medio Legend */}
-                        <div className="flex items-start gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all">
-                            <div className="w-3.5 h-3.5 rounded-full bg-[#30D158] shrink-0 mt-1 shadow-[0_0_10px_#30D158]" />
+                        <div className="flex items-start gap-4 p-4 bg-white border border-[#EADFF0] rounded-2xl hover:bg-[#F8EDFB]/50 transition-all shadow-sm">
+                            <div className="w-3.5 h-3.5 rounded-full bg-[#AD74C3] shrink-0 mt-1 shadow-sm" />
                             <div>
-                                <h4 className="text-xs font-black uppercase tracking-wider text-slate-300">Promedio Académico</h4>
-                                <p className="text-2xl font-black text-[#30D158] tracking-tight mt-1">{(groupMetrics.academic / 10).toFixed(1)} / 10</p>
-                                <p className="text-[9px] text-slate-400 mt-1">Nota promedio acumulada de evidencias.</p>
+                                <h4 className="text-xs font-black uppercase tracking-wider text-[#7A3A8E]">Promedio Académico</h4>
+                                <p className="text-2xl font-black text-[#522566] tracking-tight mt-1">{(groupMetrics.academic / 10).toFixed(1)} / 10</p>
+                                <p className="text-[9px] text-[#AD74C3] mt-1">Nota promedio acumulada de evidencias.</p>
                             </div>
                         </div>
 
                         {/* Anillo Interior Legend */}
-                        <div className="flex items-start gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all">
-                            <div className="w-3.5 h-3.5 rounded-full bg-[#BF5AF2] shrink-0 mt-1 shadow-[0_0_10px_#BF5AF2]" />
+                        <div className="flex items-start gap-4 p-4 bg-white border border-[#EADFF0] rounded-2xl hover:bg-[#F8EDFB]/50 transition-all shadow-sm">
+                            <div className="w-3.5 h-3.5 rounded-full bg-[#EC4899] shrink-0 mt-1 shadow-sm" />
                             <div>
-                                <h4 className="text-xs font-black uppercase tracking-wider text-slate-300">Tasa de Entrega</h4>
-                                <p className="text-2xl font-black text-white tracking-tight mt-1">{groupMetrics.submission}%</p>
-                                <p className="text-[9px] text-slate-400 mt-1">Tareas subidas respecto a las asignadas.</p>
+                                <h4 className="text-xs font-black uppercase tracking-wider text-[#7A3A8E]">Tasa de Entrega</h4>
+                                <p className="text-2xl font-black text-[#522566] tracking-tight mt-1">{groupMetrics.submission}%</p>
+                                <p className="text-[9px] text-[#AD74C3] mt-1">Tareas subidas respecto a las asignadas.</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Resumen de Alertas en Grupo */}
-                    <div className="flex flex-wrap gap-4 pt-4 border-t border-white/10">
+                    <div className="flex flex-wrap gap-4 pt-4 border-t border-[#EADFF0]">
                         {needsAttentionCount > 0 && (
-                            <div className="flex items-center gap-2 text-xs font-bold text-rose-400 bg-rose-950/40 border border-rose-800/30 px-4 py-2 rounded-xl">
+                            <div className="flex items-center gap-2 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-100 px-4 py-2 rounded-xl">
                                 <AlertTriangle className="w-4 h-4 text-rose-500" />
                                 <span>{needsAttentionCount} alumno(s) en Alerta Académica (Avance &lt; 30%)</span>
                             </div>
                         )}
                         {lagTaskCount > 0 && (
-                            <div className="flex items-center gap-2 text-xs font-bold text-amber-400 bg-amber-950/40 border border-amber-800/30 px-4 py-2 rounded-xl">
+                            <div className="flex items-center gap-2 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-100 px-4 py-2 rounded-xl">
                                 <AlertCircle className="w-4 h-4 text-amber-500" />
                                 <span>{lagTaskCount} alumno(s) entregan poco pero tienen buenas notas</span>
                             </div>
                         )}
                         {needsAttentionCount === 0 && lagTaskCount === 0 && (
-                            <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-800/30 px-4 py-2 rounded-xl">
+                            <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-xl">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                                 <span>¡El grupo avanza a buen ritmo! No hay alertas prioritarias detectadas.</span>
                             </div>
@@ -786,7 +786,7 @@ export default function PerformanceDashboard() {
                                     </div>
 
                                     {/* Mini Anillo Lateral */}
-                                    <div className="shrink-0 bg-slate-950 p-3 rounded-2xl shadow-md">
+                                    <div className="shrink-0 bg-[#F8EDFB] p-3 rounded-2xl border border-[#EADFF0] shadow-sm">
                                         <ActivityRings outer={outerVal} middle={middleVal} inner={innerVal} size={90} />
                                     </div>
                                 </button>
@@ -822,14 +822,14 @@ export default function PerformanceDashboard() {
                                 <X className="w-5 h-5" />
                             </button>
 
-                            {/* LATERAL DE ANILLOS Y RECOMPENSAS (DARK THEME) */}
-                            <div className="md:w-1/3 bg-slate-950 text-white p-8 flex flex-col items-center justify-between gap-8 shrink-0 rounded-t-[2.5rem] md:rounded-t-none md:rounded-l-[2.5rem]">
+                            {/* LATERAL DE ANILLOS Y RECOMPENSAS (LIGHT THEME) */}
+                            <div className="md:w-1/3 bg-[#F8EDFB] text-[#522566] p-8 flex flex-col items-center justify-between gap-8 shrink-0 rounded-t-[2.5rem] md:rounded-t-none md:rounded-l-[2.5rem] border-r border-[#EADFF0]">
                                 <div className="text-center w-full space-y-4">
-                                    <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-4xl mx-auto shadow-inner border border-white/10">
+                                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl mx-auto shadow-sm border border-[#EADFF0]">
                                         {selectedStudent.avatar || "🧑🏻"}
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-xl tracking-tight leading-none text-white">{selectedStudent.name}</h3>
+                                        <h3 className="font-black text-xl tracking-tight leading-none text-[#522566]">{selectedStudent.name}</h3>
                                         <p className="text-[10px] text-[#AD74C3] font-black uppercase tracking-widest mt-1.5">Código: {selectedStudent.studentCode || "—"}</p>
                                     </div>
                                 </div>
@@ -839,17 +839,17 @@ export default function PerformanceDashboard() {
                                 </div>
 
                                 <div className="w-full space-y-3">
-                                    <div className="flex justify-between items-center text-xs p-3 bg-white/5 border border-white/5 rounded-xl">
-                                        <span className="text-[#AD74C3] font-black uppercase text-[9px] tracking-wider">Puntos XP</span>
-                                        <span className="font-black text-amber-400 tabular-nums">{selectedStudent.xp || 0} XP</span>
+                                    <div className="flex justify-between items-center text-xs p-3 bg-white border border-[#EADFF0] rounded-xl shadow-sm">
+                                        <span className="text-[#7A3A8E] font-black uppercase text-[9px] tracking-wider">Puntos XP</span>
+                                        <span className="font-black text-amber-600 tabular-nums">{selectedStudent.xp || 0} XP</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-xs p-3 bg-white/5 border border-white/5 rounded-xl">
-                                        <span className="text-[#AD74C3] font-black uppercase text-[9px] tracking-wider">Monedas/Gemas</span>
-                                        <span className="font-black text-emerald-400 tabular-nums">{selectedStudent.gems || 0} Gemas</span>
+                                    <div className="flex justify-between items-center text-xs p-3 bg-white border border-[#EADFF0] rounded-xl shadow-sm">
+                                        <span className="text-[#7A3A8E] font-black uppercase text-[9px] tracking-wider">Monedas/Gemas</span>
+                                        <span className="font-black text-emerald-600 tabular-nums">{selectedStudent.gems || 0} Gemas</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-xs p-3 bg-white/5 border border-white/5 rounded-xl">
-                                        <span className="text-[#AD74C3] font-black uppercase text-[9px] tracking-wider">Racha</span>
-                                        <span className="font-black text-sky-400 tabular-nums">🔥 {selectedStudent.streak || 0} Días</span>
+                                    <div className="flex justify-between items-center text-xs p-3 bg-white border border-[#EADFF0] rounded-xl shadow-sm">
+                                        <span className="text-[#7A3A8E] font-black uppercase text-[9px] tracking-wider">Racha</span>
+                                        <span className="font-black text-sky-600 tabular-nums">🔥 {selectedStudent.streak || 0} Días</span>
                                     </div>
                                 </div>
                             </div>

@@ -37,6 +37,97 @@ function calculateChildGlobalAverage(child: any) {
 
 export async function GET(req: NextRequest) {
     try {
+        const { searchParams } = new URL(req.url);
+        const code = searchParams.get('code');
+
+        if (code) {
+            const student = await prisma.user.findFirst({
+                where: {
+                    studentCode: code.trim().toUpperCase(),
+                    role: 'STUDENT'
+                },
+                include: {
+                    assignedWorlds: {
+                        select: {
+                            id: true,
+                            title: true,
+                            theme: true,
+                            daysJson: true
+                        }
+                    },
+                    progress: {
+                        select: {
+                            worldId: true,
+                            levelId: true
+                        }
+                    },
+                    evidenceEntries: {
+                        select: {
+                            id: true,
+                            worldId: true,
+                            levelId: true,
+                            isCorrect: true,
+                            feedback: true,
+                            grade: true,
+                            createdAt: true
+                        },
+                        orderBy: {
+                            createdAt: 'desc'
+                        }
+                    },
+                    behaviorLogsReceived: {
+                        include: {
+                            category: true
+                        },
+                        orderBy: {
+                            createdAt: 'desc'
+                        }
+                    }
+                }
+            });
+
+            if (!student) {
+                return NextResponse.json({ error: 'No se encontró ningún alumno con el código especificado.' }, { status: 404 });
+            }
+
+            const parsedWorlds = (student.assignedWorlds || []).map((w: any) => {
+                let totalLevels = 8;
+                try {
+                    const days = JSON.parse(w.daysJson);
+                    if (Array.isArray(days)) {
+                        totalLevels = days.length;
+                    }
+                } catch (e) {}
+                return {
+                    id: w.id,
+                    title: w.title,
+                    theme: w.theme,
+                    totalLevels
+                };
+            });
+
+            const globalActivityAverage = calculateChildGlobalAverage(student);
+
+            const mappedChild = {
+                id: student.id,
+                name: student.name,
+                avatar: student.avatar,
+                gems: student.gems,
+                xp: student.xp,
+                streak: student.streak,
+                lives: student.lives,
+                classroomId: student.classroomId,
+                globalActivityAverage: globalActivityAverage,
+                assignedWorlds: parsedWorlds,
+                progress: student.progress,
+                evidenceEntries: student.evidenceEntries,
+                behaviorLogs: student.behaviorLogsReceived,
+                studentCode: student.studentCode
+            };
+
+            return NextResponse.json(mappedChild);
+        }
+
         const session = await getServerSession(authOptions);
         const role = (session?.user as any)?.role;
         const parentId = (session?.user as any)?.id;

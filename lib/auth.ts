@@ -40,13 +40,13 @@ export const authOptions: NextAuthOptions = {
 
                     user = await prisma.user.findFirst({ where: whereClause });
 
-                } else if (loginRole === 'TEACHER' || loginRole === 'PARENT') {
+                } else if (loginRole === 'TEACHER') {
                     if (!password) return null;
 
                     const candidate = await prisma.user.findFirst({
                         where: {
                             name: { equals: name.trim(), mode: 'insensitive' },
-                            role: loginRole === 'TEACHER' ? { in: ['TEACHER', 'SUPERADMIN'] } : 'PARENT'
+                            role: { in: ['TEACHER', 'SUPERADMIN'] }
                         }
                     });
 
