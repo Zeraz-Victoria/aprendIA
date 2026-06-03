@@ -18,6 +18,7 @@ import autoTable from "jspdf-autotable";
 import BehaviorTracker from "./BehaviorTracker";
 import TeacherToolkit from "./TeacherToolkit";
 import ClassStoryFeed from "./ClassStoryFeed";
+import PerformanceDashboard from "./PerformanceDashboard";
 
 type Tab = "students" | "library" | "reports" | "raid" | "messages" | "behavior" | "toolkit" | "story";
 
@@ -1016,6 +1017,7 @@ export default function TeacherDashboard() {
                     <nav className="hidden lg:flex items-center gap-1 p-1 rounded-2xl border" style={{ background: 'rgba(82,37,102,0.05)', borderColor: '#EADFF0' }}>
                         {[
                             { id: 'students', label: 'Salón', icon: Users },
+                            { id: 'reports', label: 'Desempeño', icon: TrendingUp },
                             { id: 'library', label: 'Biblioteca', icon: Library },
                             { id: 'story', label: 'Historia', icon: ImageIcon },
                             { id: 'raid', label: 'Incursión', icon: Swords },
@@ -1632,6 +1634,12 @@ export default function TeacherDashboard() {
              </div>
          )}
 
+                {activeTab === 'reports' && (
+                    <div className="flex flex-col h-full animate-fade-in p-0">
+                        <PerformanceDashboard />
+                    </div>
+                )}
+
                 {activeTab === 'behavior' && (
                     <div className="flex flex-col h-full animate-fade-in bg-slate-50/50">
                         <BehaviorTracker students={students} classroomId={selectedClassroomId} setStudents={setStudents} />
@@ -1655,6 +1663,10 @@ export default function TeacherDashboard() {
                 <button onClick={() => setActiveTab("students")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'students' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
                     <Users className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Salón</span>
+                </button>
+                <button onClick={() => setActiveTab("reports")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'reports' ? 'text-amber-400 scale-110' : 'text-[#AD74C3]'}`}>
+                    <TrendingUp className="w-5 h-5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Desempeño</span>
                 </button>
                 <button onClick={() => setActiveTab("library")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'library' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
                     <Library className="w-5 h-5" />
