@@ -141,6 +141,36 @@ function ParentPageContent() {
         };
     };
 
+    const getChildWorldProgressMetrics = (child: any, world: any) => {
+        if (!child || !world) return { outer: 0, middle: 0, inner: 0, totalLevels: 0, completedLevels: 0, submissions: 0 };
+        
+        const totalLevels = world.totalLevels || 8;
+        const completedLevels = (child.progress || []).filter((p: any) => p.worldId === world.id).length;
+        const outer = totalLevels > 0 ? Math.min(100, Math.round((completedLevels / totalLevels) * 100)) : 0;
+
+        const wGradeObj = (child.projectGrades || []).find((g: any) => g.worldId === world.id);
+        const wGrade = wGradeObj ? wGradeObj.grade : 7.0;
+        const middle = Math.round(wGrade * 10);
+
+        const evidenceList = child.evidenceEntries || [];
+        const uniqueSubmissions = new Set();
+        evidenceList.forEach((e: any) => {
+            if (e.worldId === world.id) {
+                uniqueSubmissions.add(e.levelId);
+            }
+        });
+        const inner = totalLevels > 0 ? Math.min(100, Math.round((uniqueSubmissions.size / totalLevels) * 100)) : 0;
+
+        return { 
+            outer, 
+            middle, 
+            inner, 
+            totalLevels, 
+            completedLevels, 
+            submissions: uniqueSubmissions.size 
+        };
+    };
+
     const metrics = getChildProgressMetrics(activeChild);
 
     return (
@@ -156,43 +186,18 @@ function ParentPageContent() {
                         </div>
                     </div>
 
-                    {/* Selector rápido si hay alumnos consultados anteriormente */}
-                    <div className="flex items-center gap-2 flex-wrap justify-center">
-                        {recentChildren.map(child => (
-                            <div 
-                                key={child.id}
-                                className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold cursor-pointer transition-all ${
-                                    activeChild?.id === child.id
-                                        ? "bg-[#522566] text-white border-[#522566]"
-                                        : "bg-white text-[#7A3A8E] border-[#EADFF0] hover:border-[#AD74C3]"
-                                }`}
-                                onClick={() => handleLookupCode(child.code)}
-                            >
-                                <span className="text-sm">{child.avatar}</span>
-                                <span>{child.name}</span>
-                                <button 
-                                    onClick={(e) => handleRemoveRecent(e, child.id)}
-                                    className="p-0.5 rounded-full text-[#AD74C3] hover:text-rose-500 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    title="Quitar de recientes"
-                                >
-                                    <Trash2 className="w-3 h-3" />
-                                </button>
-                            </div>
-                        ))}
-
-                        {activeChild && (
-                            <button
-                                onClick={() => {
-                                    setActiveChild(null);
-                                    setError("");
-                                }}
-                                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white text-[#7A3A8E] border border-dashed border-[#AD74C3] hover:border-[#7A3A8E] text-xs font-bold cursor-pointer transition-all active:scale-95"
-                            >
-                                <Plus className="w-3.5 h-3.5" />
-                                <span>Consultar otro</span>
-                            </button>
-                        )}
-                    </div>
+                    {/* Botón de Salir si hay alumno activo */}
+                    {activeChild && (
+                        <button
+                            onClick={() => {
+                                setActiveChild(null);
+                                setError("");
+                            }}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-[#F8EDFB] text-[#7A3A8E] border border-[#EADFF0] text-xs font-black uppercase tracking-widest cursor-pointer transition-all active:scale-95 shadow-sm"
+                        >
+                            <span>Salir</span>
+                        </button>
+                    )}
                 </div>
             </header>
 
@@ -268,39 +273,7 @@ function ParentPageContent() {
                         ¿No tienes el código? Pregúntale a tu hijo o a su docente. El código es único de 6 caracteres.
                     </p>
 
-                    {/* Historial Reciente (Si no hay alumno activo y hay elementos) */}
-                    {recentChildren.length > 0 && (
-                        <div className="w-full mt-10 space-y-3">
-                            <h3 className="text-[10px] font-black uppercase tracking-wider text-[#7A3A8E] text-center">Consultas Recientes</h3>
-                            <div className="grid grid-cols-1 gap-2">
-                                {recentChildren.map(child => (
-                                    <div
-                                        key={child.id}
-                                        onClick={() => handleLookupCode(child.code)}
-                                        className="bg-white/60 hover:bg-white border border-[#EADFF0] hover:border-[#AD74C3] p-4 rounded-2xl flex items-center justify-between cursor-pointer transition-all shadow-sm group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-2xl">{child.avatar}</span>
-                                            <div>
-                                                <h4 className="font-bold text-xs text-[#522566]">{child.name}</h4>
-                                                <p className="text-[9px] text-[#AD74C3] font-black uppercase tracking-wider">Código: {child.code}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button 
-                                                onClick={(e) => handleRemoveRecent(e, child.id)}
-                                                className="p-2 rounded-xl text-[#AD74C3] hover:text-rose-500 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                title="Quitar"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                            <span className="text-[10px] bg-[#F8EDFB] text-[#7A3A8E] px-2.5 py-1 rounded-lg font-black uppercase tracking-wider">Consultar</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+
                 </div>
             ) : (
                 /* Vista del Dashboard del Alumno */
@@ -389,22 +362,140 @@ function ParentPageContent() {
                         </div>
                     </div>
 
-                    {/* Consejo Pedagógico de AprendIA */}
-                    <div className="p-5 bg-white border border-[#EADFF0] rounded-3xl flex items-start gap-4 shadow-sm">
-                        <div className="p-2.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl text-[#7A3A8E] shrink-0">
-                            <Sparkles className="w-5 h-5 animate-pulse" />
+                    {/* Plan de Acompañamiento Familiar AprendIA */}
+                    <div className="p-6 bg-white border border-[#EADFF0] rounded-[2rem] shadow-sm space-y-4">
+                        <div className="flex items-start gap-4 pb-4 border-b border-[#F8EDFB]">
+                            <div className="p-3 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl text-[#7A3A8E] shrink-0">
+                                <Sparkles className="w-6 h-6 animate-pulse" />
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="font-black text-base text-[#522566]">Plan de Acompañamiento Familiar AprendIA</h3>
+                                <p className="text-[11px] text-[#AD74C3] font-bold uppercase tracking-wider">Recomendaciones personalizadas para tutores</p>
+                            </div>
                         </div>
-                        <div className="space-y-1">
-                            <h4 className="font-black text-sm text-[#522566]">Acompañamiento Familiar AprendIA</h4>
-                            <p className="text-xs text-[#522566] leading-relaxed font-medium">
-                                {metrics.outer < 30 ? (
-                                    `🚨 ${activeChild.name} está presentando un retraso significativo en completar sus mundos virtuales. Se recomienda acompañarlo en su espacio de estudio, validar si está atascado en algún ejercicio y motivarlo con palabras de aliento.`
-                                ) : metrics.inner < 60 ? (
-                                    `⚠️ Observamos que ${activeChild.name} tiene un buen promedio de notas, pero está olvidando enviar sus evidencias a tiempo. Un recordatorio diario antes de dormir le ayudará a mejorar su responsabilidad.`
-                                ) : (
-                                    `🎉 ¡Felicidades! ${activeChild.name} mantiene un excelente ritmo de estudio y entrega constante. Sigue reconociendo su esfuerzo para mantener esta gran consistencia.`
-                                )}
-                            </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                            {/* Diagnóstico del Estudiante */}
+                            <div className="space-y-2.5">
+                                <h4 className="text-xs font-black text-[#7A3A8E] uppercase tracking-wider">Diagnóstico de Desempeño</h4>
+                                <div className="p-4 bg-[#F8EDFB]/40 border border-[#EADFF0]/60 rounded-2xl text-xs text-[#522566] leading-relaxed font-semibold">
+                                    {metrics.outer < 30 ? (
+                                        <p>🚨 <strong>{activeChild.name}</strong> está presentando un retraso significativo en completar sus mundos virtuales. Se recomienda acompañarlo en su espacio de estudio, validar si está atascado en algún ejercicio y motivarlo con palabras de aliento.</p>
+                                    ) : metrics.inner < 60 ? (
+                                        <p>⚠️ Observamos que <strong>{activeChild.name}</strong> tiene un buen promedio de notas, pero está olvidando enviar sus evidencias a tiempo. Un recordatorio diario antes de dormir le ayudará a mejorar su responsabilidad.</p>
+                                    ) : (
+                                        <p>🎉 ¡Felicidades! <strong>{activeChild.name}</strong> mantiene un excelente ritmo de estudio y entrega constante. Sigue reconociendo su esfuerzo para mantener esta gran consistencia.</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Recomendaciones Clave */}
+                            <div className="space-y-3">
+                                <h4 className="text-xs font-black text-[#7A3A8E] uppercase tracking-wider">Tareas y Sugerencias de Apoyo</h4>
+                                <ul className="space-y-2 text-xs text-[#522566]">
+                                    {metrics.outer < 30 ? (
+                                        <>
+                                            <li className="flex items-start gap-2 bg-rose-50/50 border border-rose-100 p-2.5 rounded-xl">
+                                                <span className="text-rose-500 font-bold">📌</span>
+                                                <span>Establece un horario fijo de 20 minutos diarios libres de pantallas secundarias y distracciones para avanzar en el mapa.</span>
+                                            </li>
+                                            <li className="flex items-start gap-2 bg-rose-50/50 border border-rose-100 p-2.5 rounded-xl">
+                                                <span className="text-rose-500 font-bold">📌</span>
+                                                <span>Acompáñalo en la realización de la misión actual del mapa para identificar si tiene dudas conceptuales.</span>
+                                            </li>
+                                        </>
+                                    ) : metrics.inner < 60 ? (
+                                        <>
+                                            <li className="flex items-start gap-2 bg-amber-50/50 border border-amber-100 p-2.5 rounded-xl">
+                                                <span className="text-amber-600 font-bold">📌</span>
+                                                <span>Implementa una rutina de revisión nocturna: revisen juntos si las evidencias del día fueron enviadas correctamente.</span>
+                                            </li>
+                                            <li className="flex items-start gap-2 bg-amber-50/50 border border-amber-100 p-2.5 rounded-xl">
+                                                <span className="text-amber-600 font-bold">📌</span>
+                                                <span>Recompensa de manera verbal o simbólica la entrega oportuna de tareas para crear un hábito positivo.</span>
+                                            </li>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <li className="flex items-start gap-2 bg-emerald-50/50 border border-emerald-100 p-2.5 rounded-xl">
+                                                <span className="text-emerald-600 font-bold">📌</span>
+                                                <span>Valida su autonomía: pregúntale qué ha sido lo más interesante que ha aprendido en sus misiones asignadas.</span>
+                                            </li>
+                                            <li className="flex items-start gap-2 bg-emerald-50/50 border border-emerald-100 p-2.5 rounded-xl">
+                                                <span className="text-emerald-600 font-bold">📌</span>
+                                                <span>Anímalo a explorar misiones de nivel superior o compartir lo que sabe con sus compañeros en el mural.</span>
+                                            </li>
+                                        </>
+                                    )}
+                                    <li className="flex items-start gap-2 bg-[#F8EDFB] border border-[#EADFF0] p-2.5 rounded-xl">
+                                        <span className="text-[#7A3A8E] font-bold">💡</span>
+                                        <span>Fomenta una mentalidad de crecimiento: celebra el esfuerzo y la constancia diaria más que la nota final obtenida.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Desempeño por Proyecto */}
+                    <div className="space-y-4 pt-4">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#EC4899]" />
+                            <h3 className="text-sm font-black uppercase tracking-wider text-[#522566]">Desempeño Detallado por Proyecto</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {(!activeChild.assignedWorlds || activeChild.assignedWorlds.length === 0) ? (
+                                <div className="col-span-full bg-white border border-[#EADFF0] p-8 rounded-3xl text-center text-xs text-[#AD74C3] font-bold">
+                                    El estudiante no tiene proyectos asignados actualmente.
+                                </div>
+                            ) : (
+                                activeChild.assignedWorlds.map((world: any) => {
+                                    const wMetrics = getChildWorldProgressMetrics(activeChild, world);
+                                    return (
+                                        <div key={world.id} className="bg-white border border-[#EADFF0] rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-4 text-center">
+                                            <div className="w-full pb-2.5 border-b border-[#F8EDFB]">
+                                                <h4 className="font-black text-xs text-[#522566] tracking-tight line-clamp-1">{world.title}</h4>
+                                                <span className="text-[9px] uppercase tracking-wider text-[#AD74C3] font-black">{world.theme || "General"}</span>
+                                            </div>
+
+                                            <div className="bg-[#F8EDFB]/50 border border-[#EADFF0]/60 p-4 rounded-full">
+                                                <ActivityRings 
+                                                    outer={wMetrics.outer} 
+                                                    middle={wMetrics.middle} 
+                                                    inner={wMetrics.inner} 
+                                                    size={110}
+                                                />
+                                            </div>
+
+                                            <div className="w-full space-y-2 text-left text-[11px]">
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="w-2 h-2 rounded-full bg-[#7A3A8E]" />
+                                                        <span className="font-bold text-slate-500">Avance</span>
+                                                    </div>
+                                                    <span className="font-black text-[#7A3A8E]">{wMetrics.outer}% ({wMetrics.completedLevels}/{wMetrics.totalLevels})</span>
+                                                </div>
+
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="w-2 h-2 rounded-full bg-[#AD74C3]" />
+                                                        <span className="font-bold text-slate-500">Promedio</span>
+                                                    </div>
+                                                    <span className="font-black text-[#8F4AA3]">{(wMetrics.middle / 10).toFixed(1)}/10</span>
+                                                </div>
+
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="w-2 h-2 rounded-full bg-[#EC4899]" />
+                                                        <span className="font-bold text-slate-500">Entregas</span>
+                                                    </div>
+                                                    <span className="font-black text-[#EC4899]">{wMetrics.inner}% ({wMetrics.submissions}/{wMetrics.totalLevels})</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
 
@@ -475,37 +566,64 @@ function ParentPageContent() {
                                 )}
                             </div>
 
-                            {/* RETROALIMENTACIÓN DE TAREAS Y EVALUACIONES */}
-                            <div className="bg-white border border-[#EADFF0] p-6 rounded-3xl space-y-4 shadow-sm">
-                                <h4 className="font-black text-sm tracking-tight flex items-center gap-2">
-                                    <MessageSquare className="w-4.5 h-4.5 text-[#AD74C3]" /> Retroalimentación del Profesor
-                                </h4>
+                             {/* RETROALIMENTACIÓN DE TAREAS Y EVALUACIONES POR PROYECTO */}
+                             <div className="bg-white border border-[#EADFF0] p-6 rounded-3xl space-y-4 shadow-sm">
+                                 <h4 className="font-black text-sm tracking-tight flex items-center gap-2">
+                                     <MessageSquare className="w-4.5 h-4.5 text-[#AD74C3]" /> Retroalimentación por Proyecto
+                                 </h4>
 
-                                {(!activeChild.evidenceEntries || activeChild.evidenceEntries.length === 0) ? (
-                                    <p className="text-xs text-[#AD74C3] font-bold py-6 text-center">No hay evidencias entregadas o revisadas todavía.</p>
-                                ) : (
-                                    <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-                                        {activeChild.evidenceEntries.map((ev: any) => (
-                                            <div key={ev.id} className="p-3 bg-[#F8EDFB]/50 border border-[#EADFF0] rounded-2xl space-y-2 text-xs">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="font-black text-[#522566]">Misión de Nivel {ev.levelId}</span>
-                                                    {ev.grade !== null && (
-                                                        <span className="font-black text-[#7A3A8E] bg-white px-2 py-0.5 border border-[#EADFF0] rounded text-[10px]">
-                                                            Nota: {ev.grade}/10
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {ev.feedback && (
-                                                    <p className="text-[11px] leading-relaxed text-slate-600 bg-white/60 p-2.5 rounded-xl border border-white font-medium">
-                                                        &ldquo;{ev.feedback}&rdquo;
-                                                    </p>
-                                                )}
-                                                <p className="text-[9px] text-slate-400">{new Date(ev.createdAt).toLocaleDateString()}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                                 {(!activeChild.assignedWorlds || activeChild.assignedWorlds.length === 0) ? (
+                                     <p className="text-xs text-[#AD74C3] font-bold py-6 text-center">El estudiante no cuenta con proyectos asignados.</p>
+                                 ) : (
+                                     <div className="space-y-6 max-h-[300px] overflow-y-auto pr-1">
+                                         {activeChild.assignedWorlds.map((world: any) => {
+                                             const worldEvidences = (activeChild.evidenceEntries || []).filter(
+                                                 (ev: any) => ev.worldId === world.id
+                                             );
+
+                                             return (
+                                                 <div key={world.id} className="space-y-2">
+                                                     <div className="flex items-center justify-between border-b border-[#F8EDFB] pb-1.5">
+                                                         <span className="font-black text-xs text-[#7A3A8E]">{world.title}</span>
+                                                         <span className="text-[9px] font-black uppercase text-slate-400 bg-slate-50 px-2 py-0.5 border border-slate-100 rounded">
+                                                             {worldEvidences.length} {worldEvidences.length === 1 ? 'Actividad' : 'Actividades'}
+                                                         </span>
+                                                     </div>
+
+                                                     {worldEvidences.length === 0 ? (
+                                                         <p className="text-[10px] text-slate-400 italic py-2 font-medium">Sin actividades enviadas en este proyecto todavía.</p>
+                                                     ) : (
+                                                         <div className="space-y-2">
+                                                             {worldEvidences.map((ev: any) => (
+                                                                 <div key={ev.id} className="p-3 bg-[#F8EDFB]/40 border border-[#EADFF0] rounded-2xl space-y-1.5 text-xs">
+                                                                     <div className="flex justify-between items-center">
+                                                                         <span className="font-black text-[#522566]">Misión de Nivel {ev.levelId}</span>
+                                                                         {ev.grade !== null ? (
+                                                                             <span className="font-black text-[#7A3A8E] bg-white px-2 py-0.5 border border-[#EADFF0] rounded text-[10px]">
+                                                                                 Nota: {ev.grade}/10
+                                                                             </span>
+                                                                         ) : (
+                                                                             <span className="text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded">
+                                                                                 Pendiente de revisión
+                                                                             </span>
+                                                                         )}
+                                                                     </div>
+                                                                     {ev.feedback && (
+                                                                         <p className="text-[11px] leading-relaxed text-slate-600 bg-white/70 p-2.5 rounded-xl border border-white font-medium">
+                                                                             &ldquo;{ev.feedback}&rdquo;
+                                                                         </p>
+                                                                     )}
+                                                                     <p className="text-[9px] text-slate-400 font-semibold">{new Date(ev.createdAt).toLocaleDateString()}</p>
+                                                                 </div>
+                                                             ))}
+                                                         </div>
+                                                     )}
+                                                 </div>
+                                             );
+                                         })}
+                                     </div>
+                                 )}
+                             </div>
 
                         </div>
                     ) : (
