@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { 
     TrendingUp, Users, BookOpen, Clock, Activity, Award, Star, MessageSquare, 
     Search, X, FileText, ChevronRight, BrainCircuit, Sparkles, Filter, 
@@ -181,6 +184,11 @@ export default function PerformanceDashboard({
     const [quickMessage, setQuickMessage] = useState("");
     const [actionMessageStatus, setActionMessageStatus] = useState("");
     const [aiGeneratingMission, setAiGeneratingMission] = useState(false);
+
+    // Reportes individuales
+    const [aiReport, setAiReport] = useState<string | null>(null);
+    const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+    const [profileScopeWorldId, setProfileScopeWorldId] = useState("global");
 
     // Cargar evidencias para todos los estudiantes en el salón seleccionado
     useEffect(() => {
@@ -999,6 +1007,8 @@ export default function PerformanceDashboard({
                                 <button
                                     key={student.id}
                                     onClick={() => {
+                                        setAiReport(null);
+                                        setProfileScopeWorldId("global");
                                         setSelectedStudent(student);
                                         setShowStudentModal(true);
                                     }}
@@ -1170,31 +1180,123 @@ export default function PerformanceDashboard({
 
                                 {/* INTERVENCIONES Y RECOMENDACIÓN DE IA */}
                                 <div className="p-5 bg-gradient-to-br from-[#522566]/5 to-[#7A3A8E]/5 border border-[#EADFF0] rounded-[2rem] space-y-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="p-2 bg-white rounded-xl border border-[#EADFF0] text-[#7A3A8E]">
-                                            <BrainCircuit className="w-5 h-5 animate-pulse" />
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="p-2 bg-white rounded-xl border border-[#EADFF0] text-[#7A3A8E]">
+                                                <BrainCircuit className="w-5 h-5 animate-pulse" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-sm tracking-tight text-[#522566]">Recomendación de AprendIA</h4>
+                                                <p className="text-[9px] font-black text-[#AD74C3] uppercase tracking-widest">Inteligencia Artificial Pedagógica</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4 className="font-black text-sm tracking-tight text-[#522566]">Recomendación de AprendIA</h4>
-                                            <p className="text-[9px] font-black text-[#AD74C3] uppercase tracking-widest">Inteligencia Artificial Pedagógica</p>
-                                        </div>
+                                        <select
+                                            value={profileScopeWorldId}
+                                            onChange={(e) => { setAiReport(null); setProfileScopeWorldId(e.target.value); }}
+                                            className="px-3.5 py-2 bg-white border border-[#EADFF0] rounded-xl text-[10px] font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none w-full sm:w-auto"
+                                        >
+                                            <option value="global">🌐 General (Global)</option>
+                                            {studentWorlds.map(w => (
+                                                <option key={w.id} value={w.id}>🗺️ {w.title}</option>
+                                            ))}
+                                        </select>
                                     </div>
-                                    <p className="text-xs leading-relaxed text-[#522566] font-medium bg-white/60 p-4 border border-white rounded-xl">
-                                        {outerVal < 30 ? (
-                                            `🚨 Se detecta que ${selectedStudent.name} tiene un avance muy bajo (${outerVal}%). Muestra bloqueos en los niveles básicos. Se sugiere retroceder a la teoría e iniciar una misión de repaso personalizada de conceptos clave.`
-                                        ) : innerVal < 50 ? (
-                                            `⚠️ El alumno comprende el tema (promedio académico de ${(middleVal / 10).toFixed(1)}/10) pero muestra baja responsabilidad en la entrega de tareas (${innerVal}%). Se sugiere enviar una felicitación para incentivar su entrega diaria.`
+
+                                    <div className="border-t border-[#EADFF0] pt-4">
+                                        {aiReport ? (
+                                            <div className="bg-white p-4 rounded-xl border border-[#EADFF0] text-xs leading-relaxed text-[#522566] max-h-60 overflow-y-auto font-medium prose prose-indigo w-full">
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{aiReport}</ReactMarkdown>
+                                            </div>
+                                        ) : isGeneratingReport ? (
+                                            <div className="flex items-center gap-3 p-4">
+                                                <div className="animate-spin h-5 w-5 border-2 border-[#522566] border-t-transparent rounded-full"></div>
+                                                <span className="text-[#522566] font-medium text-xs">Generando reporte con IA...</span>
+                                            </div>
                                         ) : (
-                                            `✨ ${selectedStudent.name} avanza a excelente ritmo en el aula virtual. Mantiene una consistencia destacable. Se sugiere promoverlo como monitor del grupo para apoyar a otros compañeros.`
+                                            <>
+                                                <p className="text-xs leading-relaxed text-[#522566] font-medium bg-white/60 p-4 border border-white rounded-xl mb-3">
+                                                    {outerVal < 30 ? (
+                                                        `🚨 Se detecta que ${selectedStudent.name} tiene un avance muy bajo (${outerVal}%). Muestra bloqueos en los niveles básicos. Se sugiere retroceder a la teoría e iniciar una misión de repaso personalizada de conceptos clave.`
+                                                    ) : innerVal < 50 ? (
+                                                        `⚠️ El alumno comprende el tema (promedio académico de ${(middleVal / 10).toFixed(1)}/10) pero muestra baja responsabilidad en la entrega de tareas (${innerVal}%). Se sugiere enviar una felicitación para incentivar su entrega diaria.`
+                                                    ) : (
+                                                        `✨ ${selectedStudent.name} avanza a excelente ritmo en el aula virtual. Mantiene una consistencia destacable. Se sugiere promoverlo como monitor del grupo para apoyar a otros compañeros.`
+                                                    )}
+                                                </p>
+                                                <div className="flex flex-col sm:flex-row gap-2">
+                                                    <button
+                                                        onClick={async () => {
+                                                            setIsGeneratingReport(true);
+                                                            try {
+                                                                const payload = {
+                                                                    studentId: selectedStudent.id,
+                                                                    studentName: selectedStudent.name,
+                                                                    reportType: 'teacher',
+                                                                    worldFilter: profileScopeWorldId === 'global' ? null : profileScopeWorldId
+                                                                };
+                                                                const res = await fetch('/api/ai/generate-report', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify(payload)
+                                                                });
+                                                                const data = await res.json();
+                                                                setAiReport(data.report);
+                                                            } catch (e) {
+                                                                setAiReport('Error al generar el reporte.');
+                                                            }
+                                                            setIsGeneratingReport(false);
+                                                        }}
+                                                        className="flex-1 bg-[#522566] hover:bg-[#6b2e82] text-white px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shadow-sm"
+                                                    >
+                                                        <BrainCircuit className="w-4 h-4" /> Generar Reporte Docente
+                                                    </button>
+                                                    <button
+                                                        onClick={async () => {
+                                                            setIsGeneratingReport(true);
+                                                            try {
+                                                                const res = await fetch('/api/ai/generate-report', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({
+                                                                        studentId: selectedStudent.id,
+                                                                        studentName: selectedStudent.name,
+                                                                        reportType: 'parent',
+                                                                        worldFilter: profileScopeWorldId === 'global' ? null : profileScopeWorldId
+                                                                    })
+                                                                });
+                                                                const data = await res.json();
+                                                                const scopeWorld = profileScopeWorldId !== 'global' ? worlds.find(w => w.id === profileScopeWorldId) : null;
+                                                                openReportWindow('parent', selectedStudent.name || 'Alumno', [{
+                                                                    studentName: selectedStudent.name || '',
+                                                                    xp: selectedStudent.xp || 0,
+                                                                    gems: selectedStudent.gems || 0,
+                                                                    progress: Math.round(outerVal),
+                                                                    aiText: Array.isArray(data.paragraphs) ? data.paragraphs.join('\n\n') : (data.report || ''),
+                                                                    worldTitle: scopeWorld?.title,
+                                                                    homeActivity: data.homeActivity
+                                                                }]);
+                                                            } catch (e) {
+                                                                console.error("PDF Generate Error", e);
+                                                                alert('Error al generar el reporte para padres.');
+                                                            }
+                                                            setIsGeneratingReport(false);
+                                                        }}
+                                                        className="flex-1 bg-[#F8EDFB] hover:bg-[#EADFF0] border border-[#EADFF0] text-[#7A3A8E] px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shadow-sm"
+                                                    >
+                                                        <FileText className="w-4 h-4 text-[#EC4899]" /> Generar Reporte Padres
+                                                    </button>
+                                                </div>
+                                            </>
                                         )}
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 pt-2">
                                         <button
                                             onClick={handleCreateAiMission}
                                             disabled={aiGeneratingMission}
-                                            className="flex items-center gap-2 bg-[#522566] hover:bg-[#6b2e82] text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50"
+                                            className="flex items-center gap-2 bg-white text-[#522566] border border-[#EADFF0] hover:border-[#AD74C3] px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50"
                                         >
-                                            <Sparkles className="w-4 h-4" />
+                                            <Sparkles className="w-4 h-4 text-[#7A3A8E]" />
                                             {aiGeneratingMission ? "Generando..." : "Crear Misión de Refuerzo con IA"}
                                         </button>
                                     </div>
