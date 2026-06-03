@@ -852,50 +852,6 @@ export default function PerformanceDashboard({
                     />
                 </div>
 
-            {/* SECCIÓN DE REPORTES EN LOTE AI */}
-            <div className="bg-white border border-[#EADFF0] p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[#F8EDFB] rounded-2xl text-[#7A3A8E] border border-[#EADFF0]">
-                        <BrainCircuit className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <h4 className="font-black text-sm text-[#522566]">Generación de Reportes Académicos por IA</h4>
-                        <p className="text-[10px] text-[#AD74C3] font-black uppercase tracking-wider">Genera reportes narrativos automáticos para todos los alumnos visibles</p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2 w-full md:w-auto flex-wrap justify-end">
-                    <select
-                        value={bulkReportWorldId}
-                        onChange={e => setBulkReportWorldId(e.target.value)}
-                        className="px-3.5 py-2.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl text-xs font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none focus:ring-2 focus:ring-[#AD74C3] min-w-[150px] truncate"
-                    >
-                        <option value="global">🌐 Todos los Proyectos</option>
-                        {worlds.map(w => (
-                            <option key={w.id} value={w.id}>🗺️ {w.title}</option>
-                        ))}
-                    </select>
-
-                    <button
-                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
-                        onClick={handleGenerateTeacherBulkReport}
-                        className="px-5 py-2.5 bg-white text-[#522566] border border-[#EADFF0] hover:border-[#AD74C3] rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-sm"
-                    >
-                        <BrainCircuit className="w-4 h-4 text-[#7A3A8E]" />
-                        {isGeneratingTeacherBulk ? 'Generando...' : 'Reporte Docente'}
-                    </button>
-
-                    <button
-                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
-                        onClick={handleGenerateParentBulkReport}
-                        className="px-5 py-2.5 bg-white text-[#7A3A8E] border border-[#EADFF0] hover:border-[#AD74C3] rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-sm"
-                    >
-                        <FileText className="w-4 h-4 text-[#EC4899]" />
-                        {isGeneratingParentBulk ? 'Generando...' : 'Reporte Padres'}
-                    </button>
-                </div>
-            </div>
-
                 {/* Leyendas y Métricas del Grupo */}
                 <div className="flex-1 space-y-8 relative z-10 w-full">
                     <div>
@@ -956,6 +912,50 @@ export default function PerformanceDashboard({
                             </div>
                         )}
                     </div>
+                </div>
+            </div>
+
+            {/* SECCIÓN DE REPORTES EN LOTE AI */}
+            <div className="bg-white border border-[#EADFF0] p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-[#F8EDFB] rounded-2xl text-[#7A3A8E] border border-[#EADFF0]">
+                        <BrainCircuit className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h4 className="font-black text-sm text-[#522566]">Generación de Reportes Académicos por IA</h4>
+                        <p className="text-[10px] text-[#AD74C3] font-black uppercase tracking-wider">Genera reportes narrativos automáticos para todos los alumnos visibles</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full md:w-auto flex-wrap justify-end">
+                    <select
+                        value={bulkReportWorldId}
+                        onChange={e => setBulkReportWorldId(e.target.value)}
+                        className="px-3.5 py-2.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl text-xs font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none focus:ring-2 focus:ring-[#AD74C3] min-w-[150px] truncate"
+                    >
+                        <option value="global">🌐 Todos los Proyectos</option>
+                        {worlds.map(w => (
+                            <option key={w.id} value={w.id}>🗺️ {w.title}</option>
+                        ))}
+                    </select>
+
+                    <button
+                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
+                        onClick={handleGenerateTeacherBulkReport}
+                        className="px-5 py-2.5 bg-white text-[#522566] border border-[#EADFF0] hover:border-[#AD74C3] rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-sm"
+                    >
+                        <BrainCircuit className="w-4 h-4 text-[#7A3A8E]" />
+                        {isGeneratingTeacherBulk ? 'Generando...' : 'Reporte Docente'}
+                    </button>
+
+                    <button
+                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
+                        onClick={handleGenerateParentBulkReport}
+                        className="px-5 py-2.5 bg-white text-[#7A3A8E] border border-[#EADFF0] hover:border-[#AD74C3] rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-sm"
+                    >
+                        <FileText className="w-4 h-4 text-[#EC4899]" />
+                        {isGeneratingParentBulk ? 'Generando...' : 'Reporte Padres'}
+                    </button>
                 </div>
             </div>
 
