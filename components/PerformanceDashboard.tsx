@@ -712,234 +712,226 @@ export default function PerformanceDashboard({
     return (
         <div className="space-y-8 animate-fade-in pb-24 text-[#522566]">
             
-            {/* ENCABEZADO Y FILTROS TÁCTICOS */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/40 backdrop-blur-3xl border border-white/60 p-6 rounded-3xl shadow-sm">
-                <div>
-                    <h2 className="text-2xl font-black text-[#522566] tracking-tight">Métricas y Visualización de Desempeño</h2>
-                    <p className="text-xs text-[#AD74C3] font-bold uppercase tracking-widest mt-1">Monitoreo en tiempo real de alumnos y proyectos</p>
+            {/* SUB-BARRA DE NAVEGACIÓN Y FILTROS INTEGRADOS (COMPACTA) */}
+            <div className="bg-white/80 backdrop-blur-md border border-[#EADFF0] rounded-[2rem] p-4 sm:p-5 shadow-sm flex flex-col gap-4">
+                {/* Fila Superior: Título y Acciones */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-[#7A3A8E] animate-pulse" />
+                        <h2 className="text-xs font-black text-[#522566] uppercase tracking-widest">Panel de Control de Aula</h2>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-1.5 w-full sm:w-auto">
+                        <button 
+                            onClick={onOpenBulkModal}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white text-[#7A3A8E] border border-[#EADFF0] hover:border-[#AD74C3] px-3.5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm cursor-pointer"
+                        >
+                            <UploadCloud className="w-3.5 h-3.5" />
+                            Carga Masiva
+                        </button>
+                        <button 
+                            onClick={onOpenAddStudent}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-[#522566] hover:bg-[#6b2e82] text-white px-3.5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm cursor-pointer"
+                        >
+                            <UserPlus className="w-3.5 h-3.5" />
+                            Nuevo Alumno
+                        </button>
+                        <button 
+                            onClick={handleDownloadPDFReport}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-[#F8EDFB] hover:bg-[#EADFF0] text-[#7A3A8E] px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 border border-[#EADFF0] cursor-pointer"
+                        >
+                            <FileText className="w-3.5 h-3.5" />
+                            PDF
+                        </button>
+                    </div>
                 </div>
-                <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                    <button 
-                        onClick={onOpenBulkModal}
-                        className="flex items-center gap-2 bg-white text-[#7A3A8E] border border-[#EADFF0] hover:border-[#AD74C3] px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm"
-                    >
-                        <UploadCloud className="w-4 h-4" />
-                        Carga Masiva
-                    </button>
-                    <button 
-                        onClick={onOpenAddStudent}
-                        className="flex items-center gap-2 bg-[#522566] hover:bg-[#6b2e82] text-white px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-md shadow-[#522566]/20"
-                    >
-                        <UserPlus className="w-4 h-4" />
-                        Nuevo Alumno
-                    </button>
-                    <button 
-                        onClick={handleDownloadPDFReport}
-                        className="flex items-center gap-2 bg-[#F8EDFB] hover:bg-[#EADFF0] text-[#7A3A8E] px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 border border-[#EADFF0]"
-                    >
-                        <FileText className="w-4 h-4" />
-                        Exportar Reporte PDF
-                    </button>
-                </div>
-            </div>
 
-            {/* BARRA DE FILTROS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white border border-[#EADFF0] p-5 rounded-3xl shadow-sm">
-                <div className="flex flex-col gap-1.5">
-                    <div className="flex justify-between items-center">
-                        <label className="text-[9px] font-black uppercase tracking-wider text-[#AD74C3]">Salón de Clases</label>
-                        <div className="flex gap-1.5">
-                            <button 
-                                onClick={onOpenAddClassroom}
-                                className="text-[#AD74C3] hover:text-[#522566] cursor-pointer" 
-                                title="Nuevo Salón"
+                {/* Fila Inferior: Selectores y Búsqueda */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-[#F8EDFB]">
+                    {/* Salón de Clases */}
+                    <div className="flex flex-col gap-1">
+                        <div className="flex justify-between items-center px-1">
+                            <label className="text-[8px] font-black uppercase tracking-wider text-[#AD74C3]">Salón de Clases</label>
+                            <div className="flex gap-1.5">
+                                <button onClick={onOpenAddClassroom} className="text-[#AD74C3] hover:text-[#522566] cursor-pointer" title="Nuevo Salón">
+                                    <Plus className="w-2.5 h-2.5" />
+                                </button>
+                                {selectedClassroomId !== "all" && (
+                                    <>
+                                        <button 
+                                            onClick={() => {
+                                                const cls = classrooms.find(c => c.id === selectedClassroomId);
+                                                if (cls) onEditClassroom(cls);
+                                            }} 
+                                            className="text-[#AD74C3] hover:text-[#522566] cursor-pointer" 
+                                            title="Editar Salón"
+                                        >
+                                            <Pencil className="w-2.5 h-2.5" />
+                                        </button>
+                                        <button onClick={() => onDeleteClassroom(selectedClassroomId)} className="text-[#AD74C3] hover:text-rose-500 cursor-pointer" title="Eliminar Salón">
+                                            <Trash2 className="w-2.5 h-2.5" />
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                        <div className="relative">
+                            <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#AD74C3]" />
+                            <select
+                                value={selectedClassroomId}
+                                onChange={(e) => setSelectedClassroomId(e.target.value)}
+                                className="w-full pl-8 pr-3 py-1.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-xl text-[10px] font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none truncate"
                             >
-                                <Plus className="w-3 h-3" />
-                            </button>
-                            {selectedClassroomId !== "all" && (
-                                <>
-                                    <button 
-                                        onClick={() => {
-                                            const cls = classrooms.find(c => c.id === selectedClassroomId);
-                                            if (cls) onEditClassroom(cls);
-                                        }}
-                                        className="text-[#AD74C3] hover:text-[#522566] cursor-pointer" 
-                                        title="Editar Salón"
-                                    >
-                                        <Pencil className="w-3 h-3" />
-                                    </button>
-                                    <button 
-                                        onClick={() => onDeleteClassroom(selectedClassroomId)}
-                                        className="text-[#AD74C3] hover:text-rose-500 cursor-pointer" 
-                                        title="Eliminar Salón"
-                                    >
-                                        <Trash2 className="w-3 h-3" />
-                                    </button>
-                                </>
-                            )}
+                                <option value="all">🏫 Todos los Salones</option>
+                                {classrooms.map(c => (
+                                    <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
-                    <div className="relative">
-                        <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AD74C3]" />
-                        <select
-                            value={selectedClassroomId}
-                            onChange={(e) => setSelectedClassroomId(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl text-xs font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none focus:ring-2 focus:ring-[#AD74C3] truncate"
-                        >
-                            <option value="all">🏫 Todos los Salones</option>
-                            {classrooms.map(c => (
-                                <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
 
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-wider text-[#AD74C3]">Proyecto / Mapa Activo</label>
-                    <div className="relative">
-                        <BookOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AD74C3]" />
-                        <select
-                            value={selectedWorldId}
-                            onChange={(e) => setSelectedWorldId(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl text-xs font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none focus:ring-2 focus:ring-[#AD74C3] truncate"
-                        >
-                            <option value="all">🌐 Todos los Proyectos</option>
-                            {worlds.map(w => (
-                                <option key={w.id} value={w.id}>🗺️ {w.title}</option>
-                            ))}
-                        </select>
+                    {/* Proyecto / Mapa Activo */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[8px] font-black uppercase tracking-wider text-[#AD74C3] px-1">Proyecto / Mapa Activo</label>
+                        <div className="relative">
+                            <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#AD74C3]" />
+                            <select
+                                value={selectedWorldId}
+                                onChange={(e) => setSelectedWorldId(e.target.value)}
+                                className="w-full pl-8 pr-3 py-1.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-xl text-[10px] font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none truncate"
+                            >
+                                <option value="all">🌐 Todos los Proyectos</option>
+                                {worlds.map(w => (
+                                    <option key={w.id} value={w.id}>🗺️ {w.title}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
-                </div>
 
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-wider text-[#AD74C3]">Buscar Alumno</label>
-                    <div className="relative">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AD74C3]" />
-                        <input
-                            type="text"
-                            placeholder="Nombre del alumno..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl text-xs font-bold text-[#522566] placeholder-[#AD74C3] focus:outline-none focus:ring-2 focus:ring-[#AD74C3]"
-                        />
+                    {/* Buscar Alumno */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[8px] font-black uppercase tracking-wider text-[#AD74C3] px-1">Buscar Alumno</label>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#AD74C3]" />
+                            <input
+                                type="text"
+                                placeholder="Nombre..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-8 pr-3 py-1.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-xl text-[10px] font-bold text-[#522566] placeholder-[#AD74C3] focus:outline-none"
+                            />
+                        </div>
                     </div>
-                </div>
 
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-wider text-[#AD74C3]">Estado de Alerta</label>
-                    <div className="relative">
-                        <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AD74C3]" />
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl text-xs font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none focus:ring-2 focus:ring-[#AD74C3]"
-                        >
-                            <option value="all">🚦 Todos los Alumnos</option>
-                            <option value="alert">🚨 Alerta Académica (&lt;30%)</option>
-                            <option value="practice">⚠️ Requiere Práctica (30%-70%)</option>
-                            <option value="good">✅ Buen Ritmo (&gt;70%)</option>
-                        </select>
+                    {/* Estado de Alerta */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[8px] font-black uppercase tracking-wider text-[#AD74C3] px-1">Estado de Alerta</label>
+                        <div className="relative">
+                            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#AD74C3]" />
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="w-full pl-8 pr-3 py-1.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-xl text-[10px] font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none"
+                            >
+                                <option value="all">🚦 Todos los Alumnos</option>
+                                <option value="alert">🚨 Alerta Académica (&lt;30%)</option>
+                                <option value="practice">⚠️ Requiere Práctica (30%-70%)</option>
+                                <option value="good">✅ Buen Ritmo (&gt;70%)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* SECCIÓN GRUPAL (LIGHT GLASS CARD) */}
-            <div className="relative overflow-hidden bg-white/70 backdrop-blur-md text-[#522566] border border-[#EADFF0] shadow-xl rounded-[3rem] p-8 sm:p-12 flex flex-col lg:flex-row items-center gap-12">
+            {/* SECCIÓN GRUPAL (LIGHT GLASS CARD - COMPACTA) */}
+            <div className="relative overflow-hidden bg-white/70 backdrop-blur-md text-[#522566] border border-[#EADFF0] shadow-md rounded-[2rem] p-6 sm:p-8 flex flex-col md:flex-row items-center gap-8 md:gap-12">
                 {/* Glow decorativo de fondo */}
-                <div className="absolute right-0 top-0 w-[400px] h-[400px] bg-[#EADFF0]/30 blur-[100px] rounded-full pointer-events-none" />
-                <div className="absolute left-0 bottom-0 w-[300px] h-[300px] bg-[#F8EDFB]/30 blur-[100px] rounded-full pointer-events-none" />
+                <div className="absolute right-0 top-0 w-[300px] h-[300px] bg-[#EADFF0]/20 blur-[80px] rounded-full pointer-events-none" />
+                <div className="absolute left-0 bottom-0 w-[200px] h-[200px] bg-[#F8EDFB]/20 blur-[80px] rounded-full pointer-events-none" />
 
-                {/* Anillos de Actividad del Grupo */}
-                <div className="relative shrink-0 flex items-center justify-center bg-[#F8EDFB] border border-[#EADFF0] p-8 rounded-full shadow-sm">
+                {/* Anillos de Actividad del Grupo (El Héroe Visual) */}
+                <div className="relative shrink-0 flex items-center justify-center bg-[#F8EDFB] border border-[#EADFF0] p-6 rounded-full shadow-sm">
                     <ActivityRings 
                         outer={groupMetrics.progress} 
                         middle={groupMetrics.academic} 
                         inner={groupMetrics.submission} 
-                        size={220}
+                        size={180}
                         showLabel={true}
                     />
                 </div>
 
                 {/* Leyendas y Métricas del Grupo */}
-                <div className="flex-1 space-y-8 relative z-10 w-full">
+                <div className="flex-1 space-y-6 relative z-10 w-full">
                     <div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#AD74C3]">Métricas Generales de Aula</span>
-                        <h3 className="text-3xl font-black text-[#522566] tracking-tight mt-1">Desempeño Promedio del Grupo</h3>
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#AD74C3]">Métricas Generales de Aula</span>
+                        <h3 className="text-xl font-black text-[#522566] tracking-tight leading-none mt-1">Desempeño Promedio del Grupo</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {/* Anillo Exterior Legend */}
-                        <div className="flex items-start gap-4 p-4 bg-white border border-[#EADFF0] rounded-2xl hover:bg-[#F8EDFB]/50 transition-all shadow-sm">
-                            <div className="w-3.5 h-3.5 rounded-full bg-[#7A3A8E] shrink-0 mt-1 shadow-sm" />
+                        <div className="flex items-center gap-3 p-3.5 bg-white border border-[#EADFF0] rounded-2xl hover:bg-[#F8EDFB]/50 transition-all shadow-sm">
+                            <div className="w-3 h-3 rounded-full bg-[#7A3A8E] shrink-0 shadow-sm" />
                             <div>
-                                <h4 className="text-xs font-black uppercase tracking-wider text-[#7A3A8E]">Avance de Mapas</h4>
-                                <p className="text-2xl font-black text-[#522566] tracking-tight mt-1">{groupMetrics.progress}%</p>
-                                <p className="text-[9px] text-[#AD74C3] mt-1">Niveles completados en las aventuras activas.</p>
+                                <h4 className="text-[9px] font-black uppercase tracking-wider text-[#7A3A8E]">Avance de Mapas</h4>
+                                <p className="text-lg font-black text-[#522566] tracking-tight leading-none mt-1">{groupMetrics.progress}%</p>
                             </div>
                         </div>
 
                         {/* Anillo Medio Legend */}
-                        <div className="flex items-start gap-4 p-4 bg-white border border-[#EADFF0] rounded-2xl hover:bg-[#F8EDFB]/50 transition-all shadow-sm">
-                            <div className="w-3.5 h-3.5 rounded-full bg-[#AD74C3] shrink-0 mt-1 shadow-sm" />
+                        <div className="flex items-center gap-3 p-3.5 bg-white border border-[#EADFF0] rounded-2xl hover:bg-[#F8EDFB]/50 transition-all shadow-sm">
+                            <div className="w-3 h-3 rounded-full bg-[#AD74C3] shrink-0 shadow-sm" />
                             <div>
-                                <h4 className="text-xs font-black uppercase tracking-wider text-[#7A3A8E]">Promedio Académico</h4>
-                                <p className="text-2xl font-black text-[#522566] tracking-tight mt-1">{(groupMetrics.academic / 10).toFixed(1)} / 10</p>
-                                <p className="text-[9px] text-[#AD74C3] mt-1">Nota promedio acumulada de evidencias.</p>
+                                <h4 className="text-[9px] font-black uppercase tracking-wider text-[#7A3A8E]">Promedio Académico</h4>
+                                <p className="text-lg font-black text-[#522566] tracking-tight leading-none mt-1">{(groupMetrics.academic / 10).toFixed(1)} / 10</p>
                             </div>
                         </div>
 
                         {/* Anillo Interior Legend */}
-                        <div className="flex items-start gap-4 p-4 bg-white border border-[#EADFF0] rounded-2xl hover:bg-[#F8EDFB]/50 transition-all shadow-sm">
-                            <div className="w-3.5 h-3.5 rounded-full bg-[#EC4899] shrink-0 mt-1 shadow-sm" />
+                        <div className="flex items-center gap-3 p-3.5 bg-white border border-[#EADFF0] rounded-2xl hover:bg-[#F8EDFB]/50 transition-all shadow-sm">
+                            <div className="w-3 h-3 rounded-full bg-[#EC4899] shrink-0 shadow-sm" />
                             <div>
-                                <h4 className="text-xs font-black uppercase tracking-wider text-[#7A3A8E]">Tasa de Entrega</h4>
-                                <p className="text-2xl font-black text-[#522566] tracking-tight mt-1">{groupMetrics.submission}%</p>
-                                <p className="text-[9px] text-[#AD74C3] mt-1">Tareas subidas respecto a las asignadas.</p>
+                                <h4 className="text-[9px] font-black uppercase tracking-wider text-[#7A3A8E]">Tasa de Entrega</h4>
+                                <p className="text-lg font-black text-[#522566] tracking-tight leading-none mt-1">{groupMetrics.submission}%</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Resumen de Alertas en Grupo */}
-                    <div className="flex flex-wrap gap-4 pt-4 border-t border-[#EADFF0]">
+                    <div className="flex flex-wrap gap-2 pt-3 border-t border-[#EADFF0]">
                         {needsAttentionCount > 0 && (
-                            <div className="flex items-center gap-2 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-100 px-4 py-2 rounded-xl">
-                                <AlertTriangle className="w-4 h-4 text-rose-500" />
-                                <span>{needsAttentionCount} alumno(s) en Alerta Académica (Avance &lt; 30%)</span>
+                            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-rose-700 bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-xl">
+                                <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                                <span>{needsAttentionCount} Alumnos en Alerta</span>
                             </div>
                         )}
                         {lagTaskCount > 0 && (
-                            <div className="flex items-center gap-2 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-100 px-4 py-2 rounded-xl">
-                                <AlertCircle className="w-4 h-4 text-amber-500" />
-                                <span>{lagTaskCount} alumno(s) entregan poco pero tienen buenas notas</span>
+                            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-amber-700 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-xl">
+                                <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                                <span>{lagTaskCount} con baja entrega y altas notas</span>
                             </div>
                         )}
                         {needsAttentionCount === 0 && lagTaskCount === 0 && (
-                            <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-xl">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                <span>¡El grupo avanza a buen ritmo! No hay alertas prioritarias detectadas.</span>
+                            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-xl">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>Grupo avanza a buen ritmo</span>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* SECCIÓN DE REPORTES EN LOTE AI */}
-            <div className="bg-white border border-[#EADFF0] p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[#F8EDFB] rounded-2xl text-[#7A3A8E] border border-[#EADFF0]">
-                        <BrainCircuit className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <h4 className="font-black text-sm text-[#522566]">Generación de Reportes Académicos por IA</h4>
-                        <p className="text-[10px] text-[#AD74C3] font-black uppercase tracking-wider">Genera reportes narrativos automáticos para todos los alumnos visibles</p>
-                    </div>
+            {/* SECCIÓN DE REPORTES EN LOTE AI (COMPACTA) */}
+            <div className="bg-white/60 border border-[#EADFF0] p-3 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-3 shadow-sm">
+                <div className="flex items-center gap-2">
+                    <BrainCircuit className="w-4 h-4 text-[#7A3A8E] animate-pulse" />
+                    <span className="text-[10px] font-black text-[#522566] uppercase tracking-wider">Reportes Académicos por IA (Grupal)</span>
                 </div>
 
-                <div className="flex items-center gap-2 w-full md:w-auto flex-wrap justify-end">
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                     <select
                         value={bulkReportWorldId}
                         onChange={e => setBulkReportWorldId(e.target.value)}
-                        className="px-3.5 py-2.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl text-xs font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none focus:ring-2 focus:ring-[#AD74C3] min-w-[150px] truncate"
+                        className="px-2.5 py-1.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-xl text-[9px] font-black uppercase tracking-widest text-[#7A3A8E] focus:outline-none min-w-[130px] truncate"
                     >
                         <option value="global">🌐 Todos los Proyectos</option>
                         {worlds.map(w => (
@@ -950,18 +942,16 @@ export default function PerformanceDashboard({
                     <button
                         disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
                         onClick={handleGenerateTeacherBulkReport}
-                        className="px-5 py-2.5 bg-white text-[#522566] border border-[#EADFF0] hover:border-[#AD74C3] rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-sm"
+                        className="px-3.5 py-1.5 bg-white text-[#522566] border border-[#EADFF0] hover:border-[#AD74C3] rounded-xl text-[9px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
                     >
-                        <BrainCircuit className="w-4 h-4 text-[#7A3A8E]" />
                         {isGeneratingTeacherBulk ? 'Generando...' : 'Reporte Docente'}
                     </button>
 
                     <button
                         disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
                         onClick={handleGenerateParentBulkReport}
-                        className="px-5 py-2.5 bg-white text-[#7A3A8E] border border-[#EADFF0] hover:border-[#AD74C3] rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-sm"
+                        className="px-3.5 py-1.5 bg-white text-[#7A3A8E] border border-[#EADFF0] hover:border-[#AD74C3] rounded-xl text-[9px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
                     >
-                        <FileText className="w-4 h-4 text-[#EC4899]" />
                         {isGeneratingParentBulk ? 'Generando...' : 'Reporte Padres'}
                     </button>
                 </div>
