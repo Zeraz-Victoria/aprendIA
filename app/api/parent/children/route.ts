@@ -19,12 +19,12 @@ function calculateChildGlobalAverage(child: any) {
             let totalLevels = 8;
             try {
                 const days = JSON.parse(world.daysJson);
-                if (Array.isArray(days)) {
+                if (Array.isArray(days) && days.length > 0) {
                     totalLevels = days.length;
                 }
             } catch (e) {}
 
-            const projectGrade = parseFloat((sumGrades / totalLevels).toFixed(1));
+            const projectGrade = totalLevels > 0 ? parseFloat((sumGrades / totalLevels).toFixed(1)) : 0;
             totalProjectGradesSum += projectGrade;
             gradedWorldsCount++;
         }
@@ -220,9 +220,9 @@ export async function GET(req: NextRequest) {
         });
 
         return NextResponse.json(children);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching children:', error);
-        return NextResponse.json({ error: 'Failed to fetch children' }, { status: 500 });
+        return NextResponse.json({ error: `Error del Servidor: ${error.message || 'Failed to fetch children'}` }, { status: 500 });
     }
 }
 
