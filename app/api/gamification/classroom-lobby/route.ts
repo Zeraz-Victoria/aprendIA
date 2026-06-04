@@ -31,6 +31,7 @@ export async function GET(req: Request) {
                 avatar: true,
                 avatarX: true,
                 avatarY: true,
+                status: true,
                 lastSeen: true,
             }
         });
@@ -51,15 +52,17 @@ export async function GET(req: Request) {
             },
             include: {
                 furniture: true,
-                student: { select: { id: true } }
+                student: { select: { id: true, name: true, avatar: true } }
             }
         });
 
-        // Combine: personal furniture tagged with studentId
+        // Combine: personal furniture tagged with studentId, ownerName, ownerAvatar
         const personalFurniture = studentRooms.flatMap((room: any) =>
             room.furniture.map((f: any) => ({
                 ...f,
-                ownerId: room.student.id
+                ownerId: room.student.id,
+                ownerName: room.student.name,
+                ownerAvatar: room.student.avatar
             }))
         );
 
@@ -83,15 +86,18 @@ export async function POST(req: Request) {
         }
 
         const userId = (session.user as any).id;
-        const { avatarX, avatarY } = await req.json();
+        const { avatarX, avatarY, status } = await req.json();
+
+        const updateData: any = {
+            lastSeen: new Date(),
+        };
+        if (avatarX !== undefined) updateData.avatarX = avatarX;
+        if (avatarY !== undefined) updateData.avatarY = avatarY;
+        if (status !== undefined) updateData.status = status;
 
         await prisma.user.update({
             where: { id: userId },
-            data: {
-                avatarX: avatarX ?? 70,
-                avatarY: avatarY ?? 65,
-                lastSeen: new Date(),
-            }
+            data: updateData
         });
 
         return NextResponse.json({ ok: true });
