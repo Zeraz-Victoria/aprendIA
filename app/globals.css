@@ -1,21 +1,21 @@
 @import "tailwindcss";
-@plugin "@tailwindcss/typography";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@plugin "@tailwindcss/typography";
 
 /* ═══════════════════════════════════════════════════════════════
    APREND-IA  —  PALETA PÚRPURA OFICIAL
-   #522566  #7A3A8E  #AD74C3  #EADFF0  #F8EDFB
+   #1c3a60  #346297  #73a4db  #cbe0f6  #f0f5fb
 ═══════════════════════════════════════════════════════════════ */
 :root {
   /* Brand palette */
-  --brand-900: #522566;
-  --brand-800: #6B2E82;
-  --brand-700: #7A3A8E;
-  --brand-600: #8F4AA3;
-  --brand-400: #AD74C3;
-  --brand-200: #D4AFDF;
-  --brand-100: #EADFF0;
-  --brand-50:  #F8EDFB;
+  --brand-900: #1c3a60;
+  --brand-800: #254d7d;
+  --brand-700: #346297;
+  --brand-600: #4f82be;
+  --brand-400: #73a4db;
+  --brand-200: #a2c4ec;
+  --brand-100: #cbe0f6;
+  --brand-50:  #f0f5fb;
 
   /* Semantic aliases */
   --background: var(--brand-50);
@@ -26,7 +26,7 @@
   --input-border: var(--brand-200);
   --input-focus: var(--brand-400);
   --muted: var(--brand-400);
-  --muted-fg: #6B5878;
+  --muted-fg: #4a617c;
 }
 
 @theme inline {
@@ -119,10 +119,10 @@ body {
 
 /* ── Glass card ─────────────────────────────────────────── */
 .glass {
-  background: rgba(248, 237, 251, 0.7);
+  background: rgba(240, 245, 251, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(173, 116, 195, 0.2);
+  border: 1px solid rgba(115, 164, 219, 0.2);
 }
 
 /* ── Snap scroll ────────────────────────────────────────── */

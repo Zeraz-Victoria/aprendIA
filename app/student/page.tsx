@@ -46,12 +46,8 @@ export default function StudentPage() {
     const { status } = useSession();
     const router = useRouter();
     useSessionGuard();
-    const [showStore, setShowStore] = useState(false);
-    const [showLeaderboard, setShowLeaderboard] = useState(false);
-    const [showProfile, setShowProfile] = useState(false);
+    const [activeTab, setActiveTab] = useState<"map" | "salon" | "evaluaciones" | "tienda" | "lideres" | "perfil">("map");
     const [showRaidModal, setShowRaidModal] = useState(false);
-    const [showEvaluations, setShowEvaluations] = useState(false);
-    const [showVirtualRoom, setShowVirtualRoom] = useState(false);
     const [hints, setHints] = useState<HintData[]>([]);
     const [evaluations, setEvaluations] = useState<EvidenceData[]>([]);
     const [teacherMessages, setTeacherMessages] = useState<TeacherMsg[]>([]);
@@ -222,8 +218,8 @@ export default function StudentPage() {
     // Consistent loading for SSR + client
     if (!mounted || status === "loading" || !currentUser) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8EDFB' }}>
-                <div className="font-semibold text-sm" style={{ color: '#7A3A8E' }}>Cargando tu aventura...</div>
+            <div className="min-h-screen flex items-center justify-center" style={{ background: '#f0f5fb' }}>
+                <div className="font-semibold text-sm" style={{ color: '#346297' }}>Cargando tu aventura...</div>
             </div>
         );
     }
@@ -325,9 +321,9 @@ export default function StudentPage() {
             {/* === STICKY HEADER SECTION (does not scroll) === */}
             <div className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
                 <StudentHUD
-                    onOpenStore={() => setShowStore(true)}
-                    onOpenLeaderboard={() => setShowLeaderboard(true)}
-                    onOpenProfile={() => setShowProfile(true)}
+                    onOpenStore={() => setActiveTab("tienda")}
+                    onOpenLeaderboard={() => setActiveTab("lideres")}
+                    onOpenProfile={() => setActiveTab("perfil")}
                 >
                     <button
                         onClick={() => signOut({ callbackUrl: "/" })}
@@ -339,35 +335,47 @@ export default function StudentPage() {
 
                     {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
                         <button
-                            onClick={() => setSelectedMapId(null)}
-                            style={{ background: 'rgba(82,37,102,0.8)', borderColor: '#AD74C3' }} className="rounded-xl shadow border text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start"
+                            onClick={() => { setSelectedMapId(null); setActiveTab("map"); }}
+                            style={{ background: 'rgba(28, 58, 96, 0.8)', borderColor: '#73a4db' }}
+                            className="rounded-xl shadow border text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start"
                             title="Mundos"
                         >
                             <span className="text-base">🗺️</span> <span className="hidden sm:inline">Mundos</span>
                         </button>
                     )}
 
-                    {selectedMapId && currentUser.assignedWorlds && (
-                        <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 rounded-xl border border-slate-700 shadow-inner shrink-0 cursor-default">
-                            <MapPin className="w-3.5 h-3.5 text-[#AD74C3]" />
-                            <span className="text-white font-bold text-xs truncate max-w-[150px] lg:max-w-[200px]">
-                                {currentUser.assignedWorlds.find(w => w.id === selectedMapId)?.title || 'Aventura'}
-                            </span>
-                        </div>
-                    )}
-
+                    {/* Tab: Aventura */}
                     <button
-                        onClick={() => setShowVirtualRoom(true)}
-                        className="bg-fuchsia-700/80 hover:bg-fuchsia-600 rounded-xl shadow border border-fuchsia-500 text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start"
-                        title="Ir a mi Salón Virtual"
+                        onClick={() => setActiveTab("map")}
+                        className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start ${
+                            activeTab === "map"
+                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+                        }`}
                     >
-                        <span className="text-base">🏫</span> <span className="hidden sm:inline">Mi Salón</span>
+                        <span>🏝️</span> <span className="hidden sm:inline">Aventura</span>
                     </button>
 
+                    {/* Tab: Mi Salón */}
                     <button
-                        onClick={() => setShowEvaluations(true)}
-                        className="bg-amber-600/80 hover:bg-amber-500 rounded-xl shadow border border-amber-500 text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs relative shrink-0 snap-start"
-                        title="Evaluaciones"
+                        onClick={() => setActiveTab("salon")}
+                        className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start ${
+                            activeTab === "salon"
+                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+                        }`}
+                    >
+                        <span>🏫</span> <span className="hidden sm:inline">Mi Salón</span>
+                    </button>
+
+                    {/* Tab: Evaluaciones */}
+                    <button
+                        onClick={() => setActiveTab("evaluaciones")}
+                        className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs relative shrink-0 snap-start ${
+                            activeTab === "evaluaciones"
+                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+                        }`}
                     >
                         <ClipboardList className="w-4 h-4" /> <span className="hidden sm:inline">Evaluaciones</span>
                         {evaluations.length > 0 && (
@@ -375,6 +383,42 @@ export default function StudentPage() {
                                 {evaluations.length}
                             </span>
                         )}
+                    </button>
+
+                    {/* Tab: Tienda */}
+                    <button
+                        onClick={() => setActiveTab("tienda")}
+                        className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start ${
+                            activeTab === "tienda"
+                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+                        }`}
+                    >
+                        <span>💎</span> <span className="hidden sm:inline">Tienda</span>
+                    </button>
+
+                    {/* Tab: Líderes */}
+                    <button
+                        onClick={() => setActiveTab("lideres")}
+                        className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start ${
+                            activeTab === "lideres"
+                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+                        }`}
+                    >
+                        <span>🏆</span> <span className="hidden sm:inline">Líderes</span>
+                    </button>
+
+                    {/* Tab: Perfil */}
+                    <button
+                        onClick={() => setActiveTab("perfil")}
+                        className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start ${
+                            activeTab === "perfil"
+                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+                        }`}
+                    >
+                        <span>👤</span> <span className="hidden sm:inline">Perfil</span>
                     </button>
                 </StudentHUD>
 
@@ -444,128 +488,121 @@ export default function StudentPage() {
                 )}
             </div>
 
-            {/* === SCROLLABLE MAP (only this part moves) === */}
-            <div className="flex-1">
-                <AdventureMap onOpenRaid={() => setShowRaidModal(true)} />
+            {/* === MAIN CONTENT AREA === */}
+            <div className="flex-1 overflow-y-auto bg-slate-950 flex flex-col">
+                {activeTab === "map" && (
+                    <div className="flex-1 flex flex-col">
+                        <AdventureMap onOpenRaid={() => setShowRaidModal(true)} />
+                    </div>
+                )}
+
+                {activeTab === "salon" && currentUser?.id && (
+                    <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+                        <VirtualClassroom studentId={currentUser.id} onClose={() => setActiveTab("map")} />
+                    </div>
+                )}
+
+                {activeTab === "evaluaciones" && (
+                    <div className="flex-1 flex justify-center p-4 md:p-8">
+                        <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col min-h-[500px]">
+                            <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white shrink-0">
+                                <h2 className="text-2xl font-black flex items-center gap-2"><ClipboardList className="w-6 h-6" /> Mis Evaluaciones</h2>
+                                <p className="text-amber-100 text-sm mt-1">Aquí puedes ver la retroalimentación de tu maestro</p>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#f0f5fb]">
+                                {(() => {
+                                    const mapEvaluations = evaluations.filter(ev => ev.worldId === selectedMapId);
+                                    if (mapEvaluations.length === 0) {
+                                        return (
+                                            <div className="text-center py-16">
+                                                <div className="text-6xl mb-4">📋</div>
+                                                <h3 className="text-xl font-bold text-slate-700">Sin evaluaciones aún</h3>
+                                                <p className="text-slate-400 text-sm mt-2">Cuando tu maestro revise tu trabajo en este mapa, aparecerá aquí.</p>
+                                            </div>
+                                        );
+                                    }
+                                    return mapEvaluations.map((ev) => {
+                                        const feedbackLines = ev.feedback.split('\n').filter(l => l.trim());
+                                        const category = feedbackLines[0] || 'Evaluado';
+                                        const detailedFeedback = feedbackLines.slice(1).join('\n').trim();
+                                        const grade = ev.grade ?? 0;
+
+                                        let badgeColor = 'bg-green-100 text-green-700 border-green-200';
+                                        let cardBorder = 'border-green-200';
+                                        let emoji = '✅';
+                                        if (grade < 6) {
+                                            badgeColor = 'bg-red-100 text-red-700 border-red-200';
+                                            cardBorder = 'border-red-200';
+                                            emoji = '❌';
+                                        } else if (grade < 8) {
+                                            badgeColor = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+                                            cardBorder = 'border-yellow-200';
+                                            emoji = '⚠️';
+                                        }
+
+                                        return (
+                                            <div key={ev.id} className={`p-5 rounded-2xl border-2 ${cardBorder} bg-white shadow-md`}>
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-black border ${badgeColor}`}>
+                                                        {emoji} {category}
+                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-2xl font-black ${grade >= 8 ? 'text-green-600' : grade >= 6 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                                            {grade}/10
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {ev.world && (
+                                                    <p className="text-xs text-slate-400 font-medium mb-3">
+                                                        {ev.world.title} • {new Date(ev.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
+                                                    </p>
+                                                )}
+
+                                                <div style={{ background: '#f0f5fb', color: '#346297' }} className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-line border border-[#cbe0f6]">
+                                                    {detailedFeedback || ev.feedback}
+                                                </div>
+
+                                                {grade < 6 && (
+                                                    <div className="mt-3 bg-red-50 border border-red-100 rounded-xl p-3 flex items-center gap-2">
+                                                        <span className="text-lg">💔</span>
+                                                        <p className="text-xs text-red-600 font-bold">Perdiste una vida. ¡Inténtalo de nuevo!</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    });
+                                })()}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === "tienda" && (
+                    <div className="flex-1 flex justify-center p-4 md:p-8">
+                        <div className="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col">
+                            <RewardsStore onClose={() => setActiveTab("map")} />
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === "lideres" && (
+                    <div className="flex-1 flex justify-center p-4 md:p-8">
+                        <div className="w-full max-w-xl">
+                            <Leaderboard />
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === "perfil" && (
+                    <div className="flex-1 flex justify-center p-4 md:p-8">
+                        <StudentProfile onClose={() => setActiveTab("map")} />
+                    </div>
+                )}
             </div>
 
-            {showStore && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden relative shadow-2xl flex flex-col">
-                        <button onClick={() => setShowStore(false)} style={{ background: '#EADFF0' }} className="absolute top-4 right-4 p-2 rounded-full hover:opacity-80 transition z-10">
-                            <X className="w-5 h-5 text-slate-600" />
-                        </button>
-                        <RewardsStore onClose={() => setShowStore(false)} />
-                    </div>
-                </div>
-            )}
-
-            {showLeaderboard && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="w-full max-w-md relative">
-                        <button onClick={() => setShowLeaderboard(false)} style={{ background: '#EADFF0' }} className="absolute -top-4 -right-4 p-2 bg-white rounded-full shadow-md hover:opacity-80 transition z-10">
-                            <X className="w-5 h-5 text-slate-600" />
-                        </button>
-                        <Leaderboard />
-                    </div>
-                </div>
-            )}
-
-            {showProfile && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <StudentProfile onClose={() => setShowProfile(false)} />
-                </div>
-            )}
-
-            {/* Virtual Room Overlay */}
-            {showVirtualRoom && currentUser?.id && (
-                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-fade-in">
-                    <VirtualClassroom studentId={currentUser.id} onClose={() => setShowVirtualRoom(false)} />
-                </div>
-            )}
-
             <RaidBossWidget externalOpen={showRaidModal} onExternalClose={() => setShowRaidModal(false)} />
-
-            {/* Evaluaciones Panel */}
-            {showEvaluations && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-lg max-h-[85vh] overflow-hidden relative shadow-2xl flex flex-col">
-                        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white">
-                            <button onClick={() => setShowEvaluations(false)} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 transition z-10">
-                                <X className="w-5 h-5 text-white" />
-                            </button>
-                            <h2 className="text-2xl font-black flex items-center gap-2"><ClipboardList className="w-6 h-6" /> Mis Evaluaciones</h2>
-                            <p className="text-amber-100 text-sm mt-1">Aquí puedes ver la retroalimentación de tu maestro</p>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            {(() => {
-                                const mapEvaluations = evaluations.filter(ev => ev.worldId === selectedMapId);
-                                if (mapEvaluations.length === 0) {
-                                    return (
-                                        <div className="text-center py-12">
-                                            <div className="text-5xl mb-4">📋</div>
-                                            <h3 className="text-lg font-bold text-slate-700">Sin evaluaciones aún</h3>
-                                            <p className="text-slate-400 text-sm">Cuando tu maestro revise tu trabajo en este mapa, aparecerá aquí.</p>
-                                        </div>
-                                    );
-                                }
-                                return mapEvaluations.map((ev) => {
-                                    const feedbackLines = ev.feedback.split('\n').filter(l => l.trim());
-                                    const category = feedbackLines[0] || 'Evaluado';
-                                    const detailedFeedback = feedbackLines.slice(1).join('\n').trim();
-                                    const grade = ev.grade ?? 0;
-
-                                    let badgeColor = 'bg-green-100 text-green-700 border-green-200';
-                                    let cardBorder = 'border-green-200';
-                                    let emoji = '✅';
-                                    if (grade < 6) {
-                                        badgeColor = 'bg-red-100 text-red-700 border-red-200';
-                                        cardBorder = 'border-red-200';
-                                        emoji = '❌';
-                                    } else if (grade < 8) {
-                                        badgeColor = 'bg-yellow-100 text-yellow-700 border-yellow-200';
-                                        cardBorder = 'border-yellow-200';
-                                        emoji = '⚠️';
-                                    }
-
-                                    return (
-                                        <div key={ev.id} className={`p-4 rounded-2xl border-2 ${cardBorder} bg-white shadow-sm`}>
-                                            <div className="flex items-center justify-between mb-3">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-black border ${badgeColor}`}>
-                                                    {emoji} {category}
-                                                </span>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`text-2xl font-black ${grade >= 8 ? 'text-green-600' : grade >= 6 ? 'text-yellow-600' : 'text-red-600'}`}>
-                                                        {grade}/10
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            {ev.world && (
-                                                <p className="text-xs text-slate-400 font-medium mb-2">
-                                                    {ev.world.title} • {new Date(ev.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
-                                                </p>
-                                            )}
-
-                                            <div style={{ background: '#F8EDFB', color: '#7A3A8E' }} className="rounded-xl p-3 text-sm leading-relaxed whitespace-pre-line">
-                                                {detailedFeedback || ev.feedback}
-                                            </div>
-
-                                            {grade < 6 && (
-                                                <div className="mt-3 bg-red-50 border border-red-100 rounded-xl p-3 flex items-center gap-2">
-                                                    <span className="text-lg">💔</span>
-                                                    <p className="text-xs text-red-600 font-bold">Perdiste una vida. ¡Inténtalo de nuevo!</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                });
-                            })()}
-                        </div>
-                    </div>
-                </div>
-            )}
         </main>
     );
 }

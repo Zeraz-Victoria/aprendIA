@@ -125,9 +125,9 @@ export default function StudentHUD({
     // Frame border color helper
     const getFrameStyle = (frame: string | undefined | null) => {
         if (frame === 'frame_fire') return { borderColor: '#FD7E14', boxShadow: '0 0 12px rgba(253,126,20,0.5)' };
-        if (frame === 'frame_ice') return { borderColor: '#AD74C3', boxShadow: '0 0 12px rgba(173,116,195,0.5)' };
-        if (frame === 'frame_lightning') return { borderColor: '#7A3A8E', boxShadow: '0 0 12px rgba(122,58,142,0.5)' };
-        return { borderColor: '#EADFF0' };
+        if (frame === 'frame_ice') return { borderColor: '#73a4db', boxShadow: '0 0 12px rgba(115, 164, 219,0.5)' };
+        if (frame === 'frame_lightning') return { borderColor: '#346297', boxShadow: '0 0 12px rgba(52, 98, 151,0.5)' };
+        return { borderColor: '#cbe0f6' };
     };
 
     return (
@@ -135,7 +135,7 @@ export default function StudentHUD({
             {/* HUD Bar */}
             <div
                 className="w-full px-2 md:px-4 py-1.5 md:py-2"
-                style={{ background: 'rgba(82,37,102,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(173,116,195,0.2)' }}
+                style={{ background: 'rgba(28, 58, 96,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(115, 164, 219,0.2)' }}
             >
                 <div className="max-w-7xl mx-auto flex flex-wrap md:flex-nowrap items-center justify-between gap-y-2 gap-x-2 md:gap-4">
 
@@ -143,18 +143,18 @@ export default function StudentHUD({
                     <div
                         className="order-1 flex items-center gap-1.5 cursor-pointer hover:opacity-90 backdrop-blur rounded-full px-3 py-1 shadow-sm border transition-all hover:scale-105 shrink-0"
                         style={{
-                            background: 'rgba(248,237,251,0.1)',
+                            background: 'rgba(240, 245, 251,0.1)',
                             ...getFrameStyle(currentUser?.activeFrame),
                         }}
                         onClick={onOpenProfile}
                     >
                         <span className="text-lg">{currentUser?.avatar || "🧑"}</span>
                         <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm" style={{ color: '#F8EDFB' }}>{currentUser?.name}</span>
+                            <span className="font-bold text-sm" style={{ color: '#f0f5fb' }}>{currentUser?.name}</span>
                             {currentUser?.globalActivityAverage !== undefined && currentUser?.globalActivityAverage !== null && (
                                 <div className="px-2 py-0.5 rounded-lg border flex items-center gap-1"
-                                    style={{ background: 'rgba(173,116,195,0.2)', borderColor: 'rgba(173,116,195,0.3)' }}>
-                                    <span className="text-[10px] font-black uppercase tracking-tighter hidden sm:inline" style={{ color: '#AD74C3' }}>Grado</span>
+                                    style={{ background: 'rgba(115, 164, 219,0.2)', borderColor: 'rgba(115, 164, 219,0.3)' }}>
+                                    <span className="text-[10px] font-black uppercase tracking-tighter hidden sm:inline" style={{ color: '#73a4db' }}>Grado</span>
                                     <span className="text-xs font-black text-white">{currentUser.globalActivityAverage.toFixed(1)}</span>
                                 </div>
                             )}
@@ -163,31 +163,31 @@ export default function StudentHUD({
 
                     {/* Navigation Buttons (Bottom on Mobile, Center on PC) */}
                     <div className="order-3 md:order-2 w-full md:flex-1 flex flex-row items-center justify-center gap-1.5 md:gap-2 overflow-x-auto no-scrollbar pt-2 md:pt-0 border-t md:border-t-0 snap-x"
-                        style={{ borderColor: 'rgba(173,116,195,0.2)' }}>
+                        style={{ borderColor: 'rgba(115, 164, 219,0.2)' }}>
                         {children}
                     </div>
 
                     {/* Right: Stats */}
                     <div className="order-2 md:order-3 ml-auto md:ml-0 flex items-center gap-3 sm:gap-4 shrink-0 px-3 py-1.5 rounded-xl border backdrop-blur"
-                        style={{ background: 'rgba(248,237,251,0.05)', borderColor: 'rgba(173,116,195,0.15)' }}>
+                        style={{ background: 'rgba(240, 245, 251,0.05)', borderColor: 'rgba(115, 164, 219,0.15)' }}>
 
                         {/* Motivate Classmates */}
                         <div className="flex items-center gap-1 group cursor-pointer hover:scale-105 transition-transform"
                             onClick={handleOpenBuffs}>
-                            <Users className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#AD74C3' }} />
+                            <Users className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#73a4db' }} />
                         </div>
 
                         {/* Leaderboard */}
                         <div className="flex items-center gap-1 group cursor-pointer hover:scale-105 transition-transform"
                             onClick={onOpenLeaderboard}>
-                            <Trophy className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#EADFF0' }} />
+                            <Trophy className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#cbe0f6' }} />
                         </div>
 
                         {/* Streak */}
                         <div className="flex items-center gap-1 group cursor-pointer">
                             <Flame className={`w-4 h-4 sm:w-5 sm:h-5 ${stats.streak > 0 ? 'animate-pulse' : ''}`}
-                                style={{ color: stats.streak > 0 ? '#FD7E14' : '#7A3A8E', fill: stats.streak > 0 ? '#FD7E14' : '#7A3A8E' }} />
-                            <span className="font-bold text-xs sm:text-sm" style={{ color: stats.streak > 0 ? '#FD7E14' : '#AD74C3' }}>
+                                style={{ color: stats.streak > 0 ? '#FD7E14' : '#346297', fill: stats.streak > 0 ? '#FD7E14' : '#346297' }} />
+                            <span className="font-bold text-xs sm:text-sm" style={{ color: stats.streak > 0 ? '#FD7E14' : '#73a4db' }}>
                                 {stats.streak}
                             </span>
                         </div>
@@ -197,10 +197,10 @@ export default function StudentHUD({
                             className="flex items-center gap-1 group cursor-pointer hover:scale-105 transition-transform px-2 py-0.5 rounded-full border"
                             onClick={onOpenStore}
                             title="Abrir Tienda"
-                            style={{ background: 'rgba(82,37,102,0.4)', borderColor: 'rgba(173,116,195,0.25)' }}
+                            style={{ background: 'rgba(28, 58, 96,0.4)', borderColor: 'rgba(115, 164, 219,0.25)' }}
                         >
-                            <Diamond className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#AD74C3', fill: '#AD74C3' }} />
-                            <span className="font-bold text-xs sm:text-sm" style={{ color: '#EADFF0' }}>{stats.gems}</span>
+                            <Diamond className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#73a4db', fill: '#73a4db' }} />
+                            <span className="font-bold text-xs sm:text-sm" style={{ color: '#cbe0f6' }}>{stats.gems}</span>
                         </div>
 
                         {/* Lives */}
@@ -217,18 +217,18 @@ export default function StudentHUD({
                 <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-bounce w-[90%] sm:w-auto">
                     <div className="rounded-full py-3 px-6 border-2 flex items-center gap-4"
                         style={{
-                            background: 'linear-gradient(135deg, #522566, #7A3A8E)',
-                            borderColor: '#AD74C3',
-                            boxShadow: '0 0 30px rgba(173,116,195,0.5)',
+                            background: 'linear-gradient(135deg, #1c3a60, #346297)',
+                            borderColor: '#73a4db',
+                            boxShadow: '0 0 30px rgba(115, 164, 219,0.5)',
                         }}>
                         <span className="text-4xl">{incomingBuff.fromAvatar}</span>
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#EADFF0' }}>
+                            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#cbe0f6' }}>
                                 {incomingBuff.fromName} te anima:
                             </p>
                             <p className="text-white font-black text-lg">"{incomingBuff.message}"</p>
                         </div>
-                        <Sparkles className="w-8 h-8 animate-spin" style={{ color: '#EADFF0' }} />
+                        <Sparkles className="w-8 h-8 animate-spin" style={{ color: '#cbe0f6' }} />
                     </div>
                 </div>
             )}
@@ -237,7 +237,7 @@ export default function StudentHUD({
             {showBuffModal && typeof document !== 'undefined' && createPortal(
                 <div
                     className="fixed inset-0 z-[9999] backdrop-blur-sm cursor-auto pointer-events-auto sm:flex sm:items-start sm:justify-center sm:pt-20"
-                    style={{ background: 'rgba(82,37,102,0.5)' }}
+                    style={{ background: 'rgba(28, 58, 96,0.5)' }}
                     onClick={(e) => { if (e.target === e.currentTarget) setShowBuffModal(false); }}
                 >
                     <div
@@ -245,18 +245,18 @@ export default function StudentHUD({
                         style={{ background: '#ffffff' }}
                     >
                         {/* Header */}
-                        <div className="shrink-0 pt-3 pb-2 px-5 border-b" style={{ borderColor: '#EADFF0' }}>
-                            <div className="w-10 h-1 rounded-full mx-auto mb-3" style={{ background: '#EADFF0' }} />
+                        <div className="shrink-0 pt-3 pb-2 px-5 border-b" style={{ borderColor: '#cbe0f6' }}>
+                            <div className="w-10 h-1 rounded-full mx-auto mb-3" style={{ background: '#cbe0f6' }} />
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-bold flex items-center gap-2" style={{ color: '#522566' }}>
-                                    <Sparkles className="w-5 h-5" style={{ color: '#AD74C3' }} /> Enviar Energía
+                                <h3 className="text-lg font-bold flex items-center gap-2" style={{ color: '#1c3a60' }}>
+                                    <Sparkles className="w-5 h-5" style={{ color: '#73a4db' }} /> Enviar Energía
                                 </h3>
                                 <button
                                     onClick={() => setShowBuffModal(false)}
                                     className="p-2 rounded-full hover:opacity-80 transition"
-                                    style={{ background: '#EADFF0' }}
+                                    style={{ background: '#cbe0f6' }}
                                 >
-                                    <X className="w-5 h-5" style={{ color: '#522566' }} />
+                                    <X className="w-5 h-5" style={{ color: '#1c3a60' }} />
                                 </button>
                             </div>
                             {/* Message input */}
@@ -269,12 +269,12 @@ export default function StudentHUD({
                                     maxLength={40}
                                     className="flex-1 text-sm px-3 py-2 rounded-xl border outline-none transition"
                                     style={{
-                                        borderColor: '#EADFF0',
-                                        background: '#F8EDFB',
-                                        color: '#522566',
+                                        borderColor: '#cbe0f6',
+                                        background: '#f0f5fb',
+                                        color: '#1c3a60',
                                     }}
-                                    onFocus={e => { e.target.style.borderColor = '#AD74C3'; }}
-                                    onBlur={e => { e.target.style.borderColor = '#EADFF0'; }}
+                                    onFocus={e => { e.target.style.borderColor = '#73a4db'; }}
+                                    onBlur={e => { e.target.style.borderColor = '#cbe0f6'; }}
                                 />
                             </div>
                             <label className="flex items-center gap-2 cursor-pointer mt-2 mb-1">
@@ -283,12 +283,12 @@ export default function StudentHUD({
                                     checked={includeHint}
                                     onChange={(e) => setIncludeHint(e.target.checked)}
                                     className="w-4 h-4 rounded"
-                                    style={{ accentColor: '#7A3A8E' }}
+                                    style={{ accentColor: '#346297' }}
                                 />
-                                <span className="text-xs font-medium" style={{ color: '#7A3A8E' }}>
+                                <span className="text-xs font-medium" style={{ color: '#346297' }}>
                                     Enviar pista extra{' '}
                                     <span className="font-bold px-1.5 py-0.5 rounded-md border"
-                                        style={{ color: '#522566', background: '#EADFF0', borderColor: '#AD74C3' }}>
+                                        style={{ color: '#1c3a60', background: '#cbe0f6', borderColor: '#73a4db' }}>
                                         +5💎
                                     </span>
                                 </span>
@@ -299,14 +299,14 @@ export default function StudentHUD({
                         <div className="flex-1 overflow-y-auto p-4 space-y-2 pb-8">
                             {classmates.map(c => (
                                 <div key={c.id} className="flex items-center justify-between p-3 rounded-2xl border shadow-sm"
-                                    style={{ background: '#F8EDFB', borderColor: '#EADFF0' }}>
+                                    style={{ background: '#f0f5fb', borderColor: '#cbe0f6' }}>
                                     <div className="flex items-center gap-3 min-w-0">
                                         <span className="text-2xl bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm border shrink-0"
-                                            style={{ borderColor: '#EADFF0' }}>
+                                            style={{ borderColor: '#cbe0f6' }}>
                                             {c.avatar}
                                         </span>
                                         <div className="min-w-0">
-                                            <p className="font-bold text-sm truncate" style={{ color: '#522566' }}>{c.name}</p>
+                                            <p className="font-bold text-sm truncate" style={{ color: '#1c3a60' }}>{c.name}</p>
                                             {c.status === "needs_help" && (
                                                 <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">
                                                     Necesita ayuda
@@ -318,14 +318,14 @@ export default function StudentHUD({
                                         onClick={() => handleSendBuff(c.id)}
                                         disabled={stats.gems < (includeHint ? 15 : 10) || sendingBuffTo === c.id}
                                         className="px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-transform active:scale-95 shrink-0 disabled:opacity-50"
-                                        style={{ background: '#EADFF0', color: '#522566' }}
+                                        style={{ background: '#cbe0f6', color: '#1c3a60' }}
                                     >
-                                        Animar <Diamond className="w-3 h-3" style={{ fill: '#522566' }} /> {includeHint ? 15 : 10}
+                                        Animar <Diamond className="w-3 h-3" style={{ fill: '#1c3a60' }} /> {includeHint ? 15 : 10}
                                     </button>
                                 </div>
                             ))}
                             {classmates.length === 0 && (
-                                <div className="text-center py-8 text-sm font-medium" style={{ color: '#AD74C3' }}>
+                                <div className="text-center py-8 text-sm font-medium" style={{ color: '#73a4db' }}>
                                     Buscando compañeros...
                                 </div>
                             )}

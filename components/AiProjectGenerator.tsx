@@ -114,7 +114,7 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#522566]/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1c3a60]/60 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in-95 duration-300">
                 {/* Header */}
                 <div className="relative h-32 bg-gradient-to-br from-indigo-600 to-violet-700 p-8 flex items-end">
@@ -140,13 +140,13 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                     {isGenerating ? (
                         <div className="py-12 flex flex-col items-center text-center space-y-6">
                             <div className="relative w-20 h-20">
-                                <div className="absolute inset-0 border-4 border-[#EADFF0] rounded-full"></div>
+                                <div className="absolute inset-0 border-4 border-[#cbe0f6] rounded-full"></div>
                                 <div className="absolute inset-0 border-4 border-t-indigo-600 rounded-full animate-spin"></div>
-                                <Brain className="absolute inset-0 m-auto w-10 h-10 text-[#522566] animate-pulse" />
+                                <Brain className="absolute inset-0 m-auto w-10 h-10 text-[#1c3a60] animate-pulse" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-[#522566]">{loadingStatus}</h3>
-                                <p className="text-[#AD74C3] font-medium">Estamos diseñando los nuevos retos...</p>
+                                <h3 className="text-xl font-black text-[#1c3a60]">{loadingStatus}</h3>
+                                <p className="text-[#73a4db] font-medium">Estamos diseñando los nuevos retos...</p>
                             </div>
                         </div>
                     ) : (
@@ -154,15 +154,15 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                             {/* Input Tema */}
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
-                                    <Target className="w-4 h-4 text-[#7A3A8E]" />
-                                    <label className="text-xs font-black text-[#AD74C3] uppercase tracking-widest">¿De qué tema matemático trata?</label>
+                                    <Target className="w-4 h-4 text-[#346297]" />
+                                    <label className="text-xs font-black text-[#73a4db] uppercase tracking-widest">¿De qué tema matemático trata?</label>
                                 </div>
                                 <input 
                                     type="text"
                                     value={topic}
                                     onChange={(e) => setTopic(e.target.value)}
                                     placeholder="Ej. Fracciones, Ecuaciones Lineales..."
-                                    className="w-full bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl px-6 py-4 text-lg font-bold text-[#522566] focus:ring-4 focus:ring-indigo-100 focus:border-[#AD74C3] outline-none transition-all placeholder:text-[#AD74C3]"
+                                    className="w-full bg-[#f0f5fb] border border-[#cbe0f6] rounded-2xl px-6 py-4 text-lg font-bold text-[#1c3a60] focus:ring-4 focus:ring-indigo-100 focus:border-[#73a4db] outline-none transition-all placeholder:text-[#73a4db]"
                                     autoFocus
                                 />
                             </div>
@@ -170,8 +170,8 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                             {/* Tema Visual */}
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
-                                    <Compass className="w-4 h-4 text-[#7A3A8E]" />
-                                    <label className="text-xs font-black text-[#AD74C3] uppercase tracking-widest">Tema Visual del Juego</label>
+                                    <Compass className="w-4 h-4 text-[#346297]" />
+                                    <label className="text-xs font-black text-[#73a4db] uppercase tracking-widest">Tema Visual del Juego</label>
                                 </div>
                                 <div className="grid grid-cols-5 gap-2">
                                     {THEME_LIST.map(t => (
@@ -180,12 +180,12 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                             type="button"
                                             onClick={() => setSelectedTheme(t.key)}
                                             className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all group ${selectedTheme === t.key 
-                                                ? 'bg-[#F8EDFB] border-[#7A3A8E] scale-105' 
-                                                : 'bg-white border-[#EADFF0] hover:border-[#EADFF0] hover:bg-[#F8EDFB]'}`}
+                                                ? 'bg-[#f0f5fb] border-[#346297] scale-105' 
+                                                : 'bg-white border-[#cbe0f6] hover:border-[#cbe0f6] hover:bg-[#f0f5fb]'}`}
                                             title={t.label}
                                         >
                                             <span className="text-xl group-hover:scale-125 transition-transform">{t.emoji}</span>
-                                            <span className="text-[8px] font-black uppercase mt-1 text-[#AD74C3]">{t.key}</span>
+                                            <span className="text-[8px] font-black uppercase mt-1 text-[#73a4db]">{t.key}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -194,8 +194,8 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                             {/* Dificultad */}
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
-                                    <Brain className="w-4 h-4 text-[#7A3A8E]" />
-                                    <label className="text-xs font-black text-[#AD74C3] uppercase tracking-widest">Dificultad Sugerida</label>
+                                    <Brain className="w-4 h-4 text-[#346297]" />
+                                    <label className="text-xs font-black text-[#73a4db] uppercase tracking-widest">Dificultad Sugerida</label>
                                 </div>
                                 <div className="flex gap-3">
                                     {[
@@ -209,7 +209,7 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                             onClick={() => setDifficulty(level.key as any)}
                                             className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all border-2 ${difficulty === level.key 
                                                 ? `bg-${level.color}-50 border-${level.color}-500 text-${level.color}-700 shadow-md` 
-                                                : 'bg-white border-[#EADFF0] text-[#AD74C3] hover:border-[#EADFF0]'}`}
+                                                : 'bg-white border-[#cbe0f6] text-[#73a4db] hover:border-[#cbe0f6]'}`}
                                         >
                                             {level.label}
                                         </button>
@@ -220,8 +220,8 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                             {/* Metodología NEM */}
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
-                                    <Layers className="w-4 h-4 text-[#7A3A8E]" />
-                                    <label className="text-xs font-black text-[#AD74C3] uppercase tracking-widest">Metodología Oficial (Doctoral)</label>
+                                    <Layers className="w-4 h-4 text-[#346297]" />
+                                    <label className="text-xs font-black text-[#73a4db] uppercase tracking-widest">Metodología Oficial (Doctoral)</label>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     {[
@@ -235,8 +235,8 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                             type="button"
                                             onClick={() => setMetodologia(met.key)}
                                             className={`p-2 rounded-xl text-xs font-bold transition-all border-2 ${metodologia === met.key
-                                                ? 'bg-[#F8EDFB] border-[#7A3A8E] text-sky-700'
-                                                : 'bg-white border-[#EADFF0] text-[#AD74C3] hover:border-[#EADFF0]'}`}
+                                                ? 'bg-[#f0f5fb] border-[#346297] text-sky-700'
+                                                : 'bg-white border-[#cbe0f6] text-[#73a4db] hover:border-[#cbe0f6]'}`}
                                         >
                                             {met.label}
                                         </button>
@@ -247,15 +247,15 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                     value={diagnostico}
                                     onChange={(e) => setDiagnostico(e.target.value)}
                                     placeholder="Problemática del aula (ej. Alimentación, bullying...)"
-                                    className="w-full bg-[#F8EDFB] border border-[#EADFF0] rounded-xl px-4 py-2 text-sm font-medium text-[#7A3A8E] focus:ring-2 focus:ring-sky-100 focus:border-[#AD74C3] outline-none transition-all placeholder:text-[#AD74C3]"
+                                    className="w-full bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl px-4 py-2 text-sm font-medium text-[#346297] focus:ring-2 focus:ring-sky-100 focus:border-[#73a4db] outline-none transition-all placeholder:text-[#73a4db]"
                                 />
                             </div>
 
                             {/* Fase NEM */}
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
-                                    <Compass className="w-4 h-4 text-[#7A3A8E]" />
-                                    <label className="text-xs font-black text-[#AD74C3] uppercase tracking-widest">Fase NEM</label>
+                                    <Compass className="w-4 h-4 text-[#346297]" />
+                                    <label className="text-xs font-black text-[#73a4db] uppercase tracking-widest">Fase NEM</label>
                                 </div>
                                 <div className="grid grid-cols-6 gap-2">
                                     {["1", "2", "3", "4", "5", "6"].map(p => (
@@ -265,7 +265,7 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                             onClick={() => setPhase(p)}
                                             className={`py-2 rounded-xl text-xs font-bold transition-all border-2 ${phase === p
                                                 ? 'bg-violet-50 border-violet-500 text-violet-700 shadow-md'
-                                                : 'bg-white border-[#EADFF0] text-[#AD74C3] hover:border-[#EADFF0]'}`}
+                                                : 'bg-white border-[#cbe0f6] text-[#73a4db] hover:border-[#cbe0f6]'}`}
                                         >
                                             Fase {p}
                                         </button>
@@ -277,10 +277,10 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <Layers className="w-4 h-4 text-[#7A3A8E]" />
-                                        <label className="text-xs font-black text-[#AD74C3] uppercase tracking-widest">Número de Sesiones (Niveles)</label>
+                                        <Layers className="w-4 h-4 text-[#346297]" />
+                                        <label className="text-xs font-black text-[#73a4db] uppercase tracking-widest">Número de Sesiones (Niveles)</label>
                                     </div>
-                                    <span className="text-sm font-black text-[#522566] bg-[#F8EDFB] px-2 py-0.5 rounded-lg border border-[#EADFF0]">{sessionCount}</span>
+                                    <span className="text-sm font-black text-[#1c3a60] bg-[#f0f5fb] px-2 py-0.5 rounded-lg border border-[#cbe0f6]">{sessionCount}</span>
                                 </div>
                                 <input 
                                     type="range" 
@@ -290,7 +290,7 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                     onChange={(e) => setSessionCount(Number(e.target.value))}
                                     className="w-full accent-indigo-600 custom-range"
                                 />
-                                <div className="flex justify-between text-[10px] text-[#AD74C3] font-bold px-1 mt-1">
+                                <div className="flex justify-between text-[10px] text-[#73a4db] font-bold px-1 mt-1">
                                     <span>Básico (1-3)</span>
                                     <span>Medio (4-7)</span>
                                     <span>Completo (8-10)</span>
@@ -320,13 +320,13 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                             <div className="flex gap-4 pt-4">
                                 <button 
                                     onClick={onClose}
-                                    className="flex-1 py-4 px-6 rounded-2xl font-black text-[#AD74C3] hover:bg-[#EADFF0] transition-colors uppercase tracking-widest text-xs"
+                                    className="flex-1 py-4 px-6 rounded-2xl font-black text-[#73a4db] hover:bg-[#cbe0f6] transition-colors uppercase tracking-widest text-xs"
                                 >
                                     Cancelar
                                 </button>
                                 <button 
                                     onClick={handleGenerate}
-                                    className="flex-[2] py-4 px-6 bg-[#522566] hover:bg-[#522566] text-white rounded-2xl font-black shadow-xl shadow-indigo-100 transition-transform active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest text-xs"
+                                    className="flex-[2] py-4 px-6 bg-[#1c3a60] hover:bg-[#1c3a60] text-white rounded-2xl font-black shadow-xl shadow-indigo-100 transition-transform active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest text-xs"
                                 >
                                     <Sparkles className="w-4 h-4" />
                                     Generar Aventura ✨

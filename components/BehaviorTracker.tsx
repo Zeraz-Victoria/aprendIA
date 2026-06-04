@@ -47,21 +47,21 @@ export default function BehaviorTracker({ students, classroomId, setStudents }: 
     return (
         <div className="p-6">
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-[#522566]">Comportamiento (Dojo)</h2>
+                <h2 className="text-2xl font-bold text-[#1c3a60]">Comportamiento (Dojo)</h2>
             </div>
             
             {visibleStudents.length === 0 ? (
-                <p className="text-center text-[#AD74C3] py-10">No hay alumnos en este salón.</p>
+                <p className="text-center text-[#73a4db] py-10">No hay alumnos en este salón.</p>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {visibleStudents.map((s: any) => (
                         <div 
                             key={s.id} 
                             onClick={() => setSelectedStudent(s)}
-                            className="bg-white rounded-2xl p-4 flex flex-col items-center cursor-pointer border-2 border-[#EADFF0] hover:border-[#AD74C3] hover:-translate-y-1 transition-all shadow-sm hover:shadow-md"
+                            className="bg-white rounded-2xl p-4 flex flex-col items-center cursor-pointer border-2 border-[#cbe0f6] hover:border-[#73a4db] hover:-translate-y-1 transition-all shadow-sm hover:shadow-md"
                         >
-                            <div className="text-5xl mb-2 bg-[#F8EDFB] w-20 h-20 flex items-center justify-center rounded-full shadow-inner">{s.avatar || '🧑🏻'}</div>
-                            <span className="font-bold text-[#522566] text-center text-sm truncate w-full">{s.name}</span>
+                            <div className="text-5xl mb-2 bg-[#f0f5fb] w-20 h-20 flex items-center justify-center rounded-full shadow-inner">{s.avatar || '🧑🏻'}</div>
+                            <span className="font-bold text-[#1c3a60] text-center text-sm truncate w-full">{s.name}</span>
                             <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded-full mt-2 border border-emerald-200">
                                 {s.gems || 0} pts
                             </span>
@@ -72,17 +72,17 @@ export default function BehaviorTracker({ students, classroomId, setStudents }: 
 
             {/* Modal para asignar puntos */}
             {selectedStudent && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#522566]/40 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setSelectedStudent(null)}>
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#1c3a60]/40 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setSelectedStudent(null)}>
                     <div className="bg-white rounded-3xl w-full max-w-md p-6 relative shadow-2xl" onClick={e => e.stopPropagation()}>
-                        <button onClick={() => setSelectedStudent(null)} className="absolute top-4 right-4 p-2 bg-[#EADFF0] hover:bg-[#AD74C3] text-[#522566] rounded-full transition-colors">✖</button>
+                        <button onClick={() => setSelectedStudent(null)} className="absolute top-4 right-4 p-2 bg-[#cbe0f6] hover:bg-[#73a4db] text-[#1c3a60] rounded-full transition-colors">✖</button>
                         <div className="text-center mb-6">
-                            <div className="text-6xl mb-2 bg-[#F8EDFB] w-24 h-24 mx-auto flex items-center justify-center rounded-full border-2 border-[#EADFF0]">{selectedStudent.avatar || '🧑🏻'}</div>
-                            <h3 className="text-xl font-bold text-[#522566]">Retroalimentación</h3>
-                            <p className="text-sm font-bold text-[#AD74C3] uppercase tracking-widest">{selectedStudent.name}</p>
+                            <div className="text-6xl mb-2 bg-[#f0f5fb] w-24 h-24 mx-auto flex items-center justify-center rounded-full border-2 border-[#cbe0f6]">{selectedStudent.avatar || '🧑🏻'}</div>
+                            <h3 className="text-xl font-bold text-[#1c3a60]">Retroalimentación</h3>
+                            <p className="text-sm font-bold text-[#73a4db] uppercase tracking-widest">{selectedStudent.name}</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="col-span-2 text-[10px] font-black uppercase text-[#AD74C3] tracking-widest text-center my-2">Positivo</div>
+                            <div className="col-span-2 text-[10px] font-black uppercase text-[#73a4db] tracking-widest text-center my-2">Positivo</div>
                             {categories.filter(c => c.isPositive).map(c => (
                                 <button
                                     key={c.id}
@@ -95,7 +95,7 @@ export default function BehaviorTracker({ students, classroomId, setStudents }: 
                                 </button>
                             ))}
                             
-                            <div className="col-span-2 text-[10px] font-black uppercase text-[#AD74C3] tracking-widest text-center mt-4 mb-2">Necesita Mejorar</div>
+                            <div className="col-span-2 text-[10px] font-black uppercase text-[#73a4db] tracking-widest text-center mt-4 mb-2">Necesita Mejorar</div>
                             {categories.filter(c => !c.isPositive).map(c => (
                                 <button
                                     key={c.id}

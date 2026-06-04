@@ -12,22 +12,22 @@ interface PedagogicalWrapperProps {
 const markdownComponents: any = {
     code({ node, inline, className, children, ...props }: any) {
         return (
-            <code className="bg-[#EADFF0] dark:bg-[#522566] rounded px-1 py-0.5 text-[#522566] dark:text-[#AD74C3] font-bold" {...props}>
+            <code className="bg-[#cbe0f6] dark:bg-[#1c3a60] rounded px-1 py-0.5 text-[#1c3a60] dark:text-[#73a4db] font-bold" {...props}>
                 {children}
             </code>
         );
     },
     a({ node, children, href, ...props }: any) {
-        return <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#522566] hover:text-sky-800 underline decoration-2 decoration-sky-300 underline-offset-2" {...props}>{children}</a>;
+        return <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#1c3a60] hover:text-sky-800 underline decoration-2 decoration-sky-300 underline-offset-2" {...props}>{children}</a>;
     },
     blockquote({ node, children, ...props }: any) {
-        return <blockquote className="border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-900/20 p-4 rounded-r-xl italic my-4 text-[#7A3A8E] dark:text-[#AD74C3]" {...props}>{children}</blockquote>;
+        return <blockquote className="border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-900/20 p-4 rounded-r-xl italic my-4 text-[#346297] dark:text-[#73a4db]" {...props}>{children}</blockquote>;
     },
     ul({ node, children, ...props }: any) {
         return <ul className="list-disc pl-6 space-y-2 my-4" {...props}>{children}</ul>;
     },
     ol({ node, children, ...props }: any) {
-        return <ol className="list-decimal pl-6 space-y-2 my-4 font-bold text-[#7A3A8E] dark:text-[#AD74C3]" {...props}>{children}</ol>;
+        return <ol className="list-decimal pl-6 space-y-2 my-4 font-bold text-[#346297] dark:text-[#73a4db]" {...props}>{children}</ol>;
     },
 };
 
@@ -45,7 +45,7 @@ const formatText = (text: string, studentName: string) => {
 
 const renderSafeContent = (content: any) => {
     if (typeof content === 'object' && content !== null) {
-        return <pre className="whitespace-pre-wrap text-sm bg-[#EADFF0] text-[#522566] p-4 rounded-xl overflow-x-auto my-4 border border-[#EADFF0] shadow-inner max-w-full">{JSON.stringify(content, null, 2)}</pre>;
+        return <pre className="whitespace-pre-wrap text-sm bg-[#cbe0f6] text-[#1c3a60] p-4 rounded-xl overflow-x-auto my-4 border border-[#cbe0f6] shadow-inner max-w-full">{JSON.stringify(content, null, 2)}</pre>;
     }
     return (
         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
@@ -59,8 +59,8 @@ const FlashcardView = ({ paragraphs }: { paragraphs: string[] }) => {
 
     return (
         <div className="flex flex-col items-center w-full max-w-2xl mx-auto space-y-6">
-            <div className="w-full bg-white dark:bg-[#522566] p-8 rounded-3xl shadow-lg border-b-4 border-[#EADFF0] dark:border-sky-900 min-h-[250px] flex items-center justify-center relative overflow-hidden transition-all duration-300 hover:shadow-xl">
-                <div className="absolute top-0 right-0 bg-[#EADFF0] dark:bg-sky-900/50 text-sky-800 dark:text-[#EADFF0] px-3 py-1 rounded-bl-xl font-bold text-sm">
+            <div className="w-full bg-white dark:bg-[#1c3a60] p-8 rounded-3xl shadow-lg border-b-4 border-[#cbe0f6] dark:border-sky-900 min-h-[250px] flex items-center justify-center relative overflow-hidden transition-all duration-300 hover:shadow-xl">
+                <div className="absolute top-0 right-0 bg-[#cbe0f6] dark:bg-sky-900/50 text-sky-800 dark:text-[#cbe0f6] px-3 py-1 rounded-bl-xl font-bold text-sm">
                     {currentIndex + 1} / {paragraphs.length}
                 </div>
                 <div className="prose prose-lg dark:prose-invert text-center max-w-full break-words">
@@ -72,19 +72,19 @@ const FlashcardView = ({ paragraphs }: { paragraphs: string[] }) => {
                 <button
                     onClick={() => setCurrentIndex(p => Math.max(0, p - 1))}
                     disabled={currentIndex === 0}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#EADFF0] hover:bg-[#EADFF0] dark:bg-[#7A3A8E] dark:hover:bg-slate-600 rounded-full font-bold text-[#7A3A8E] dark:text-[#AD74C3] disabled:opacity-50 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#cbe0f6] hover:bg-[#cbe0f6] dark:bg-[#346297] dark:hover:bg-slate-600 rounded-full font-bold text-[#346297] dark:text-[#73a4db] disabled:opacity-50 transition-colors"
                 >
                     <ChevronLeft className="w-5 h-5" /> Anterior
                 </button>
                 <div className="flex gap-1 items-center">
                     {paragraphs.map((_, i) => (
-                        <div key={i} className={`h-2 rounded-full transition-all ${i === currentIndex ? 'w-6 bg-[#7A3A8E]' : 'w-2 bg-slate-300 dark:bg-slate-600'}`} />
+                        <div key={i} className={`h-2 rounded-full transition-all ${i === currentIndex ? 'w-6 bg-[#346297]' : 'w-2 bg-slate-300 dark:bg-slate-600'}`} />
                     ))}
                 </div>
                 <button
                     onClick={() => setCurrentIndex(p => Math.min(paragraphs.length - 1, p + 1))}
                     disabled={currentIndex === paragraphs.length - 1}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#EADFF0] hover:bg-[#EADFF0] dark:bg-sky-900/50 dark:hover:bg-sky-800 rounded-full font-bold text-sky-700 dark:text-[#AD74C3] disabled:opacity-50 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#cbe0f6] hover:bg-[#cbe0f6] dark:bg-sky-900/50 dark:hover:bg-sky-800 rounded-full font-bold text-sky-700 dark:text-[#73a4db] disabled:opacity-50 transition-colors"
                 >
                     Siguiente <ChevronRight className="w-5 h-5" />
                 </button>
@@ -109,8 +109,8 @@ const ChatBubbleDialogue = ({ paragraphs }: { paragraphs: string[] }) => {
                                         <MessageCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                                     </div>
                                 ) : (
-                                    <div className="w-10 h-10 rounded-full bg-[#EADFF0] dark:bg-sky-900/50 border-2 border-[#7A3A8E] flex items-center justify-center shadow-lg shadow-[#EADFF0]">
-                                        <Bot className="w-6 h-6 text-[#522566] dark:text-[#AD74C3]" />
+                                    <div className="w-10 h-10 rounded-full bg-[#cbe0f6] dark:bg-sky-900/50 border-2 border-[#346297] flex items-center justify-center shadow-lg shadow-[#cbe0f6]">
+                                        <Bot className="w-6 h-6 text-[#1c3a60] dark:text-[#73a4db]" />
                                     </div>
                                 )}
                             </div>
@@ -118,7 +118,7 @@ const ChatBubbleDialogue = ({ paragraphs }: { paragraphs: string[] }) => {
                             {/* Bubble */}
                             <div className={`p-4 rounded-2xl shadow-sm min-w-0 overflow-hidden break-words ${isStudent
                                 ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-tr-sm'
-                                : 'bg-white dark:bg-[#522566] border border-[#EADFF0] dark:border-[#7A3A8E] rounded-tl-sm shadow-md'
+                                : 'bg-white dark:bg-[#1c3a60] border border-[#cbe0f6] dark:border-[#346297] rounded-tl-sm shadow-md'
                                 }`}>
                                 <div className="prose prose-md dark:prose-invert max-w-full">
                                     {renderSafeContent(paragraph)}
@@ -150,22 +150,22 @@ const StepByStepAccordion = ({ paragraphs }: { paragraphs: string[] }) => {
                 }
 
                 return (
-                    <div key={index} className={`border-2 rounded-2xl overflow-hidden transition-all duration-300 ${isOpen ? 'border-[#AD74C3] dark:border-sky-600 shadow-md transform scale-[1.02]' : 'border-[#EADFF0] dark:border-[#7A3A8E] hover:border-sky-300'}`}>
+                    <div key={index} className={`border-2 rounded-2xl overflow-hidden transition-all duration-300 ${isOpen ? 'border-[#73a4db] dark:border-sky-600 shadow-md transform scale-[1.02]' : 'border-[#cbe0f6] dark:border-[#346297] hover:border-sky-300'}`}>
                         <button
                             onClick={() => setOpenIndex(isOpen ? -1 : index)}
-                            className={`w-full flex items-center justify-between p-4 font-bold text-left transition-colors ${isOpen ? 'bg-[#F8EDFB] dark:bg-sky-900/30 text-sky-800 dark:text-[#EADFF0]' : 'bg-white dark:bg-[#522566] text-[#7A3A8E] dark:text-[#AD74C3] hover:bg-[#F8EDFB]'}`}
+                            className={`w-full flex items-center justify-between p-4 font-bold text-left transition-colors ${isOpen ? 'bg-[#f0f5fb] dark:bg-sky-900/30 text-sky-800 dark:text-[#cbe0f6]' : 'bg-white dark:bg-[#1c3a60] text-[#346297] dark:text-[#73a4db] hover:bg-[#f0f5fb]'}`}
                         >
                             <span className="flex items-center gap-3">
-                                <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm ${isOpen ? 'bg-[#522566] text-white' : 'bg-[#EADFF0] dark:bg-[#7A3A8E] text-[#7A3A8E] dark:text-[#AD74C3]'}`}>
+                                <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm ${isOpen ? 'bg-[#1c3a60] text-white' : 'bg-[#cbe0f6] dark:bg-[#346297] text-[#346297] dark:text-[#73a4db]'}`}>
                                     {index + 1}
                                 </span>
                                 {title}
                             </span>
-                            <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180 text-[#522566]' : 'text-[#AD74C3]'}`} />
+                            <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180 text-[#1c3a60]' : 'text-[#73a4db]'}`} />
                         </button>
 
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                            <div className="p-6 bg-white dark:bg-[#522566] prose prose-lg dark:prose-invert max-w-full break-words border-t border-[#EADFF0] dark:border-[#7A3A8E]/50">
+                            <div className="p-6 bg-white dark:bg-[#1c3a60] prose prose-lg dark:prose-invert max-w-full break-words border-t border-[#cbe0f6] dark:border-[#346297]/50">
                                 {renderSafeContent(paragraph)}
                             </div>
                         </div>
@@ -187,7 +187,7 @@ export default function PedagogicalWrapper({ content, studentName, type = 'theor
     
     if (rawParagraphs.length <= 1 || hasMarkdownHeaders) {
         return (
-            <div className={`bg-white dark:bg-[#522566] p-6 rounded-2xl shadow-sm border ${type === 'narrative' ? 'border-amber-200 bg-amber-50/50' : 'border-[#EADFF0]'} overflow-hidden break-words`}>
+            <div className={`bg-white dark:bg-[#1c3a60] p-6 rounded-2xl shadow-sm border ${type === 'narrative' ? 'border-amber-200 bg-amber-50/50' : 'border-[#cbe0f6]'} overflow-hidden break-words`}>
                 <div className="prose prose-lg dark:prose-invert max-w-full leading-relaxed">
                     {renderSafeContent(formattedContent)}
                 </div>

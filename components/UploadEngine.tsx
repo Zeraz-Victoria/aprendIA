@@ -234,15 +234,15 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
     return (
         <div className="w-full max-w-3xl mx-auto p-6">
             <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-[#522566] dark:text-slate-100">Centro de Creación de Mundos</h2>
-                <p className="text-[#AD74C3] mt-2">Sube un examen (PDF o Word) y la IA generará una aventura interactiva.</p>
+                <h2 className="text-3xl font-bold text-[#1c3a60] dark:text-slate-100">Centro de Creación de Mundos</h2>
+                <p className="text-[#73a4db] mt-2">Sube un examen (PDF o Word) y la IA generará una aventura interactiva.</p>
             </div>
 
             <div
                 className={`
             relative group border-4 border-dashed rounded-3xl p-12 transition-all cursor-pointer
             flex flex-col items-center justify-center min-h-[400px]
-            ${isDragging ? 'border-[#7A3A8E] bg-[#F8EDFB] dark:bg-[#522566]' : 'border-[#EADFF0] dark:border-[#7A3A8E] hover:border-[#AD74C3] hover:bg-[#F8EDFB] dark:hover:bg-[#522566]'}
+            ${isDragging ? 'border-[#346297] bg-[#f0f5fb] dark:bg-[#1c3a60]' : 'border-[#cbe0f6] dark:border-[#346297] hover:border-[#73a4db] hover:bg-[#f0f5fb] dark:hover:bg-[#1c3a60]'}
             ${uploadSuccess ? 'border-green-500 bg-green-50' : ''}
         `}
                 onDragOver={handleDragOver}
@@ -281,13 +281,13 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                         {isUploading ? (
                             <div className="text-center space-y-6">
                                 <div className="relative w-24 h-24 mx-auto">
-                                    <div className="absolute inset-0 border-4 border-[#EADFF0] rounded-full"></div>
+                                    <div className="absolute inset-0 border-4 border-[#cbe0f6] rounded-full"></div>
                                     <div className="absolute inset-0 border-4 border-t-sky-600 rounded-full animate-spin"></div>
-                                    <Loader2 className="absolute inset-0 m-auto w-10 h-10 text-[#522566] animate-pulse" />
+                                    <Loader2 className="absolute inset-0 m-auto w-10 h-10 text-[#1c3a60] animate-pulse" />
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-sky-900">{loadingStatus}</h3>
-                                    <p className="text-[#522566] text-sm mt-1">{loadingSub}</p>
+                                    <p className="text-[#1c3a60] text-sm mt-1">{loadingSub}</p>
                                 </div>
                             </div>
                         ) : (
@@ -295,7 +295,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                             <div className="text-center space-y-4">
                                 <div className={`
                             w-24 h-24 rounded-full flex items-center justify-center mx-auto transition-transform group-hover:scale-110
-                            ${file ? 'bg-[#EADFF0] text-[#522566]' : 'bg-[#EADFF0] text-[#AD74C3]'}
+                            ${file ? 'bg-[#cbe0f6] text-[#1c3a60]' : 'bg-[#cbe0f6] text-[#73a4db]'}
                         `}>
                                     {file ? <FileText className="w-10 h-10" /> : <UploadCloud className="w-10 h-10" />}
                                 </div>
@@ -304,17 +304,17 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                                      {file ? (
                                          <div className="flex flex-col items-center gap-6 w-full mt-4">
                                             <div className="text-center">
-                                                <h3 className="text-base font-bold text-[#522566] break-all leading-snug" title={file.name}>{file.name}</h3>
-                                                <p className="text-[#AD74C3] text-sm mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                <h3 className="text-base font-bold text-[#1c3a60] break-all leading-snug" title={file.name}>{file.name}</h3>
+                                                <p className="text-[#73a4db] text-sm mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                             </div>
                                             
                                             {!isUploading && !uploadSuccess && (
-                                                <div className="w-full max-w-lg space-y-6 bg-white p-6 rounded-3xl shadow-sm border border-[#EADFF0]" onClick={e => e.stopPropagation()}>
+                                                <div className="w-full max-w-lg space-y-6 bg-white p-6 rounded-3xl shadow-sm border border-[#cbe0f6]" onClick={e => e.stopPropagation()}>
                                                     {/* Tema Visual */}
                                                     <div className="space-y-3">
                                                         <div className="flex items-center gap-2">
-                                                            <Compass className="w-4 h-4 text-[#7A3A8E]" />
-                                                            <label className="text-xs font-black text-[#AD74C3] uppercase tracking-widest">Tema Visual del Juego</label>
+                                                            <Compass className="w-4 h-4 text-[#346297]" />
+                                                            <label className="text-xs font-black text-[#73a4db] uppercase tracking-widest">Tema Visual del Juego</label>
                                                         </div>
                                                         <div className="grid grid-cols-5 gap-2">
                                                             {THEME_LIST.map(t => (
@@ -323,12 +323,12 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                                                                     type="button"
                                                                     onClick={() => { setSelectedTheme(t.key); setSelectedColor(THEME_COLORS[t.key]); }}
                                                                     className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all group ${selectedTheme === t.key 
-                                                                        ? 'bg-[#F8EDFB] border-[#7A3A8E] scale-105' 
-                                                                        : 'bg-white border-[#EADFF0] hover:border-[#EADFF0] hover:bg-[#F8EDFB]'}`}
+                                                                        ? 'bg-[#f0f5fb] border-[#346297] scale-105' 
+                                                                        : 'bg-white border-[#cbe0f6] hover:border-[#cbe0f6] hover:bg-[#f0f5fb]'}`}
                                                                     title={t.label}
                                                                 >
                                                                     <span className="text-xl group-hover:scale-125 transition-transform">{t.emoji}</span>
-                                                                    <span className="text-[8px] font-black uppercase mt-1 text-[#AD74C3]">{t.key}</span>
+                                                                    <span className="text-[8px] font-black uppercase mt-1 text-[#73a4db]">{t.key}</span>
                                                                 </button>
                                                             ))}
                                                         </div>
@@ -337,8 +337,8 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                                                     {/* Dificultad */}
                                                     <div className="space-y-3">
                                                         <div className="flex items-center gap-2">
-                                                            <Brain className="w-4 h-4 text-[#7A3A8E]" />
-                                                            <label className="text-xs font-black text-[#AD74C3] uppercase tracking-widest">Dificultad Sugerida</label>
+                                                            <Brain className="w-4 h-4 text-[#346297]" />
+                                                            <label className="text-xs font-black text-[#73a4db] uppercase tracking-widest">Dificultad Sugerida</label>
                                                         </div>
                                                         <div className="flex gap-3">
                                                             {[
@@ -352,7 +352,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                                                                     onClick={() => setVocabularyLevel(level.key as "facil" | "medio" | "alto")}
                                                                     className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all border-2 ${vocabularyLevel === level.key 
                                                                         ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-md' 
-                                                                        : 'bg-white border-[#EADFF0] text-[#AD74C3] hover:border-[#EADFF0]'}`}
+                                                                        : 'bg-white border-[#cbe0f6] text-[#73a4db] hover:border-[#cbe0f6]'}`}
                                                                 >
                                                                     {level.label}
                                                                 </button>
@@ -365,7 +365,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                                             {!isUploading && !uploadSuccess && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleUpload(); }}
-                                                    className="bg-[#522566] hover:bg-[#522566] text-white px-8 py-4 w-full max-w-lg rounded-2xl font-bold text-base shadow-xl shadow-indigo-100 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 border-2 border-[#AD74C3]/20"
+                                                    className="bg-[#1c3a60] hover:bg-[#1c3a60] text-white px-8 py-4 w-full max-w-lg rounded-2xl font-bold text-base shadow-xl shadow-indigo-100 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 border-2 border-[#73a4db]/20"
                                                 >
                                                     <UploadCloud className="w-5 h-5" />
                                                     Generar con IA
@@ -374,8 +374,8 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                                         </div>
                                     ) : (
                                         <>
-                                            <h3 className="text-xl font-bold text-[#7A3A8E]">Arrastra tu planeación (PDF o Word) aquí</h3>
-                                            <p className="text-[#AD74C3] text-sm mt-2">AprendIA transformará el contenido en una aventura interactiva.</p>
+                                            <h3 className="text-xl font-bold text-[#346297]">Arrastra tu planeación (PDF o Word) aquí</h3>
+                                            <p className="text-[#73a4db] text-sm mt-2">AprendIA transformará el contenido en una aventura interactiva.</p>
                                         </>
                                     )}
                                 </div>
@@ -392,7 +392,7 @@ export default function UploadEngine({ onSuccess }: UploadEngineProps) {
                         onClick={() => {
                             setFile(new File(["dummy"], "examen_demo.pdf", { type: "application/pdf" }));
                         }}
-                        className="text-[#AD74C3] hover:text-[#522566] text-sm underline pb-2"
+                        className="text-[#73a4db] hover:text-[#1c3a60] text-sm underline pb-2"
                     >
                         Modo Demo: Simular subida de PDF
                     </button>

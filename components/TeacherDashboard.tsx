@@ -517,7 +517,7 @@ export default function TeacherDashboard() {
         const loadingAlert = document.createElement('div');
         loadingAlert.id = 'mission-loading';
         loadingAlert.className = 'fixed inset-0 z-[100] bg-black/60 flex items-center justify-center';
-        loadingAlert.innerHTML = '<div class="bg-white p-8 rounded-3xl shadow-2xl text-center"><div class="animate-spin w-12 h-12 border-4 border-[#EADFF0] border-t-sky-600 rounded-full mx-auto mb-4"></div><p class="text-[#522566] font-bold text-lg">Generando misión personalizada...</p><p class="text-[#AD74C3] text-sm mt-1">Creando actividades de repaso para ' + studentCtx.student.name + '</p></div>';
+        loadingAlert.innerHTML = '<div class="bg-white p-8 rounded-3xl shadow-2xl text-center"><div class="animate-spin w-12 h-12 border-4 border-[#cbe0f6] border-t-sky-600 rounded-full mx-auto mb-4"></div><p class="text-[#1c3a60] font-bold text-lg">Generando misión personalizada...</p><p class="text-[#73a4db] text-sm mt-1">Creando actividades de repaso para ' + studentCtx.student.name + '</p></div>';
         document.body.appendChild(loadingAlert);
 
         try {
@@ -985,11 +985,11 @@ export default function TeacherDashboard() {
     // Metrics already calculated above handler
 
     return (
-        <div className="min-h-screen bg-[#F8EDFB] text-[#522566] font-sans selection:bg-[#EADFF0] selection:text-[#522566] overflow-x-hidden relative">
+        <div className="min-h-screen bg-[#f0f5fb] text-[#1c3a60] font-sans selection:bg-[#cbe0f6] selection:text-[#1c3a60] overflow-x-hidden relative">
             {/* Ambient Background Glow - Soft Pastel Mode */}
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#AD74C3]/20 blur-[120px] rounded-full animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#AD74C3]/20 blur-[120px] rounded-full animate-pulse delay-700" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#73a4db]/20 blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#73a4db]/20 blur-[120px] rounded-full animate-pulse delay-700" />
                 <div className="absolute inset-0 opacity-[0.05]" 
                      style={{ backgroundImage: `radial-gradient(circle at 2px 2px, rgba(0,0,0,0.05) 1px, transparent 0)` , backgroundSize: '32px 32px' }} />
             </div>
@@ -1002,19 +1002,19 @@ export default function TeacherDashboard() {
             )}
 
             {/* COMMANDER NAV */}
-            <header className="sticky top-0 z-50 shadow-sm" style={{ background: 'rgba(248,237,251,0.9)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #EADFF0' }}>
+            <header className="sticky top-0 z-50 shadow-sm" style={{ background: 'rgba(240, 245, 251,0.9)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #cbe0f6' }}>
                 <div className="container mx-auto px-6 h-20 flex items-center justify-between relative z-10">
                     <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-[#EADFF0] overflow-hidden">
+                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-[#cbe0f6] overflow-hidden">
                            <img src="/logo_aprendia.png" alt="AprendIA Logo" className="w-full h-full object-cover" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-black tracking-tighter uppercase leading-none" style={{ color: '#522566' }}>AprendIA</h1>
-                            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#AD74C3' }}>Panel Docente</p>
+                            <h1 className="text-xl font-black tracking-tighter uppercase leading-none" style={{ color: '#1c3a60' }}>AprendIA</h1>
+                            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#73a4db' }}>Panel Docente</p>
                         </div>
                     </div>
 
-                    <nav className="hidden lg:flex items-center gap-1 p-1 rounded-2xl border" style={{ background: 'rgba(82,37,102,0.05)', borderColor: '#EADFF0' }}>
+                    <nav className="hidden lg:flex items-center gap-1 p-1 rounded-2xl border" style={{ background: 'rgba(28, 58, 96,0.05)', borderColor: '#cbe0f6' }}>
                         {[
                             { id: 'reports', label: 'Salón', icon: Users },
                             { id: 'library', label: 'Biblioteca', icon: Library },
@@ -1029,8 +1029,8 @@ export default function TeacherDashboard() {
                                 onClick={() => setActiveTab(tab.id as Tab)}
                                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300"
                                 style={activeTab === tab.id
-                                    ? { background: '#522566', color: 'white', boxShadow: '0 4px 12px rgba(82,37,102,0.3)' }
-                                    : { color: '#AD74C3' }
+                                    ? { background: '#1c3a60', color: 'white', boxShadow: '0 4px 12px rgba(28, 58, 96,0.3)' }
+                                    : { color: '#73a4db' }
                                 }
                             >
                                 <tab.icon className="w-3.5 h-3.5" />
@@ -1043,7 +1043,7 @@ export default function TeacherDashboard() {
                         <button 
                             onClick={() => signOut({ callbackUrl: "/" })}
                             className="flex items-center gap-2 px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border transition-all active:scale-95 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200"
-                            style={{ background: '#EADFF0', color: '#7A3A8E', borderColor: '#EADFF0' }}
+                            style={{ background: '#cbe0f6', color: '#346297', borderColor: '#cbe0f6' }}
                         >
                            <LogOut className="w-4 h-4" /> <span className="hidden xl:inline">Cerrar Sesión</span>
                         </button>
@@ -1076,15 +1076,15 @@ export default function TeacherDashboard() {
                                         if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) en tu plan actual.`);
                                         setShowCreationChoiceModal(true);
                                     }}
-                                    className="group h-full min-h-[450px] border-4 border-dashed border-white/60 bg-white/20 hover:bg-white/40 hover:border-[#AD74C3] rounded-3xl flex flex-col items-center justify-center gap-6 transition-all duration-500 shadow-sm hover:shadow-xl relative overflow-hidden"
+                                    className="group h-full min-h-[450px] border-4 border-dashed border-white/60 bg-white/20 hover:bg-white/40 hover:border-[#73a4db] rounded-3xl flex flex-col items-center justify-center gap-6 transition-all duration-500 shadow-sm hover:shadow-xl relative overflow-hidden"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-br from-[#522566]/5 to-[#7A3A8E]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="absolute inset-0 bg-gradient-to-br from-[#1c3a60]/5 to-[#346297]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <div className="w-24 h-24 bg-white/80 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl border border-white/50 relative z-10">
-                                        <Plus className="w-12 h-12 text-[#7A3A8E] group-hover:rotate-90 transition-transform duration-500" />
+                                        <Plus className="w-12 h-12 text-[#346297] group-hover:rotate-90 transition-transform duration-500" />
                                     </div>
                                     <div className="text-center relative z-10">
-                                        <p className="text-[#522566] font-black text-2xl tracking-tight">Nueva Aventura</p>
-                                        <p className="text-[#AD74C3] text-[10px] font-black uppercase tracking-[0.2em] mt-2 bg-white/50 px-3 py-1 rounded-full border border-white/40">Inicia tu Creación</p>
+                                        <p className="text-[#1c3a60] font-black text-2xl tracking-tight">Nueva Aventura</p>
+                                        <p className="text-[#73a4db] text-[10px] font-black uppercase tracking-[0.2em] mt-2 bg-white/50 px-3 py-1 rounded-full border border-white/40">Inicia tu Creación</p>
                                     </div>
                                     
                                     {/* Modal Hub Integrado (Creation Choice) */}
@@ -1092,12 +1092,12 @@ export default function TeacherDashboard() {
                                         <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center gap-4 p-8 animate-in fade-in zoom-in duration-300">
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); setShowCreationChoiceModal(false); }}
-                                                className="absolute top-4 right-4 p-2 text-[#AD74C3] hover:text-[#7A3A8E] hover:bg-[#EADFF0] rounded-full transition-all"
+                                                className="absolute top-4 right-4 p-2 text-[#73a4db] hover:text-[#346297] hover:bg-[#cbe0f6] rounded-full transition-all"
                                             >
                                                 <X className="w-5 h-5" />
                                             </button>
                                             
-                                            <h3 className="text-xl font-black text-[#522566] mb-2">¿Cómo deseas iniciar?</h3>
+                                            <h3 className="text-xl font-black text-[#1c3a60] mb-2">¿Cómo deseas iniciar?</h3>
                                             
                                             <div className="grid grid-cols-1 gap-3 w-full">
                                                 <button 
@@ -1106,14 +1106,14 @@ export default function TeacherDashboard() {
                                                         setShowCreationChoiceModal(false);
                                                         setShowUploadModal(true);
                                                     }}
-                                                    className="w-full flex items-center gap-4 p-5 bg-white border-2 border-[#EADFF0] hover:border-[#AD74C3] hover:bg-[#F8EDFB] rounded-2xl transition-all group/opt shadow-sm"
+                                                    className="w-full flex items-center gap-4 p-5 bg-white border-2 border-[#cbe0f6] hover:border-[#73a4db] hover:bg-[#f0f5fb] rounded-2xl transition-all group/opt shadow-sm"
                                                 >
-                                                    <div className="bg-[#EADFF0] p-3 rounded-xl group-hover/opt:bg-[#7A3A8E] transition-colors">
-                                                        <UploadCloud className="w-6 h-6 text-[#522566] group-hover/opt:text-white" />
+                                                    <div className="bg-[#cbe0f6] p-3 rounded-xl group-hover/opt:bg-[#346297] transition-colors">
+                                                        <UploadCloud className="w-6 h-6 text-[#1c3a60] group-hover/opt:text-white" />
                                                     </div>
                                                     <div className="text-left">
-                                                        <p className="font-black text-[#522566] text-sm">Carga de Archivos</p>
-                                                        <p className="text-[10px] text-[#AD74C3] font-bold uppercase tracking-widest mt-0.5">Sube PDF o Word</p>
+                                                        <p className="font-black text-[#1c3a60] text-sm">Carga de Archivos</p>
+                                                        <p className="text-[10px] text-[#73a4db] font-bold uppercase tracking-widest mt-0.5">Sube PDF o Word</p>
                                                     </div>
                                                 </button>
 
@@ -1123,14 +1123,14 @@ export default function TeacherDashboard() {
                                                         setShowCreationChoiceModal(false);
                                                         setShowAiGeneratorModal(true);
                                                     }}
-                                                    className="w-full flex items-center gap-4 p-5 bg-white border-2 border-[#EADFF0] hover:border-[#AD74C3] hover:bg-[#F8EDFB] rounded-2xl transition-all group/opt shadow-sm"
+                                                    className="w-full flex items-center gap-4 p-5 bg-white border-2 border-[#cbe0f6] hover:border-[#73a4db] hover:bg-[#f0f5fb] rounded-2xl transition-all group/opt shadow-sm"
                                                 >
-                                                    <div className="bg-[#EADFF0] p-3 rounded-xl group-hover/opt:bg-[#7A3A8E] transition-colors">
-                                                        <Sparkles className="w-6 h-6 text-[#522566] group-hover/opt:text-white" />
+                                                    <div className="bg-[#cbe0f6] p-3 rounded-xl group-hover/opt:bg-[#346297] transition-colors">
+                                                        <Sparkles className="w-6 h-6 text-[#1c3a60] group-hover/opt:text-white" />
                                                     </div>
                                                     <div className="text-left">
-                                                        <p className="font-black text-[#522566] text-sm">Autogenerar con IA</p>
-                                                        <p className="text-[10px] text-[#AD74C3] font-bold uppercase tracking-widest mt-0.5">Generación Express</p>
+                                                        <p className="font-black text-[#1c3a60] text-sm">Autogenerar con IA</p>
+                                                        <p className="text-[10px] text-[#73a4db] font-bold uppercase tracking-widest mt-0.5">Generación Express</p>
                                                     </div>
                                                 </button>
                                             </div>
@@ -1139,12 +1139,12 @@ export default function TeacherDashboard() {
                                 </button>
 
                                 {filteredWorlds.length === 0 ? (
-                                    <div className="col-span-full flex flex-col items-center justify-center py-24 bg-[#F8EDFB]/50 rounded-3xl border-2 border-dashed border-[#EADFF0]">
+                                    <div className="col-span-full flex flex-col items-center justify-center py-24 bg-[#f0f5fb]/50 rounded-3xl border-2 border-dashed border-[#cbe0f6]">
                                         <div className="bg-white p-6 rounded-full shadow-sm mb-4">
-                                            <Search className="w-10 h-10 text-[#AD74C3]" />
+                                            <Search className="w-10 h-10 text-[#73a4db]" />
                                         </div>
-                                        <p className="text-[#AD74C3] font-bold">No se encontraron aventuras</p>
-                                        <p className="text-[#AD74C3] text-sm">Prueba con otros términos o crea una nueva.</p>
+                                        <p className="text-[#73a4db] font-bold">No se encontraron aventuras</p>
+                                        <p className="text-[#73a4db] text-sm">Prueba con otros términos o crea una nueva.</p>
                                     </div>
                                 ) : (
                                     filteredWorlds.map(w => {
@@ -1176,7 +1176,7 @@ export default function TeacherDashboard() {
                                                     </div>
                                                     <div className="flex justify-between items-start relative z-10">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="bg-white text-[#522566] text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg shadow-lg">
+                                                            <span className="bg-white text-[#1c3a60] text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg shadow-lg">
                                                                 {w.pedagogy?.grade || "Nivel General"}
                                                             </span>
                                                             <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
@@ -1195,64 +1195,64 @@ export default function TeacherDashboard() {
                                                     <div className="p-6 flex flex-col flex-1 space-y-5">
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div className="space-y-1">
-                                                                <span className="text-[9px] font-black text-[#AD74C3] uppercase tracking-widest block">Campos Formativos</span>
+                                                                <span className="text-[9px] font-black text-[#73a4db] uppercase tracking-widest block">Campos Formativos</span>
                                                                 <div className="flex flex-wrap gap-1">
                                                                     {w.pedagogy?.camposFormativos && w.pedagogy.camposFormativos.length > 0 ? (
                                                                         w.pedagogy.camposFormativos.map((cf, idx) => (
-                                                                            <span key={idx} className="bg-[#F8EDFB] text-[#522566] text-[8px] font-black px-2 py-0.5 rounded-md border border-[#EADFF0]">
+                                                                            <span key={idx} className="bg-[#f0f5fb] text-[#1c3a60] text-[8px] font-black px-2 py-0.5 rounded-md border border-[#cbe0f6]">
                                                                                 {cf}
                                                                             </span>
                                                                         ))
                                                                     ) : w.pedagogy?.topic ? (
-                                                                        <span className="bg-[#F8EDFB] text-[#522566] text-[8px] font-black px-2 py-0.5 rounded-md border border-[#EADFF0]">
+                                                                        <span className="bg-[#f0f5fb] text-[#1c3a60] text-[8px] font-black px-2 py-0.5 rounded-md border border-[#cbe0f6]">
                                                                             {w.pedagogy.topic}
                                                                         </span>
                                                                     ) : (
-                                                                        <span className="text-[8px] text-[#AD74C3] italic">No definidos</span>
+                                                                        <span className="text-[8px] text-[#73a4db] italic">No definidos</span>
                                                                     )}
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-1">
-                                                                <span className="text-[9px] font-black text-[#AD74C3] uppercase tracking-widest block">PDA</span>
-                                                                <p className="text-[10px] font-bold text-[#522566] line-clamp-2 leading-tight">
+                                                                <span className="text-[9px] font-black text-[#73a4db] uppercase tracking-widest block">PDA</span>
+                                                                <p className="text-[10px] font-bold text-[#1c3a60] line-clamp-2 leading-tight">
                                                                     {w.pedagogy?.pda || "Sin PDA específico."}
                                                                 </p>
                                                             </div>
                                                         </div>
 
                                                         <div className="space-y-1">
-                                                            <span className="text-[9px] font-black text-[#7A3A8E] uppercase tracking-widest block">Ejes Articuladores</span>
+                                                            <span className="text-[9px] font-black text-[#346297] uppercase tracking-widest block">Ejes Articuladores</span>
                                                             <div className="flex flex-wrap gap-1">
                                                                 {w.pedagogy?.ejes && w.pedagogy.ejes.length > 0 ? (
                                                                     w.pedagogy.ejes.map((eje, idx) => (
-                                                                        <span key={idx} className="bg-[#F8EDFB] text-[#522566] text-[8px] font-bold px-2 py-0.5 rounded-md border border-[#EADFF0]">
+                                                                        <span key={idx} className="bg-[#f0f5fb] text-[#1c3a60] text-[8px] font-bold px-2 py-0.5 rounded-md border border-[#cbe0f6]">
                                                                             {eje}
                                                                         </span>
                                                                     ))
                                                                 ) : (
-                                                                    <span className="text-[8px] text-[#AD74C3] italic">No seleccionados</span>
+                                                                    <span className="text-[8px] text-[#73a4db] italic">No seleccionados</span>
                                                                 )}
                                                             </div>
                                                         </div>
 
-                                                        <div className="space-y-2 bg-[#F8EDFB]/50 p-4 rounded-2xl border border-[#EADFF0]">
+                                                        <div className="space-y-2 bg-[#f0f5fb]/50 p-4 rounded-2xl border border-[#cbe0f6]">
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 <div className="space-y-1">
-                                                                    <span className="text-[9px] font-black text-[#AD74C3] uppercase tracking-widest block">Propósito</span>
-                                                                    <p className="text-[10px] text-[#7A3A8E] line-clamp-3 leading-snug">
+                                                                    <span className="text-[9px] font-black text-[#73a4db] uppercase tracking-widest block">Propósito</span>
+                                                                    <p className="text-[10px] text-[#346297] line-clamp-3 leading-snug">
                                                                         {w.pedagogy?.proposito || "No documentado."}
                                                                     </p>
                                                                 </div>
                                                                 <div className="space-y-1">
-                                                                    <span className="text-[9px] font-black text-[#AD74C3] uppercase tracking-widest block">Diagnóstico</span>
-                                                                    <p className="text-[10px] text-[#7A3A8E] line-clamp-3 leading-snug">
+                                                                    <span className="text-[9px] font-black text-[#73a4db] uppercase tracking-widest block">Diagnóstico</span>
+                                                                    <p className="text-[10px] text-[#346297] line-clamp-3 leading-snug">
                                                                         {w.pedagogy?.diagnostico || "No documentado."}
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                            <div className="pt-2 mt-2 border-t border-[#EADFF0]">
-                                                                <span className="text-[9px] font-black text-[#AD74C3] uppercase tracking-widest block mb-1">Contenidos</span>
-                                                                <p className="text-[10px] font-black text-[#522566] line-clamp-1">
+                                                            <div className="pt-2 mt-2 border-t border-[#cbe0f6]">
+                                                                <span className="text-[9px] font-black text-[#73a4db] uppercase tracking-widest block mb-1">Contenidos</span>
+                                                                <p className="text-[10px] font-black text-[#1c3a60] line-clamp-1">
                                                                     {w.pedagogy?.contenidos || "Contenidos generales de la fase."}
                                                                 </p>
                                                             </div>
@@ -1260,19 +1260,19 @@ export default function TeacherDashboard() {
 
                                                         {/* Metrics Row - Tactical High Contrast */}
                                                         <div className="grid grid-cols-3 gap-3">
-                                                            <div className="bg-white p-3 rounded-xl flex flex-col items-center border border-[#EADFF0] shadow-sm transition-colors hover:border-[#EADFF0]">
-                                                                <span className="text-[9px] font-black text-[#AD74C3] uppercase tracking-tighter mb-1">Eficacia</span>
-                                                                <span className={`text-sm font-black ${parseFloat(avgEfficiency) >= 8 ? 'text-emerald-600' : parseFloat(avgEfficiency) >= 6 ? 'text-amber-600' : 'text-[#AD74C3]'}`}>
+                                                            <div className="bg-white p-3 rounded-xl flex flex-col items-center border border-[#cbe0f6] shadow-sm transition-colors hover:border-[#cbe0f6]">
+                                                                <span className="text-[9px] font-black text-[#73a4db] uppercase tracking-tighter mb-1">Eficacia</span>
+                                                                <span className={`text-sm font-black ${parseFloat(avgEfficiency) >= 8 ? 'text-emerald-600' : parseFloat(avgEfficiency) >= 6 ? 'text-amber-600' : 'text-[#73a4db]'}`}>
                                                                     {avgEfficiency}
                                                                 </span>
                                                             </div>
-                                                            <div className="bg-[#F8EDFB]/30 p-3 rounded-xl flex flex-col items-center border border-[#EADFF0] shadow-sm">
-                                                                <span className="text-[9px] font-black text-[#AD74C3] uppercase tracking-tighter mb-1">Salones</span>
-                                                                <span className="text-sm font-black text-[#522566]">{activeInClasses.length}</span>
+                                                            <div className="bg-[#f0f5fb]/30 p-3 rounded-xl flex flex-col items-center border border-[#cbe0f6] shadow-sm">
+                                                                <span className="text-[9px] font-black text-[#73a4db] uppercase tracking-tighter mb-1">Salones</span>
+                                                                <span className="text-sm font-black text-[#1c3a60]">{activeInClasses.length}</span>
                                                             </div>
-                                                            <div className="bg-white p-3 rounded-xl flex flex-col items-center border border-[#EADFF0] shadow-sm">
-                                                                <span className="text-[9px] font-black text-[#AD74C3] uppercase tracking-tighter mb-1">Etapas</span>
-                                                                <span className="text-sm font-black text-[#522566]">{w.days?.length || 0}</span>
+                                                            <div className="bg-white p-3 rounded-xl flex flex-col items-center border border-[#cbe0f6] shadow-sm">
+                                                                <span className="text-[9px] font-black text-[#73a4db] uppercase tracking-tighter mb-1">Etapas</span>
+                                                                <span className="text-sm font-black text-[#1c3a60]">{w.days?.length || 0}</span>
                                                             </div>
                                                         </div>
 
@@ -1282,18 +1282,18 @@ export default function TeacherDashboard() {
                                                             {activeInClasses.length > 0 ? (
                                                                 <div className="flex -space-x-1">
                                                                     {activeInClasses.map((cl, i) => (
-                                                                        <div key={i} title={cl.name} className="w-6 h-6 rounded-full bg-[#EADFF0] border border-white flex items-center justify-center text-[10px] shadow-sm">
+                                                                        <div key={i} title={cl.name} className="w-6 h-6 rounded-full bg-[#cbe0f6] border border-white flex items-center justify-center text-[10px] shadow-sm">
                                                                             {cl.emoji || "🏫"}
                                                                         </div>
                                                                     ))}
                                                                 </div>
                                                             ) : (
-                                                                <span className="text-[10px] text-[#AD74C3]">Sin asignar</span>
+                                                                <span className="text-[10px] text-[#73a4db]">Sin asignar</span>
                                                             )}
                                                         </div>
                                                         <button
                                                             onClick={() => { setBuilderWorld(w); setShowBuilderModal(true); }}
-                                                            className="text-xs font-bold text-[#522566] hover:text-[#522566] flex items-center gap-1.5 transition-colors"
+                                                            className="text-xs font-bold text-[#1c3a60] hover:text-[#1c3a60] flex items-center gap-1.5 transition-colors"
                                                         >
                                                             Configurar <ChevronRight className="w-3 h-3" />
                                                         </button>
@@ -1375,36 +1375,36 @@ export default function TeacherDashboard() {
                 )}
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-[#522566]/90 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-2xl flex justify-between items-center px-4 py-3 z-50 overflow-x-auto gap-4 custom-scrollbar">
-                <button onClick={() => setActiveTab("reports")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'reports' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
+            <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-[#1c3a60]/90 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-2xl flex justify-between items-center px-4 py-3 z-50 overflow-x-auto gap-4 custom-scrollbar">
+                <button onClick={() => setActiveTab("reports")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'reports' ? 'text-[#73a4db] scale-110' : 'text-[#73a4db]'}`}>
                     <Users className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Salón</span>
                 </button>
-                <button onClick={() => setActiveTab("library")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'library' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
+                <button onClick={() => setActiveTab("library")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'library' ? 'text-[#73a4db] scale-110' : 'text-[#73a4db]'}`}>
                     <Library className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Mapas</span>
                 </button>
-                <button onClick={() => setActiveTab("story")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'story' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
+                <button onClick={() => setActiveTab("story")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'story' ? 'text-[#73a4db] scale-110' : 'text-[#73a4db]'}`}>
                     <ImageIcon className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Feed</span>
                 </button>
-                <button onClick={() => setActiveTab("behavior")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'behavior' ? 'text-emerald-400 scale-110' : 'text-[#AD74C3]'}`}>
+                <button onClick={() => setActiveTab("behavior")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'behavior' ? 'text-emerald-400 scale-110' : 'text-[#73a4db]'}`}>
                     <Star className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Puntos</span>
                 </button>
-                <button onClick={() => setActiveTab("toolkit")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'toolkit' ? 'text-amber-400 scale-110' : 'text-[#AD74C3]'}`}>
+                <button onClick={() => setActiveTab("toolkit")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'toolkit' ? 'text-amber-400 scale-110' : 'text-[#73a4db]'}`}>
                     <Wrench className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Tools</span>
                 </button>
-                <button onClick={() => setActiveTab("raid")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'raid' ? 'text-rose-400 scale-110' : 'text-[#AD74C3]'}`}>
+                <button onClick={() => setActiveTab("raid")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'raid' ? 'text-rose-400 scale-110' : 'text-[#73a4db]'}`}>
                     <Swords className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Raid</span>
                 </button>
-                <button onClick={() => setActiveTab("messages")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'messages' ? 'text-[#AD74C3] scale-110' : 'text-[#AD74C3]'}`}>
+                <button onClick={() => setActiveTab("messages")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'messages' ? 'text-[#73a4db] scale-110' : 'text-[#73a4db]'}`}>
                     <MessageSquare className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Msgs</span>
                 </button>
-                <button onClick={() => signOut({ callbackUrl: "/" })} className="flex flex-col items-center gap-1.5 text-[#AD74C3] hover:text-rose-400 transition-all">
+                <button onClick={() => signOut({ callbackUrl: "/" })} className="flex flex-col items-center gap-1.5 text-[#73a4db] hover:text-rose-400 transition-all">
                     <LogOut className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Salir</span>
                 </button>
@@ -1414,12 +1414,12 @@ export default function TeacherDashboard() {
             {/* Upload Engine Modal */}
             {showUploadModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-                    <div className="bg-[#522566]/90 border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl">
+                    <div className="bg-[#1c3a60]/90 border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl">
                         <button
                             onClick={() => setShowUploadModal(false)}
                             className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
                         >
-                            <X className="w-5 h-5 text-[#AD74C3]" />
+                            <X className="w-5 h-5 text-[#73a4db]" />
                         </button>
                         <UploadEngine
                             onSuccess={() => {
@@ -1444,12 +1444,12 @@ export default function TeacherDashboard() {
             {/* Bulk Upload Modal */}
             {showBulkModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-                    <div className="bg-[#522566]/90 border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl">
+                    <div className="bg-[#1c3a60]/90 border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl">
                         <button
                             onClick={() => setShowBulkModal(false)}
                             className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
                         >
-                            <X className="w-5 h-5 text-[#AD74C3]" />
+                            <X className="w-5 h-5 text-[#73a4db]" />
                         </button>
                         <BulkEvidenceUploader onClose={() => setShowBulkModal(false)} />
                     </div>
@@ -1461,12 +1461,12 @@ export default function TeacherDashboard() {
             {/* Delete Confirmation Modal */}
             {worldToDelete && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
-                    <div className="bg-[#522566] border border-white/10 rounded-3xl w-full max-w-md p-8 relative shadow-2xl text-center transform transition-all scale-100 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-[#1c3a60] border border-white/10 rounded-3xl w-full max-w-md p-8 relative shadow-2xl text-center transform transition-all scale-100 animate-in fade-in zoom-in-95 duration-200">
                         <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500 border border-rose-500/20">
                             <AlertTriangle className="w-10 h-10" />
                         </div>
                         <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">¿Eliminar Aventura?</h3>
-                        <p className="text-[#AD74C3] mb-6 font-medium text-sm">
+                        <p className="text-[#73a4db] mb-6 font-medium text-sm">
                             Estás a punto de borrar permanentemente <span className="font-bold text-white">{worldToDelete.title}</span>.
                             Esta acción eliminará todos los niveles y el progreso. No se puede deshacer.
                         </p>
@@ -1494,37 +1494,37 @@ export default function TeacherDashboard() {
             {/* Add/Edit Student Modal */}
             {(showAddStudentModal || editingStudent) && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-                    <div className="bg-[#522566] border border-white/10 rounded-3xl w-full max-w-md p-6 md:p-8 relative shadow-2xl">
+                    <div className="bg-[#1c3a60] border border-white/10 rounded-3xl w-full max-w-md p-6 md:p-8 relative shadow-2xl">
                         <button
                             onClick={() => { setShowAddStudentModal(false); setEditingStudent(null); setStudentName(""); setStudentAvatar("🧑🏻"); }}
                             className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
                         >
-                            <X className="w-5 h-5 text-[#AD74C3]" />
+                            <X className="w-5 h-5 text-[#73a4db]" />
                         </button>
                         <h3 className="text-xl font-black text-white mb-6 uppercase tracking-tight">
                             {editingStudent ? "Editar Alumno" : "Agregar Alumno"}
                         </h3>
                         <div className="space-y-5">
                             <div>
-                                <label className="block text-[10px] font-black text-[#AD74C3] uppercase tracking-widest mb-2">Nombre del Alumno</label>
+                                <label className="block text-[10px] font-black text-[#73a4db] uppercase tracking-widest mb-2">Nombre del Alumno</label>
                                 <input
                                     type="text"
                                     value={studentName}
                                     onChange={(e) => setStudentName(e.target.value)}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#AD74C3] outline-none transition font-medium text-white placeholder:text-[#7A3A8E]"
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#73a4db] outline-none transition font-medium text-white placeholder:text-[#346297]"
                                     placeholder="Ej. María López"
                                     autoFocus
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black text-[#AD74C3] uppercase tracking-widest mb-2">Avatar</label>
+                                <label className="block text-[10px] font-black text-[#73a4db] uppercase tracking-widest mb-2">Avatar</label>
                                 <div className="grid grid-cols-6 gap-2">
                                     {AVATAR_OPTIONS.map((emoji) => (
                                         <button
                                             key={emoji}
                                             type="button"
                                             onClick={() => setStudentAvatar(emoji)}
-                                            className={`w-10 h-10 text-xl rounded-lg flex items-center justify-center transition-all ${studentAvatar === emoji ? 'bg-[#522566] ring-2 ring-[#AD74C3] scale-110 shadow-lg' : 'bg-white/5 hover:bg-white/10 text-white'}`}
+                                            className={`w-10 h-10 text-xl rounded-lg flex items-center justify-center transition-all ${studentAvatar === emoji ? 'bg-[#1c3a60] ring-2 ring-[#73a4db] scale-110 shadow-lg' : 'bg-white/5 hover:bg-white/10 text-white'}`}
                                         >
                                             {emoji}
                                         </button>
@@ -1532,22 +1532,22 @@ export default function TeacherDashboard() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black text-[#AD74C3] uppercase tracking-widest mb-2">Asignar a Salón</label>
+                                <label className="block text-[10px] font-black text-[#73a4db] uppercase tracking-widest mb-2">Asignar a Salón</label>
                                 <select
                                     value={selectedClassroomInModal}
                                     onChange={(e) => setSelectedClassroomInModal(e.target.value)}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#AD74C3] outline-none transition font-medium text-white"
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#73a4db] outline-none transition font-medium text-white"
                                 >
-                                    <option value="" className="bg-[#522566] text-[#AD74C3] font-bold uppercase tracking-widest text-[10px]">Sin Salón (General)</option>
+                                    <option value="" className="bg-[#1c3a60] text-[#73a4db] font-bold uppercase tracking-widest text-[10px]">Sin Salón (General)</option>
                                     {classrooms.map(cls => (
-                                        <option key={cls.id} value={cls.id} className="bg-[#522566]">{cls.emoji} {cls.name}</option>
+                                        <option key={cls.id} value={cls.id} className="bg-[#1c3a60]">{cls.emoji} {cls.name}</option>
                                     ))}
                                 </select>
                             </div>
                             <button
                                 onClick={handleSaveStudent}
                                 disabled={!studentName.trim() || savingStudent}
-                                className="w-full bg-[#522566] hover:bg-[#522566] disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-4 rounded-xl shadow-lg shadow-[#522566]/20 transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest text-[10px]"
+                                className="w-full bg-[#1c3a60] hover:bg-[#1c3a60] disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-4 rounded-xl shadow-lg shadow-[#1c3a60]/20 transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest text-[10px]"
                             >
                                 {savingStudent ? "Guardando..." : (editingStudent ? "Guardar Cambios" : "Agregar Alumno")}
                             </button>
@@ -1563,15 +1563,15 @@ export default function TeacherDashboard() {
                         <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
                             {studentToDelete.avatar}
                         </div>
-                        <h3 className="text-2xl font-bold text-[#522566] mb-2">¿Eliminar Alumno?</h3>
-                        <p className="text-[#7A3A8E] mb-6 font-medium">
-                            Estás a punto de borrar permanentemente a <span className="font-bold text-[#522566]">{studentToDelete.name}</span>.
+                        <h3 className="text-2xl font-bold text-[#1c3a60] mb-2">¿Eliminar Alumno?</h3>
+                        <p className="text-[#346297] mb-6 font-medium">
+                            Estás a punto de borrar permanentemente a <span className="font-bold text-[#1c3a60]">{studentToDelete.name}</span>.
                             Se eliminará todo su progreso, inventario y logros. Esta acción no se puede deshacer.
                         </p>
                         <div className="flex gap-4 w-full">
                             <button
                                 onClick={() => setStudentToDelete(null)}
-                                className="flex-1 bg-[#EADFF0] hover:bg-[#EADFF0] text-[#7A3A8E] font-bold py-3 rounded-xl transition-colors"
+                                className="flex-1 bg-[#cbe0f6] hover:bg-[#cbe0f6] text-[#346297] font-bold py-3 rounded-xl transition-colors"
                             >
                                 Cancelar
                             </button>
@@ -1593,39 +1593,39 @@ export default function TeacherDashboard() {
                     <div className="bg-white rounded-3xl w-full max-w-lg p-6 md:p-8 relative shadow-2xl">
                         <button
                             onClick={() => { setShowAssignMapModal(false); setStudentForAssignMap(null); }}
-                            className="absolute top-4 right-4 p-2 bg-[#EADFF0] rounded-full hover:bg-[#EADFF0] transition"
+                            className="absolute top-4 right-4 p-2 bg-[#cbe0f6] rounded-full hover:bg-[#cbe0f6] transition"
                         >
-                            <X className="w-5 h-5 text-[#7A3A8E]" />
+                            <X className="w-5 h-5 text-[#346297]" />
                         </button>
                         <div className="flex items-center gap-4 mb-6">
                             <div className="text-4xl">{studentForAssignMap.avatar}</div>
                             <div>
-                                <h3 className="text-xl font-bold text-[#522566]">
+                                <h3 className="text-xl font-bold text-[#1c3a60]">
                                     Asignar Mapa a {studentForAssignMap.name}
                                 </h3>
-                                <p className="text-sm text-[#AD74C3]">Selecciona el mapa al que tendrá acceso.</p>
+                                <p className="text-sm text-[#73a4db]">Selecciona el mapa al que tendrá acceso.</p>
                             </div>
                         </div>
 
                         <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                             {worlds.length === 0 ? (
-                                <p className="text-[#AD74C3] text-center py-4">No has creado ningún mapa todavía.</p>
+                                <p className="text-[#73a4db] text-center py-4">No has creado ningún mapa todavía.</p>
                             ) : (
                                 worlds.map(w => {
                                     const isAssigned = studentForAssignMap.assignedWorlds?.some(aw => aw.id === w.id);
                                     return (
-                                        <div key={w.id} className={`p-4 border rounded-xl transition-colors flex items-center justify-between ${isAssigned ? 'border-[#7A3A8E] bg-[#F8EDFB]/30' : 'border-[#EADFF0] hover:border-[#AD74C3]'}`}>
+                                        <div key={w.id} className={`p-4 border rounded-xl transition-colors flex items-center justify-between ${isAssigned ? 'border-[#346297] bg-[#f0f5fb]/30' : 'border-[#cbe0f6] hover:border-[#73a4db]'}`}>
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <h4 className={`font-bold ${isAssigned ? 'text-[#522566]' : 'text-[#7A3A8E]'}`}>{w.title || "Aventura Sin Título"}</h4>
-                                                    {isAssigned && <span className="bg-[#EADFF0] text-[#522566] text-[10px] px-2 py-0.5 rounded-full font-bold">Asignado</span>}
+                                                    <h4 className={`font-bold ${isAssigned ? 'text-[#1c3a60]' : 'text-[#346297]'}`}>{w.title || "Aventura Sin Título"}</h4>
+                                                    {isAssigned && <span className="bg-[#cbe0f6] text-[#1c3a60] text-[10px] px-2 py-0.5 rounded-full font-bold">Asignado</span>}
                                                 </div>
-                                                <p className="text-xs text-[#AD74C3]">Tema: {w.theme}</p>
+                                                <p className="text-xs text-[#73a4db]">Tema: {w.theme}</p>
                                             </div>
                                             <button
                                                 onClick={() => handleAssignMapToStudent(w.id)}
                                                 disabled={isAssigningMap}
-                                                className={`px-4 py-2 font-bold rounded-lg transition-colors text-sm disabled:opacity-50 ${isAssigned ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-[#F8EDFB] text-[#522566] hover:bg-[#EADFF0]'}`}
+                                                className={`px-4 py-2 font-bold rounded-lg transition-colors text-sm disabled:opacity-50 ${isAssigned ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-[#f0f5fb] text-[#1c3a60] hover:bg-[#cbe0f6]'}`}
                                             >
                                                 {isAssigned ? "Desasignar" : "Asignar"}
                                             </button>
@@ -1644,39 +1644,39 @@ export default function TeacherDashboard() {
                     <div className="bg-white rounded-3xl w-full max-w-2xl p-8 relative shadow-2xl overflow-hidden">
                         <button
                             onClick={() => setShowAiReviewModal(false)}
-                            className="absolute top-4 right-4 p-2 bg-[#EADFF0] hover:bg-[#EADFF0] rounded-full transition-colors z-10"
+                            className="absolute top-4 right-4 p-2 bg-[#cbe0f6] hover:bg-[#cbe0f6] rounded-full transition-colors z-10"
                         >
-                            <X className="w-5 h-5 text-[#7A3A8E]" />
+                            <X className="w-5 h-5 text-[#346297]" />
                         </button>
 
                         <div className="flex items-center gap-4 mb-8">
-                            <div className="bg-[#EADFF0] p-4 rounded-full text-[#522566]">
+                            <div className="bg-[#cbe0f6] p-4 rounded-full text-[#1c3a60]">
                                 <BrainCircuit className="w-10 h-10" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold text-[#522566]">Sugerencias del Tutor IA</h3>
-                                <p className="text-[#AD74C3] font-medium">Análisis Pedagógico</p>
+                                <h3 className="text-2xl font-bold text-[#1c3a60]">Sugerencias del Tutor IA</h3>
+                                <p className="text-[#73a4db] font-medium">Análisis Pedagógico</p>
                             </div>
                         </div>
 
                         {isAiThinking ? (
                             <div className="py-12 flex flex-col items-center justify-center space-y-4">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#522566]"></div>
-                                <p className="text-[#AD74C3] font-medium animate-pulse">Analizando evidencias y comportamiento de los alumnos...</p>
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1c3a60]"></div>
+                                <p className="text-[#73a4db] font-medium animate-pulse">Analizando evidencias y comportamiento de los alumnos...</p>
                             </div>
                         ) : (
                             <div className="space-y-6 animate-fade-in-up">
                                 {aiDiagnosis && (
                                     <>
-                                        <div className="bg-[#F8EDFB] p-5 rounded-2xl border border-[#EADFF0]">
-                                            <h4 className="font-bold text-[#522566] text-lg mb-2">Diagnóstico para {strugglingStudentContext?.student.name}</h4>
-                                            <p className="text-[#7A3A8E] leading-relaxed text-sm">
+                                        <div className="bg-[#f0f5fb] p-5 rounded-2xl border border-[#cbe0f6]">
+                                            <h4 className="font-bold text-[#1c3a60] text-lg mb-2">Diagnóstico para {strugglingStudentContext?.student.name}</h4>
+                                            <p className="text-[#346297] leading-relaxed text-sm">
                                                 {aiDiagnosis.diagnosis}
                                             </p>
                                         </div>
 
                                         <div className="space-y-4">
-                                            <h4 className="font-bold text-[#522566]">Plan de Intervención Recomendado:</h4>
+                                            <h4 className="font-bold text-[#1c3a60]">Plan de Intervención Recomendado:</h4>
                                             {aiDiagnosis.recommendations?.map((rec: { title: string, description: string }, idx: number) => (
                                                 <div key={idx} className="flex gap-4 items-start p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                                                     <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold shrink-0">{idx + 1}</div>
@@ -1688,16 +1688,16 @@ export default function TeacherDashboard() {
                                             ))}
                                         </div>
 
-                                        <div className="pt-6 border-t border-[#EADFF0] flex justify-end gap-3">
+                                        <div className="pt-6 border-t border-[#cbe0f6] flex justify-end gap-3">
                                             <button
                                                 onClick={() => setShowAiReviewModal(false)}
-                                                className="px-6 py-2 rounded-xl text-[#AD74C3] font-bold hover:bg-[#EADFF0] transition-colors"
+                                                className="px-6 py-2 rounded-xl text-[#73a4db] font-bold hover:bg-[#cbe0f6] transition-colors"
                                             >
                                                 Cerrar
                                             </button>
                                             <button
                                                 onClick={handleAiIntervention}
-                                                className="bg-[#522566] hover:bg-[#522566] text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-[#EADFF0] transition-transform active:scale-95 flex items-center gap-2"
+                                                className="bg-[#1c3a60] hover:bg-[#1c3a60] text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-[#cbe0f6] transition-transform active:scale-95 flex items-center gap-2"
                                             >
                                                 <Map className="w-4 h-4" />
                                                 Crear Misión Autónoma
@@ -1740,27 +1740,27 @@ export default function TeacherDashboard() {
                 const sSpecificContext = getSpecificContext();
 
                 return (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#522566]/40 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c3a60]/40 backdrop-blur-sm p-4 animate-fade-in">
                         <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative">
                             <div className="p-8 pb-4 shrink-0 overflow-y-auto max-h-[90vh] scrollbar-hide flex-1">
                                 <button
                                     onClick={() => setActiveStudentProfileId(null)}
-                                    className="absolute top-4 right-4 p-2 bg-[#EADFF0] hover:bg-[#EADFF0] rounded-full transition-colors z-10"
+                                    className="absolute top-4 right-4 p-2 bg-[#cbe0f6] hover:bg-[#cbe0f6] rounded-full transition-colors z-10"
                                 >
-                                    <X className="w-5 h-5 text-[#7A3A8E]" />
+                                    <X className="w-5 h-5 text-[#346297]" />
                                 </button>
 
                                 <div className="flex flex-col items-center mb-6">
-                                    <div className="text-6xl mb-4 bg-[#F8EDFB] rounded-full w-24 h-24 flex items-center justify-center shadow-inner border border-[#EADFF0]">{s?.avatar}</div>
-                                    <h2 className="text-2xl font-bold text-[#522566]">{s?.name}</h2>
-                                    <p className="text-[#AD74C3] text-sm">Expediente Unificado del Alumno</p>
-                                    <span className="mt-1 text-[10px] bg-[#EADFF0] text-[#AD74C3] px-2 py-0.5 rounded font-mono tracking-wider font-bold">Código: {s?.studentCode || 'N/A'}</span>
+                                    <div className="text-6xl mb-4 bg-[#f0f5fb] rounded-full w-24 h-24 flex items-center justify-center shadow-inner border border-[#cbe0f6]">{s?.avatar}</div>
+                                    <h2 className="text-2xl font-bold text-[#1c3a60]">{s?.name}</h2>
+                                    <p className="text-[#73a4db] text-sm">Expediente Unificado del Alumno</p>
+                                    <span className="mt-1 text-[10px] bg-[#cbe0f6] text-[#73a4db] px-2 py-0.5 rounded font-mono tracking-wider font-bold">Código: {s?.studentCode || 'N/A'}</span>
                                 </div>
 
                                 <div className="space-y-4">
                                     {/* Project Scope Filter */}
-                                    <div className="bg-[#F8EDFB] border border-[#EADFF0] rounded-xl p-3 flex flex-col gap-2">
-                                        <label className="text-[10px] font-black uppercase text-[#AD74C3] tracking-widest px-1">Mostrar Analítica Para:</label>
+                                    <div className="bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl p-3 flex flex-col gap-2">
+                                        <label className="text-[10px] font-black uppercase text-[#73a4db] tracking-widest px-1">Mostrar Analítica Para:</label>
                                         <select 
                                             value={profileScopeWorldId}
                                             onChange={(e) => {
@@ -1768,7 +1768,7 @@ export default function TeacherDashboard() {
                                                 setAiReport(null); // Reset report when changing context
                                                 setIsGeneratingReport(false);
                                             }}
-                                            className="w-full bg-white border border-[#EADFF0] text-[#7A3A8E] text-sm rounded-lg px-3 py-2 font-bold focus:outline-none focus:ring-2 focus:ring-[#AD74C3]"
+                                            className="w-full bg-white border border-[#cbe0f6] text-[#346297] text-sm rounded-lg px-3 py-2 font-bold focus:outline-none focus:ring-2 focus:ring-[#73a4db]"
                                         >
                                             <option value="global">🌍 Todos los Proyectos (Global)</option>
                                             {s?.assignedWorlds && s.assignedWorlds.length > 0 && (
@@ -1782,8 +1782,8 @@ export default function TeacherDashboard() {
                                     </div>
 
                                     {/* Progress Bar */}
-                                    <div className="p-4 bg-[#F8EDFB] border border-[#EADFF0] rounded-xl">
-                                        <div className="flex justify-between font-bold text-[#522566] mb-2">
+                                    <div className="p-4 bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl">
+                                        <div className="flex justify-between font-bold text-[#1c3a60] mb-2">
                                             <span>Progreso {profileScopeWorldId === 'global' ? 'Global (Todos)' : `del Proyecto`}</span>
                                             <span>{Math.round(displayProgress)}%</span>
                                         </div>
@@ -1794,18 +1794,18 @@ export default function TeacherDashboard() {
 
                                     {/* Dynamic Metrics */}
                                     <div className="grid grid-cols-3 gap-3">
-                                        <div className="bg-[#F8EDFB] p-3 border border-[#EADFF0] rounded-xl flex flex-col items-center justify-center text-center">
-                                            <span className="text-[10px] text-[#AD74C3] font-black uppercase tracking-wider mb-1">Calificación</span>
-                                            <span className={`text-2xl font-black ${displayGrade !== undefined && displayGrade !== null ? (displayGrade >= 8 ? 'text-emerald-500' : displayGrade >= 6 ? 'text-amber-500' : 'text-rose-500') : 'text-[#AD74C3]'}`}>
+                                        <div className="bg-[#f0f5fb] p-3 border border-[#cbe0f6] rounded-xl flex flex-col items-center justify-center text-center">
+                                            <span className="text-[10px] text-[#73a4db] font-black uppercase tracking-wider mb-1">Calificación</span>
+                                            <span className={`text-2xl font-black ${displayGrade !== undefined && displayGrade !== null ? (displayGrade >= 8 ? 'text-emerald-500' : displayGrade >= 6 ? 'text-amber-500' : 'text-rose-500') : 'text-[#73a4db]'}`}>
                                                 {displayGrade !== undefined && displayGrade !== null ? displayGrade.toFixed(1) : 'S/D'}
                                             </span>
                                         </div>
-                                        <div className="bg-[#F8EDFB] p-3 border border-[#EADFF0] rounded-xl flex flex-col items-center justify-center text-center">
-                                            <span className="text-[10px] text-[#AD74C3] font-black uppercase tracking-wider mb-1">Gemas Total</span>
-                                            <span className="text-[#522566] font-black text-xl flex items-center justify-center gap-1">💎 {s?.gems || 0}</span>
+                                        <div className="bg-[#f0f5fb] p-3 border border-[#cbe0f6] rounded-xl flex flex-col items-center justify-center text-center">
+                                            <span className="text-[10px] text-[#73a4db] font-black uppercase tracking-wider mb-1">Gemas Total</span>
+                                            <span className="text-[#1c3a60] font-black text-xl flex items-center justify-center gap-1">💎 {s?.gems || 0}</span>
                                         </div>
-                                        <div className="bg-[#F8EDFB] p-3 border border-[#EADFF0] rounded-xl flex flex-col items-center justify-center text-center">
-                                            <span className="text-[10px] text-[#AD74C3] font-black uppercase tracking-wider mb-1">XP Total</span>
+                                        <div className="bg-[#f0f5fb] p-3 border border-[#cbe0f6] rounded-xl flex flex-col items-center justify-center text-center">
+                                            <span className="text-[10px] text-[#73a4db] font-black uppercase tracking-wider mb-1">XP Total</span>
                                             <span className="text-orange-500 font-black text-xl flex items-center justify-center gap-1">✨ {s?.xp || 0}</span>
                                         </div>
                                     </div>
@@ -1814,17 +1814,17 @@ export default function TeacherDashboard() {
                                     <div className="grid grid-cols-3 gap-2">
                                         <button
                                             onClick={() => { if(s) { setStudentForAssignMap(s); setShowAssignMapModal(true); setActiveStudentProfileId(null); }}}
-                                            className="flex flex-col items-center gap-1 p-3 bg-[#F8EDFB] hover:bg-[#EADFF0] border border-[#EADFF0] rounded-xl transition-colors group"
+                                            className="flex flex-col items-center gap-1 p-3 bg-[#f0f5fb] hover:bg-[#cbe0f6] border border-[#cbe0f6] rounded-xl transition-colors group"
                                         >
-                                            <Map className="w-4 h-4 text-[#7A3A8E] group-hover:scale-110 transition-transform" />
-                                            <span className="text-[10px] font-bold text-[#522566]">Mapas</span>
+                                            <Map className="w-4 h-4 text-[#346297] group-hover:scale-110 transition-transform" />
+                                            <span className="text-[10px] font-bold text-[#1c3a60]">Mapas</span>
                                         </button>
                                         <button
                                             onClick={() => { if(s) { setEditingStudent(s); setStudentName(s.name); setStudentAvatar(s.avatar); setSelectedClassroomInModal(s.classroomId || ""); setShowAddStudentModal(true); setActiveStudentProfileId(null); }}}
-                                            className="flex flex-col items-center gap-1 p-3 bg-[#F8EDFB] hover:bg-[#EADFF0] border border-[#EADFF0] rounded-xl transition-colors group"
+                                            className="flex flex-col items-center gap-1 p-3 bg-[#f0f5fb] hover:bg-[#cbe0f6] border border-[#cbe0f6] rounded-xl transition-colors group"
                                         >
-                                            <Pencil className="w-4 h-4 text-[#7A3A8E] group-hover:scale-110 transition-transform" />
-                                            <span className="text-[10px] font-bold text-[#522566]">Editar</span>
+                                            <Pencil className="w-4 h-4 text-[#346297] group-hover:scale-110 transition-transform" />
+                                            <span className="text-[10px] font-bold text-[#1c3a60]">Editar</span>
                                         </button>
                                         <button
                                             onClick={() => { if(s) { setStudentToDelete(s); setActiveStudentProfileId(null); }}}
@@ -1835,8 +1835,8 @@ export default function TeacherDashboard() {
                                         </button>
                                     </div>
 
-                                    <div className="bg-white border text-sm text-[#7A3A8E] border-[#EADFF0] rounded-xl p-4">
-                                        <h4 className="font-bold text-[#522566] mb-2">Estado Actual en la Plataforma:</h4>
+                                    <div className="bg-white border text-sm text-[#346297] border-[#cbe0f6] rounded-xl p-4">
+                                        <h4 className="font-bold text-[#1c3a60] mb-2">Estado Actual en la Plataforma:</h4>
                                         {profileScopeWorldId === 'global' ? (
                                             <p className="leading-snug">
                                                 El alumno está inscrito en <strong>{s?.assignedWorlds?.length || 0} proyectos activos</strong>. Selecciona un proyecto en el menú superior para ver su sesión exacta.
@@ -1851,8 +1851,8 @@ export default function TeacherDashboard() {
                                     </div>
 
                                     {/* Análisis Pedagógico — Powered by AI */}
-                                    <div className="bg-[#F8EDFB] border border-[#EADFF0] rounded-xl p-4 text-sm mt-4">
-                                        <h4 className="font-bold text-[#522566] mb-2 flex items-center gap-2">
+                                    <div className="bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl p-4 text-sm mt-4">
+                                        <h4 className="font-bold text-[#1c3a60] mb-2 flex items-center gap-2">
                                             <BrainCircuit className="w-4 h-4" /> Reporte Pedagógico IA {profileScopeWorldId === 'global' ? '(General)' : `(Específico)`}
                                         </h4>
                                         {aiReport ? (
@@ -1861,12 +1861,12 @@ export default function TeacherDashboard() {
                                             </div>
                                         ) : isGeneratingReport ? (
                                             <div className="flex items-center gap-3 p-4">
-                                                <div className="animate-spin h-5 w-5 border-2 border-[#522566] border-t-transparent rounded-full"></div>
-                                                <span className="text-[#522566] font-medium">Generando reporte con IA...</span>
+                                                <div className="animate-spin h-5 w-5 border-2 border-[#1c3a60] border-t-transparent rounded-full"></div>
+                                                <span className="text-[#1c3a60] font-medium">Generando reporte con IA...</span>
                                             </div>
                                         ) : (
                                             <>
-                                                <p className="text-[#522566] leading-relaxed italic mb-3">
+                                                <p className="text-[#1c3a60] leading-relaxed italic mb-3">
                                                     {displayProgress >= 70 ? (
                                                         "El alumno demuestra un dominio sólido de los conceptos analizados."
                                                     ) : displayProgress >= 30 ? (
@@ -1899,7 +1899,7 @@ export default function TeacherDashboard() {
                                                             }
                                                             setIsGeneratingReport(false);
                                                         }}
-                                                        className="bg-[#522566] hover:bg-[#522566] text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                                        className="bg-[#1c3a60] hover:bg-[#1c3a60] text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
                                                     >
                                                         <BrainCircuit className="w-4 h-4" /> Generar Reporte para Docente (IA)
                                                     </button>
@@ -1947,17 +1947,17 @@ export default function TeacherDashboard() {
 
                             {/* Expediente de Evidencias (AI Feedback Hub) — Agrupado por Proyecto */}
                             <div className="mt-6">
-                                <h3 className="font-bold text-[#522566] text-lg mb-4 flex items-center gap-2">
-                                    <BookOpen className="w-5 h-5 text-[#7A3A8E]" />
+                                <h3 className="font-bold text-[#1c3a60] text-lg mb-4 flex items-center gap-2">
+                                    <BookOpen className="w-5 h-5 text-[#346297]" />
                                     Evidencias por Proyecto
                                 </h3>
                                 {isFetchingEvidence ? (
-                                    <div className="flex items-center justify-center p-8 bg-[#F8EDFB] rounded-xl">
-                                        <div className="animate-spin h-6 w-6 border-2 border-[#522566] border-t-transparent rounded-full"></div>
+                                    <div className="flex items-center justify-center p-8 bg-[#f0f5fb] rounded-xl">
+                                        <div className="animate-spin h-6 w-6 border-2 border-[#1c3a60] border-t-transparent rounded-full"></div>
                                     </div>
                                 ) : studentEvidence.length === 0 ? (
-                                    <div className="p-6 bg-[#F8EDFB] border border-[#EADFF0] rounded-xl text-center">
-                                        <p className="text-[#AD74C3] font-medium">Aún no hay evidencias escaneadas.</p>
+                                    <div className="p-6 bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl text-center">
+                                        <p className="text-[#73a4db] font-medium">Aún no hay evidencias escaneadas.</p>
                                     </div>
                                 ) : (() => {
                                     const filteredEvidence = profileScopeWorldId === 'global' 
@@ -1966,8 +1966,8 @@ export default function TeacherDashboard() {
 
                                     if (filteredEvidence.length === 0) {
                                         return (
-                                            <div className="p-6 bg-[#F8EDFB] border border-[#EADFF0] rounded-xl text-center">
-                                                <p className="text-[#AD74C3] font-medium">No hay evidencias o misiones completadas para este proyecto en particular.</p>
+                                            <div className="p-6 bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl text-center">
+                                                <p className="text-[#73a4db] font-medium">No hay evidencias o misiones completadas para este proyecto en particular.</p>
                                             </div>
                                         );
                                     }
@@ -1983,19 +1983,19 @@ export default function TeacherDashboard() {
                                     return (
                                         <div className="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                                             {Object.entries(grouped).map(([projectName, entries]) => (
-                                                <details key={projectName} className="bg-white border border-[#EADFF0] rounded-xl overflow-hidden group/details" open>
-                                                    <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-[#F8EDFB] transition-colors select-none">
+                                                <details key={projectName} className="bg-white border border-[#cbe0f6] rounded-xl overflow-hidden group/details" open>
+                                                    <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-[#f0f5fb] transition-colors select-none">
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-sm">🗺️</span>
-                                                            <span className="font-bold text-sm text-[#522566]">{projectName}</span>
-                                                            <span className="text-[10px] font-bold bg-[#EADFF0] text-[#AD74C3] px-1.5 py-0.5 rounded-full">{entries.length}</span>
+                                                            <span className="font-bold text-sm text-[#1c3a60]">{projectName}</span>
+                                                            <span className="text-[10px] font-bold bg-[#cbe0f6] text-[#73a4db] px-1.5 py-0.5 rounded-full">{entries.length}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-[10px] font-bold text-green-600">{entries.filter(e => e.isCorrect).length} ✓</span>
                                                             <span className="text-[10px] font-bold text-red-500">{entries.filter(e => !e.isCorrect).length} ✗</span>
                                                         </div>
                                                     </summary>
-                                                    <div className="border-t border-[#EADFF0] p-3 space-y-3">
+                                                    <div className="border-t border-[#cbe0f6] p-3 space-y-3">
                                                         {entries.map((entry, idx) => (
                                                             <div key={idx} className={`p-3 rounded-lg border text-sm ${entry.isCorrect ? 'bg-green-50/50 border-green-100' : 'bg-red-50/50 border-red-100'}`}>
                                                                 <div className="flex justify-between items-center mb-2">
@@ -2004,18 +2004,18 @@ export default function TeacherDashboard() {
                                                                             {entry.isCorrect ? '✓ Correcto' : '✗ Por Mejorar'}
                                                                         </span>
                                                                         {entry.grade !== null && entry.grade !== undefined && (
-                                                                            <span className="text-[10px] font-black text-[#7A3A8E] bg-[#EADFF0] px-1.5 py-0.5 rounded">{entry.grade}/10</span>
+                                                                            <span className="text-[10px] font-black text-[#346297] bg-[#cbe0f6] px-1.5 py-0.5 rounded">{entry.grade}/10</span>
                                                                         )}
                                                                     </div>
-                                                                    <span className="text-[10px] text-[#AD74C3]">{new Date(entry.createdAt).toLocaleDateString()}</span>
+                                                                    <span className="text-[10px] text-[#73a4db]">{new Date(entry.createdAt).toLocaleDateString()}</span>
                                                                 </div>
-                                                                <p className="text-xs text-[#7A3A8E] italic border-l-2 border-[#EADFF0] pl-2 py-0.5 mb-2">"{entry.studentAnswer}"</p>
+                                                                <p className="text-xs text-[#346297] italic border-l-2 border-[#cbe0f6] pl-2 py-0.5 mb-2">"{entry.studentAnswer}"</p>
                                                                 <div className="flex items-start gap-2">
                                                                     <span className="text-sm flex-shrink-0">🤖</span>
-                                                                    <p className="text-xs text-[#7A3A8E] leading-relaxed">{entry.feedback}</p>
+                                                                    <p className="text-xs text-[#346297] leading-relaxed">{entry.feedback}</p>
                                                                 </div>
                                                                 {entry.emotionDetected && (
-                                                                    <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] text-[#AD74C3] bg-white border border-[#EADFF0] px-1.5 py-0.5 rounded">Tono: <strong className="text-[#522566]">{entry.emotionDetected}</strong></span>
+                                                                    <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] text-[#73a4db] bg-white border border-[#cbe0f6] px-1.5 py-0.5 rounded">Tono: <strong className="text-[#1c3a60]">{entry.emotionDetected}</strong></span>
                                                                 )}
                                                             </div>
                                                         ))}
@@ -2041,7 +2041,7 @@ export default function TeacherDashboard() {
                                 </button>
                                 <button
                                     onClick={() => setActiveStudentProfileId(null)}
-                                    className="flex-1 bg-[#EADFF0] hover:bg-[#EADFF0] text-[#7A3A8E] font-bold py-3 rounded-xl transition-colors"
+                                    className="flex-1 bg-[#cbe0f6] hover:bg-[#cbe0f6] text-[#346297] font-bold py-3 rounded-xl transition-colors"
                                 >
                                     Cerrar
                                 </button>
@@ -2058,29 +2058,29 @@ export default function TeacherDashboard() {
                     <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <button
                             onClick={() => setShowGlobalStatsModal(false)}
-                            className="sticky top-0 float-right p-2 bg-[#EADFF0] hover:bg-[#EADFF0] rounded-full transition-colors z-10"
+                            className="sticky top-0 float-right p-2 bg-[#cbe0f6] hover:bg-[#cbe0f6] rounded-full transition-colors z-10"
                         >
-                            <X className="w-5 h-5 text-[#7A3A8E]" />
+                            <X className="w-5 h-5 text-[#346297]" />
                         </button>
 
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="bg-[#F8EDFB] p-3 rounded-xl">
-                                <TrendingUp className="w-6 h-6 text-[#522566]" />
+                            <div className="bg-[#f0f5fb] p-3 rounded-xl">
+                                <TrendingUp className="w-6 h-6 text-[#1c3a60]" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-black text-[#522566]">Estadísticas por Salón</h2>
-                                <p className="text-[#522566]/70 text-xs font-medium">Resumen de rendimiento y alertas del aula</p>
+                                <h2 className="text-xl font-black text-[#1c3a60]">Estadísticas por Salón</h2>
+                                <p className="text-[#1c3a60]/70 text-xs font-medium">Resumen de rendimiento y alertas del aula</p>
                             </div>
                         </div>
 
                         {/* Filter selectors */}
                         <div className="flex flex-wrap gap-3 mb-6">
                             <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-[#AD74C3] uppercase tracking-wider ml-1">Proyecto / Mapa</label>
+                                <label className="text-[10px] font-bold text-[#73a4db] uppercase tracking-wider ml-1">Proyecto / Mapa</label>
                                 <select
                                     value={effectiveInsightWorldId}
                                     onChange={e => setSelectedInsightWorldId(e.target.value)}
-                                    className="bg-white border-2 border-[#EADFF0] rounded-xl px-4 py-2 text-sm font-bold text-[#522566] focus:ring-4 focus:ring-[#EADFF0] focus:border-[#AD74C3] outline-none transition-all shadow-sm"
+                                    className="bg-white border-2 border-[#cbe0f6] rounded-xl px-4 py-2 text-sm font-bold text-[#1c3a60] focus:ring-4 focus:ring-[#cbe0f6] focus:border-[#73a4db] outline-none transition-all shadow-sm"
                                 >
                                     {worlds.map(w => (
                                         <option key={w.id} value={w.id}>
@@ -2112,9 +2112,9 @@ export default function TeacherDashboard() {
                                 <span className="text-2xl font-black text-emerald-700">{metrics.average}</span>
                                 <p className="text-[10px] font-bold text-emerald-500 uppercase mt-1">Promedio</p>
                             </div>
-                            <div className="bg-[#F8EDFB] border border-[#EADFF0] rounded-xl p-4 text-center">
-                                <span className="text-2xl font-black text-[#522566]">{metrics.completion}%</span>
-                                <p className="text-[10px] font-bold text-[#7A3A8E] uppercase mt-1">Completado</p>
+                            <div className="bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl p-4 text-center">
+                                <span className="text-2xl font-black text-[#1c3a60]">{metrics.completion}%</span>
+                                <p className="text-[10px] font-bold text-[#346297] uppercase mt-1">Completado</p>
                             </div>
                             <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-center">
                                 <span className="text-2xl font-black text-red-700">{atRiskStudents.length}</span>
@@ -2125,7 +2125,7 @@ export default function TeacherDashboard() {
                         {/* Alerts & Warnings */}
                         {(atRiskStudents.length > 0 || strugglingStudents.length > 0) && (
                             <div className="bg-white border border-red-100 rounded-xl p-4 mb-6">
-                                <h3 className="text-sm font-bold text-[#522566] flex items-center gap-2 mb-3">
+                                <h3 className="text-sm font-bold text-[#1c3a60] flex items-center gap-2 mb-3">
                                     <AlertTriangle className="w-4 h-4 text-red-500" /> Sistema de Alerta Temprana
                                 </h3>
                                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
@@ -2152,9 +2152,9 @@ export default function TeacherDashboard() {
                         )}
 
                         {/* Student Performance List */}
-                        <div className="bg-white border border-[#EADFF0] rounded-xl p-4">
-                            <h3 className="text-sm font-bold text-[#522566] flex items-center gap-2 mb-3">
-                                <TrendingUp className="w-4 h-4 text-[#7A3A8E]" /> Rendimiento Individual
+                        <div className="bg-white border border-[#cbe0f6] rounded-xl p-4">
+                            <h3 className="text-sm font-bold text-[#1c3a60] flex items-center gap-2 mb-3">
+                                <TrendingUp className="w-4 h-4 text-[#346297]" /> Rendimiento Individual
                             </h3>
                             <div className="space-y-2 max-h-[300px] overflow-y-auto">
                                 {insightStudents.map(student => {
@@ -2162,17 +2162,17 @@ export default function TeacherDashboard() {
                                     let statusColor = progressVal < 30 ? 'bg-red-500' : progressVal < 70 ? 'bg-yellow-500' : 'bg-green-500';
                                     let statusLabel = progressVal < 30 ? 'En Riesgo' : progressVal < 70 ? 'Práctica' : 'Buen Ritmo';
                                     return (
-                                        <div key={student.id} onClick={() => { setShowGlobalStatsModal(false); setAiReport(null); setActiveStudentProfileId(student.id); }} className="flex items-center gap-3 p-2.5 bg-[#F8EDFB] rounded-lg border border-[#EADFF0] cursor-pointer hover:shadow-sm hover:bg-white transition-all">
+                                        <div key={student.id} onClick={() => { setShowGlobalStatsModal(false); setAiReport(null); setActiveStudentProfileId(student.id); }} className="flex items-center gap-3 p-2.5 bg-[#f0f5fb] rounded-lg border border-[#cbe0f6] cursor-pointer hover:shadow-sm hover:bg-white transition-all">
                                             <span className="text-xl">{student.avatar}</span>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between mb-1">
-                                                    <span className="font-bold text-sm text-[#522566] truncate">{student.name}</span>
+                                                    <span className="font-bold text-sm text-[#1c3a60] truncate">{student.name}</span>
                                                     <div className="flex items-center gap-2">
                                                         <span className={`text-[9px] font-bold text-white px-1.5 py-0.5 rounded-full ${statusColor}`}>{statusLabel}</span>
-                                                        <span className="text-xs font-black text-[#7A3A8E]">{Math.round(progressVal)}%</span>
+                                                        <span className="text-xs font-black text-[#346297]">{Math.round(progressVal)}%</span>
                                                     </div>
                                                 </div>
-                                                <div className="w-full bg-[#EADFF0] rounded-full h-1.5 overflow-hidden">
+                                                <div className="w-full bg-[#cbe0f6] rounded-full h-1.5 overflow-hidden">
                                                     <div className={`${statusColor} h-1.5 rounded-full`} style={{ width: `${progressVal}%` }}></div>
                                                 </div>
                                             </div>
@@ -2196,23 +2196,23 @@ export default function TeacherDashboard() {
                             <button
                                 onClick={() => setStudentForHintId(null)}
                                 disabled={isSendingHint || hintSentSuccess}
-                                className="absolute top-4 right-4 p-2 bg-[#EADFF0] hover:bg-[#EADFF0] rounded-full transition-colors z-10 disabled:opacity-50"
+                                className="absolute top-4 right-4 p-2 bg-[#cbe0f6] hover:bg-[#cbe0f6] rounded-full transition-colors z-10 disabled:opacity-50"
                             >
-                                <X className="w-5 h-5 text-[#7A3A8E]" />
+                                <X className="w-5 h-5 text-[#346297]" />
                             </button>
 
-                            <h3 className="text-xl font-bold text-[#522566] mb-2 flex items-center gap-2">
-                                <BrainCircuit className="text-[#522566] w-5 h-5" /> Generador de Pistas IA
+                            <h3 className="text-xl font-bold text-[#1c3a60] mb-2 flex items-center gap-2">
+                                <BrainCircuit className="text-[#1c3a60] w-5 h-5" /> Generador de Pistas IA
                             </h3>
-                            <p className="text-[#AD74C3] text-sm mb-6">Envía un mensaje de apoyo y una pista sutil a <strong>{s?.name}</strong>.</p>
+                            <p className="text-[#73a4db] text-sm mb-6">Envía un mensaje de apoyo y una pista sutil a <strong>{s?.name}</strong>.</p>
 
                             {hintSentSuccess ? (
                                 <div className="py-8 text-center animate-fade-in-up">
                                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <CheckCircle2 className="w-8 h-8" />
                                     </div>
-                                    <h4 className="font-bold text-[#522566] text-lg">Pista Enviada</h4>
-                                    <p className="text-[#AD74C3] text-sm mt-1">El alumno verá esta alerta pedagógica en su portal.</p>
+                                    <h4 className="font-bold text-[#1c3a60] text-lg">Pista Enviada</h4>
+                                    <p className="text-[#73a4db] text-sm mt-1">El alumno verá esta alerta pedagógica en su portal.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -2220,13 +2220,13 @@ export default function TeacherDashboard() {
                                         value={hintText}
                                         onChange={(e) => setHintText(e.target.value)}
                                         rows={4}
-                                        className="w-full p-4 bg-[#F8EDFB] border border-[#EADFF0] rounded-xl text-sm text-[#7A3A8E] resize-none focus:ring-2 focus:ring-sky-400 focus:border-[#AD74C3] outline-none transition"
+                                        className="w-full p-4 bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl text-sm text-[#346297] resize-none focus:ring-2 focus:ring-sky-400 focus:border-[#73a4db] outline-none transition"
                                         placeholder="Escribe aquí la pista personalizada para el alumno..."
                                     />
                                     <button
                                         onClick={handleSendHint}
                                         disabled={isSendingHint}
-                                        className="w-full bg-[#522566] hover:bg-[#522566] disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow-lg shadow-[#EADFF0] transition-transform active:scale-95 flex items-center justify-center gap-2"
+                                        className="w-full bg-[#1c3a60] hover:bg-[#1c3a60] disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow-lg shadow-[#cbe0f6] transition-transform active:scale-95 flex items-center justify-center gap-2"
                                     >
                                         {isSendingHint ? (
                                             <>
@@ -2250,16 +2250,16 @@ export default function TeacherDashboard() {
                         <button
                             onClick={() => setShowAwardGemsModal(false)}
                             disabled={isAwardingGems}
-                            className="absolute top-4 right-4 p-2 bg-[#EADFF0] hover:bg-[#EADFF0] rounded-full transition-colors z-10 disabled:opacity-50"
+                            className="absolute top-4 right-4 p-2 bg-[#cbe0f6] hover:bg-[#cbe0f6] rounded-full transition-colors z-10 disabled:opacity-50"
                         >
-                            <X className="w-5 h-5 text-[#7A3A8E]" />
+                            <X className="w-5 h-5 text-[#346297]" />
                         </button>
 
                         <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-inner">
                             💎
                         </div>
-                        <h3 className="text-xl font-bold text-[#522566] mb-1">Cofre de Gemas</h3>
-                        <p className="text-[#AD74C3] text-sm mb-6">
+                        <h3 className="text-xl font-bold text-[#1c3a60] mb-1">Cofre de Gemas</h3>
+                        <p className="text-[#73a4db] text-sm mb-6">
                             ¿Cuántas gemas deseas otorgarle a <strong className="text-emerald-700">{studentForGems.name}</strong>?
                         </p>
 
@@ -2268,7 +2268,7 @@ export default function TeacherDashboard() {
                                 type="number"
                                 value={gemAmountToAward}
                                 onChange={(e) => setGemAmountToAward(parseInt(e.target.value) || 0)}
-                                className="w-full text-center text-3xl font-black bg-[#F8EDFB] border-2 border-[#EADFF0] rounded-2xl py-4 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none text-[#7A3A8E] transition-all"
+                                className="w-full text-center text-3xl font-black bg-[#f0f5fb] border-2 border-[#cbe0f6] rounded-2xl py-4 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none text-[#346297] transition-all"
                                 disabled={isAwardingGems}
                             />
 
@@ -2277,7 +2277,7 @@ export default function TeacherDashboard() {
                                     <button
                                         key={amt}
                                         onClick={() => setGemAmountToAward(amt)}
-                                        className="bg-[#EADFF0] hover:bg-emerald-50 text-[#7A3A8E] hover:text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                                        className="bg-[#cbe0f6] hover:bg-emerald-50 text-[#346297] hover:text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
                                     >
                                         +{amt}
                                     </button>
@@ -2295,7 +2295,7 @@ export default function TeacherDashboard() {
                                     "✨ Entregar Gemas"
                                 )}
                             </button>
-                            <p className="text-[10px] text-[#AD74C3] mt-2">Puedes escribir números negativos para restar gemas por mal comportamiento.</p>
+                            <p className="text-[10px] text-[#73a4db] mt-2">Puedes escribir números negativos para restar gemas por mal comportamiento.</p>
                         </div>
                     </div>
                 </div>
@@ -2305,39 +2305,39 @@ export default function TeacherDashboard() {
             {showAddGradeModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[70]">
                     <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
-                        <div className="p-6 border-b border-[#EADFF0] flex justify-between items-center bg-[#F8EDFB]">
-                            <h3 className="font-bold text-xl text-[#522566] flex items-center gap-2">
+                        <div className="p-6 border-b border-[#cbe0f6] flex justify-between items-center bg-[#f0f5fb]">
+                            <h3 className="font-bold text-xl text-[#1c3a60] flex items-center gap-2">
                                 <Plus className="w-5 h-5" /> {editingGrade ? "Editar Grado / Nivel" : "Nuevo Grado / Nivel"}
                             </h3>
-                            <button onClick={() => { setShowAddGradeModal(false); setEditingGrade(null); setNewGradeName(""); setNewGradeDescription(""); }} className="text-[#AD74C3] hover:text-[#7A3A8E]">
+                            <button onClick={() => { setShowAddGradeModal(false); setEditingGrade(null); setNewGradeName(""); setNewGradeDescription(""); }} className="text-[#73a4db] hover:text-[#346297]">
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-[#7A3A8E] mb-1">Nombre Corto del Grado</label>
+                                <label className="block text-sm font-bold text-[#346297] mb-1">Nombre Corto del Grado</label>
                                 <input
                                     type="text"
                                     placeholder="Ej. 6to, 1, Primer Grado..."
                                     value={newGradeName}
                                     onChange={(e) => setNewGradeName(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-[#EADFF0] focus:ring-2 focus:ring-[#AD74C3] outline-none"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#cbe0f6] focus:ring-2 focus:ring-[#73a4db] outline-none"
                                 />
-                                <p className="text-xs text-[#AD74C3] mt-2 mb-4">Los grados sirven para agrupar aulas.</p>
+                                <p className="text-xs text-[#73a4db] mt-2 mb-4">Los grados sirven para agrupar aulas.</p>
 
-                                <label className="block text-sm font-bold text-[#7A3A8E] mb-1">Descripción / Identificador (Opcional)</label>
+                                <label className="block text-sm font-bold text-[#346297] mb-1">Descripción / Identificador (Opcional)</label>
                                 <input
                                     type="text"
                                     placeholder="Ej. Primaria Regular, Sabatino, Generación B..."
                                     value={newGradeDescription}
                                     onChange={(e) => setNewGradeDescription(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-[#EADFF0] focus:ring-2 focus:ring-[#AD74C3] outline-none"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#cbe0f6] focus:ring-2 focus:ring-[#73a4db] outline-none"
                                 />
                             </div>
                             <button
                                 onClick={handleCreateGrade}
                                 disabled={savingStudent || !newGradeName.trim()}
-                                className="w-full bg-[#522566] hover:bg-[#522566] text-white py-3 rounded-xl font-bold shadow-lg shadow-[#EADFF0] transition-all disabled:opacity-50"
+                                className="w-full bg-[#1c3a60] hover:bg-[#1c3a60] text-white py-3 rounded-xl font-bold shadow-lg shadow-[#cbe0f6] transition-all disabled:opacity-50"
                             >
                                 {savingStudent ? "Guardando..." : (editingGrade ? "Guardar Cambios" : "Crear Grado")}
                             </button>
@@ -2362,11 +2362,11 @@ export default function TeacherDashboard() {
                                 </div>
                             </div>
                             <div className="p-6">
-                                <p className="text-[#7A3A8E] text-sm mb-1">¿Estás seguro de que quieres eliminar el salón</p>
-                                <p className="font-black text-[#522566] text-base mb-3">
+                                <p className="text-[#346297] text-sm mb-1">¿Estás seguro de que quieres eliminar el salón</p>
+                                <p className="font-black text-[#1c3a60] text-base mb-3">
                                     {cls?.emoji} {cls?.name}
                                 </p>
-                                <p className="text-xs text-[#AD74C3] bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                                <p className="text-xs text-[#73a4db] bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                                     ⚠️ Los alumnos del salón <strong>no serán eliminados</strong>, solo quedarán sin salón asignado.
                                 </p>
                             </div>
@@ -2374,7 +2374,7 @@ export default function TeacherDashboard() {
                                 <button
                                     onClick={() => setClassroomToDelete(null)}
                                     disabled={savingStudent}
-                                    className="flex-1 px-4 py-3 rounded-xl border border-[#EADFF0] text-[#7A3A8E] font-bold hover:bg-[#F8EDFB] transition-all disabled:opacity-50"
+                                    className="flex-1 px-4 py-3 rounded-xl border border-[#cbe0f6] text-[#346297] font-bold hover:bg-[#f0f5fb] transition-all disabled:opacity-50"
                                 >
                                     Cancelar
                                 </button>
@@ -2397,43 +2397,43 @@ export default function TeacherDashboard() {
             {showAddClassroomModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
                     <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
-                        <div className="p-6 border-b border-[#EADFF0] flex justify-between items-center bg-[#F8EDFB]">
-                            <h3 className="font-bold text-xl text-[#522566] flex items-center gap-2">
+                        <div className="p-6 border-b border-[#cbe0f6] flex justify-between items-center bg-[#f0f5fb]">
+                            <h3 className="font-bold text-xl text-[#1c3a60] flex items-center gap-2">
                                 <Plus className="w-5 h-5" /> {editingClassroom ? "Editar Salón" : "Nuevo Salón"}
                             </h3>
-                            <button onClick={() => { setShowAddClassroomModal(false); setEditingClassroom(null); setNewClassName(""); setNewClassDescription(""); setNewClassEmoji("📚"); setSelectedGradeIdInModal(""); }} className="text-[#AD74C3] hover:text-[#7A3A8E]">
+                            <button onClick={() => { setShowAddClassroomModal(false); setEditingClassroom(null); setNewClassName(""); setNewClassDescription(""); setNewClassEmoji("📚"); setSelectedGradeIdInModal(""); }} className="text-[#73a4db] hover:text-[#346297]">
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-[#7A3A8E] mb-1">Nombre del Salón / Clase</label>
+                                <label className="block text-sm font-bold text-[#346297] mb-1">Nombre del Salón / Clase</label>
                                 <input
                                     type="text"
                                     placeholder="Ej. 1º Primaria, 3º A, Salón de Computo..."
                                     value={newClassName}
                                     onChange={(e) => setNewClassName(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-[#EADFF0] focus:ring-2 focus:ring-[#AD74C3] outline-none"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#cbe0f6] focus:ring-2 focus:ring-[#73a4db] outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-[#7A3A8E] mb-1">Descripción / Detalles (Opcional)</label>
+                                <label className="block text-sm font-bold text-[#346297] mb-1">Descripción / Detalles (Opcional)</label>
                                 <input
                                     type="text"
                                     placeholder="Ej. Ciclo 2024, Turno Matutino..."
                                     value={newClassDescription}
                                     onChange={(e) => setNewClassDescription(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-[#EADFF0] focus:ring-2 focus:ring-[#AD74C3] outline-none"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#cbe0f6] focus:ring-2 focus:ring-[#73a4db] outline-none"
                                 />
                             </div>
                             <div>
                                 <div className="flex items-center justify-between mb-1">
-                                    <label className="block text-sm font-bold text-[#7A3A8E]">Nivel / Grado</label>
+                                    <label className="block text-sm font-bold text-[#346297]">Nivel / Grado</label>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-bold text-[#AD74C3] uppercase tracking-widest">(Opcional)</span>
+                                        <span className="text-[10px] font-bold text-[#73a4db] uppercase tracking-widest">(Opcional)</span>
                                         <button 
                                             onClick={() => setShowAddGradeModal(true)} 
-                                            className="p-1 bg-[#EADFF0] text-[#522566] rounded-lg hover:bg-[#EADFF0] transition-colors"
+                                            className="p-1 bg-[#cbe0f6] text-[#1c3a60] rounded-lg hover:bg-[#cbe0f6] transition-colors"
                                             title="Crear Nuevo Nivel"
                                         >
                                             <Plus className="w-3.5 h-3.5" />
@@ -2443,7 +2443,7 @@ export default function TeacherDashboard() {
                                 <select
                                     value={selectedGradeIdInModal}
                                     onChange={(e) => setSelectedGradeIdInModal(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border border-[#EADFF0] outline-none focus:ring-2 focus:ring-[#AD74C3] bg-white text-xs"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#cbe0f6] outline-none focus:ring-2 focus:ring-[#73a4db] bg-white text-xs"
                                 >
                                     <option value="">Independiente (Sin Grado)</option>
                                     {grades.map(g => (
@@ -2452,13 +2452,13 @@ export default function TeacherDashboard() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-[#7A3A8E] mb-2">Emoji Identificador</label>
+                                <label className="block text-sm font-bold text-[#346297] mb-2">Emoji Identificador</label>
                                 <div className="flex flex-wrap gap-2">
                                     {["📚", "🧪", "🎨", "🧩", "🤖", "🌟", "📐", "🧠", "🎯", "☄️"].map(emoji => (
                                         <button
                                             key={emoji}
                                             onClick={() => setNewClassEmoji(emoji)}
-                                            className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all ${newClassEmoji === emoji ? "bg-[#522566] text-white scale-110 shadow-md" : "bg-[#F8EDFB] hover:bg-[#EADFF0]"
+                                            className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all ${newClassEmoji === emoji ? "bg-[#1c3a60] text-white scale-110 shadow-md" : "bg-[#f0f5fb] hover:bg-[#cbe0f6]"
                                                 }`}
                                         >
                                             {emoji}
@@ -2469,7 +2469,7 @@ export default function TeacherDashboard() {
                             <button
                                 onClick={handleCreateClassroom}
                                 disabled={savingStudent || !newClassName.trim()}
-                                className="w-full bg-[#522566] hover:bg-[#522566] text-white py-3 rounded-xl font-bold shadow-lg shadow-[#EADFF0] transition-all disabled:opacity-50"
+                                className="w-full bg-[#1c3a60] hover:bg-[#1c3a60] text-white py-3 rounded-xl font-bold shadow-lg shadow-[#cbe0f6] transition-all disabled:opacity-50"
                             >
                                     {savingStudent ? "Creando..." : "Crear Salón"}
                             </button>
@@ -2496,7 +2496,7 @@ export default function TeacherDashboard() {
                                             <Swords className="w-6 h-6 text-rose-500" />
                                         </div>
                                         <div className="text-right">
-                                            <span className="text-[#AD74C3] text-[10px] font-black uppercase tracking-widest">Estado del Salón</span>
+                                            <span className="text-[#73a4db] text-[10px] font-black uppercase tracking-widest">Estado del Salón</span>
                                             <p className="text-emerald-500 text-xs font-black flex items-center justify-end gap-1.5">
                                                 <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" /> MISIÓN ACTIVA
                                             </p>
@@ -2511,20 +2511,20 @@ export default function TeacherDashboard() {
                                                 <div className="w-36 h-36 bg-white rounded-full flex items-center justify-center text-7xl shadow-xl border-4 border-rose-50 relative z-10 group-hover:scale-110 transition-transform duration-700">
                                                     {currentRaidBoss.imageUrl}
                                                 </div>
-                                                <div className={`absolute -inset-2 rounded-full border-2 animate-ping opacity-20 ${ (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) < 0.3 ? 'border-rose-400' : 'border-[#AD74C3]' }`} />
+                                                <div className={`absolute -inset-2 rounded-full border-2 animate-ping opacity-20 ${ (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) < 0.3 ? 'border-rose-400' : 'border-[#73a4db]' }`} />
                                             </div>
 
                                             <div className="text-center w-full max-w-sm">
-                                                <h3 className="text-2xl font-black text-[#522566] tracking-tight mb-2 drop-shadow-sm">{currentRaidBoss.name}</h3>
-                                                <p className="text-[10px] text-[#AD74C3] font-bold uppercase tracking-widest mb-4">Jefe de la Incursión Semanal</p>
+                                                <h3 className="text-2xl font-black text-[#1c3a60] tracking-tight mb-2 drop-shadow-sm">{currentRaidBoss.name}</h3>
+                                                <p className="text-[10px] text-[#73a4db] font-bold uppercase tracking-widest mb-4">Jefe de la Incursión Semanal</p>
                                                 
                                                 {/* Premium Soft Health Bar */}
-                                                <div className="relative h-5 bg-[#EADFF0] rounded-full overflow-hidden border border-slate-50 mb-3 shadow-inner p-1">
+                                                <div className="relative h-5 bg-[#cbe0f6] rounded-full overflow-hidden border border-slate-50 mb-3 shadow-inner p-1">
                                                     <div
                                                         className={`h-full rounded-full transition-all duration-1000 ease-out shadow-sm ${
                                                             (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) < 0.3 ? 'bg-gradient-to-r from-rose-500 to-rose-400 shadow-rose-100' : 
                                                             (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) < 0.6 ? 'bg-gradient-to-r from-amber-500 to-amber-300 shadow-amber-100' : 
-                                                            'bg-gradient-to-r from-[#7A3A8E] to-[#AD74C3] shadow-[#EADFF0]'
+                                                            'bg-gradient-to-r from-[#346297] to-[#73a4db] shadow-[#cbe0f6]'
                                                         }`}
                                                         style={{ width: `${Math.max(0, (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth) * 100)}%` }}
                                                     >
@@ -2533,23 +2533,23 @@ export default function TeacherDashboard() {
                                                 </div>
 
                                                 <div className="flex justify-between items-center px-1">
-                                                    <span className="text-[#AD74C3] text-[10px] font-black uppercase tracking-tighter italic">Salud del Objetivo</span>
-                                                    <span className="text-[#522566] font-black text-sm tracking-widest tabular-nums font-mono">
-                                                        {currentRaidBoss.currentHealth.toLocaleString()} <span className="text-[#AD74C3] text-[10px]">/ {currentRaidBoss.maxHealth.toLocaleString()} HP</span>
+                                                    <span className="text-[#73a4db] text-[10px] font-black uppercase tracking-tighter italic">Salud del Objetivo</span>
+                                                    <span className="text-[#1c3a60] font-black text-sm tracking-widest tabular-nums font-mono">
+                                                        {currentRaidBoss.currentHealth.toLocaleString()} <span className="text-[#73a4db] text-[10px]">/ {currentRaidBoss.maxHealth.toLocaleString()} HP</span>
                                                     </span>
                                                 </div>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-4 w-full">
-                                                <div className="bg-white/50 p-4 rounded-[2rem] border border-[#EADFF0] shadow-sm flex flex-col items-center group/card transition-all hover:bg-white/80">
-                                                    <span className="text-[#AD74C3] text-[9px] font-black uppercase mb-1">Daño Total</span>
+                                                <div className="bg-white/50 p-4 rounded-[2rem] border border-[#cbe0f6] shadow-sm flex flex-col items-center group/card transition-all hover:bg-white/80">
+                                                    <span className="text-[#73a4db] text-[9px] font-black uppercase mb-1">Daño Total</span>
                                                     <span className="text-rose-500 font-black text-2xl drop-shadow-sm">
                                                         {(currentRaidBoss.maxHealth - currentRaidBoss.currentHealth).toLocaleString()}
                                                     </span>
                                                 </div>
-                                                <div className="bg-white/50 p-4 rounded-[2rem] border border-[#EADFF0] shadow-sm flex flex-col items-center group/card transition-all hover:bg-white/80">
-                                                    <span className="text-[#AD74C3] text-[9px] font-black uppercase mb-1">Progreso IA</span>
-                                                    <span className="text-[#522566] font-black text-2xl drop-shadow-sm">
+                                                <div className="bg-white/50 p-4 rounded-[2rem] border border-[#cbe0f6] shadow-sm flex flex-col items-center group/card transition-all hover:bg-white/80">
+                                                    <span className="text-[#73a4db] text-[9px] font-black uppercase mb-1">Progreso IA</span>
+                                                    <span className="text-[#1c3a60] font-black text-2xl drop-shadow-sm">
                                                         {Math.round((1 - (currentRaidBoss.currentHealth / currentRaidBoss.maxHealth)) * 100)}%
                                                     </span>
                                                 </div>
@@ -2558,18 +2558,18 @@ export default function TeacherDashboard() {
                                             <button
                                                 onClick={handleResetBoss}
                                                 disabled={isResettingBoss}
-                                                className="mt-4 px-8 py-3 bg-[#522566] hover:bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-slate-200 active:scale-95"
+                                                className="mt-4 px-8 py-3 bg-[#1c3a60] hover:bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-slate-200 active:scale-95"
                                             >
                                                 {isResettingBoss ? "Reiniciando Sistema..." : "🔄 Resetear Ciclo de Jefe"}
                                             </button>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center justify-center flex-1 text-center py-20">
-                                            <div className="w-20 h-20 bg-[#F8EDFB] rounded-full flex items-center justify-center mb-6 shadow-inner">
-                                                <Activity className="w-8 h-8 text-[#AD74C3]" />
+                                            <div className="w-20 h-20 bg-[#f0f5fb] rounded-full flex items-center justify-center mb-6 shadow-inner">
+                                                <Activity className="w-8 h-8 text-[#73a4db]" />
                                             </div>
-                                            <p className="text-[#AD74C3] font-black uppercase tracking-widest text-sm">Laboratorio Inactivo</p>
-                                            <p className="text-[#AD74C3] text-xs mt-2 font-medium">Configura una nueva meta grupal para desbloquear la incursión.</p>
+                                            <p className="text-[#73a4db] font-black uppercase tracking-widest text-sm">Laboratorio Inactivo</p>
+                                            <p className="text-[#73a4db] text-xs mt-2 font-medium">Configura una nueva meta grupal para desbloquear la incursión.</p>
                                         </div>
                                     )}
                                 </div>
@@ -2580,25 +2580,25 @@ export default function TeacherDashboard() {
                         <div className="flex flex-col h-full">
                             <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/60 shadow-sm flex-1 flex flex-col">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="bg-[#EADFF0] p-3 rounded-2xl text-[#522566]">
+                                    <div className="bg-[#cbe0f6] p-3 rounded-2xl text-[#1c3a60]">
                                         <Target className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-black text-[#522566] tracking-tight">Centro de Operaciones</h2>
-                                        <p className="text-[#AD74C3] text-xs font-medium">Configuración de Desafíos Escolares</p>
+                                        <h2 className="text-xl font-black text-[#1c3a60] tracking-tight">Centro de Operaciones</h2>
+                                        <p className="text-[#73a4db] text-xs font-medium">Configuración de Desafíos Escolares</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-8 flex-1">
                                     {/* Boss Selector Gallery */}
                                     <div>
-                                        <label className="text-[10px] font-black text-[#AD74C3] uppercase tracking-widest block mb-4">Selección de Identidad</label>
+                                        <label className="text-[10px] font-black text-[#73a4db] uppercase tracking-widest block mb-4">Selección de Identidad</label>
                                         <div className="grid grid-cols-6 gap-3">
                                             {MONSTER_EMOJIS.map(emoji => (
                                                 <button
                                                     key={emoji}
                                                     onClick={() => { setRaidBossEmoji(emoji); setRaidBossName(MONSTER_NAMES[emoji] || emoji); }}
-                                                    className={`w-full aspect-square rounded-2xl text-xl flex items-center justify-center border transition-all hover:bg-[#F8EDFB] ${raidBossEmoji === emoji ? 'border-[#7A3A8E] bg-[#F8EDFB] shadow-lg shadow-[#EADFF0] scale-110' : 'border-[#EADFF0] bg-white shadow-sm'}`}
+                                                    className={`w-full aspect-square rounded-2xl text-xl flex items-center justify-center border transition-all hover:bg-[#f0f5fb] ${raidBossEmoji === emoji ? 'border-[#346297] bg-[#f0f5fb] shadow-lg shadow-[#cbe0f6] scale-110' : 'border-[#cbe0f6] bg-white shadow-sm'}`}
                                                     title={MONSTER_NAMES[emoji]}
                                                 >
                                                     {emoji}
@@ -2609,24 +2609,24 @@ export default function TeacherDashboard() {
 
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="col-span-2">
-                                            <label className="text-[10px] font-black text-[#AD74C3] uppercase tracking-widest block mb-2">Nombre del Objetivo</label>
+                                            <label className="text-[10px] font-black text-[#73a4db] uppercase tracking-widest block mb-2">Nombre del Objetivo</label>
                                             <input
                                                 type="text"
                                                 value={raidBossName}
                                                 onChange={(e) => setRaidBossName(e.target.value)}
-                                                className="w-full px-5 py-3.5 bg-[#F8EDFB] border border-[#EADFF0] rounded-2xl focus:ring-4 focus:ring-[#F8EDFB] focus:border-[#7A3A8E] outline-none transition-all text-sm font-bold text-[#522566]"
+                                                className="w-full px-5 py-3.5 bg-[#f0f5fb] border border-[#cbe0f6] rounded-2xl focus:ring-4 focus:ring-[#f0f5fb] focus:border-[#346297] outline-none transition-all text-sm font-bold text-[#1c3a60]"
                                                 placeholder="Ej: El Guardián del Conocimiento"
                                             />
                                         </div>
 
                                         <div className="col-span-2">
-                                            <label className="text-[10px] font-black text-[#AD74C3] uppercase tracking-widest block mb-3">Nivel de Salud (HP)</label>
+                                            <label className="text-[10px] font-black text-[#73a4db] uppercase tracking-widest block mb-3">Nivel de Salud (HP)</label>
                                             <div className="grid grid-cols-4 gap-2 mb-4">
                                                 {HP_PRESETS.map(preset => (
                                                     <button
                                                         key={preset.value}
                                                         onClick={() => setRaidBossHP(preset.value)}
-                                                        className={`py-2.5 rounded-xl text-[10px] font-black border uppercase tracking-tighter transition-all ${raidBossHP === preset.value ? 'bg-[#522566] text-white border-[#522566] shadow-lg' : 'bg-white text-[#AD74C3] border-[#EADFF0] hover:border-[#EADFF0]'}`}
+                                                        className={`py-2.5 rounded-xl text-[10px] font-black border uppercase tracking-tighter transition-all ${raidBossHP === preset.value ? 'bg-[#1c3a60] text-white border-[#1c3a60] shadow-lg' : 'bg-white text-[#73a4db] border-[#cbe0f6] hover:border-[#cbe0f6]'}`}
                                                     >
                                                         {preset.label}
                                                     </button>
@@ -2639,12 +2639,12 @@ export default function TeacherDashboard() {
                                                 min={100}
                                                 max={15000}
                                                 step={100}
-                                                className="w-full h-2 bg-[#EADFF0] rounded-lg appearance-none cursor-pointer accent-[#522566]"
+                                                className="w-full h-2 bg-[#cbe0f6] rounded-lg appearance-none cursor-pointer accent-[#1c3a60]"
                                             />
                                             <div className="flex justify-between mt-2">
-                                                <span className="text-[10px] font-bold text-[#AD74C3]">100 HP</span>
-                                                <span className="text-sm font-black text-[#522566]">{raidBossHP.toLocaleString()} HP</span>
-                                                <span className="text-[10px] font-bold text-[#AD74C3]">15,000 HP</span>
+                                                <span className="text-[10px] font-bold text-[#73a4db]">100 HP</span>
+                                                <span className="text-sm font-black text-[#1c3a60]">{raidBossHP.toLocaleString()} HP</span>
+                                                <span className="text-[10px] font-bold text-[#73a4db]">15,000 HP</span>
                                             </div>
                                         </div>
                                     </div>
@@ -2653,7 +2653,7 @@ export default function TeacherDashboard() {
                                 <button
                                     onClick={handleCreateBoss}
                                     disabled={isCreatingBoss || !raidBossName.trim()}
-                                    className="w-full mt-8 bg-[#522566] hover:bg-[#522566] text-white font-black py-4 rounded-3xl shadow-xl shadow-[#EADFF0] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-widest text-sm"
+                                    className="w-full mt-8 bg-[#1c3a60] hover:bg-[#1c3a60] text-white font-black py-4 rounded-3xl shadow-xl shadow-[#cbe0f6] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-widest text-sm"
                                 >
                                     {isCreatingBoss ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -2667,7 +2667,7 @@ export default function TeacherDashboard() {
             )}
 
             {showBuilderModal && (
-                <div className="fixed inset-0 z-50 bg-[#EADFF0] flex flex-col w-full h-full">
+                <div className="fixed inset-0 z-50 bg-[#cbe0f6] flex flex-col w-full h-full">
                     <VisualWorldBuilder
                         onClose={() => { setShowBuilderModal(false); setBuilderWorld(null); setBuilderInitialAIPrompt(false); }}
                         initialWorld={builderWorld || undefined}
@@ -2700,24 +2700,24 @@ export default function TeacherDashboard() {
                                 <>
                                     {/* Recipients selector */}
                                     <div>
-                                        <label className="block text-sm font-bold text-[#7A3A8E] mb-2">Destinatarios</label>
+                                        <label className="block text-sm font-bold text-[#346297] mb-2">Destinatarios</label>
                                         <div className="flex gap-2 mb-3">
                                             <button
                                                 onClick={() => { setIsMessageGlobal(true); setMessageRecipients([]); }}
-                                                className={`px-4 py-2 rounded-full text-sm font-bold transition ${isMessageGlobal ? 'bg-violet-600 text-white shadow' : 'bg-[#EADFF0] text-[#7A3A8E] hover:bg-[#EADFF0]'}`}
+                                                className={`px-4 py-2 rounded-full text-sm font-bold transition ${isMessageGlobal ? 'bg-violet-600 text-white shadow' : 'bg-[#cbe0f6] text-[#346297] hover:bg-[#cbe0f6]'}`}
                                             >
                                                 📢 Todos los alumnos
                                             </button>
                                             <button
                                                 onClick={() => setIsMessageGlobal(false)}
-                                                className={`px-4 py-2 rounded-full text-sm font-bold transition ${!isMessageGlobal ? 'bg-violet-600 text-white shadow' : 'bg-[#EADFF0] text-[#7A3A8E] hover:bg-[#EADFF0]'}`}
+                                                className={`px-4 py-2 rounded-full text-sm font-bold transition ${!isMessageGlobal ? 'bg-violet-600 text-white shadow' : 'bg-[#cbe0f6] text-[#346297] hover:bg-[#cbe0f6]'}`}
                                             >
                                                 👤 Seleccionar alumnos
                                             </button>
                                         </div>
 
                                         {!isMessageGlobal && (
-                                            <div className="max-h-40 overflow-y-auto bg-[#F8EDFB] rounded-xl border border-[#EADFF0] p-2 space-y-1">
+                                            <div className="max-h-40 overflow-y-auto bg-[#f0f5fb] rounded-xl border border-[#cbe0f6] p-2 space-y-1">
                                                 {students.map(s => (
                                                     <label key={s.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white cursor-pointer transition">
                                                         <input
@@ -2730,9 +2730,9 @@ export default function TeacherDashboard() {
                                                                     setMessageRecipients(messageRecipients.filter(id => id !== s.id));
                                                                 }
                                                             }}
-                                                            className="rounded border-[#EADFF0] text-violet-600 focus:ring-violet-500"
+                                                            className="rounded border-[#cbe0f6] text-violet-600 focus:ring-violet-500"
                                                         />
-                                                        <span className="text-sm font-medium text-[#7A3A8E]">{s.name}</span>
+                                                        <span className="text-sm font-medium text-[#346297]">{s.name}</span>
                                                     </label>
                                                 ))}
                                             </div>
@@ -2741,13 +2741,13 @@ export default function TeacherDashboard() {
 
                                     {/* Message text */}
                                     <div>
-                                        <label className="block text-sm font-bold text-[#7A3A8E] mb-2">Mensaje</label>
+                                        <label className="block text-sm font-bold text-[#346297] mb-2">Mensaje</label>
                                         <textarea
                                             value={messageText}
                                             onChange={(e) => setMessageText(e.target.value)}
                                             placeholder="Escribe tu mensaje aquí..."
                                             rows={4}
-                                            className="w-full border border-[#EADFF0] rounded-xl px-4 py-3 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 transition-all font-medium resize-none"
+                                            className="w-full border border-[#cbe0f6] rounded-xl px-4 py-3 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 transition-all font-medium resize-none"
                                         />
                                     </div>
 
@@ -2789,7 +2789,7 @@ export default function TeacherDashboard() {
                                 <div className="text-center py-8">
                                     <div className="text-5xl mb-4">✅</div>
                                     <h3 className="text-xl font-black text-green-600">¡Progreso reiniciado!</h3>
-                                    <p className="text-[#AD74C3] text-sm mt-1">La página se recargará en un momento...</p>
+                                    <p className="text-[#73a4db] text-sm mt-1">La página se recargará en un momento...</p>
                                 </div>
                             ) : (
                                 <>
@@ -2800,24 +2800,24 @@ export default function TeacherDashboard() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-bold text-[#7A3A8E] mb-2">¿Quiénes?</label>
+                                        <label className="block text-sm font-bold text-[#346297] mb-2">¿Quiénes?</label>
                                         <div className="flex gap-2 mb-3">
                                             <button
                                                 onClick={() => { setIsResetAll(true); setResetStudentIds([]); }}
-                                                className={`px-4 py-2 rounded-full text-sm font-bold transition ${isResetAll ? 'bg-red-600 text-white shadow' : 'bg-[#EADFF0] text-[#7A3A8E] hover:bg-[#EADFF0]'}`}
+                                                className={`px-4 py-2 rounded-full text-sm font-bold transition ${isResetAll ? 'bg-red-600 text-white shadow' : 'bg-[#cbe0f6] text-[#346297] hover:bg-[#cbe0f6]'}`}
                                             >
                                                 👥 Todos los alumnos
                                             </button>
                                             <button
                                                 onClick={() => setIsResetAll(false)}
-                                                className={`px-4 py-2 rounded-full text-sm font-bold transition ${!isResetAll ? 'bg-red-600 text-white shadow' : 'bg-[#EADFF0] text-[#7A3A8E] hover:bg-[#EADFF0]'}`}
+                                                className={`px-4 py-2 rounded-full text-sm font-bold transition ${!isResetAll ? 'bg-red-600 text-white shadow' : 'bg-[#cbe0f6] text-[#346297] hover:bg-[#cbe0f6]'}`}
                                             >
                                                 👤 Seleccionar alumnos
                                             </button>
                                         </div>
 
                                         {!isResetAll && (
-                                            <div className="max-h-40 overflow-y-auto bg-[#F8EDFB] rounded-xl border border-[#EADFF0] p-2 space-y-1">
+                                            <div className="max-h-40 overflow-y-auto bg-[#f0f5fb] rounded-xl border border-[#cbe0f6] p-2 space-y-1">
                                                 {students.map(s => (
                                                     <label key={s.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white cursor-pointer transition">
                                                         <input
@@ -2830,9 +2830,9 @@ export default function TeacherDashboard() {
                                                                     setResetStudentIds(resetStudentIds.filter(id => id !== s.id));
                                                                 }
                                                             }}
-                                                            className="rounded border-[#EADFF0] text-red-600 focus:ring-red-500"
+                                                            className="rounded border-[#cbe0f6] text-red-600 focus:ring-red-500"
                                                         />
-                                                        <span className="text-sm font-medium text-[#7A3A8E]">{s.name}</span>
+                                                        <span className="text-sm font-medium text-[#346297]">{s.name}</span>
                                                     </label>
                                                 ))}
                                             </div>
@@ -2969,10 +2969,10 @@ function StudentMessagesPanel({ students, progress, worlds, onSendHint }: { stud
             {/* SIDEBAR - Contact List Tactical Style */}
             <div className="w-80 border-r border-white/40 flex flex-col bg-white/20">
                 <div className="p-8 border-b border-white/40 bg-white/40 shadow-sm relative z-10">
-                    <h3 className="text-[10px] font-black text-[#522566] uppercase tracking-[0.2em] flex items-center gap-2">
+                    <h3 className="text-[10px] font-black text-[#1c3a60] uppercase tracking-[0.2em] flex items-center gap-2">
                         <Users className="w-3.5 h-3.5" /> Terminal de Enlace
                     </h3>
-                    <p className="text-[#522566] font-black mt-1 uppercase tracking-tighter text-sm">Directorio Táctico</p>
+                    <p className="text-[#1c3a60] font-black mt-1 uppercase tracking-tighter text-sm">Directorio Táctico</p>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
@@ -2980,7 +2980,7 @@ function StudentMessagesPanel({ students, progress, worlds, onSendHint }: { stud
                     <div className="grid grid-cols-2 gap-2 mb-2">
                         <button
                             onClick={() => setSelectedStudentId('all')}
-                            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl transition-all duration-300 group border-2 ${selectedStudentId === 'all' ? 'bg-[#522566] text-white shadow-xl shadow-[#EADFF0] border-transparent' : 'bg-white/60 text-[#AD74C3] hover:text-[#522566] hover:bg-white border-white/60 shadow-sm'}`}
+                            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl transition-all duration-300 group border-2 ${selectedStudentId === 'all' ? 'bg-[#1c3a60] text-white shadow-xl shadow-[#cbe0f6] border-transparent' : 'bg-white/60 text-[#73a4db] hover:text-[#1c3a60] hover:bg-white border-white/60 shadow-sm'}`}
                         >
                             <div className="w-10 h-10 bg-white/60 rounded-xl flex items-center justify-center text-xl shadow-inner border border-white/60 group-hover:scale-110 transition-transform">
                                 🌍
@@ -2990,7 +2990,7 @@ function StudentMessagesPanel({ students, progress, worlds, onSendHint }: { stud
 
                         <button
                             onClick={() => setSelectedStudentId('social')}
-                            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl transition-all duration-300 group border-2 ${selectedStudentId === 'social' ? 'bg-[#522566] text-white shadow-xl shadow-cyan-200 border-transparent' : 'bg-white/60 text-[#AD74C3] hover:text-cyan-600 hover:bg-white border-white/60 shadow-sm'}`}
+                            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl transition-all duration-300 group border-2 ${selectedStudentId === 'social' ? 'bg-[#1c3a60] text-white shadow-xl shadow-cyan-200 border-transparent' : 'bg-white/60 text-[#73a4db] hover:text-cyan-600 hover:bg-white border-white/60 shadow-sm'}`}
                         >
                             <div className="w-10 h-10 bg-white/60 rounded-xl flex items-center justify-center text-xl shadow-inner border border-white/60 group-hover:scale-110 transition-transform">
                                 🛰️
@@ -3009,16 +3009,16 @@ function StudentMessagesPanel({ students, progress, worlds, onSendHint }: { stud
                             <button
                                 key={student.id}
                                 onClick={() => setSelectedStudentId(student.id)}
-                                className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all duration-300 group ${isSelected ? 'bg-[#522566] text-white shadow-xl shadow-[#EADFF0]' : 'hover:bg-white/60 text-[#AD74C3] hover:text-[#522566] border border-transparent'}`}
+                                className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all duration-300 group ${isSelected ? 'bg-[#1c3a60] text-white shadow-xl shadow-[#cbe0f6]' : 'hover:bg-white/60 text-[#73a4db] hover:text-[#1c3a60] border border-transparent'}`}
                             >
                                 <div className="relative shrink-0">
                                     <span className={`text-2xl transition-all ${isOnline ? '' : 'opacity-60 grayscale'}`}>{student.avatar}</span>
-                                    <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 ${isSelected ? 'border-[#522566]' : 'border-white'} ${isOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse' : 'bg-slate-400'}`} />
+                                    <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 ${isSelected ? 'border-[#1c3a60]' : 'border-white'} ${isOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse' : 'bg-slate-400'}`} />
                                 </div>
                                 <div className="flex-1 text-left min-w-0">
-                                    <p className={`text-xs font-black truncate transition-colors ${isSelected ? 'text-white' : isOnline ? 'text-[#522566]' : 'text-[#AD74C3]'}`}>{student.name}</p>
-                                    <div className={`text-[8px] font-black uppercase tracking-widest mt-1 ${isSelected ? 'text-indigo-100' : isOnline ? 'text-emerald-600' : 'text-[#AD74C3]'}`}>
-                                        {isOnline ? 'En Línea' : 'Desconectado'} • Progreso: <span className={isSelected ? 'text-white' : 'text-[#522566]'}>{prog}%</span>
+                                    <p className={`text-xs font-black truncate transition-colors ${isSelected ? 'text-white' : isOnline ? 'text-[#1c3a60]' : 'text-[#73a4db]'}`}>{student.name}</p>
+                                    <div className={`text-[8px] font-black uppercase tracking-widest mt-1 ${isSelected ? 'text-indigo-100' : isOnline ? 'text-emerald-600' : 'text-[#73a4db]'}`}>
+                                        {isOnline ? 'En Línea' : 'Desconectado'} • Progreso: <span className={isSelected ? 'text-white' : 'text-[#1c3a60]'}>{prog}%</span>
                                     </div>
                                 </div>
                             </button>
@@ -3032,24 +3032,24 @@ function StudentMessagesPanel({ students, progress, worlds, onSendHint }: { stud
                 {selectedStudentId === 'social' || selectedStudentId === 'all' || selectedStudent ? (
                     <>
                         {/* Chat Header Tactical */}
-                        <div className={`p-6 border-b border-white/40 flex items-center justify-between bg-white/40 backdrop-blur-md ${selectedStudentId === 'social' ? 'bg-[#F8EDFB]/40' : ''}`}>
+                        <div className={`p-6 border-b border-white/40 flex items-center justify-between bg-white/40 backdrop-blur-md ${selectedStudentId === 'social' ? 'bg-[#f0f5fb]/40' : ''}`}>
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center text-3xl shadow-inner border border-white/60">
                                     {selectedStudentId === 'all' ? '🌍' : selectedStudentId === 'social' ? '🛰️' : selectedStudent?.avatar}
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-black text-[#522566] tracking-tight uppercase">
+                                    <h3 className="text-sm font-black text-[#1c3a60] tracking-tight uppercase">
                                         {selectedStudentId === 'all' ? 'Comunicación Global (Salón)' : selectedStudentId === 'social' ? 'Muro de Interacción Social' : selectedStudent?.name}
                                     </h3>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${selectedStudentId === 'all' ? 'bg-[#7A3A8E] shadow-[0_0_8px_rgba(99,102,241,0.3)]' : selectedStudentId === 'social' ? 'bg-[#7A3A8E] shadow-[0_0_8px_rgba(6,182,212,0.3)]' : calculateStudentProgress(selectedStudent?.id || "", progress, worlds) < 30 ? 'bg-rose-500' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]'}`} />
-                                        <span className="text-[9px] font-black text-[#AD74C3] uppercase tracking-widest">
+                                        <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${selectedStudentId === 'all' ? 'bg-[#346297] shadow-[0_0_8px_rgba(99,102,241,0.3)]' : selectedStudentId === 'social' ? 'bg-[#346297] shadow-[0_0_8px_rgba(6,182,212,0.3)]' : calculateStudentProgress(selectedStudent?.id || "", progress, worlds) < 30 ? 'bg-rose-500' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]'}`} />
+                                        <span className="text-[9px] font-black text-[#73a4db] uppercase tracking-widest">
                                             {selectedStudentId === 'all' ? 'Mensaje Maestro para Todos' : selectedStudentId === 'social' ? 'Bitácora de Interacciones Peer-to-Peer' : 'Canal de Retroalimentación IA'}
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                            <button onClick={fetchMessages} className="p-2.5 text-[#AD74C3] hover:text-[#522566] hover:bg-white rounded-xl transition-all border border-[#EADFF0]">
+                            <button onClick={fetchMessages} className="p-2.5 text-[#73a4db] hover:text-[#1c3a60] hover:bg-white rounded-xl transition-all border border-[#cbe0f6]">
                                 <RotateCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                             </button>
                         </div>
@@ -3058,7 +3058,7 @@ function StudentMessagesPanel({ students, progress, worlds, onSendHint }: { stud
                         <div className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-hide">
                             {allMessages.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
-                                    <MessageSquare className="w-16 h-16 text-[#AD74C3] mb-4" />
+                                    <MessageSquare className="w-16 h-16 text-[#73a4db] mb-4" />
                                     <p className="text-[10px] font-black uppercase tracking-[0.3em]">Sin registros tácticos</p>
                                 </div>
                             ) : (
@@ -3067,17 +3067,17 @@ function StudentMessagesPanel({ students, progress, worlds, onSendHint }: { stud
                                     return (
                                         <div key={idx} className={`flex flex-col ${isFromTeacher ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                                             <div className={`max-w-[85%] p-4 rounded-2xl border transition-all ${isFromTeacher 
-                                                ? 'bg-[#522566] border-[#7A3A8E] text-white rounded-tr-none' 
+                                                ? 'bg-[#1c3a60] border-[#346297] text-white rounded-tr-none' 
                                                 : msg.type === 'buff' && selectedStudentId === 'social'
-                                                    ? 'bg-[#F8EDFB] border-cyan-200 text-cyan-900 rounded-tl-none shadow-sm'
-                                                    : 'bg-white border-[#EADFF0] text-[#522566] rounded-tl-none shadow-sm'
+                                                    ? 'bg-[#f0f5fb] border-cyan-200 text-cyan-900 rounded-tl-none shadow-sm'
+                                                    : 'bg-white border-[#cbe0f6] text-[#1c3a60] rounded-tl-none shadow-sm'
                                             }`}>
                                                 <p className="text-[11px] font-medium leading-relaxed">
                                                     {msg.type === 'buff' && <span className="mr-2">✨</span>}
                                                     {msg.message}
                                                 </p>
                                             </div>
-                                            <span className="text-[8px] font-black text-[#7A3A8E] mt-2 uppercase tracking-widest">
+                                            <span className="text-[8px] font-black text-[#346297] mt-2 uppercase tracking-widest">
                                                 {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {isFromTeacher ? 'Docente' : (msg.targetName && selectedStudentId === 'social' ? `${msg.fromName} para ${msg.targetName}` : msg.fromName)}
                                             </span>
                                         </div>
@@ -3092,7 +3092,7 @@ function StudentMessagesPanel({ students, progress, worlds, onSendHint }: { stud
                                 <button onClick={() => handleQuickReply("¡Felicidades por tu excelente avance hoy! Sigue así. ✨")} className="shrink-0 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-xl text-[9px] font-black hover:bg-emerald-100 transition border border-emerald-100 uppercase tracking-widest">
                                     Felicitar
                                 </button>
-                                <button onClick={() => handleQuickReply("He notado que te falta poco para terminar este nivel. ¡Tú puedes! 🚀")} className="shrink-0 px-3 py-1.5 bg-[#F8EDFB] text-[#522566] rounded-xl text-[9px] font-black hover:bg-[#EADFF0] transition border border-[#EADFF0] uppercase tracking-widest">
+                                <button onClick={() => handleQuickReply("He notado que te falta poco para terminar este nivel. ¡Tú puedes! 🚀")} className="shrink-0 px-3 py-1.5 bg-[#f0f5fb] text-[#1c3a60] rounded-xl text-[9px] font-black hover:bg-[#cbe0f6] transition border border-[#cbe0f6] uppercase tracking-widest">
                                     Motivar
                                 </button>
                                 <button onClick={() => handleQuickReply("Recuerda completar las actividades pendientes. ¿Necesitas ayuda? 💡")} className="shrink-0 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-xl text-[9px] font-black hover:bg-amber-100 transition border border-amber-100 uppercase tracking-widest">
@@ -3100,16 +3100,16 @@ function StudentMessagesPanel({ students, progress, worlds, onSendHint }: { stud
                                 </button>
                             </div>
                             
-                            <div className="flex items-end gap-3 bg-white p-2 rounded-2xl border border-[#EADFF0] focus-within:border-[#AD74C3] transition-all shadow-inner">
+                            <div className="flex items-end gap-3 bg-white p-2 rounded-2xl border border-[#cbe0f6] focus-within:border-[#73a4db] transition-all shadow-inner">
                                 <textarea
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}
                                     placeholder={selectedStudentId === 'all' ? "Terminal de envío global para todo el salón..." : `Terminal de envío a ${selectedStudent?.name.split(' ')[0] || "Seleccionado"}...`}
-                                    className="flex-1 bg-transparent border-none outline-none text-xs font-medium py-3 px-4 resize-none h-12 max-h-32 text-[#7A3A8E] placeholder:text-[#AD74C3]"
+                                    className="flex-1 bg-transparent border-none outline-none text-xs font-medium py-3 px-4 resize-none h-12 max-h-32 text-[#346297] placeholder:text-[#73a4db]"
                                 />
                                 <button
                                     onClick={() => { if(replyText.trim() && selectedStudentId) { onSendHint(selectedStudentId, replyText); setReplyText(""); } }}
-                                    className="bg-[#522566] hover:bg-[#522566] text-white p-3 rounded-xl shadow-lg shadow-[#522566]/20 transition-all active:scale-90 border border-[#AD74C3]/20"
+                                    className="bg-[#1c3a60] hover:bg-[#1c3a60] text-white p-3 rounded-xl shadow-lg shadow-[#1c3a60]/20 transition-all active:scale-90 border border-[#73a4db]/20"
                                 >
                                     <Send className="w-4 h-4" />
                                 </button>

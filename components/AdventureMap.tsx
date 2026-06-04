@@ -306,7 +306,7 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
                         <div
                             className={`
                                 w-[4.5rem] h-[4.5rem] rounded-full flex items-center justify-center shadow-lg border-[3px] transition-all duration-300 relative
-                                ${level.status === 'locked' ? `${theme.nodeLocked} text-[#AD74C3]` : ''}
+                                ${level.status === 'locked' ? `${theme.nodeLocked} text-[#73a4db]` : ''}
                                 ${level.status === 'active' ? `${theme.nodeActive} border-white text-white` : ''}
                                 ${level.status === 'completed' ? `${theme.nodeCompleted} border-white/60 text-white` : ''}
                             `}

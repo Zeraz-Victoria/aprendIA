@@ -123,7 +123,7 @@ export default function MapCompletionReport({ worldTitle, worldTheme, totalDays,
     return (
         <div className="fixed inset-0 z-[70] bg-black/90 flex items-center justify-center backdrop-blur-lg p-4 overflow-y-auto">
             <div className={`w-full max-w-lg transition-all duration-700 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                <div className="bg-[#522566] rounded-3xl border-2 border-[#7A3A8E] shadow-2xl overflow-hidden">
+                <div className="bg-[#1c3a60] rounded-3xl border-2 border-[#346297] shadow-2xl overflow-hidden">
 
                     {/* Header */}
                     <div className={`bg-gradient-to-r ${gradeGradient} p-6 text-center relative`}>
@@ -137,12 +137,12 @@ export default function MapCompletionReport({ worldTitle, worldTheme, totalDays,
 
                     {/* Grade Circle */}
                     <div className="flex justify-center -mt-10 relative z-10">
-                        <div className={`w-20 h-20 bg-gradient-to-br ${gradeGradient} rounded-full flex items-center justify-center shadow-2xl border-4 border-[#522566]`}>
+                        <div className={`w-20 h-20 bg-gradient-to-br ${gradeGradient} rounded-full flex items-center justify-center shadow-2xl border-4 border-[#1c3a60]`}>
                             <span className="text-3xl font-black text-white">{report.grade}</span>
                         </div>
                     </div>
-                    <p className="text-center text-[#AD74C3] font-bold mt-2 text-lg">{report.gradeLabel}</p>
-                    <p className="text-center text-[#AD74C3] text-sm px-6 mt-1">{report.message}</p>
+                    <p className="text-center text-[#73a4db] font-bold mt-2 text-lg">{report.gradeLabel}</p>
+                    <p className="text-center text-[#73a4db] text-sm px-6 mt-1">{report.message}</p>
 
                     {/* Stats Bar */}
                     <div className="flex justify-center gap-6 mt-4 px-6">
@@ -152,7 +152,7 @@ export default function MapCompletionReport({ worldTitle, worldTheme, totalDays,
                         </div>
                         <div className="text-center">
                             <span className="text-2xl">💎</span>
-                            <p className="text-[#AD74C3] font-bold text-sm">{stats.gems} Gemas</p>
+                            <p className="text-[#73a4db] font-bold text-sm">{stats.gems} Gemas</p>
                         </div>
                         <div className="text-center">
                             <span className="text-2xl">🔥</span>
@@ -196,12 +196,12 @@ export default function MapCompletionReport({ worldTitle, worldTheme, totalDays,
 
                         {/* Review */}
                         <div className="bg-sky-950/40 border border-sky-800/50 rounded-2xl p-4">
-                            <h3 className="text-[#AD74C3] font-bold text-sm uppercase tracking-wider flex items-center gap-2 mb-2">
+                            <h3 className="text-[#73a4db] font-bold text-sm uppercase tracking-wider flex items-center gap-2 mb-2">
                                 <BookOpen className="w-4 h-4" /> Qué Repasar
                             </h3>
                             <ul className="space-y-1">
                                 {report.reviewTopics.map((r, i) => (
-                                    <li key={i} className="text-[#EADFF0] text-sm flex items-start gap-2">
+                                    <li key={i} className="text-[#cbe0f6] text-sm flex items-start gap-2">
                                         <span className="mt-0.5">📖</span> {r}
                                     </li>
                                 ))}
@@ -219,7 +219,7 @@ export default function MapCompletionReport({ worldTitle, worldTheme, totalDays,
                             <Swords className="w-6 h-6" />
                             ⚔️ ¡Atacar al Jefe de Incursión!
                         </button>
-                        <p className="text-center text-[#AD74C3] text-xs mt-3">
+                        <p className="text-center text-[#73a4db] text-xs mt-3">
                             Únete con tus compañeros para derrotar al monstruo épico
                         </p>
                     </div>
