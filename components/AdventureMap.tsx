@@ -280,15 +280,16 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
                                 strokeDasharray="6,6"
                                 vectorEffect="non-scaling-stroke"
                             />
-                            {/* Progress path — solid glow */}
+                            {/* Progress path — solid glow flowing energy */}
                             <path
                                 d={generatePathData(dynamicCoords.slice(0, totalCompletedLevels + 1))}
                                 fill="none"
                                 stroke={theme.pathProgress}
                                 strokeWidth="4"
                                 strokeLinecap="round"
+                                strokeDasharray="8,4"
                                 vectorEffect="non-scaling-stroke"
-                                className={theme.pathGlow}
+                                className={`${theme.pathGlow} animate-dash-flow`}
                             />
                         </>
                     )}
@@ -298,37 +299,43 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
                 {levels.map((level) => (
                     <div
                         key={level.id}
-                        className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 z-10 flex flex-col items-center ${level.status === 'locked' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-110'}`}
+                        className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 z-10 flex flex-col items-center ${level.status === 'locked' ? 'opacity-40 cursor-not-allowed scale-95' : 'cursor-pointer hover:scale-110'}`}
                         style={{ left: `${level.x}%`, top: `${level.y}%` }}
                         onClick={() => handleLevelClick(level)}
                     >
                         {/* Node circle with themed styling */}
                         <div
                             className={`
-                                w-[4.5rem] h-[4.5rem] rounded-full flex items-center justify-center shadow-lg border-[3px] transition-all duration-300 relative
-                                ${level.status === 'locked' ? `${theme.nodeLocked} text-[#73a4db]` : ''}
-                                ${level.status === 'active' ? `${theme.nodeActive} border-white text-white` : ''}
-                                ${level.status === 'completed' ? `${theme.nodeCompleted} border-white/60 text-white` : ''}
+                                w-[4.5rem] h-[4.5rem] rounded-full flex items-center justify-center shadow-lg border-[3.5px] transition-all duration-300 relative
+                                ${level.status === 'locked' ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-500 shadow-inner' : ''}
+                                ${level.status === 'active' ? `${theme.nodeActive} border-white text-white animate-portal-glow` : ''}
+                                ${level.status === 'completed' ? 'bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 border-yellow-300 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]' : ''}
                             `}
-                            style={level.status === 'active' ? { boxShadow: theme.nodeActiveGlow } : undefined}
+                            style={level.status === 'active' ? { 
+                                boxShadow: theme.nodeActiveGlow,
+                                color: theme.pathProgress
+                            } : undefined}
                         >
-                            {/* Inner ring for active nodes */}
+                            {/* Holographic glowing rings for active nodes */}
                             {level.status === 'active' && (
-                                <div className="absolute inset-1 rounded-full border-2 border-white/30 animate-ping" style={{ animationDuration: '2s' }} />
+                                <>
+                                    <div className="absolute -inset-2 rounded-full border-2 border-white/20 animate-pulse-ring pointer-events-none" />
+                                    <div className="absolute -inset-3 rounded-full border border-white/10 animate-spin-reverse opacity-40 pointer-events-none" style={{ animationDuration: '6s' }} />
+                                </>
                             )}
 
-                            {level.status === 'locked' && <Lock className="w-6 h-6" />}
+                            {level.status === 'locked' && <Lock className="w-5 h-5" />}
                             {level.status !== 'locked' && level.type === 'guided_practice' && !level.isGenerating && <Swords className="w-6 h-6" />}
                             {level.label === 'Jefe Final' && level.status !== 'locked' && !level.isGenerating && <Skull className="w-7 h-7" />}
                             
                             {/* Avatar Indicator */}
                             {level.hasAvatar && !level.isGenerating && (
-                                <div className="text-4xl animate-bounce drop-shadow-2xl z-20 absolute -top-8">
+                                <div className="text-4xl animate-bounce drop-shadow-[0_4px_6px_rgba(0,0,0,0.4)] z-20 absolute -top-10 font-bold hover:scale-115 transition-transform duration-200">
                                     {currentUser?.avatar || "🧑"}
                                 </div>
                             )}
 
-                            {level.status === 'completed' && <Check className="w-8 h-8" strokeWidth={3} />}
+                            {level.status === 'completed' && <Check className="w-8 h-8" strokeWidth={3.5} />}
                             {level.isGenerating && (
                                 <svg className="animate-spin w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -338,14 +345,14 @@ export default function AdventureMap({ onOpenRaid }: { onOpenRaid?: () => void }
                         </div>
 
                         {/* Label badge — military tag style */}
-                        <div className={`mt-2.5 px-4 py-1.5 rounded-lg text-[11px] font-black shadow-md tracking-wide uppercase ${level.status === 'locked' ? `${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder} border opacity-50` : `${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder} border`}`}>
+                        <div className={`mt-2.5 px-4 py-1.5 rounded-lg text-[10px] font-black shadow-md tracking-wider uppercase ${level.status === 'locked' ? 'bg-slate-950/40 text-slate-500 border border-slate-800/80 opacity-50' : `${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder} border`}`}>
                             {level.isGenerating ? '⚡ Generando...' : level.label}
                         </div>
 
                         {/* Stars for completed levels */}
                         {level.status === 'completed' && (
                             <div className="absolute -top-1 -right-1 flex items-center">
-                                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400 drop-shadow-lg" />
+                                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)]" />
                             </div>
                         )}
 

@@ -139,14 +139,45 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
             {/* Floating Widget Icon */}
             {!showModal && (
                 <div
-                    className={`fixed bottom-6 right-6 z-40 ${boss.status === 'DEFEATED' ? 'bg-slate-500 border-[#346297]' : 'bg-red-600 border-red-800'} border-4 rounded-full w-20 h-20 shadow-[0_0_20px_rgba(220,38,38,0.5)] cursor-pointer hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center ${boss.status === 'DEFEATED' ? '' : 'animate-bounce'}`}
+                    className={`fixed bottom-6 right-6 z-40 cursor-pointer hover:scale-110 hover:rotate-3 transition-all duration-300 flex items-center justify-center`}
                     onClick={() => setShowModal(true)}
                 >
-                    <span className={`text-4xl absolute z-10 ${boss.status === 'DEFEATED' ? 'grayscale opacity-50' : ''}`}>{boss.imageUrl}</span>
-                    <div className={`absolute -top-2 -right-2 ${boss.status === 'DEFEATED' ? 'bg-slate-400 text-[#1c3a60]' : 'bg-yellow-400 text-red-900'} text-xs font-black px-2 py-1 rounded-full border-2 ${boss.status === 'DEFEATED' ? 'border-[#346297]' : 'border-red-800'} shadow-md transform rotate-12`}>
-                        {boss.status === 'DEFEATED' ? 'K.O.' : 'RAID!'}
+                    {boss.status !== 'DEFEATED' && (
+                        <>
+                            <div className="absolute -inset-3 rounded-full border-2 border-red-500/30 animate-pulse-ring pointer-events-none" />
+                            <div className="absolute -inset-2 rounded-full border border-red-500/20 animate-spin-reverse pointer-events-none" style={{ animationDuration: '8s' }} />
+                        </>
+                    )}
+                    
+                    <div className={`w-20 h-20 rounded-full border-4 flex items-center justify-center relative shadow-2xl transition-all duration-300
+                        ${boss.status === 'DEFEATED' 
+                            ? 'bg-slate-800 border-slate-700 text-slate-500 shadow-inner' 
+                            : 'bg-gradient-to-br from-red-600 via-rose-700 to-red-950 border-red-400 shadow-[0_0_25px_rgba(239,68,68,0.6)] animate-bounce-slow'
+                        }
+                    `}>
+                        <span className={`text-4xl absolute z-10 transition-transform ${boss.status === 'DEFEATED' ? 'grayscale opacity-45' : 'hover:scale-110'}`}>
+                            {boss.imageUrl}
+                        </span>
+
+                        {boss.status !== 'DEFEATED' && (
+                            <div className="absolute -bottom-1 -left-1 bg-red-500 text-white rounded-full p-1 border-2 border-red-950 shadow-md animate-pulse">
+                                <Swords className="w-3.5 h-3.5" />
+                            </div>
+                        )}
+
+                        <div className={`absolute -top-2 -right-2 text-[9px] font-black px-2 py-1 rounded-full border shadow-md transform rotate-12 select-none tracking-wider uppercase
+                            ${boss.status === 'DEFEATED' 
+                                ? 'bg-slate-700 text-slate-400 border-slate-600' 
+                                : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-red-950 border-yellow-300 font-extrabold animate-pulse'
+                            }
+                        `}>
+                            {boss.status === 'DEFEATED' ? 'K.O.' : '¡RAID!'}
+                        </div>
+
+                        <div className={`absolute inset-1 rounded-full border-[5px] pointer-events-none
+                            ${boss.status === 'DEFEATED' ? 'border-slate-800/40' : 'border-red-900/40'}
+                        `}></div>
                     </div>
-                    <div className="absolute inset-1 rounded-full border-[6px] border-red-900/40"></div>
                 </div>
             )}
 

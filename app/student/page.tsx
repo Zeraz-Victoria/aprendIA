@@ -2,7 +2,7 @@
 
 import AdventureMap from "@/components/AdventureMap";
 import StudentHUD from "@/components/StudentHUD";
-import { ArrowLeft, X, BrainCircuit, ClipboardList, Shield, Swords, Timer, MapPin } from "lucide-react";
+import { ArrowLeft, X, BrainCircuit, ClipboardList, Shield, Swords, Timer, MapPin, Flame, Diamond, Heart, Sparkles } from "lucide-react";
 import { useLearning } from "@/contexts/LearningContext";
 import { useState, useEffect, useCallback } from "react";
 import RewardsStore from "@/components/RewardsStore";
@@ -42,7 +42,7 @@ interface TeacherMsg {
 }
 
 export default function StudentPage() {
-    const { currentUser, setActiveWorld, bootstrapExtras } = useLearning();
+    const { currentUser, setActiveWorld, bootstrapExtras, worlds, progress, stats } = useLearning();
     const { status } = useSession();
     const router = useRouter();
     useSessionGuard();
@@ -184,7 +184,8 @@ export default function StudentPage() {
     }, [currentUser, selectedMapId, setActiveWorld]);
 
     // Auto-reset lives when they reach 0 after a 60-second cooldown
-    const { stats, setStats: setLearningStats } = useLearning();
+    // stats is destructured at the top of the component
+    const { setStats: setLearningStats } = useLearning();
     useEffect(() => {
         if (stats.lives <= 0 && livesResetCountdown === 0) {
             setLivesResetCountdown(60);
@@ -230,44 +231,113 @@ export default function StudentPage() {
 
     // THE LOBBY VIEW
     if (!selectedMapId) {
+        const getHoverShadow = (themeKey: string) => {
+            if (themeKey === 'fuego') return 'hover:shadow-[0_0_30px_rgba(249,115,22,0.25)] hover:border-orange-500/40';
+            if (themeKey === 'hielo') return 'hover:shadow-[0_0_30px_rgba(6,182,212,0.25)] hover:border-cyan-500/40';
+            if (themeKey === 'selva') return 'hover:shadow-[0_0_30px_rgba(16,185,129,0.25)] hover:border-emerald-500/40';
+            if (themeKey === 'neon') return 'hover:shadow-[0_0_30px_rgba(217,70,239,0.25)] hover:border-fuchsia-500/40';
+            return 'hover:shadow-[0_0_30px_rgba(79,70,229,0.25)] hover:border-indigo-500/40';
+        };
+
         return (
-            <main className={`min-h-screen bg-gradient-to-br ${lobbyTheme.lobbyBg} flex flex-col items-center justify-center p-6 relative overflow-hidden`}>
+            <main 
+                className={`min-h-screen bg-gradient-to-br ${lobbyTheme.lobbyBg} flex flex-col items-center p-4 sm:p-6 relative overflow-y-auto no-scrollbar`}
+                style={{
+                    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px)`,
+                    backgroundSize: '40px 40px'
+                }}
+            >
                 <div className="absolute top-4 left-4 z-40">
                     <button
                         onClick={() => signOut({ callbackUrl: "/" })}
-                        className="bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-white/20 transition-all flex flex-col items-center justify-center w-12 h-12 rounded-full font-bold shadow-2xl"
+                        className="bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center w-12 h-12 rounded-full font-bold shadow-2xl cursor-pointer"
                         title="Cerrar Sesión"
                     >
                         <ArrowLeft className="w-5 h-5 mb-0.5" />
-                        <span className="text-[8px] uppercase tracking-wider">Salir</span>
+                        <span className="text-[8px] uppercase tracking-wider font-extrabold">Salir</span>
                     </button>
                 </div>
 
                 {/* Visual Background Elements */}
-                <div className={`absolute top-[-20%] left-[-10%] w-[50%] h-[50%] ${lobbyTheme.lobbyGlow1} rounded-full blur-[120px] pointer-events-none`}></div>
-                <div className={`absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] ${lobbyTheme.lobbyGlow2} rounded-full blur-[120px] pointer-events-none`}></div>
+                <div className={`absolute top-[-20%] left-[-10%] w-[50%] h-[50%] ${lobbyTheme.lobbyGlow1} rounded-full blur-[140px] pointer-events-none opacity-60`}></div>
+                <div className={`absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] ${lobbyTheme.lobbyGlow2} rounded-full blur-[140px] pointer-events-none opacity-60`}></div>
 
-                <div className="w-full max-w-5xl z-10 animate-fade-in-up">
-                    <div className="text-center mb-12">
-                        <div className="inline-block bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-2 mb-6 shadow-2xl">
-                            <h2 className="text-white font-bold tracking-widest text-sm uppercase flex items-center gap-2">
-                                <span className="text-2xl">{currentUser.avatar}</span> Hola, {currentUser.name}
-                            </h2>
+                <div className="w-full max-w-5xl z-10 animate-fade-in py-10 flex flex-col justify-center">
+                    {/* Header: Player Profile ID Card */}
+                    <div className="w-full bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl relative overflow-hidden mb-12 animate-float-slow">
+                        {/* Background glow lines */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
+                        
+                        <div className="flex items-center gap-4">
+                            {/* Avatar Frame Box */}
+                            <div className="relative">
+                                <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-2xl flex items-center justify-center text-4xl shadow-lg border-2 border-white/20">
+                                    {currentUser.avatar}
+                                </div>
+                                {/* Active frame highlight */}
+                                {currentUser.activeFrame && (
+                                    <div className="absolute inset-0 rounded-2xl border-2 pointer-events-none animate-pulse"
+                                         style={{
+                                             borderColor: currentUser.activeFrame === 'frame_fire' ? '#FD7E14' : currentUser.activeFrame === 'frame_ice' ? '#73a4db' : '#346297',
+                                             boxShadow: '0 0 8px currentColor'
+                                         }}
+                                    />
+                                )}
+                            </div>
+                            <div>
+                                <p className="text-white/40 text-[10px] font-black uppercase tracking-wider">Aventurero</p>
+                                <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                                    {currentUser.name}
+                                </h2>
+                                {currentUser.globalActivityAverage !== undefined && currentUser.globalActivityAverage !== null && (
+                                    <p className="text-cyan-400 text-xs font-bold mt-0.5">
+                                        Promedio de Actividades: <span className="text-white font-black">{currentUser.globalActivityAverage.toFixed(1)}/10</span>
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                        <h1 className={`text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r ${lobbyTheme.lobbyTitle} mb-4 drop-shadow-sm`}>
+
+                        {/* Player stats box */}
+                        <div className="flex flex-wrap items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-2.5 backdrop-blur-md">
+                            {/* Lives */}
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-xl" title="Vidas">
+                                <Heart className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" />
+                                <span className="font-black text-sm text-red-400">{stats.lives}</span>
+                            </div>
+                            {/* Gems */}
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-xl" title="Gemas">
+                                <Diamond className="w-4 h-4 text-cyan-500 fill-cyan-500" />
+                                <span className="font-black text-sm text-cyan-400">{stats.gems}</span>
+                            </div>
+                            {/* Streak */}
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-xl" title="Racha">
+                                <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+                                <span className="font-black text-sm text-orange-400">{stats.streak}d</span>
+                            </div>
+                            {/* XP */}
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-xl" title="XP">
+                                <Sparkles className="w-4 h-4 text-purple-500" />
+                                <span className="font-black text-sm text-purple-400">{stats.xp} XP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="text-center mb-10">
+                        <h1 className={`text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r ${lobbyTheme.lobbyTitle} mb-3 drop-shadow-sm`}>
                             Elige tu Destino
                         </h1>
-                        <p className="text-white/60 text-lg md:text-xl font-medium max-w-2xl mx-auto">
+                        <p className="text-white/60 text-sm sm:text-base md:text-lg font-semibold max-w-2xl mx-auto">
                             Tienes {currentUser.assignedWorlds?.length || 0} aventuras disponibles. ¿En cuál quieres adentrarte?
                         </p>
                     </div>
 
                     {!currentUser.assignedWorlds || currentUser.assignedWorlds.length === 0 ? (
-                        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 sm:p-12 text-center max-w-2xl mx-auto shadow-2xl">
+                        <div className="bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-3xl p-6 sm:p-12 text-center max-w-2xl mx-auto shadow-2xl">
                             <div className="text-5xl sm:text-6xl mb-4 opacity-50">🏝️</div>
                             <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Aún no tienes mundos asignados</h3>
                             <p className="text-white/50 mb-6 text-sm sm:text-base">Tu maestro debe asignarte una aventura para que puedas comenzar a jugar.</p>
-                            <button onClick={() => window.location.reload()} className={`${lobbyTheme.nodeActive} text-white font-bold py-3 px-8 rounded-full transition-all active:scale-95 shadow-lg`}>
+                            <button onClick={() => window.location.reload()} className={`${lobbyTheme.nodeActive} text-white font-bold py-3 px-8 rounded-full transition-all active:scale-95 shadow-lg cursor-pointer`}>
                                 Recargar
                             </button>
                         </div>
@@ -275,6 +345,21 @@ export default function StudentPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
                             {currentUser.assignedWorlds.map((world, idx) => {
                                 const cardTheme = getTheme(world.theme);
+                                const fullWorld = worlds.find(w => w.id === world.id);
+                                const totalDays = fullWorld?.days?.length || 0;
+                                const completedDays = progress[currentUser.id]?.[world.id]?.length || 0;
+                                const progressPct = totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
+
+                                let badgeText = "🆕 NUEVO";
+                                let badgeStyle = "from-cyan-500/20 to-blue-500/20 text-cyan-300 border-cyan-500/30";
+                                if (progressPct === 100 && totalDays > 0) {
+                                    badgeText = "🏆 COMPLETADO";
+                                    badgeStyle = "from-emerald-500/20 to-green-600/20 text-emerald-300 border-emerald-500/30 animate-pulse";
+                                } else if (progressPct > 0) {
+                                    badgeText = `⚡ EN MARCHA`;
+                                    badgeStyle = "from-orange-500/20 to-amber-500/20 text-orange-300 border-orange-500/30";
+                                }
+
                                 return (
                                     <button
                                         key={world.id}
@@ -282,29 +367,56 @@ export default function StudentPage() {
                                             setSelectedMapId(world.id);
                                             setActiveWorld(world.id);
                                         }}
-                                        className={`group text-left relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 hover:bg-white/20 transition-all duration-300 hover:scale-[1.03] ${cardTheme.lobbyCardHover} hover:-translate-y-2 overflow-hidden flex flex-col h-full min-h-[250px]`}
+                                        className={`group text-left relative bg-slate-900/60 border border-white/10 rounded-3xl p-6 hover:border-white/20 transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 overflow-hidden flex flex-col h-full min-h-[280px] shadow-lg hover:shadow-2xl cursor-pointer ${getHoverShadow(world.theme)}`}
+                                        style={{
+                                            boxShadow: `0 10px 30px -15px rgba(0, 0, 0, 0.5)`
+                                        }}
                                     >
-                                        {/* Card glow */}
-                                        <div className={`absolute inset-0 ${cardTheme.lobbyGlow1} opacity-0 group-hover:opacity-40 transition-opacity rounded-3xl`} />
+                                        {/* Card glow behind */}
+                                        <div className={`absolute inset-0 ${cardTheme.lobbyGlow1} opacity-0 group-hover:opacity-20 transition-opacity rounded-3xl`} />
 
-                                        <div className="relative z-10 flex-1 flex flex-col">
-                                            <div className={`w-14 h-14 ${cardTheme.nodeActive} rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-lg transform group-hover:rotate-12 transition-transform`}>
+                                        {/* State Badge in Top Right */}
+                                        <div className={`absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase bg-gradient-to-r ${badgeStyle} border backdrop-blur-sm z-20`}>
+                                            {badgeText}
+                                        </div>
+
+                                        <div className="relative z-10 flex-1 flex flex-col w-full">
+                                            {/* Category Emoji Badge */}
+                                            <div className={`w-14 h-14 ${cardTheme.nodeActive} rounded-2xl flex items-center justify-center text-3xl mb-5 shadow-lg transform group-hover:rotate-6 transition-all duration-300 relative`}>
                                                 {cardTheme.emoji}
+                                                <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                                             </div>
-                                            <h3 className="text-2xl font-black text-white mb-2 leading-tight break-words line-clamp-3">
+
+                                            {/* World Title */}
+                                            <h3 className="text-xl font-black text-white mb-1.5 leading-snug break-words line-clamp-2">
                                                 {world.title || `Mundo ${idx + 1}`}
                                             </h3>
-                                            <div className="flex items-center gap-2 mt-auto">
-                                                <Shield className="w-3.5 h-3.5 text-white/40" />
-                                                <p className="text-white/50 font-bold text-xs uppercase tracking-wider">
-                                                    {cardTheme.label} • {world.theme}
-                                                </p>
+
+                                            {/* World Theme details */}
+                                            <div className="flex items-center gap-1 text-white/40 text-[10px] font-bold uppercase tracking-wider mb-5">
+                                                <Shield className="w-3 h-3" />
+                                                <span>{cardTheme.label} • {world.theme}</span>
+                                            </div>
+
+                                            {/* Progress Bar inside Card */}
+                                            <div className="mt-auto w-full pt-4 border-t border-white/5">
+                                                <div className="flex items-center justify-between text-[11px] mb-1 font-bold">
+                                                    <span className="text-white/40">Progreso del Mapa</span>
+                                                    <span className="text-white/70">{completedDays} / {totalDays} niveles</span>
+                                                </div>
+                                                <div className="w-full h-2 bg-slate-950/60 rounded-full overflow-hidden border border-white/5">
+                                                    <div 
+                                                        className={`h-full bg-gradient-to-r ${cardTheme.nodeActive} transition-all duration-1000 ease-out`}
+                                                        style={{ width: `${progressPct}%` }}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div className={`relative z-10 mt-6 pt-4 border-t border-white/10 flex items-center justify-between ${cardTheme.hudAccent} font-black text-sm uppercase tracking-wider group-hover:text-white`}>
+                                        {/* Action CTA */}
+                                        <div className={`relative z-10 mt-5 pt-3 border-t border-white/5 flex items-center justify-between ${cardTheme.hudAccent} font-black text-xs uppercase tracking-widest group-hover:text-white transition-colors w-full`}>
                                             <span>Entrar al Mapa</span>
-                                            <span className="transform group-hover:translate-x-2 transition-transform">→</span>
+                                            <span className="transform group-hover:translate-x-1.5 transition-transform duration-300">→</span>
                                         </div>
                                     </button>
                                 );
