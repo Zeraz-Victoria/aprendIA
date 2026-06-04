@@ -240,13 +240,14 @@ export default function StudentPage() {
         };
 
         return (
-            <main 
-                className={`min-h-screen bg-gradient-to-br ${lobbyTheme.lobbyBg} flex flex-col items-center p-4 sm:p-6 relative overflow-y-auto no-scrollbar`}
-                style={{
-                    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px)`,
-                    backgroundSize: '40px 40px'
-                }}
-            >
+            <main className={`min-h-screen bg-gradient-to-br ${lobbyTheme.lobbyBg} flex flex-col items-center p-4 sm:p-6 relative overflow-y-auto no-scrollbar`}>
+                <div 
+                    className="absolute inset-0 pointer-events-none z-0"
+                    style={{
+                        backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px)`,
+                        backgroundSize: '40px 40px'
+                    }}
+                />
                 <div className="absolute top-4 left-4 z-40">
                     <button
                         onClick={() => signOut({ callbackUrl: "/" })}
