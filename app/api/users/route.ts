@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { checkAndSuspendSchool } from "@/lib/subscription";
 
 export const dynamic = 'force-dynamic';
 
@@ -191,6 +192,9 @@ export async function POST(req: NextRequest) {
         }
 
         if (schoolId) {
+            // Lazy-check and suspend the school if subscription is expired
+            await checkAndSuspendSchool(schoolId);
+
             const school = await prisma.school.findUnique({
                 where: { id: schoolId },
                 include: { _count: { select: { users: { where: { role: 'STUDENT' } } } } }

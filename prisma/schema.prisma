@@ -109,6 +109,8 @@ model School {
   subscriptionPlan   SubscriptionPlan   @default(BASIC)
   subscriptionStatus SubscriptionStatus @default(ACTIVE)
   apiCalls           Int                @default(0)
+  paymentDay         Int                @default(1)
+  nextPaymentDate    DateTime?
   classrooms         Classroom[]
   grades             Grade[]
   raidBosses         RaidBoss[]

@@ -219,8 +219,8 @@ export default function StudentPage() {
     // Consistent loading for SSR + client
     if (!mounted || status === "loading" || !currentUser) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ background: '#f0f5fb' }}>
-                <div className="font-semibold text-sm" style={{ color: '#346297' }}>Cargando tu aventura...</div>
+            <div className="min-h-screen flex items-center justify-center" style={{ background: '#f0fbf5' }}>
+                <div className="font-semibold text-sm" style={{ color: '#165b3d' }}>Cargando tu aventura...</div>
             </div>
         );
     }
@@ -280,7 +280,7 @@ export default function StudentPage() {
                                 {currentUser.activeFrame && (
                                     <div className="absolute inset-0 rounded-2xl border-2 pointer-events-none animate-pulse"
                                          style={{
-                                             borderColor: currentUser.activeFrame === 'frame_fire' ? '#FD7E14' : currentUser.activeFrame === 'frame_ice' ? '#73a4db' : '#346297',
+                                             borderColor: currentUser.activeFrame === 'frame_fire' ? '#FD7E14' : currentUser.activeFrame === 'frame_ice' ? '#2e9f6c' : '#165b3d',
                                              boxShadow: '0 0 8px currentColor'
                                          }}
                                     />
@@ -449,7 +449,7 @@ export default function StudentPage() {
                     {currentUser.assignedWorlds && currentUser.assignedWorlds.length > 1 && (
                         <button
                             onClick={() => { setSelectedMapId(null); setActiveTab("map"); }}
-                            style={{ background: 'rgba(28, 58, 96, 0.8)', borderColor: '#73a4db' }}
+                            style={{ background: 'rgba(10, 45, 29, 0.8)', borderColor: '#2e9f6c' }}
                             className="rounded-xl shadow border text-white active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start"
                             title="Mundos"
                         >
@@ -462,7 +462,7 @@ export default function StudentPage() {
                         onClick={() => setActiveTab("map")}
                         className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start ${
                             activeTab === "map"
-                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                ? "bg-[#2e9f6c] border-[#2e9f6c] text-white shadow-[0_0_12px_rgba(46, 159, 108,0.3)]"
                                 : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
                         }`}
                     >
@@ -474,7 +474,7 @@ export default function StudentPage() {
                         onClick={() => setActiveTab("salon")}
                         className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start ${
                             activeTab === "salon"
-                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                ? "bg-[#2e9f6c] border-[#2e9f6c] text-white shadow-[0_0_12px_rgba(46, 159, 108,0.3)]"
                                 : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
                         }`}
                     >
@@ -486,7 +486,7 @@ export default function StudentPage() {
                         onClick={() => setActiveTab("evaluaciones")}
                         className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs relative shrink-0 snap-start ${
                             activeTab === "evaluaciones"
-                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                ? "bg-[#2e9f6c] border-[#2e9f6c] text-white shadow-[0_0_12px_rgba(46, 159, 108,0.3)]"
                                 : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
                         }`}
                     >
@@ -503,7 +503,7 @@ export default function StudentPage() {
                         onClick={() => setActiveTab("tienda")}
                         className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start ${
                             activeTab === "tienda"
-                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                ? "bg-[#2e9f6c] border-[#2e9f6c] text-white shadow-[0_0_12px_rgba(46, 159, 108,0.3)]"
                                 : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
                         }`}
                     >
@@ -515,7 +515,7 @@ export default function StudentPage() {
                         onClick={() => setActiveTab("lideres")}
                         className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start ${
                             activeTab === "lideres"
-                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                ? "bg-[#2e9f6c] border-[#2e9f6c] text-white shadow-[0_0_12px_rgba(46, 159, 108,0.3)]"
                                 : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
                         }`}
                     >
@@ -527,7 +527,7 @@ export default function StudentPage() {
                         onClick={() => setActiveTab("perfil")}
                         className={`rounded-xl shadow border active:scale-95 transition-all flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs shrink-0 snap-start ${
                             activeTab === "perfil"
-                                ? "bg-[#73a4db] border-[#73a4db] text-white shadow-[0_0_12px_rgba(115,164,219,0.3)]"
+                                ? "bg-[#2e9f6c] border-[#2e9f6c] text-white shadow-[0_0_12px_rgba(46, 159, 108,0.3)]"
                                 : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
                         }`}
                     >
@@ -623,7 +623,7 @@ export default function StudentPage() {
                                 <p className="text-amber-100 text-sm mt-1">Aquí puedes ver la retroalimentación de tu maestro</p>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#f0f5fb]">
+                            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#f0fbf5]">
                                 {(() => {
                                     const mapEvaluations = evaluations.filter(ev => ev.worldId === selectedMapId);
                                     if (mapEvaluations.length === 0) {
@@ -673,7 +673,7 @@ export default function StudentPage() {
                                                     </p>
                                                 )}
 
-                                                <div style={{ background: '#f0f5fb', color: '#346297' }} className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-line border border-[#cbe0f6]">
+                                                <div style={{ background: '#f0fbf5', color: '#165b3d' }} className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-line border border-[#c1ebd5]">
                                                     {detailedFeedback || ev.feedback}
                                                 </div>
 

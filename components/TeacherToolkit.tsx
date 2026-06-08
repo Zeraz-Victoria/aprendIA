@@ -119,26 +119,26 @@ export default function TeacherToolkit({ students, classroomId }: any) {
 
     return (
         <div className="p-6">
-            <h2 className="text-2xl font-bold text-[#1c3a60] mb-6">Herramientas de Clase (Toolkit)</h2>
+            <h2 className="text-2xl font-bold text-[#0a2d1d] mb-6">Herramientas de Clase (Toolkit)</h2>
             
             <div className="grid grid-cols-3 gap-4 mb-8 max-w-2xl mx-auto">
                 <button 
                     onClick={() => setActiveTool(activeTool === 'random' ? null : 'random')}
-                    className={`p-6 rounded-2xl flex flex-col items-center gap-3 transition-all border-2 ${activeTool === 'random' ? 'bg-[#1c3a60] border-[#73a4db] text-white shadow-xl scale-105' : 'bg-white border-[#cbe0f6] text-[#1c3a60] hover:border-[#73a4db]'}`}
+                    className={`p-6 rounded-2xl flex flex-col items-center gap-3 transition-all border-2 ${activeTool === 'random' ? 'bg-[#0a2d1d] border-[#2e9f6c] text-white shadow-xl scale-105' : 'bg-white border-[#c1ebd5] text-[#0a2d1d] hover:border-[#2e9f6c]'}`}
                 >
                     <Shuffle className="w-8 h-8" />
                     <span className="font-bold uppercase tracking-widest text-[10px]">Al Azar</span>
                 </button>
                 <button 
                     onClick={() => setActiveTool(activeTool === 'timer' ? null : 'timer')}
-                    className={`p-6 rounded-2xl flex flex-col items-center gap-3 transition-all border-2 ${activeTool === 'timer' ? 'bg-[#1c3a60] border-[#73a4db] text-white shadow-xl scale-105' : 'bg-white border-[#cbe0f6] text-[#1c3a60] hover:border-[#73a4db]'}`}
+                    className={`p-6 rounded-2xl flex flex-col items-center gap-3 transition-all border-2 ${activeTool === 'timer' ? 'bg-[#0a2d1d] border-[#2e9f6c] text-white shadow-xl scale-105' : 'bg-white border-[#c1ebd5] text-[#0a2d1d] hover:border-[#2e9f6c]'}`}
                 >
                     <Timer className="w-8 h-8" />
                     <span className="font-bold uppercase tracking-widest text-[10px]">Temporizador</span>
                 </button>
                 <button 
                     onClick={() => setActiveTool(activeTool === 'noise' ? null : 'noise')}
-                    className={`p-6 rounded-2xl flex flex-col items-center gap-3 transition-all border-2 ${activeTool === 'noise' ? 'bg-[#1c3a60] border-[#73a4db] text-white shadow-xl scale-105' : 'bg-white border-[#cbe0f6] text-[#1c3a60] hover:border-[#73a4db]'}`}
+                    className={`p-6 rounded-2xl flex flex-col items-center gap-3 transition-all border-2 ${activeTool === 'noise' ? 'bg-[#0a2d1d] border-[#2e9f6c] text-white shadow-xl scale-105' : 'bg-white border-[#c1ebd5] text-[#0a2d1d] hover:border-[#2e9f6c]'}`}
                 >
                     <Mic className="w-8 h-8" />
                     <span className="font-bold uppercase tracking-widest text-[10px]">Ruido</span>
@@ -148,17 +148,17 @@ export default function TeacherToolkit({ students, classroomId }: any) {
             {/* --- ACTIVE TOOL VIEW --- */}
             <div className="max-w-2xl mx-auto">
                 {activeTool === 'random' && (
-                    <div className="bg-white rounded-3xl p-10 flex flex-col items-center border-2 border-[#cbe0f6] shadow-xl animate-fade-in text-center">
-                        <div className={`w-40 h-40 rounded-full flex items-center justify-center text-8xl mb-6 bg-[#f0f5fb] border-4 border-[#cbe0f6] transition-all duration-300 ${isSpinning ? 'animate-spin scale-110 shadow-2xl shadow-[#73a4db]/50' : 'shadow-inner'}`}>
+                    <div className="bg-white rounded-3xl p-10 flex flex-col items-center border-2 border-[#c1ebd5] shadow-xl animate-fade-in text-center">
+                        <div className={`w-40 h-40 rounded-full flex items-center justify-center text-8xl mb-6 bg-[#f0fbf5] border-4 border-[#c1ebd5] transition-all duration-300 ${isSpinning ? 'animate-spin scale-110 shadow-2xl shadow-[#2e9f6c]/50' : 'shadow-inner'}`}>
                             {randomStudent?.avatar || '❓'}
                         </div>
-                        <h3 className="text-3xl font-black text-[#1c3a60] mb-8 min-h-[40px]">
+                        <h3 className="text-3xl font-black text-[#0a2d1d] mb-8 min-h-[40px]">
                             {randomStudent ? randomStudent.name : '¿Quién será?'}
                         </h3>
                         <button 
                             onClick={handlePickRandom}
                             disabled={isSpinning || visibleStudents.length === 0}
-                            className="bg-[#1c3a60] hover:bg-[#346297] disabled:opacity-50 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#1c3a60]/30 flex items-center gap-2"
+                            className="bg-[#0a2d1d] hover:bg-[#165b3d] disabled:opacity-50 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#0a2d1d]/30 flex items-center gap-2"
                         >
                             <Shuffle className="w-5 h-5" /> Elegir Alumno
                         </button>
@@ -166,8 +166,8 @@ export default function TeacherToolkit({ students, classroomId }: any) {
                 )}
 
                 {activeTool === 'timer' && (
-                    <div className="bg-white rounded-3xl p-10 flex flex-col items-center border-2 border-[#cbe0f6] shadow-xl animate-fade-in">
-                        <div className={`text-9xl font-black mb-8 font-mono tabular-nums tracking-tighter ${time <= 10 && time > 0 ? 'text-rose-500 animate-pulse' : time === 0 ? 'text-rose-600' : 'text-[#1c3a60]'}`}>
+                    <div className="bg-white rounded-3xl p-10 flex flex-col items-center border-2 border-[#c1ebd5] shadow-xl animate-fade-in">
+                        <div className={`text-9xl font-black mb-8 font-mono tabular-nums tracking-tighter ${time <= 10 && time > 0 ? 'text-rose-500 animate-pulse' : time === 0 ? 'text-rose-600' : 'text-[#0a2d1d]'}`}>
                             {formatTime(time)}
                         </div>
                         
@@ -180,16 +180,16 @@ export default function TeacherToolkit({ students, classroomId }: any) {
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-3 bg-[#f0f5fb] p-2 rounded-xl">
+                        <div className="flex items-center gap-3 bg-[#f0fbf5] p-2 rounded-xl">
                             <input 
                                 type="number" 
                                 value={inputMinutes} 
                                 onChange={(e) => setInputMinutes(e.target.value)}
-                                className="w-16 bg-white border border-[#cbe0f6] rounded-lg text-center font-bold text-[#1c3a60] py-1"
+                                className="w-16 bg-white border border-[#c1ebd5] rounded-lg text-center font-bold text-[#0a2d1d] py-1"
                                 min="1" max="60"
                             />
-                            <span className="text-xs font-bold text-[#73a4db] uppercase tracking-widest pr-3">Minutos</span>
-                            <button onClick={() => { setTime(parseInt(inputMinutes) * 60 || 0); setIsTimerRunning(false); }} className="bg-[#cbe0f6] hover:bg-[#73a4db] hover:text-white text-[#1c3a60] text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-colors">
+                            <span className="text-xs font-bold text-[#2e9f6c] uppercase tracking-widest pr-3">Minutos</span>
+                            <button onClick={() => { setTime(parseInt(inputMinutes) * 60 || 0); setIsTimerRunning(false); }} className="bg-[#c1ebd5] hover:bg-[#2e9f6c] hover:text-white text-[#0a2d1d] text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-colors">
                                 Establecer
                             </button>
                         </div>
@@ -197,10 +197,10 @@ export default function TeacherToolkit({ students, classroomId }: any) {
                 )}
 
                 {activeTool === 'noise' && (
-                    <div className="bg-white rounded-3xl p-10 flex flex-col items-center border-2 border-[#cbe0f6] shadow-xl animate-fade-in text-center">
+                    <div className="bg-white rounded-3xl p-10 flex flex-col items-center border-2 border-[#c1ebd5] shadow-xl animate-fade-in text-center">
                         <div className="mb-6 relative w-64 h-64 flex items-center justify-center">
                             {/* Medidor visual */}
-                            <div className="absolute inset-0 rounded-full border-8 border-[#f0f5fb]"></div>
+                            <div className="absolute inset-0 rounded-full border-8 border-[#f0fbf5]"></div>
                             <div 
                                 className="absolute bottom-0 w-full bg-emerald-500 rounded-full transition-all duration-75"
                                 style={{
@@ -216,8 +216,8 @@ export default function TeacherToolkit({ students, classroomId }: any) {
                                 </span>
                             </div>
                         </div>
-                        <h3 className="text-xl font-bold text-[#1c3a60]">Medidor de Ruido</h3>
-                        <p className="text-sm text-[#73a4db] mt-2">Pide silencio si el nivel sube demasiado.</p>
+                        <h3 className="text-xl font-bold text-[#0a2d1d]">Medidor de Ruido</h3>
+                        <p className="text-sm text-[#2e9f6c] mt-2">Pide silencio si el nivel sube demasiado.</p>
                         {noiseLevel > 80 && (
                             <div className="mt-4 bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-bold text-sm animate-pulse border border-rose-200">
                                 ¡Nivel de ruido muy alto! 🤫

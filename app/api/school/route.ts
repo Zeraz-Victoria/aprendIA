@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from "@/lib/auth";
+import { checkAndSuspendSchool } from "@/lib/subscription";
 
 export async function GET() {
     try {
@@ -11,6 +12,9 @@ export async function GET() {
         if (!schoolId) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
         }
+
+        // Lazy-check and suspend the school if subscription is expired
+        await checkAndSuspendSchool(schoolId);
 
         const school = await prisma.school.findUnique({
             where: { id: schoolId },

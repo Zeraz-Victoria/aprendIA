@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
+import { getNextPaymentDate } from "@/lib/subscription";
 
 // --- MEMORIA RAM PARA CACHÉ ---
 let cachedTeachers: any = null;
@@ -65,6 +66,8 @@ export async function GET(req: Request) {
             schoolId: t.school?.id,
             subscriptionPlan: t.school?.subscriptionPlan || 'BASIC',
             subscriptionStatus: t.school?.subscriptionStatus || 'ACTIVE',
+            paymentDay: t.school?.paymentDay || 1,
+            nextPaymentDate: t.school?.nextPaymentDate || null,
             apiCalls: t.school?.apiCalls || 0,
             apiCallsBreakdown: t.school?.users || []
         }));
@@ -87,7 +90,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
-        const { name, plan, password } = await req.json();
+        const { name, plan, password, paymentDay } = await req.json();
 
         if (!name?.trim() || !password?.trim()) {
             return NextResponse.json({ error: "Name and password are required" }, { status: 400 });
@@ -107,12 +110,17 @@ export async function POST(req: Request) {
         if (plan === 'INTERMEDIATE') { maxMaps = 5; maxStudents = 50; subscriptionPlan = 'INTERMEDIATE'; }
         else if (plan === 'PREMIUM') { maxMaps = 10; maxStudents = 80; subscriptionPlan = 'PREMIUM'; }
 
+        const targetPaymentDay = paymentDay !== undefined ? parseInt(paymentDay) : 1;
+        const initialNextPaymentDate = getNextPaymentDate(targetPaymentDay);
+
         const virtualSchool = await prisma.school.create({
             data: {
                 name: `Licencia de ${name.trim()}`,
                 subscriptionPlan: subscriptionPlan as any,
                 maxMaps,
-                maxStudents
+                maxStudents,
+                paymentDay: targetPaymentDay,
+                nextPaymentDate: initialNextPaymentDate
             }
         });
 
@@ -145,7 +153,7 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
-        const { schoolId, teacherId, newName, newPassword, subscriptionPlan, subscriptionStatus, maxMaps, maxStudents } = await req.json();
+        const { schoolId, teacherId, newName, newPassword, subscriptionPlan, subscriptionStatus, maxMaps, maxStudents, paymentDay } = await req.json();
 
         if (!schoolId) return NextResponse.json({ error: "School ID required" }, { status: 400 });
 
@@ -156,9 +164,26 @@ export async function PATCH(req: Request) {
             else if (subscriptionPlan === 'PREMIUM') { updateData.maxMaps = 10; updateData.maxStudents = 80; }
             else { updateData.maxMaps = 1; updateData.maxStudents = 25; }
         }
-        if (subscriptionStatus) updateData.subscriptionStatus = subscriptionStatus;
         if (maxMaps !== undefined) updateData.maxMaps = parseInt(maxMaps);
         if (maxStudents !== undefined) updateData.maxStudents = parseInt(maxStudents);
+
+        if (paymentDay !== undefined) {
+            const parsedDay = parseInt(paymentDay);
+            updateData.paymentDay = parsedDay;
+            updateData.nextPaymentDate = getNextPaymentDate(parsedDay);
+        }
+
+        if (subscriptionStatus) {
+            updateData.subscriptionStatus = subscriptionStatus;
+            if (subscriptionStatus === "ACTIVE") {
+                const currentSchool = await prisma.school.findUnique({
+                    where: { id: schoolId },
+                    select: { paymentDay: true }
+                });
+                const finalPaymentDay = paymentDay !== undefined ? parseInt(paymentDay) : (currentSchool?.paymentDay ?? 1);
+                updateData.nextPaymentDate = getNextPaymentDate(finalPaymentDay);
+            }
+        }
 
         const updatedSchool = await prisma.school.update({
             where: { id: schoolId },

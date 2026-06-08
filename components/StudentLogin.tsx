@@ -37,24 +37,24 @@ export default function StudentLogin() {
     return (
         <div
             className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-            style={{ background: 'linear-gradient(160deg, #f0f5fb 0%, #cbe0f6 50%, #a2c4ec 100%)' }}
+            style={{ background: 'linear-gradient(160deg, #f0fbf5 0%, #c1ebd5 50%, #7fd6ad 100%)' }}
         >
             {/* Decorative circles */}
             <div className="absolute top-[-80px] right-[-60px] w-72 h-72 rounded-full opacity-25"
-                style={{ background: 'radial-gradient(circle, #73a4db, transparent)' }} />
+                style={{ background: 'radial-gradient(circle, #2e9f6c, transparent)' }} />
             <div className="absolute bottom-[-40px] left-[-40px] w-56 h-56 rounded-full opacity-20"
-                style={{ background: 'radial-gradient(circle, #346297, transparent)' }} />
+                style={{ background: 'radial-gradient(circle, #165b3d, transparent)' }} />
 
             <div className="bg-white max-w-md w-full rounded-3xl overflow-hidden relative z-10"
-                style={{ boxShadow: '0 25px 60px rgba(28, 58, 96,0.2)' }}>
+                style={{ boxShadow: '0 25px 60px rgba(10, 45, 29,0.2)' }}>
                 
                 {/* Header */}
                 <div
                     className="p-10 text-center relative overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, #1c3a60 0%, #346297 100%)' }}
+                    style={{ background: 'linear-gradient(135deg, #0a2d1d 0%, #165b3d 100%)' }}
                 >
-                    <div className="absolute top-[-20px] left-[-20px] w-32 h-32 rounded-full opacity-10" style={{ background: '#cbe0f6' }} />
-                    <div className="absolute bottom-[-15px] right-[-15px] w-24 h-24 rounded-full opacity-10" style={{ background: '#73a4db' }} />
+                    <div className="absolute top-[-20px] left-[-20px] w-32 h-32 rounded-full opacity-10" style={{ background: '#c1ebd5' }} />
+                    <div className="absolute bottom-[-15px] right-[-15px] w-24 h-24 rounded-full opacity-10" style={{ background: '#2e9f6c' }} />
 
                     <div className="relative z-10">
                         <div
@@ -68,7 +68,7 @@ export default function StudentLogin() {
                             <BookOpen className="w-10 h-10 text-white" />
                         </div>
                         <h1 className="text-3xl font-black text-white mb-1 tracking-tight">
-                            ¡Bienvenido a la <span style={{ color: '#cbe0f6' }}>Aventura!</span>
+                            ¡Bienvenido a la <span style={{ color: '#c1ebd5' }}>Aventura!</span>
                         </h1>
                         <p style={{ color: 'rgba(203, 224, 246,0.8)' }} className="text-sm font-medium">
                             Ingresa a tu cuenta para continuar tu viaje.
@@ -82,19 +82,19 @@ export default function StudentLogin() {
                         
                         {/* Name */}
                         <div>
-                            <label className="block text-sm font-bold mb-2" style={{ color: '#1c3a60' }}>
+                            <label className="block text-sm font-bold mb-2" style={{ color: '#0a2d1d' }}>
                                 Tu Nombre de Aventura
                             </label>
                             <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#73a4db' }} />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#2e9f6c' }} />
                                 <input
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     className="w-full pl-12 pr-4 py-3 rounded-xl outline-none transition font-medium"
-                                    style={{ background: '#f0f5fb', border: '1.5px solid #cbe0f6', color: '#1c3a60' }}
-                                    onFocus={e => { e.target.style.borderColor = '#73a4db'; e.target.style.boxShadow = '0 0 0 3px rgba(115, 164, 219,0.15)'; }}
-                                    onBlur={e => { e.target.style.borderColor = '#cbe0f6'; e.target.style.boxShadow = 'none'; }}
+                                    style={{ background: '#f0fbf5', border: '1.5px solid #c1ebd5', color: '#0a2d1d' }}
+                                    onFocus={e => { e.target.style.borderColor = '#2e9f6c'; e.target.style.boxShadow = '0 0 0 3px rgba(46, 159, 108,0.15)'; }}
+                                    onBlur={e => { e.target.style.borderColor = '#c1ebd5'; e.target.style.boxShadow = 'none'; }}
                                     placeholder="Ej. Sofía"
                                     required
                                     disabled={isLoading}
@@ -105,19 +105,19 @@ export default function StudentLogin() {
 
                         {/* Secret Code */}
                         <div>
-                            <label className="block text-sm font-bold mb-2" style={{ color: '#1c3a60' }}>
-                                Tu Código Secreto <span style={{ color: '#73a4db' }}>(6 letras)</span>
+                            <label className="block text-sm font-bold mb-2" style={{ color: '#0a2d1d' }}>
+                                Tu Código Secreto <span style={{ color: '#2e9f6c' }}>(6 letras)</span>
                             </label>
                             <div className="relative">
-                                <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#73a4db' }} />
+                                <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#2e9f6c' }} />
                                 <input
                                     type="text"
                                     value={studentCode}
                                     onChange={(e) => setStudentCode(e.target.value)}
                                     className="w-full pl-12 pr-4 py-3 rounded-xl outline-none transition font-mono font-bold uppercase tracking-widest"
-                                    style={{ background: '#f0f5fb', border: '1.5px solid #cbe0f6', color: '#1c3a60' }}
-                                    onFocus={e => { e.target.style.borderColor = '#73a4db'; e.target.style.boxShadow = '0 0 0 3px rgba(115, 164, 219,0.15)'; }}
-                                    onBlur={e => { e.target.style.borderColor = '#cbe0f6'; e.target.style.boxShadow = 'none'; }}
+                                    style={{ background: '#f0fbf5', border: '1.5px solid #c1ebd5', color: '#0a2d1d' }}
+                                    onFocus={e => { e.target.style.borderColor = '#2e9f6c'; e.target.style.boxShadow = '0 0 0 3px rgba(46, 159, 108,0.15)'; }}
+                                    onBlur={e => { e.target.style.borderColor = '#c1ebd5'; e.target.style.boxShadow = 'none'; }}
                                     placeholder="Ej. X7P9K2"
                                     maxLength={6}
                                     required
@@ -137,8 +137,8 @@ export default function StudentLogin() {
                             disabled={isLoading}
                             className="w-full text-white font-bold py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                             style={{
-                                background: 'linear-gradient(135deg, #1c3a60 0%, #346297 100%)',
-                                boxShadow: '0 8px 24px rgba(28, 58, 96,0.35)',
+                                background: 'linear-gradient(135deg, #0a2d1d 0%, #165b3d 100%)',
+                                boxShadow: '0 8px 24px rgba(10, 45, 29,0.35)',
                             }}
                         >
                             {isLoading ? (
@@ -152,7 +152,7 @@ export default function StudentLogin() {
                         </button>
 
                         <div className="text-center">
-                            <p className="text-xs" style={{ color: '#73a4db' }}>
+                            <p className="text-xs" style={{ color: '#2e9f6c' }}>
                                 Pide ayuda a tu profesor si olvidaste tu código.
                             </p>
                         </div>

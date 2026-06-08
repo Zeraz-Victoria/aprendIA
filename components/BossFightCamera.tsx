@@ -24,21 +24,21 @@ function BossImage({ src, alt }: { src?: string; alt?: string }) {
     const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
     const fixedSrc = src ? fixImageUrl(src) : "";
     return status === "error" || !fixedSrc ? (
-        <div className="w-full rounded-xl bg-[#346297]/50 border border-dashed border-[#346297] p-4 text-center my-3">
-            <ImageIcon className="w-8 h-8 text-[#73a4db] mx-auto mb-2" />
-            <p className="text-[#73a4db] text-xs italic">{alt || "Ilustración"}</p>
+        <div className="w-full rounded-xl bg-[#165b3d]/50 border border-dashed border-[#165b3d] p-4 text-center my-3">
+            <ImageIcon className="w-8 h-8 text-[#2e9f6c] mx-auto mb-2" />
+            <p className="text-[#2e9f6c] text-xs italic">{alt || "Ilustración"}</p>
         </div>
     ) : (
         <div className="my-3 relative">
             {status === "loading" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#346297]/50 rounded-xl animate-pulse">
+                <div className="absolute inset-0 flex items-center justify-center bg-[#165b3d]/50 rounded-xl animate-pulse">
                     <Sparkles className="w-6 h-6 text-red-400 animate-spin" />
                 </div>
             )}
             <img
                 src={fixedSrc}
                 alt={alt || "Ilustración"}
-                className="w-full rounded-xl border border-[#346297]"
+                className="w-full rounded-xl border border-[#165b3d]"
                 loading="lazy"
                 onLoad={() => setStatus("loaded")}
                 onError={() => setStatus("error")}
@@ -167,7 +167,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
     };
 
     return (
-        <div className="fixed inset-0 bg-[#1c3a60]/95 flex flex-col items-center justify-center p-4 z-50 backdrop-blur-md">
+        <div className="fixed inset-0 bg-[#0a2d1d]/95 flex flex-col items-center justify-center p-4 z-50 backdrop-blur-md">
 
             {/* Boss Header */}
             <div className="w-full max-w-lg bg-red-950/50 border-b border-red-500/30 p-4 flex justify-between items-center rounded-t-3xl">
@@ -184,15 +184,15 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                     <button type="button" onClick={() => setShowTeacherAuth(!showTeacherAuth)} className="text-red-300 hover:text-white bg-red-900/50 px-3 py-1 rounded-full text-xs font-bold transition-colors">
                         👁️ Docente
                     </button>
-                    <button onClick={onClose} className="rounded-full p-2 bg-[#1c3a60] text-[#73a4db] hover:text-white">
+                    <button onClick={onClose} className="rounded-full p-2 bg-[#0a2d1d] text-[#2e9f6c] hover:text-white">
                         <X />
                     </button>
                 </div>
             </div>
 
             {showTeacherAuth && (
-                <div className="w-full max-w-lg bg-[#1c3a60] p-4 text-white flex gap-3 items-center justify-center border-x border-[#346297] animate-fade-in-up">
-                    <span className="text-sm font-bold text-[#73a4db]">Contraseña Docente:</span>
+                <div className="w-full max-w-lg bg-[#0a2d1d] p-4 text-white flex gap-3 items-center justify-center border-x border-[#165b3d] animate-fade-in-up">
+                    <span className="text-sm font-bold text-[#2e9f6c]">Contraseña Docente:</span>
                     <input
                         type="password"
                         className="text-black px-3 py-1.5 rounded-lg text-sm w-32 outline-none focus:ring-2 focus:ring-red-500"
@@ -207,12 +207,12 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                 </div>
             )}
 
-            <div className={`w-full max-w-lg bg-[#1c3a60] border-x border-b border-[#346297] rounded-b-3xl overflow-hidden flex flex-col ${showTeacherAuth ? 'max-h-[75vh]' : 'max-h-[85vh]'}`}>
+            <div className={`w-full max-w-lg bg-[#0a2d1d] border-x border-b border-[#165b3d] rounded-b-3xl overflow-hidden flex flex-col ${showTeacherAuth ? 'max-h-[75vh]' : 'max-h-[85vh]'}`}>
 
                 {/* Problem Statement Area */}
                 {step !== 'camera' && step !== 'preview' && (
-                    <div className="p-6 bg-[#1c3a60] border-b border-[#346297] max-h-[45vh] overflow-y-auto">
-                        <div className="bg-[#346297]/50 p-4 rounded-xl border border-[#346297] text-slate-200 leading-relaxed prose prose-invert prose-sm max-w-none">
+                    <div className="p-6 bg-[#0a2d1d] border-b border-[#165b3d] max-h-[45vh] overflow-y-auto">
+                        <div className="bg-[#165b3d]/50 p-4 rounded-xl border border-[#165b3d] text-slate-200 leading-relaxed prose prose-invert prose-sm max-w-none">
                             <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={bossMarkdownComponents}>
                                 {problemText.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}
                             </ReactMarkdown>
@@ -242,7 +242,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                 {(requiredEvidenceType !== "TEXTO_ENSAYO") && (
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="flex flex-col items-center justify-center p-6 bg-[#1c3a60] rounded-3xl border-4 border-dashed border-red-500/50 hover:bg-[#346297] hover:border-red-400 transition-colors group"
+                                        className="flex flex-col items-center justify-center p-6 bg-[#0a2d1d] rounded-3xl border-4 border-dashed border-red-500/50 hover:bg-[#165b3d] hover:border-red-400 transition-colors group"
                                     >
                                         <Camera className="w-12 h-12 text-red-400 group-hover:text-red-300 mb-2" />
                                         <span className="text-white font-bold text-sm">Escanear Libreta</span>
@@ -252,7 +252,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                 {(requiredEvidenceType !== "FOTO_DIBUJO" && requiredEvidenceType !== "FOTO_GRAFICA") && (
                                     <button
                                         onClick={() => setStep('text_input')}
-                                        className="flex flex-col items-center justify-center p-6 bg-[#1c3a60] rounded-3xl border-4 border-dashed border-amber-500/50 hover:bg-[#346297] hover:border-amber-400 transition-colors group"
+                                        className="flex flex-col items-center justify-center p-6 bg-[#0a2d1d] rounded-3xl border-4 border-dashed border-amber-500/50 hover:bg-[#165b3d] hover:border-amber-400 transition-colors group"
                                     >
                                         <PenTool className="w-12 h-12 text-amber-500 group-hover:text-amber-400 mb-2 transition-colors" />
                                         <span className="text-white font-bold text-sm">Escribir Respuesta</span>
@@ -268,13 +268,13 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                         <div className="w-full flex md:flex-col flex-col gap-4">
                             <h4 className="text-white font-bold">Escribe tu respuesta final:</h4>
                             <textarea
-                                className="w-full p-4 rounded-xl border border-[#346297] bg-[#1c3a60] text-white focus:border-red-500 outline-none resize-none h-32"
+                                className="w-full p-4 rounded-xl border border-[#165b3d] bg-[#0a2d1d] text-white focus:border-red-500 outline-none resize-none h-32"
                                 placeholder="Ejemplo: La respuesta es 45 metros cuadrados..."
                                 value={textEvidence}
                                 onChange={e => setTextEvidence(e.target.value)}
                             />
                             <div className="flex gap-3">
-                                <button onClick={() => setStep("idle")} className="flex-1 py-3 bg-[#346297] text-white rounded-xl font-bold">Atrás</button>
+                                <button onClick={() => setStep("idle")} className="flex-1 py-3 bg-[#165b3d] text-white rounded-xl font-bold">Atrás</button>
                                 <button
                                     onClick={handleAnalyze}
                                     disabled={!textEvidence.trim()}
@@ -288,7 +288,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
 
                     {step === 'preview' && imagePreview && (
                         <div className="w-full h-full flex flex-col">
-                            <div className="relative flex-1 rounded-xl overflow-hidden border border-[#346297] bg-black">
+                            <div className="relative flex-1 rounded-xl overflow-hidden border border-[#165b3d] bg-black">
                                 <img src={imagePreview} alt="Solution" className="w-full h-full object-contain" />
                                 {/* Overlay Lines similar to document scanner */}
                                 <div className="absolute inset-0 border-2 border-red-500/30 pointer-events-none"></div>
@@ -297,7 +297,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                 </div>
                             </div>
                             <div className="flex gap-4 mt-6">
-                                <button onClick={() => { setStep('idle'); setImagePreview(null); }} className="flex-1 py-3 bg-[#346297] text-white rounded-xl font-bold">
+                                <button onClick={() => { setStep('idle'); setImagePreview(null); }} className="flex-1 py-3 bg-[#165b3d] text-white rounded-xl font-bold">
                                     Repetir
                                 </button>
                                 <button onClick={handleAnalyze} className="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold shadow-lg shadow-green-900/50">
@@ -311,10 +311,10 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                         <div className="space-y-6 text-center">
                             <div className="relative w-32 h-32 mx-auto">
                                 <div className="absolute inset-0 border-t-4 border-red-500 rounded-full animate-spin"></div>
-                                <div className="absolute inset-2 border-b-4 border-[#346297] rounded-full animate-spin-reverse"></div>
+                                <div className="absolute inset-2 border-b-4 border-[#165b3d] rounded-full animate-spin-reverse"></div>
                             </div>
                             <h3 className="text-xl text-white font-bold animate-pulse">Analizando Lógica...</h3>
-                            <div className="space-y-1 text-sm text-[#73a4db]">
+                            <div className="space-y-1 text-sm text-[#2e9f6c]">
                                 <p>👁️ Identificando números...</p>
                                 <p>🧮 Verificando fórmulas...</p>
                                 <p>📏 Comprobando pasos...</p>
@@ -331,17 +331,17 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                     <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500">
                                         ¡JEFE DERROTADO!
                                     </h3>
-                                    <p className="text-[#73a4db] text-sm">
+                                    <p className="text-[#2e9f6c] text-sm">
                                         ¡Felicidades, <strong className="text-white">{studentName}</strong>! Has demostrado dominio total del tema.
                                     </p>
                                 </div>
                             ) : feedback.canAdvance ? (
                                 <div className="text-center space-y-3">
-                                    <div className={`p-1 rounded-full w-20 h-20 mx-auto flex items-center justify-center bg-[#346297]/20 text-[#346297]`}>
+                                    <div className={`p-1 rounded-full w-20 h-20 mx-auto flex items-center justify-center bg-[#165b3d]/20 text-[#165b3d]`}>
                                         <Sparkles className="w-10 h-10" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-[#73a4db]">¡Victoria Parcial!</h3>
-                                    <p className="text-[#73a4db] text-sm">El jefe está débil, pero puedes mejorar tu ataque (Sacar 10) si corriges tu error.</p>
+                                    <h3 className="text-xl font-bold text-[#2e9f6c]">¡Victoria Parcial!</h3>
+                                    <p className="text-[#2e9f6c] text-sm">El jefe está débil, pero puedes mejorar tu ataque (Sacar 10) si corriges tu error.</p>
                                 </div>
                             ) : (
                                 <div className="text-center space-y-3">
@@ -349,7 +349,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                         <AlertCircle className="w-10 h-10" />
                                     </div>
                                     <h3 className="text-xl font-bold text-amber-400">El Jefe Resiste...</h3>
-                                    <p className="text-[#73a4db] text-sm">No te rindas, revisa tu respuesta e intenta de nuevo.</p>
+                                    <p className="text-[#2e9f6c] text-sm">No te rindas, revisa tu respuesta e intenta de nuevo.</p>
                                 </div>
                             )}
 
@@ -362,16 +362,16 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                     feedback.grade >= 6 ? 'text-yellow-400' :
                                         'text-red-400'
                                     }`}>{feedback.grade}</span>
-                                <span className="text-xs text-[#73a4db] font-bold">/10</span>
+                                <span className="text-xs text-[#2e9f6c] font-bold">/10</span>
                             </div>
 
                             {/* AI Feedback */}
-                            <div className="bg-[#1c3a60] rounded-xl p-5 border border-[#346297]">
-                                <h4 className="text-[#73a4db] text-xs uppercase font-bold text-center mb-3">🤖 Retroalimentación de la IA</h4>
+                            <div className="bg-[#0a2d1d] rounded-xl p-5 border border-[#165b3d]">
+                                <h4 className="text-[#2e9f6c] text-xs uppercase font-bold text-center mb-3">🤖 Retroalimentación de la IA</h4>
                                 <ul className="space-y-3">
                                     {feedback.hints.map((hint, i) => (
                                         <li key={i} className="flex gap-3 text-sm text-slate-200 leading-relaxed">
-                                            <span className="text-[#73a4db] flex-shrink-0">•</span>
+                                            <span className="text-[#2e9f6c] flex-shrink-0">•</span>
                                             <span>{hint.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)}</span>
                                         </li>
                                     ))}
@@ -383,7 +383,7 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
                                 <div className="bg-gradient-to-r from-red-950/80 to-purple-950/80 rounded-xl p-4 border border-red-500/30 text-center space-y-2">
                                     <p className="text-red-300 text-xs font-bold uppercase tracking-widest">🐉 Nuevo Desafío Desbloqueado</p>
                                     <p className="text-white font-bold text-lg">¡Súper Jefe Maestro!</p>
-                                    <p className="text-[#73a4db] text-xs leading-relaxed">
+                                    <p className="text-[#2e9f6c] text-xs leading-relaxed">
                                         Ahora puedes unir fuerzas con tus compañeros para atacar al <strong className="text-red-400">Raid Boss</strong> del salón. ¡Juntos son imparables!
                                     </p>
                                 </div>
@@ -391,13 +391,13 @@ export default function BossFightCamera({ data, studentName = "Aventurero", stud
 
                             <div className="flex flex-col gap-3">
                                 {!feedback.canAdvance ? (
-                                    <button onClick={() => { setFeedback(null); setStep("text_input"); }} className="w-full py-4 font-bold rounded-xl transition-colors bg-[#346297] hover:bg-slate-600 text-white flex items-center justify-center gap-2">
+                                    <button onClick={() => { setFeedback(null); setStep("text_input"); }} className="w-full py-4 font-bold rounded-xl transition-colors bg-[#165b3d] hover:bg-slate-600 text-white flex items-center justify-center gap-2">
                                         <RefreshCw className="w-5 h-5" /> Intentar de nuevo
                                     </button>
                                 ) : (
                                     <>
                                         {(!feedback.correct && feedback.canAdvance) && (
-                                            <button onClick={() => { setFeedback(null); setStep("text_input"); }} className="w-full py-4 font-bold rounded-xl transition-colors border-2 border-blue-500/50 text-[#73a4db] hover:bg-blue-900/30 flex items-center justify-center gap-2">
+                                            <button onClick={() => { setFeedback(null); setStep("text_input"); }} className="w-full py-4 font-bold rounded-xl transition-colors border-2 border-blue-500/50 text-[#2e9f6c] hover:bg-blue-900/30 flex items-center justify-center gap-2">
                                                 <RefreshCw className="w-5 h-5" /> Corregir para sacar 10
                                             </button>
                                         )}

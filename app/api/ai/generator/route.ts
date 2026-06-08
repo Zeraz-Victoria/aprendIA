@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from "@/lib/auth";
+import { checkAndSuspendSchool } from "@/lib/subscription";
 
 
 
@@ -26,6 +27,9 @@ export async function POST(req: Request) {
     const schoolId = (session?.user as any)?.schoolId;
 
     if (schoolId) {
+      // Lazy-check and suspend the school if subscription is expired
+      await checkAndSuspendSchool(schoolId);
+
       const school = await prisma.school.findUnique({ where: { id: schoolId } });
       //@ts-ignore
       if (school && school.subscriptionStatus === 'SUSPENDED') {

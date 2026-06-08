@@ -56,15 +56,15 @@ export default function ClassStoryFeed({ classroomId, isTeacher = false }: { cla
     return (
         <div className="max-w-2xl mx-auto py-6">
             {isTeacher && (
-                <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#cbe0f6] mb-8">
+                <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#c1ebd5] mb-8">
                     <div className="flex gap-4">
-                        <div className="w-12 h-12 bg-[#f0f5fb] rounded-full flex items-center justify-center text-xl shrink-0 border border-[#cbe0f6]">🧑🏻‍🏫</div>
+                        <div className="w-12 h-12 bg-[#f0fbf5] rounded-full flex items-center justify-center text-xl shrink-0 border border-[#c1ebd5]">🧑🏻‍🏫</div>
                         <div className="flex-1">
                             <textarea 
                                 value={newPost}
                                 onChange={e => setNewPost(e.target.value)}
                                 placeholder="¿Qué está pasando en el salón?"
-                                className="w-full bg-slate-50 border border-[#cbe0f6] rounded-xl p-4 text-[#1c3a60] font-medium focus:outline-none focus:ring-2 focus:ring-[#73a4db] resize-none"
+                                className="w-full bg-slate-50 border border-[#c1ebd5] rounded-xl p-4 text-[#0a2d1d] font-medium focus:outline-none focus:ring-2 focus:ring-[#2e9f6c] resize-none"
                                 rows={3}
                             />
                             
@@ -73,7 +73,7 @@ export default function ClassStoryFeed({ classroomId, isTeacher = false }: { cla
                                     <img 
                                         src={selectedImage} 
                                         alt="Preview" 
-                                        className="h-24 w-auto rounded-xl object-contain border border-[#cbe0f6]" 
+                                        className="h-24 w-auto rounded-xl object-contain border border-[#c1ebd5]" 
                                     />
                                     <button 
                                         type="button"
@@ -90,7 +90,7 @@ export default function ClassStoryFeed({ classroomId, isTeacher = false }: { cla
                                 <button 
                                     type="button"
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="text-[#73a4db] hover:bg-[#f0f5fb] p-2 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                                    className="text-[#2e9f6c] hover:bg-[#f0fbf5] p-2 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
                                 >
                                     <ImageIcon className="w-5 h-5" />
                                     <span className="text-xs font-bold uppercase tracking-widest">Foto</span>
@@ -106,7 +106,7 @@ export default function ClassStoryFeed({ classroomId, isTeacher = false }: { cla
                                 <button 
                                     onClick={handlePost}
                                     disabled={!newPost.trim() && !selectedImage}
-                                    className="bg-[#1c3a60] hover:bg-[#346297] disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2 transition-transform active:scale-95 shadow-md shadow-[#1c3a60]/20 cursor-pointer"
+                                    className="bg-[#0a2d1d] hover:bg-[#165b3d] disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2 transition-transform active:scale-95 shadow-md shadow-[#0a2d1d]/20 cursor-pointer"
                                 >
                                     <Send className="w-4 h-4" /> Publicar
                                 </button>
@@ -118,22 +118,22 @@ export default function ClassStoryFeed({ classroomId, isTeacher = false }: { cla
 
             <div className="space-y-6">
                 {posts.map(post => (
-                    <div key={post.id} className="bg-white rounded-3xl p-6 shadow-md border border-[#cbe0f6] hover:shadow-lg transition-shadow">
+                    <div key={post.id} className="bg-white rounded-3xl p-6 shadow-md border border-[#c1ebd5] hover:shadow-lg transition-shadow">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 bg-[#f0f5fb] rounded-full flex items-center justify-center text-2xl border border-[#cbe0f6] shadow-inner">
+                            <div className="w-12 h-12 bg-[#f0fbf5] rounded-full flex items-center justify-center text-2xl border border-[#c1ebd5] shadow-inner">
                                 {post.teacher?.avatar || '🧑🏻‍🏫'}
                             </div>
                             <div>
-                                <h4 className="font-bold text-[#1c3a60] text-lg">{post.teacher?.name || 'Profesor'}</h4>
-                                <p className="text-[10px] text-[#73a4db] font-black tracking-widest uppercase">{new Date(post.createdAt).toLocaleDateString()} a las {new Date(post.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                <h4 className="font-bold text-[#0a2d1d] text-lg">{post.teacher?.name || 'Profesor'}</h4>
+                                <p className="text-[10px] text-[#2e9f6c] font-black tracking-widest uppercase">{new Date(post.createdAt).toLocaleDateString()} a las {new Date(post.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                             </div>
                         </div>
-                        <p className="text-[#1c3a60] mb-4 whitespace-pre-wrap font-medium leading-relaxed">{post.content}</p>
+                        <p className="text-[#0a2d1d] mb-4 whitespace-pre-wrap font-medium leading-relaxed">{post.content}</p>
                         {post.imageUrl && (
-                            <img src={post.imageUrl} alt="Class activity" className="rounded-2xl w-full object-cover mb-4 max-h-96 border border-[#cbe0f6]" />
+                            <img src={post.imageUrl} alt="Class activity" className="rounded-2xl w-full object-cover mb-4 max-h-96 border border-[#c1ebd5]" />
                         )}
-                        <div className="pt-4 border-t border-[#cbe0f6] flex items-center gap-4">
-                            <button className="flex items-center gap-1.5 text-[#73a4db] hover:text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-all active:scale-95">
+                        <div className="pt-4 border-t border-[#c1ebd5] flex items-center gap-4">
+                            <button className="flex items-center gap-1.5 text-[#2e9f6c] hover:text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-all active:scale-95">
                                 <Heart className="w-5 h-5" />
                                 <span className="text-[10px] font-black uppercase tracking-widest">Me gusta</span>
                             </button>
@@ -141,10 +141,10 @@ export default function ClassStoryFeed({ classroomId, isTeacher = false }: { cla
                     </div>
                 ))}
                 {posts.length === 0 && (
-                    <div className="text-center py-16 bg-white/50 backdrop-blur-sm rounded-3xl border border-[#cbe0f6] border-dashed">
+                    <div className="text-center py-16 bg-white/50 backdrop-blur-sm rounded-3xl border border-[#c1ebd5] border-dashed">
                         <div className="text-6xl mb-4 opacity-50 grayscale hover:grayscale-0 transition-all">📸</div>
-                        <h3 className="text-[#1c3a60] font-black text-xl">Aún no hay publicaciones</h3>
-                        <p className="text-sm text-[#73a4db] font-bold mt-2">Comparte lo que ocurre en el salón para que los padres lo vean.</p>
+                        <h3 className="text-[#0a2d1d] font-black text-xl">Aún no hay publicaciones</h3>
+                        <p className="text-sm text-[#2e9f6c] font-bold mt-2">Comparte lo que ocurre en el salón para que los padres lo vean.</p>
                     </div>
                 )}
             </div>

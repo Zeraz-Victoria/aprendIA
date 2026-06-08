@@ -174,15 +174,15 @@ function ParentPageContent() {
     const metrics = getChildProgressMetrics(activeChild);
 
     return (
-        <main className="min-h-screen bg-gradient-to-br from-[#f0f5fb] via-white to-[#eaf2fc] text-[#1c3a60] font-medium pb-20">
+        <main className="min-h-screen bg-gradient-to-br from-[#f0fbf5] via-white to-[#eafcf4] text-[#0a2d1d] font-medium pb-20">
             {/* Header del Portal */}
-            <header className="bg-white/80 backdrop-blur-md border-b border-[#cbe0f6] p-4 sticky top-0 z-20 shadow-sm transition-all duration-300">
+            <header className="bg-white/80 backdrop-blur-md border-b border-[#c1ebd5] p-4 sticky top-0 z-20 shadow-sm transition-all duration-300">
                 <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#f0f5fb] rounded-2xl flex items-center justify-center text-2xl border border-[#cbe0f6] shadow-sm">👨‍👩‍👧‍👦</div>
+                        <div className="w-10 h-10 bg-[#f0fbf5] rounded-2xl flex items-center justify-center text-2xl border border-[#c1ebd5] shadow-sm">👨‍👩‍👧‍👦</div>
                         <div>
-                            <h1 className="text-sm font-black uppercase tracking-widest text-[#1c3a60] leading-none">Portal Familiar</h1>
-                            <p className="text-[9px] text-[#73a4db] font-black uppercase tracking-wider mt-1">Acompañamiento Escolar Inteligente</p>
+                            <h1 className="text-sm font-black uppercase tracking-widest text-[#0a2d1d] leading-none">Portal Familiar</h1>
+                            <p className="text-[9px] text-[#2e9f6c] font-black uppercase tracking-wider mt-1">Acompañamiento Escolar Inteligente</p>
                         </div>
                     </div>
 
@@ -193,7 +193,7 @@ function ParentPageContent() {
                                 setActiveChild(null);
                                 setError("");
                             }}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-[#f0f5fb] text-[#346297] border border-[#cbe0f6] text-xs font-black uppercase tracking-widest cursor-pointer transition-all active:scale-95 shadow-sm"
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-[#f0fbf5] text-[#165b3d] border border-[#c1ebd5] text-xs font-black uppercase tracking-widest cursor-pointer transition-all active:scale-95 shadow-sm"
                         >
                             <span>Salir</span>
                         </button>
@@ -204,19 +204,19 @@ function ParentPageContent() {
             {/* Vista sin alumno seleccionado (Ingreso de código) */}
             {!activeChild ? (
                 <div className="max-w-md mx-auto px-4 pt-16 sm:pt-24 flex flex-col items-center">
-                    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center text-4xl shadow-xl border border-[#cbe0f6] mb-6 animate-bounce-slow">
+                    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center text-4xl shadow-xl border border-[#c1ebd5] mb-6 animate-bounce-slow">
                         ✨
                     </div>
                     
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl font-black tracking-tight text-[#1c3a60]">Consulta de Alumnos</h2>
-                        <p className="text-xs text-[#73a4db] font-bold mt-2 leading-relaxed">
+                        <h2 className="text-2xl font-black tracking-tight text-[#0a2d1d]">Consulta de Alumnos</h2>
+                        <p className="text-xs text-[#2e9f6c] font-bold mt-2 leading-relaxed">
                             Ingresa el código secreto de tu hijo para visualizar de manera instantánea sus avances académicos, comportamiento y tareas.
                         </p>
                     </div>
 
                     {/* Formulario */}
-                    <div className="bg-white/70 backdrop-blur-md border border-[#cbe0f6] shadow-2xl p-8 rounded-[2.5rem] w-full space-y-6">
+                    <div className="bg-white/70 backdrop-blur-md border border-[#c1ebd5] shadow-2xl p-8 rounded-[2.5rem] w-full space-y-6">
                         <form 
                             onSubmit={(e) => {
                                 e.preventDefault();
@@ -225,7 +225,7 @@ function ParentPageContent() {
                             className="space-y-4"
                         >
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black uppercase tracking-wider text-[#346297] block ml-1">
+                                <label className="text-[10px] font-black uppercase tracking-wider text-[#165b3d] block ml-1">
                                     Código del Alumno
                                 </label>
                                 <div className="relative">
@@ -235,10 +235,10 @@ function ParentPageContent() {
                                         placeholder="Ej. DA8AXE"
                                         value={studentCodeInput}
                                         onChange={(e) => setStudentCodeInput(e.target.value.toUpperCase())}
-                                        className="w-full pl-4 pr-12 py-4 bg-white border border-[#cbe0f6] rounded-2xl text-base text-[#1c3a60] font-black placeholder-[#73a4db]/60 focus:outline-none focus:ring-2 focus:ring-[#346297] focus:border-transparent transition-all uppercase text-center tracking-widest shadow-inner"
+                                        className="w-full pl-4 pr-12 py-4 bg-white border border-[#c1ebd5] rounded-2xl text-base text-[#0a2d1d] font-black placeholder-[#2e9f6c]/60 focus:outline-none focus:ring-2 focus:ring-[#165b3d] focus:border-transparent transition-all uppercase text-center tracking-widest shadow-inner"
                                         disabled={loading}
                                     />
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#73a4db]">
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2e9f6c]">
                                         <Search className="w-5 h-5" />
                                     </div>
                                 </div>
@@ -247,7 +247,7 @@ function ParentPageContent() {
                             <button
                                 type="submit"
                                 disabled={loading || !studentCodeInput.trim()}
-                                className="w-full bg-gradient-to-r from-[#346297] to-[#60A5FA] hover:from-[#254d7d] hover:to-[#3b82f6] text-white font-black text-xs uppercase tracking-widest py-4 rounded-2xl transition-all shadow-lg shadow-[#346297]/25 disabled:opacity-50 cursor-pointer active:scale-[0.98] flex items-center justify-center gap-2"
+                                className="w-full bg-gradient-to-r from-[#165b3d] to-[#60A5FA] hover:from-[#10422c] hover:to-[#3b82f6] text-white font-black text-xs uppercase tracking-widest py-4 rounded-2xl transition-all shadow-lg shadow-[#165b3d]/25 disabled:opacity-50 cursor-pointer active:scale-[0.98] flex items-center justify-center gap-2"
                             >
                                 {loading ? (
                                     <>
@@ -269,7 +269,7 @@ function ParentPageContent() {
                     </div>
 
                     {/* Ayuda */}
-                    <p className="text-[10px] text-[#73a4db] font-bold text-center mt-6 max-w-xs leading-relaxed">
+                    <p className="text-[10px] text-[#2e9f6c] font-bold text-center mt-6 max-w-xs leading-relaxed">
                         ¿No tienes el código? Pregúntale a tu hijo o a su docente. El código es único de 6 caracteres.
                     </p>
 
@@ -282,26 +282,26 @@ function ParentPageContent() {
                         {/* Columna Izquierda: Perfil, Rendimiento General y Acompañamiento (4 cols) */}
                         <div className="lg:col-span-4 space-y-6">
                             {/* Tarjeta de Perfil */}
-                            <div className="bg-white/70 backdrop-blur-md border border-[#cbe0f6] shadow-md rounded-[2rem] p-5 space-y-4">
+                            <div className="bg-white/70 backdrop-blur-md border border-[#c1ebd5] shadow-md rounded-[2rem] p-5 space-y-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-3xl border border-[#cbe0f6] shadow-sm">
+                                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-3xl border border-[#c1ebd5] shadow-sm">
                                         {activeChild.avatar || "🧑🏻"}
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-black tracking-tight leading-none text-[#1c3a60]">{activeChild.name}</h2>
-                                        <p className="text-[10px] text-[#73a4db] font-black uppercase tracking-wider mt-1.5">Código: {activeChild.studentCode || "—"}</p>
+                                        <h2 className="text-lg font-black tracking-tight leading-none text-[#0a2d1d]">{activeChild.name}</h2>
+                                        <p className="text-[10px] text-[#2e9f6c] font-black uppercase tracking-wider mt-1.5">Código: {activeChild.studentCode || "—"}</p>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
-                                    <div className="bg-[#f0f5fb]/50 border border-[#cbe0f6] p-2.5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+                                    <div className="bg-[#f0fbf5]/50 border border-[#c1ebd5] p-2.5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
                                         <Star className="w-4 h-4 fill-current text-amber-500" />
                                         <span className="text-[9px] font-black text-amber-600 tracking-tight mt-1">{activeChild.xp || 0} XP</span>
                                     </div>
-                                    <div className="bg-[#f0f5fb]/50 border border-[#cbe0f6] p-2.5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+                                    <div className="bg-[#f0fbf5]/50 border border-[#c1ebd5] p-2.5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
                                         <Gem className="w-4 h-4 text-emerald-500" />
                                         <span className="text-[9px] font-black text-emerald-600 tracking-tight mt-1">{activeChild.gems || 0} Gemas</span>
                                     </div>
-                                    <div className="bg-[#f0f5fb]/50 border border-[#cbe0f6] p-2.5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+                                    <div className="bg-[#f0fbf5]/50 border border-[#c1ebd5] p-2.5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
                                         <span className="text-base">🔥</span>
                                         <span className="text-[9px] font-black tracking-tight mt-1">{activeChild.streak || 0} Racha</span>
                                     </div>
@@ -309,8 +309,8 @@ function ParentPageContent() {
                             </div>
 
                             {/* Tarjeta de Rendimiento General */}
-                            <div className="bg-white/70 backdrop-blur-md border border-[#cbe0f6] shadow-md rounded-[2rem] p-5 flex flex-col items-center gap-6">
-                                <div className="shrink-0 bg-[#f0f5fb] border border-[#cbe0f6] p-5 rounded-full shadow-sm">
+                            <div className="bg-white/70 backdrop-blur-md border border-[#c1ebd5] shadow-md rounded-[2rem] p-5 flex flex-col items-center gap-6">
+                                <div className="shrink-0 bg-[#f0fbf5] border border-[#c1ebd5] p-5 rounded-full shadow-sm">
                                     <ActivityRings 
                                         outer={metrics.outer} 
                                         middle={metrics.middle} 
@@ -321,32 +321,32 @@ function ParentPageContent() {
                                 </div>
 
                                 <div className="w-full space-y-3">
-                                    <div className="flex justify-between items-center pb-2 border-b border-[#f0f5fb]">
-                                        <span className="font-black text-[#1c3a60] text-[10px] uppercase tracking-wider">Rendimiento General</span>
-                                        <span className="text-[9px] font-bold text-[#73a4db] uppercase tracking-wider">Consolidado</span>
+                                    <div className="flex justify-between items-center pb-2 border-b border-[#f0fbf5]">
+                                        <span className="font-black text-[#0a2d1d] text-[10px] uppercase tracking-wider">Rendimiento General</span>
+                                        <span className="text-[9px] font-bold text-[#2e9f6c] uppercase tracking-wider">Consolidado</span>
                                     </div>
 
                                     {/* Avance */}
                                     <div className="flex items-start gap-2.5">
-                                        <div className="w-3.5 h-3.5 rounded-full bg-[#346297] mt-0.5 shrink-0 shadow-[0_0_8px_rgba(52, 98, 151,0.3)]" />
+                                        <div className="w-3.5 h-3.5 rounded-full bg-[#165b3d] mt-0.5 shrink-0 shadow-[0_0_8px_rgba(22, 91, 61,0.3)]" />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-center text-[11px] leading-tight">
                                                 <span className="font-bold text-slate-600">Avance en Aventuras</span>
-                                                <span className="font-black text-[#346297] bg-[#f0f5fb] px-1.5 py-0.5 rounded text-[9px]">{metrics.outer}%</span>
+                                                <span className="font-black text-[#165b3d] bg-[#f0fbf5] px-1.5 py-0.5 rounded text-[9px]">{metrics.outer}%</span>
                                             </div>
-                                            <p className="text-[9px] text-[#73a4db] mt-0.5 font-medium">Ha completado {metrics.completedLevels} de {metrics.totalLevels} niveles.</p>
+                                            <p className="text-[9px] text-[#2e9f6c] mt-0.5 font-medium">Ha completado {metrics.completedLevels} de {metrics.totalLevels} niveles.</p>
                                         </div>
                                     </div>
 
                                     {/* Promedio */}
                                     <div className="flex items-start gap-2.5">
-                                        <div className="w-3.5 h-3.5 rounded-full bg-[#73a4db] mt-0.5 shrink-0 shadow-[0_0_8px_rgba(115, 164, 219,0.3)]" />
+                                        <div className="w-3.5 h-3.5 rounded-full bg-[#2e9f6c] mt-0.5 shrink-0 shadow-[0_0_8px_rgba(46, 159, 108,0.3)]" />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-center text-[11px] leading-tight">
                                                 <span className="font-bold text-slate-600">Promedio Académico</span>
-                                                <span className="font-black text-[#4f82be] bg-[#f0f5fb] px-1.5 py-0.5 rounded text-[9px]">{(metrics.middle / 10).toFixed(1)}/10</span>
+                                                <span className="font-black text-[#1c754d] bg-[#f0fbf5] px-1.5 py-0.5 rounded text-[9px]">{(metrics.middle / 10).toFixed(1)}/10</span>
                                             </div>
-                                            <p className="text-[9px] text-[#73a4db] mt-0.5 font-medium">Promedio obtenido en evidencias revisadas.</p>
+                                            <p className="text-[9px] text-[#2e9f6c] mt-0.5 font-medium">Promedio obtenido en evidencias revisadas.</p>
                                         </div>
                                     </div>
 
@@ -356,31 +356,31 @@ function ParentPageContent() {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-center text-[11px] leading-tight">
                                                 <span className="font-bold text-slate-600">Tasa de Entrega</span>
-                                                <span className="font-black text-[#2563EB] bg-[#f0f5fb] px-1.5 py-0.5 rounded text-[9px]">{metrics.inner}%</span>
+                                                <span className="font-black text-[#2563EB] bg-[#f0fbf5] px-1.5 py-0.5 rounded text-[9px]">{metrics.inner}%</span>
                                             </div>
-                                            <p className="text-[9px] text-[#73a4db] mt-0.5 font-medium">Evidencias enviadas: {metrics.submissions} de {metrics.totalLevels}.</p>
+                                            <p className="text-[9px] text-[#2e9f6c] mt-0.5 font-medium">Evidencias enviadas: {metrics.submissions} de {metrics.totalLevels}.</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Plan de Acompañamiento Familiar (Sidebar) */}
-                            <div className="p-5 bg-white border border-[#cbe0f6] rounded-[2rem] shadow-sm space-y-4">
-                                <div className="flex items-center gap-3 pb-3 border-b border-[#f0f5fb]">
-                                    <div className="p-2.5 bg-[#f0f5fb] border border-[#cbe0f6] rounded-2xl text-[#346297] shrink-0">
+                            <div className="p-5 bg-white border border-[#c1ebd5] rounded-[2rem] shadow-sm space-y-4">
+                                <div className="flex items-center gap-3 pb-3 border-b border-[#f0fbf5]">
+                                    <div className="p-2.5 bg-[#f0fbf5] border border-[#c1ebd5] rounded-2xl text-[#165b3d] shrink-0">
                                         <Sparkles className="w-5 h-5 animate-pulse" />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-xs text-[#1c3a60] tracking-tight">Plan de Acompañamiento</h3>
-                                        <p className="text-[9px] text-[#73a4db] font-bold uppercase tracking-wider">AprendIA Familiar</p>
+                                        <h3 className="font-black text-xs text-[#0a2d1d] tracking-tight">Plan de Acompañamiento</h3>
+                                        <p className="text-[9px] text-[#2e9f6c] font-bold uppercase tracking-wider">AprendIA Familiar</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-4">
                                     {/* Diagnóstico */}
                                     <div className="space-y-1.5">
-                                        <h4 className="text-[10px] font-black text-[#346297] uppercase tracking-wider">Diagnóstico de Desempeño</h4>
-                                        <div className="p-3 bg-[#f0f5fb]/40 border border-[#cbe0f6]/60 rounded-2xl text-[11px] text-[#1c3a60] leading-relaxed font-semibold">
+                                        <h4 className="text-[10px] font-black text-[#165b3d] uppercase tracking-wider">Diagnóstico de Desempeño</h4>
+                                        <div className="p-3 bg-[#f0fbf5]/40 border border-[#c1ebd5]/60 rounded-2xl text-[11px] text-[#0a2d1d] leading-relaxed font-semibold">
                                             {metrics.outer < 30 ? (
                                                 <p>🚨 <strong>{activeChild.name}</strong> está presentando un retraso significativo en completar sus mundos virtuales. Se recomienda acompañarlo en su espacio de estudio, validar si está atascado en algún ejercicio y motivarlo con palabras de aliento.</p>
                                             ) : metrics.inner < 60 ? (
@@ -393,8 +393,8 @@ function ParentPageContent() {
 
                                     {/* Tareas de Apoyo */}
                                     <div className="space-y-1.5">
-                                        <h4 className="text-[10px] font-black text-[#346297] uppercase tracking-wider">Tareas y Sugerencias de Apoyo</h4>
-                                        <ul className="space-y-2 text-[11px] text-[#1c3a60] font-medium">
+                                        <h4 className="text-[10px] font-black text-[#165b3d] uppercase tracking-wider">Tareas y Sugerencias de Apoyo</h4>
+                                        <ul className="space-y-2 text-[11px] text-[#0a2d1d] font-medium">
                                             {metrics.outer < 30 ? (
                                                 <>
                                                     <li className="flex items-start gap-2 bg-rose-50/50 border border-rose-100 p-2 rounded-xl">
@@ -429,8 +429,8 @@ function ParentPageContent() {
                                                     </li>
                                                 </>
                                             )}
-                                            <li className="flex items-start gap-2 bg-[#f0f5fb] border border-[#cbe0f6] p-2 rounded-xl">
-                                                <span className="text-[#346297] font-bold shrink-0">💡</span>
+                                            <li className="flex items-start gap-2 bg-[#f0fbf5] border border-[#c1ebd5] p-2 rounded-xl">
+                                                <span className="text-[#165b3d] font-bold shrink-0">💡</span>
                                                 <span>Fomenta una mentalidad de crecimiento: celebra la constancia y el esfuerzo diario.</span>
                                             </li>
                                         </ul>
@@ -442,23 +442,23 @@ function ParentPageContent() {
                         {/* Columna Derecha: Desempeño por Proyecto y Pestañas (8 cols) */}
                         <div className="lg:col-span-8 space-y-6">
                             {/* Desempeño por Proyecto */}
-                            <div className="bg-white/70 backdrop-blur-md border border-[#cbe0f6] shadow-md rounded-[2rem] p-5 space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-[#f0f5fb]">
+                            <div className="bg-white/70 backdrop-blur-md border border-[#c1ebd5] shadow-md rounded-[2rem] p-5 space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-[#f0fbf5]">
                                     <span className="w-2.5 h-2.5 rounded-full bg-[#60A5FA]" />
-                                    <h3 className="text-xs font-black uppercase tracking-wider text-[#1c3a60]">Desempeño Detallado por Proyecto</h3>
+                                    <h3 className="text-xs font-black uppercase tracking-wider text-[#0a2d1d]">Desempeño Detallado por Proyecto</h3>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {(!activeChild.assignedWorlds || activeChild.assignedWorlds.length === 0) ? (
-                                        <div className="col-span-full py-6 text-center text-xs text-[#73a4db] font-bold">
+                                        <div className="col-span-full py-6 text-center text-xs text-[#2e9f6c] font-bold">
                                             El estudiante no tiene proyectos asignados actualmente.
                                         </div>
                                     ) : (
                                         activeChild.assignedWorlds.map((world: any) => {
                                             const wMetrics = getChildWorldProgressMetrics(activeChild, world);
                                             return (
-                                                <div key={world.id} className="bg-[#f0f5fb]/30 border border-[#cbe0f6] rounded-2xl p-4 flex items-center gap-4">
-                                                    <div className="shrink-0 bg-white border border-[#cbe0f6] p-2.5 rounded-full shadow-sm">
+                                                <div key={world.id} className="bg-[#f0fbf5]/30 border border-[#c1ebd5] rounded-2xl p-4 flex items-center gap-4">
+                                                    <div className="shrink-0 bg-white border border-[#c1ebd5] p-2.5 rounded-full shadow-sm">
                                                         <ActivityRings 
                                                             outer={wMetrics.outer} 
                                                             middle={wMetrics.middle} 
@@ -468,19 +468,19 @@ function ParentPageContent() {
                                                     </div>
 
                                                     <div className="flex-1 min-w-0 space-y-1.5 text-[10px]">
-                                                        <div className="border-b border-[#cbe0f6]/60 pb-1">
-                                                            <h4 className="font-black text-[11px] text-[#1c3a60] tracking-tight line-clamp-1">{world.title}</h4>
-                                                            <span className="text-[8px] uppercase tracking-wider text-[#73a4db] font-black">{world.theme || "General"}</span>
+                                                        <div className="border-b border-[#c1ebd5]/60 pb-1">
+                                                            <h4 className="font-black text-[11px] text-[#0a2d1d] tracking-tight line-clamp-1">{world.title}</h4>
+                                                            <span className="text-[8px] uppercase tracking-wider text-[#2e9f6c] font-black">{world.theme || "General"}</span>
                                                         </div>
 
                                                         <div className="space-y-0.5">
                                                             <div className="flex justify-between font-medium">
                                                                 <span className="text-slate-500">Avance</span>
-                                                                <span className="font-black text-[#346297]">{wMetrics.outer}%</span>
+                                                                <span className="font-black text-[#165b3d]">{wMetrics.outer}%</span>
                                                             </div>
                                                             <div className="flex justify-between font-medium">
                                                                 <span className="text-slate-500">Promedio</span>
-                                                                <span className="font-black text-[#4f82be]">{(wMetrics.middle / 10).toFixed(1)}/10</span>
+                                                                <span className="font-black text-[#1c754d]">{(wMetrics.middle / 10).toFixed(1)}/10</span>
                                                             </div>
                                                             <div className="flex justify-between font-medium">
                                                                 <span className="text-slate-500">Entregas</span>
@@ -496,15 +496,15 @@ function ParentPageContent() {
                             </div>
 
                             {/* Pestañas de Navegación del Alumno */}
-                            <div className="bg-white/70 backdrop-blur-md border border-[#cbe0f6] shadow-md rounded-[2rem] p-5 space-y-5">
-                                <div className="flex justify-center border-b border-[#cbe0f6] pb-px">
+                            <div className="bg-white/70 backdrop-blur-md border border-[#c1ebd5] shadow-md rounded-[2rem] p-5 space-y-5">
+                                <div className="flex justify-center border-b border-[#c1ebd5] pb-px">
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => setParentTab("performance")}
                                             className={`flex items-center gap-2 px-4 py-2.5 border-b-2 font-black uppercase tracking-widest text-[9px] transition-all cursor-pointer ${
                                                 parentTab === "performance"
-                                                    ? "border-[#346297] text-[#346297]"
-                                                    : "border-transparent text-[#73a4db] hover:text-[#1c3a60]"
+                                                    ? "border-[#165b3d] text-[#165b3d]"
+                                                    : "border-transparent text-[#2e9f6c] hover:text-[#0a2d1d]"
                                             }`}
                                         >
                                             <TrendingUp className="w-3.5 h-3.5" />
@@ -514,8 +514,8 @@ function ParentPageContent() {
                                             onClick={() => setParentTab("story")}
                                             className={`flex items-center gap-2 px-4 py-2.5 border-b-2 font-black uppercase tracking-widest text-[9px] transition-all cursor-pointer ${
                                                 parentTab === "story"
-                                                    ? "border-[#346297] text-[#346297]"
-                                                    : "border-transparent text-[#73a4db] hover:text-[#1c3a60]"
+                                                    ? "border-[#165b3d] text-[#165b3d]"
+                                                    : "border-transparent text-[#2e9f6c] hover:text-[#0a2d1d]"
                                             }`}
                                         >
                                             <Users className="w-3.5 h-3.5" />
@@ -528,25 +528,25 @@ function ParentPageContent() {
                                 {parentTab === "performance" ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {/* CONDUCTA Y PUNTOS DE ACTITUD */}
-                                        <div className="bg-white border border-[#cbe0f6] p-4.5 rounded-2xl space-y-3.5 shadow-sm">
+                                        <div className="bg-white border border-[#c1ebd5] p-4.5 rounded-2xl space-y-3.5 shadow-sm">
                                             <h4 className="font-black text-xs tracking-tight flex items-center gap-2">
                                                 <Star className="w-4 h-4 text-amber-500 fill-current" /> Conducta y Felicitaciones de Clase
                                             </h4>
                                             
                                             {(!activeChild.behaviorLogs || activeChild.behaviorLogs.length === 0) ? (
-                                                <p className="text-[10px] text-[#73a4db] font-bold py-6 text-center">Sin observaciones de conducta registradas recientemente.</p>
+                                                <p className="text-[10px] text-[#2e9f6c] font-bold py-6 text-center">Sin observaciones de conducta registradas recientemente.</p>
                                             ) : (
                                                 <div className="space-y-2.5 max-h-[250px] overflow-y-auto pr-1">
                                                     {activeChild.behaviorLogs.map((log: any) => {
                                                         const isPos = log.category?.isPositive ?? true;
                                                         return (
-                                                            <div key={log.id} className="flex justify-between items-center p-2.5 bg-[#f0f5fb]/50 border border-[#cbe0f6] rounded-xl text-[11px] font-medium">
+                                                            <div key={log.id} className="flex justify-between items-center p-2.5 bg-[#f0fbf5]/50 border border-[#c1ebd5] rounded-xl text-[11px] font-medium">
                                                                 <div className="flex items-center gap-2.5">
-                                                                    <div className="text-lg bg-white w-8 h-8 rounded-lg border border-[#cbe0f6] flex items-center justify-center shadow-sm">
+                                                                    <div className="text-lg bg-white w-8 h-8 rounded-lg border border-[#c1ebd5] flex items-center justify-center shadow-sm">
                                                                         {log.category?.icon || "⭐"}
                                                                     </div>
                                                                     <div className="min-w-0">
-                                                                        <p className="font-black text-[#1c3a60] leading-tight truncate">{log.category?.name || "Actitud"}</p>
+                                                                        <p className="font-black text-[#0a2d1d] leading-tight truncate">{log.category?.name || "Actitud"}</p>
                                                                         {log.note && <p className="text-[9px] text-slate-500 mt-0.5 truncate">{log.note}</p>}
                                                                     </div>
                                                                 </div>
@@ -563,13 +563,13 @@ function ParentPageContent() {
                                         </div>
 
                                         {/* RETROALIMENTACIÓN DE TAREAS Y EVALUACIONES POR PROYECTO */}
-                                        <div className="bg-white border border-[#cbe0f6] p-4.5 rounded-2xl space-y-3.5 shadow-sm">
+                                        <div className="bg-white border border-[#c1ebd5] p-4.5 rounded-2xl space-y-3.5 shadow-sm">
                                             <h4 className="font-black text-xs tracking-tight flex items-center gap-2">
-                                                <MessageSquare className="w-4.5 h-4.5 text-[#73a4db]" /> Retroalimentación por Proyecto
+                                                <MessageSquare className="w-4.5 h-4.5 text-[#2e9f6c]" /> Retroalimentación por Proyecto
                                             </h4>
 
                                             {(!activeChild.assignedWorlds || activeChild.assignedWorlds.length === 0) ? (
-                                                <p className="text-[10px] text-[#73a4db] font-bold py-6 text-center">El estudiante no cuenta con proyectos asignados.</p>
+                                                <p className="text-[10px] text-[#2e9f6c] font-bold py-6 text-center">El estudiante no cuenta con proyectos asignados.</p>
                                             ) : (
                                                 <div className="space-y-4 max-h-[250px] overflow-y-auto pr-1">
                                                     {activeChild.assignedWorlds.map((world: any) => {
@@ -579,8 +579,8 @@ function ParentPageContent() {
 
                                                         return (
                                                             <div key={world.id} className="space-y-1.5">
-                                                                <div className="flex items-center justify-between border-b border-[#f0f5fb] pb-1">
-                                                                    <span className="font-black text-[10px] text-[#346297] truncate max-w-[120px]">{world.title}</span>
+                                                                <div className="flex items-center justify-between border-b border-[#f0fbf5] pb-1">
+                                                                    <span className="font-black text-[10px] text-[#165b3d] truncate max-w-[120px]">{world.title}</span>
                                                                     <span className="text-[8px] font-black uppercase text-slate-400 bg-slate-50 px-1.5 py-0.5 border border-slate-100 rounded">
                                                                         {worldEvidences.length} {worldEvidences.length === 1 ? 'Act' : 'Acts'}
                                                                     </span>
@@ -591,11 +591,11 @@ function ParentPageContent() {
                                                                 ) : (
                                                                     <div className="space-y-1.5">
                                                                         {worldEvidences.map((ev: any) => (
-                                                                            <div key={ev.id} className="p-2.5 bg-[#f0f5fb]/40 border border-[#cbe0f6] rounded-xl space-y-1 text-[11px] font-medium">
+                                                                            <div key={ev.id} className="p-2.5 bg-[#f0fbf5]/40 border border-[#c1ebd5] rounded-xl space-y-1 text-[11px] font-medium">
                                                                                 <div className="flex justify-between items-center gap-1">
-                                                                                    <span className="font-black text-[#1c3a60] truncate">Nivel {ev.levelId}</span>
+                                                                                    <span className="font-black text-[#0a2d1d] truncate">Nivel {ev.levelId}</span>
                                                                                     {ev.grade !== null ? (
-                                                                                        <span className="font-black text-[#346297] bg-white px-1.5 py-0.5 border border-[#cbe0f6] rounded text-[8px]">
+                                                                                        <span className="font-black text-[#165b3d] bg-white px-1.5 py-0.5 border border-[#c1ebd5] rounded text-[8px]">
                                                                                             Nota: {ev.grade}/10
                                                                                         </span>
                                                                                     ) : (
@@ -622,7 +622,7 @@ function ParentPageContent() {
                                     </div>
                                 ) : (
                                     /* Pestaña de Mural de la Clase */
-                                    <div className="bg-white p-4.5 rounded-2xl border border-[#cbe0f6] shadow-sm">
+                                    <div className="bg-white p-4.5 rounded-2xl border border-[#c1ebd5] shadow-sm">
                                         <ClassStoryFeed classroomId={activeChild.classroomId || 'global'} isTeacher={false} />
                                     </div>
                                 )}
@@ -638,7 +638,7 @@ function ParentPageContent() {
 export default function ParentPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center text-[#73a4db] font-bold text-lg">
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center text-[#2e9f6c] font-bold text-lg">
                 Inicializando Portal Familiar...
             </div>
         }>

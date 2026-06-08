@@ -499,7 +499,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                                 onClick={() => setActiveInventoryTab(tab)}
                                 className={`text-[8px] font-black uppercase py-1.5 rounded-lg transition-all text-center truncate cursor-pointer ${
                                     activeInventoryTab === tab
-                                        ? "bg-[#73a4db] text-white shadow-sm font-black"
+                                        ? "bg-[#2e9f6c] text-white shadow-sm font-black"
                                         : "text-white/40 hover:text-white/70"
                                 }`}
                             >
@@ -520,7 +520,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                                     disabled={avail <= 0}
                                     className={`aspect-square rounded-xl flex flex-col items-center justify-center transition-all border p-1 overflow-hidden relative cursor-pointer group
                                         ${avail > 0 
-                                            ? 'bg-white/5 border-white/10 hover:border-[#73a4db]/50 hover:bg-[#346297]/20 hover:scale-[1.02]' 
+                                            ? 'bg-white/5 border-white/10 hover:border-[#2e9f6c]/50 hover:bg-[#165b3d]/20 hover:scale-[1.02]' 
                                             : 'bg-white/[0.01] border-white/5 opacity-30 cursor-not-allowed'}`}
                                 >
                                     <img src={info?.image} alt={info?.label} className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" />
@@ -543,7 +543,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                         <div className="mt-4 p-3 bg-white/5 rounded-2xl border border-white/10">
                             <p className="text-[10px] text-white/50 mb-2 font-black uppercase tracking-wider">Modificar Mueble</p>
                             <div className="grid grid-cols-3 gap-1.5">
-                                <button onClick={rotateSelected} className="flex flex-col items-center justify-center gap-1 bg-[#1c3a60] hover:bg-[#346297] text-white py-2 rounded-xl text-[9px] font-bold transition active:scale-95 cursor-pointer border border-white/10">
+                                <button onClick={rotateSelected} className="flex flex-col items-center justify-center gap-1 bg-[#0a2d1d] hover:bg-[#165b3d] text-white py-2 rounded-xl text-[9px] font-bold transition active:scale-95 cursor-pointer border border-white/10">
                                     <RotateCw className="w-3.5 h-3.5" /> <span>Girar</span>
                                 </button>
                                 <button onClick={flipSelected} className="flex flex-col items-center justify-center gap-1 bg-violet-600 hover:bg-violet-500 text-white py-2 rounded-xl text-[9px] font-bold transition active:scale-95 cursor-pointer border border-white/10">
@@ -587,7 +587,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                             <>
                                 {!isEditing ? (
                                     <button onClick={() => setIsEditing(true)}
-                                        className="flex items-center gap-1 bg-[#1c3a60]/75 hover:bg-[#346297] text-white px-2.5 py-1 rounded-lg font-black text-[9px] ml-1 transition cursor-pointer border border-white/10">
+                                        className="flex items-center gap-1 bg-[#0a2d1d]/75 hover:bg-[#165b3d] text-white px-2.5 py-1 rounded-lg font-black text-[9px] ml-1 transition cursor-pointer border border-white/10">
                                         <Edit3 className="w-3 h-3" /> Mis Objetos
                                     </button>
                                 ) : (
@@ -705,7 +705,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                                             }} 
                                         />
                                         {isSelected && isEditing && (
-                                            <div className="absolute inset-0 border-2 border-[#73a4db] rounded-lg border-dashed animate-pulse pointer-events-none" />
+                                            <div className="absolute inset-0 border-2 border-[#2e9f6c] rounded-lg border-dashed animate-pulse pointer-events-none" />
                                         )}
                                     </div>
                                 );
@@ -808,7 +808,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                                 <button
                                     key={r.emoji}
                                     onClick={() => sendReaction(r.emoji)}
-                                    className="w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:bg-[#73a4db]/20 hover:border-[#73a4db] flex items-center justify-center text-lg transition-all active:scale-90 cursor-pointer shadow-md hover:scale-110 shrink-0"
+                                    className="w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:bg-[#2e9f6c]/20 hover:border-[#2e9f6c] flex items-center justify-center text-lg transition-all active:scale-90 cursor-pointer shadow-md hover:scale-110 shrink-0"
                                     title={r.label}
                                 >
                                     {r.emoji}
@@ -821,7 +821,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                 {/* Footer Classroom Status and Room Control Navigation */}
                 <div className="w-full py-2 px-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 bg-slate-900/60 text-[10px] text-white/50 font-semibold select-none">
                     <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5 text-[#73a4db]" /> <b>{onlineStudents.length}</b> en línea</span>
+                        <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5 text-[#2e9f6c]" /> <b>{onlineStudents.length}</b> en línea</span>
                         <span>🪑 <b>{allFurniture.length}</b> muebles</span>
                     </div>
 
@@ -830,7 +830,7 @@ export default function VirtualClassroom({ studentId, onClose }: { studentId: st
                             <Orbit className="w-3.5 h-3.5 text-white/30" />
                             <input type="range" min={-45} max={45} value={roomRotation}
                                 onChange={(e) => setRoomRotation(Number(e.target.value))}
-                                className="w-24 sm:w-32 h-1 appearance-none bg-white/10 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#73a4db]" />
+                                className="w-24 sm:w-32 h-1 appearance-none bg-white/10 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#2e9f6c]" />
                             <button onClick={() => setRoomRotation(0)} className="text-[10px] text-white/40 hover:text-white transition cursor-pointer font-bold">Reiniciar</button>
                         </div>
                     </div>

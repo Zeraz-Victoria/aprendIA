@@ -4,18 +4,18 @@
 
 /* ═══════════════════════════════════════════════════════════════
    APREND-IA  —  PALETA PÚRPURA OFICIAL
-   #1c3a60  #346297  #73a4db  #cbe0f6  #f0f5fb
+   #0a2d1d  #165b3d  #2e9f6c  #c1ebd5  #f0fbf5
 ═══════════════════════════════════════════════════════════════ */
 :root {
   /* Brand palette */
-  --brand-900: #1c3a60;
-  --brand-800: #254d7d;
-  --brand-700: #346297;
-  --brand-600: #4f82be;
-  --brand-400: #73a4db;
-  --brand-200: #a2c4ec;
-  --brand-100: #cbe0f6;
-  --brand-50:  #f0f5fb;
+  --brand-900: #0a2d1d;
+  --brand-800: #10422c;
+  --brand-700: #165b3d;
+  --brand-600: #1c754d;
+  --brand-400: #2e9f6c;
+  --brand-200: #7fd6ad;
+  --brand-100: #c1ebd5;
+  --brand-50:  #f0fbf5;
 
   /* Semantic aliases */
   --background: var(--brand-50);
@@ -26,7 +26,7 @@
   --input-border: var(--brand-200);
   --input-focus: var(--brand-400);
   --muted: var(--brand-400);
-  --muted-fg: #4a617c;
+  --muted-fg: #3b5e4d;
 }
 
 @theme inline {
@@ -154,7 +154,7 @@ body {
   background: rgba(240, 245, 251, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(115, 164, 219, 0.2);
+  border: 1px solid rgba(46, 159, 108, 0.2);
 }
 
 /* ── Snap scroll ────────────────────────────────────────── */
