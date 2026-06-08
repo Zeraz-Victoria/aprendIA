@@ -144,7 +144,6 @@ interface PerformanceDashboardProps {
     onOpenAddStudent: () => void;
     onEditStudent: (student: Student) => void;
     onDeleteStudent: (student: Student) => void;
-    onOpenBulkModal: () => void;
 }
 
 export default function PerformanceDashboard({
@@ -158,8 +157,7 @@ export default function PerformanceDashboard({
     onDeleteClassroom,
     onOpenAddStudent,
     onEditStudent,
-    onDeleteStudent,
-    onOpenBulkModal
+    onDeleteStudent
 }: PerformanceDashboardProps) {
     const { 
         students, worlds, classrooms, progress, toggleWorldAssignment, 
@@ -573,10 +571,6 @@ export default function PerformanceDashboard({
         doc.save(`AprendIA_Reporte_Desempeno_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
-    const [bulkReportWorldId, setBulkReportWorldId] = useState("global");
-    const [isGeneratingTeacherBulk, setIsGeneratingTeacherBulk] = useState(false);
-    const [isGeneratingParentBulk, setIsGeneratingParentBulk] = useState(false);
-
     const openReportWindow = (reportType: 'teacher' | 'parent', scopeLabel: string, reportItems: {
         studentName: string;
         xp: number;
@@ -649,65 +643,8 @@ export default function PerformanceDashboard({
         win.document.close();
     };
 
-    const handleGenerateTeacherBulkReport = async () => {
-        const visibleStudents = students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId);
-        if (visibleStudents.length === 0) { alert('No hay alumnos en este salón.'); return; }
-        setIsGeneratingTeacherBulk(true);
-        try {
-            const worldFilter = bulkReportWorldId === 'global' ? null : bulkReportWorldId;
-            const items = await Promise.all(visibleStudents.map(async (st) => {
-                const assigned = getStudentAssignedWorlds(st);
-                const prog = getStudentOverallProgress(st.id, assigned);
-                try {
-                    const res = await fetch('/api/ai/generate-report', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ studentId: st.id, studentName: st.name, reportType: 'teacher', worldFilter })
-                    });
-                    const data = await res.json();
-                    const wTitle = worldFilter ? worlds.find(w => w.id === worldFilter)?.title : undefined;
-                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: data.report || '', worldTitle: wTitle };
-                } catch {
-                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: 'No disponible' };
-                }
-            }));
-            const clsLabel = selectedClassroomId === "all" ? "Todos los Alumnos" : (classrooms.find(c => c.id === selectedClassroomId)?.name || 'Salón');
-            const scopeLabel = bulkReportWorldId === 'global' ? clsLabel : `${clsLabel} — ${worlds.find(w => w.id === bulkReportWorldId)?.title}`;
-            openReportWindow('teacher', scopeLabel, items);
-        } finally {
-            setIsGeneratingTeacherBulk(false);
-        }
-    };
 
-    const handleGenerateParentBulkReport = async () => {
-        const visibleStudents = students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId);
-        if (visibleStudents.length === 0) { alert('No hay alumnos en este salón.'); return; }
-        setIsGeneratingParentBulk(true);
-        try {
-            const worldFilter = bulkReportWorldId === 'global' ? null : bulkReportWorldId;
-            const items = await Promise.all(visibleStudents.map(async (st) => {
-                const assigned = getStudentAssignedWorlds(st);
-                const prog = getStudentOverallProgress(st.id, assigned);
-                try {
-                    const res = await fetch('/api/ai/generate-report', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ studentId: st.id, studentName: st.name, reportType: 'parent', worldFilter })
-                    });
-                    const data = await res.json();
-                    const wTitle = worldFilter ? worlds.find(w => w.id === worldFilter)?.title : undefined;
-                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: Array.isArray(data.paragraphs) ? data.paragraphs.join('\n\n') : (data.report || ''), worldTitle: wTitle, homeActivity: data.homeActivity };
-                } catch {
-                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: 'No disponible' };
-                }
-            }));
-            const clsLabel = selectedClassroomId === "all" ? "Todos los Alumnos" : (classrooms.find(c => c.id === selectedClassroomId)?.name || 'Salón');
-            const scopeLabel = bulkReportWorldId === 'global' ? clsLabel : `${clsLabel} — ${worlds.find(w => w.id === bulkReportWorldId)?.title}`;
-            openReportWindow('parent', scopeLabel, items);
-        } finally {
-            setIsGeneratingParentBulk(false);
-        }
-    };
+
 
     return (
         <div className="space-y-8 animate-fade-in pb-24 text-[#1c3a60]">
@@ -717,7 +654,7 @@ export default function PerformanceDashboard({
                 <div className="absolute right-0 top-0 w-[300px] h-[300px] bg-[#cbe0f6]/20 blur-[80px] rounded-full pointer-events-none" />
                 <div className="absolute left-0 bottom-0 w-[200px] h-[200px] bg-[#f0f5fb]/20 blur-[80px] rounded-full pointer-events-none" />
 
-                {/* 1. Fila de Encabezado: Título y Acciones Unificadas (Carga, Alumnos, PDF, Reportes AI) */}
+                {/* 1. Fila de Encabezado: Título y Acciones Unificadas (Alumnos, PDF) */}
                 <div className="relative z-10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 pb-4 border-b border-[#f0f5fb]">
                     <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-[#346297] animate-pulse" />
@@ -727,13 +664,6 @@ export default function PerformanceDashboard({
                     <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-start xl:justify-end">
                         {/* Acciones principales de aula */}
                         <div className="flex items-center gap-1.5 flex-wrap">
-                            <button 
-                                onClick={onOpenBulkModal}
-                                className="flex items-center gap-1.5 bg-white hover:bg-[#f0f5fb] text-[#346297] border border-[#cbe0f6] px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm cursor-pointer"
-                            >
-                                <UploadCloud className="w-3.5 h-3.5" />
-                                Carga Masiva
-                            </button>
                             <button 
                                 onClick={onOpenAddStudent}
                                 className="flex items-center gap-1.5 bg-[#1c3a60] hover:bg-[#254d7d] text-white px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm cursor-pointer"
@@ -746,42 +676,7 @@ export default function PerformanceDashboard({
                                 className="flex items-center gap-1.5 bg-[#f0f5fb] hover:bg-[#cbe0f6] text-[#346297] px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 border border-[#cbe0f6] cursor-pointer"
                             >
                                 <FileText className="w-3.5 h-3.5" />
-                                PDF
-                            </button>
-                        </div>
-
-                        {/* Divisor vertical */}
-                        <div className="hidden xl:block w-px h-6 bg-[#cbe0f6]" />
-
-                        {/* Reportes AI Grupal */}
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                            <div className="flex items-center gap-1 mr-1">
-                                <BrainCircuit className="w-3.5 h-3.5 text-[#346297]" />
-                                <span className="text-[9px] font-black text-[#73a4db] uppercase tracking-wider">Reportes IA:</span>
-                            </div>
-                            <select
-                                value={bulkReportWorldId}
-                                onChange={e => setBulkReportWorldId(e.target.value)}
-                                className="px-2.5 py-2 bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl text-[9px] font-black uppercase tracking-widest text-[#346297] focus:outline-none min-w-[130px] truncate"
-                            >
-                                <option value="global">🌐 Todos los Proyectos</option>
-                                {worlds.map(w => (
-                                    <option key={w.id} value={w.id}>🗺️ {w.title}</option>
-                                ))}
-                            </select>
-                            <button
-                                disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
-                                onClick={handleGenerateTeacherBulkReport}
-                                className="px-3 py-2 bg-white text-[#1c3a60] border border-[#cbe0f6] hover:border-[#73a4db] rounded-xl text-[9px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
-                            >
-                                {isGeneratingTeacherBulk ? 'Generando...' : 'Reporte Docente'}
-                            </button>
-                            <button
-                                disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
-                                onClick={handleGenerateParentBulkReport}
-                                className="px-3 py-2 bg-white text-[#346297] border border-[#cbe0f6] hover:border-[#73a4db] rounded-xl text-[9px] font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
-                            >
-                                {isGeneratingParentBulk ? 'Generando...' : 'Reporte Padres'}
+                                Exportar PDF
                             </button>
                         </div>
                     </div>

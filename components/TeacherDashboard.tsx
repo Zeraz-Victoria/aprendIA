@@ -20,7 +20,7 @@ import TeacherToolkit from "./TeacherToolkit";
 import ClassStoryFeed from "./ClassStoryFeed";
 import PerformanceDashboard from "./PerformanceDashboard";
 
-type Tab = "students" | "library" | "reports" | "raid" | "messages" | "behavior" | "toolkit" | "story";
+type Tab = "classroom" | "library" | "reports" | "raid" | "management";
 
 // Helper functions moved to top for scope visibility
 function getClassColor(progress: number) {
@@ -57,7 +57,9 @@ export default function TeacherDashboard() {
         classrooms, addClassroom, updateClassroom, deleteClassroom, assignStudentToClassroom,
         grades, addGrade, updateGrade, deleteGrade
     } = useLearning();
-    const [activeTab, setActiveTab] = useState<Tab>("reports");
+    const [activeTab, setActiveTab] = useState<Tab>("classroom");
+    const [librarySubTab, setLibrarySubTab] = useState<"adventures" | "bulk_upload">("adventures");
+    const [managementSubTab, setManagementSubTab] = useState<"story" | "toolkit" | "behavior" | "messages">("story");
     const [showGlobalStatsModal, setShowGlobalStatsModal] = useState(false);
     const [selectedInsightWorldId, setSelectedInsightWorldId] = useState<string>("");
     const [insightClassroomId, setInsightClassroomId] = useState<string>("all");
@@ -211,6 +213,102 @@ export default function TeacherDashboard() {
         win.document.close();
     };
     // ──────────────────────────────────────────────────────────────────────────
+
+    const getStudentAssignedWorlds = (student: Student): LearningWorld[] => {
+        const assignedIds = new Set<string>();
+        const studentWorlds: LearningWorld[] = [];
+
+        (student.assignedWorlds || []).forEach(w => assignedIds.add(w.id));
+
+        if (student.classroomId) {
+            worlds.forEach(w => {
+                if (w.classrooms?.some(c => c.id === student.classroomId)) {
+                    assignedIds.add(w.id);
+                }
+            });
+        }
+
+        worlds.forEach(w => {
+            if (assignedIds.has(w.id)) {
+                studentWorlds.push(w);
+            }
+        });
+
+        return studentWorlds;
+    };
+
+    const getStudentOverallProgress = (studentId: string, assignedWorldsList: LearningWorld[]): number => {
+        if (assignedWorldsList.length === 0) return 0;
+        let totalAssignedLevels = 0;
+        let completedLevelsCount = 0;
+
+        assignedWorldsList.forEach(w => {
+            totalAssignedLevels += w.days?.length || 8;
+            completedLevelsCount += (progress[studentId]?.[w.id] || []).length;
+        });
+
+        return totalAssignedLevels > 0 ? Math.round((completedLevelsCount / totalAssignedLevels) * 100) : 0;
+    };
+
+    const handleGenerateTeacherBulkReport = async () => {
+        const visibleStudents = students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId);
+        if (visibleStudents.length === 0) { alert('No hay alumnos en este salón.'); return; }
+        setIsGeneratingTeacherBulk(true);
+        try {
+            const worldFilter = bulkReportWorldId === 'global' ? null : bulkReportWorldId;
+            const items = await Promise.all(visibleStudents.map(async (st) => {
+                const assigned = getStudentAssignedWorlds(st);
+                const prog = getStudentOverallProgress(st.id, assigned);
+                try {
+                    const res = await fetch('/api/ai/generate-report', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId: st.id, studentName: st.name, reportType: 'teacher', worldFilter })
+                    });
+                    const data = await res.json();
+                    const wTitle = worldFilter ? worlds.find(w => w.id === worldFilter)?.title : undefined;
+                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: data.report || '', worldTitle: wTitle };
+                } catch {
+                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: 'No disponible' };
+                }
+            }));
+            const clsLabel = selectedClassroomId === "all" ? "Todos los Alumnos" : (classrooms.find(c => c.id === selectedClassroomId)?.name || 'Salón');
+            const scopeLabel = bulkReportWorldId === 'global' ? clsLabel : `${clsLabel} — ${worlds.find(w => w.id === bulkReportWorldId)?.title}`;
+            openReportWindow('teacher', scopeLabel, items);
+        } finally {
+            setIsGeneratingTeacherBulk(false);
+        }
+    };
+
+    const handleGenerateParentBulkReport = async () => {
+        const visibleStudents = students.filter(s => selectedClassroomId === "all" || s.classroomId === selectedClassroomId);
+        if (visibleStudents.length === 0) { alert('No hay alumnos en este salón.'); return; }
+        setIsGeneratingParentBulk(true);
+        try {
+            const worldFilter = bulkReportWorldId === 'global' ? null : bulkReportWorldId;
+            const items = await Promise.all(visibleStudents.map(async (st) => {
+                const assigned = getStudentAssignedWorlds(st);
+                const prog = getStudentOverallProgress(st.id, assigned);
+                try {
+                    const res = await fetch('/api/ai/generate-report', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId: st.id, studentName: st.name, reportType: 'parent', worldFilter })
+                    });
+                    const data = await res.json();
+                    const wTitle = worldFilter ? worlds.find(w => w.id === worldFilter)?.title : undefined;
+                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: Array.isArray(data.paragraphs) ? data.paragraphs.join('\n\n') : (data.report || ''), worldTitle: wTitle, homeActivity: data.homeActivity };
+                } catch {
+                    return { studentName: st.name, xp: st.xp || 0, gems: st.gems || 0, progress: Math.round(prog), aiText: 'No disponible' };
+                }
+            }));
+            const clsLabel = selectedClassroomId === "all" ? "Todos los Alumnos" : (classrooms.find(c => c.id === selectedClassroomId)?.name || 'Salón');
+            const scopeLabel = bulkReportWorldId === 'global' ? clsLabel : `${clsLabel} — ${worlds.find(w => w.id === bulkReportWorldId)?.title}`;
+            openReportWindow('parent', scopeLabel, items);
+        } finally {
+            setIsGeneratingParentBulk(false);
+        }
+    };
 
     const handleSendMessage = async () => {
         if (!messageText.trim()) return;
@@ -1016,13 +1114,11 @@ export default function TeacherDashboard() {
 
                     <nav className="hidden lg:flex items-center gap-1 p-1 rounded-2xl border" style={{ background: 'rgba(28, 58, 96,0.05)', borderColor: '#cbe0f6' }}>
                         {[
-                            { id: 'reports', label: 'Salón', icon: Users },
+                            { id: 'classroom', label: 'Salón', icon: Users },
                             { id: 'library', label: 'Biblioteca', icon: Library },
-                            { id: 'story', label: 'Historia', icon: ImageIcon },
+                            { id: 'reports', label: 'Reportes', icon: FileText },
                             { id: 'raid', label: 'Incursión', icon: Swords },
-                            { id: 'behavior', label: 'Comportamiento', icon: Star },
-                            { id: 'toolkit', label: 'Herramientas', icon: Wrench },
-                            { id: 'messages', label: 'Mensajes', icon: MessageSquare },
+                            { id: 'management', label: 'Gestión', icon: Wrench },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -1051,7 +1147,7 @@ export default function TeacherDashboard() {
                 </div>
             </header>
             {/* Main Content Area */}
-            <main className={`flex-1 overflow-y-auto w-full max-w-full overflow-x-hidden ${activeTab === 'messages' || activeTab === 'reports' ? 'p-0' : 'p-6'}`}>
+            <main className={`flex-1 overflow-y-auto w-full max-w-full overflow-x-hidden ${activeTab === 'classroom' ? 'p-0' : 'p-6'}`}>
 
 
 
@@ -1066,6 +1162,33 @@ export default function TeacherDashboard() {
 
                     return (
                         <div className="space-y-8 animate-fade-in">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-[#cbe0f6]">
+                                <div>
+                                    <h2 className="text-xl font-black text-[#1c3a60] tracking-tight uppercase">Biblioteca de Aventuras</h2>
+                                    <p className="text-xs text-[#73a4db] font-bold">Crea, edita y gestiona las experiencias de tus alumnos</p>
+                                </div>
+                                <div className="flex items-center gap-2 bg-[#f0f5fb] border border-[#cbe0f6] p-1 rounded-xl">
+                                    <button 
+                                        onClick={() => setLibrarySubTab('adventures')}
+                                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${librarySubTab === 'adventures' ? 'bg-[#1c3a60] text-white shadow-md' : 'text-[#73a4db] hover:text-[#1c3a60]'}`}
+                                    >
+                                        🗺️ Mis Aventuras
+                                    </button>
+                                    <button 
+                                        onClick={() => setLibrarySubTab('bulk_upload')}
+                                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${librarySubTab === 'bulk_upload' ? 'bg-[#1c3a60] text-white shadow-md' : 'text-[#73a4db] hover:text-[#1c3a60]'}`}
+                                    >
+                                        📤 Carga Masiva
+                                    </button>
+                                </div>
+                            </div>
+
+                            {librarySubTab === 'bulk_upload' ? (
+                                <div className="bg-white rounded-[2.5rem] border border-[#cbe0f6] shadow-xl overflow-hidden animate-in fade-in duration-300">
+                                    <BulkEvidenceUploader onClose={() => setLibrarySubTab('adventures')} />
+                                </div>
+                            ) : (
+                                <div className="space-y-8">
 
                             {/* World Grid */}
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -1304,12 +1427,14 @@ export default function TeacherDashboard() {
                                     })
                                 )}
                             </div>
+                            </div>
+                            )}
                         </div>
                     );
                 })()}
 
                 {/* STUDENTS TAB — Centro de Mando Unificado (Salón & Análisis) */}
-                {activeTab === 'reports' && (
+                {activeTab === 'classroom' && (
                     <div className="flex flex-col h-full animate-fade-in p-0">
                         <PerformanceDashboard 
                             selectedClassroomId={selectedClassroomId}
@@ -1351,32 +1476,182 @@ export default function TeacherDashboard() {
                                 setShowAddStudentModal(true);
                             }}
                             onDeleteStudent={(student) => setStudentToDelete(student)}
-                            onOpenBulkModal={() => setShowBulkModal(true)}
                         />
                     </div>
                 )}
 
-                {activeTab === 'behavior' && (
-                    <div className="flex flex-col h-full animate-fade-in bg-slate-50/50">
-                        <BehaviorTracker students={students} classroomId={selectedClassroomId} setStudents={setStudents} />
+                {/* REPORTS TAB - Generador de Reportes IA */}
+                {activeTab === 'reports' && (
+                    <div className="animate-fade-in space-y-8 pb-24 text-[#1c3a60] p-6">
+                        <div className="relative overflow-hidden bg-white/70 backdrop-blur-md border border-[#cbe0f6] shadow-md rounded-[2.5rem] p-6 sm:p-8 space-y-6">
+                            <div className="absolute right-0 top-0 w-[300px] h-[300px] bg-[#cbe0f6]/20 blur-[80px] rounded-full pointer-events-none" />
+                            
+                            <div>
+                                <h2 className="text-xl font-black text-[#1c3a60] tracking-tight uppercase">Generador de Reportes IA</h2>
+                                <p className="text-xs text-[#73a4db] font-bold">Genera diagnósticos y recomendaciones personalizadas para docentes y padres de familia con Inteligencia Artificial</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Classroom Selector */}
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-[#73a4db] px-1">Salón de Clases</label>
+                                    <div className="relative">
+                                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#73a4db]" />
+                                        <select
+                                            value={selectedClassroomId}
+                                            onChange={(e) => setSelectedClassroomId(e.target.value)}
+                                            className="w-full pl-9 pr-3 py-2.5 bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl text-xs font-black uppercase tracking-widest text-[#346297] focus:outline-none"
+                                        >
+                                            <option value="all">🏫 Todos los Salones</option>
+                                            {classrooms.map(c => (
+                                                <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Project Selector */}
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-[#73a4db] px-1">Proyecto / Mapa</label>
+                                    <div className="relative">
+                                        <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#73a4db]" />
+                                        <select
+                                            value={bulkReportWorldId}
+                                            onChange={(e) => setBulkReportWorldId(e.target.value)}
+                                            className="w-full pl-9 pr-3 py-2.5 bg-[#f0f5fb] border border-[#cbe0f6] rounded-xl text-xs font-black uppercase tracking-widest text-[#346297] focus:outline-none"
+                                        >
+                                            <option value="global">🌐 Todos los Proyectos</option>
+                                            {worlds.map(w => (
+                                                <option key={w.id} value={w.id}>🗺️ {w.title}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-[#f0f5fb]">
+                                {/* Teacher Report Card */}
+                                <div className="bg-white border border-[#cbe0f6] rounded-[2rem] p-6 hover:shadow-xl transition-all flex flex-col justify-between space-y-4 shadow-sm">
+                                    <div className="space-y-2">
+                                        <div className="w-12 h-12 bg-sky-50 rounded-2xl flex items-center justify-center border border-sky-100">
+                                            <BrainCircuit className="w-6 h-6 text-sky-600" />
+                                        </div>
+                                        <h3 className="text-lg font-black text-[#1c3a60]">Reporte para Docentes</h3>
+                                        <p className="text-xs text-[#73a4db] leading-relaxed">
+                                            Genera un análisis pedagógico detallado del grupo de alumnos. Incluye recomendaciones de andamiaje, alertas académicas y estrategias específicas para cada nivel de desempeño.
+                                        </p>
+                                    </div>
+                                    <button
+                                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
+                                        onClick={handleGenerateTeacherBulkReport}
+                                        className="w-full py-3 bg-[#1c3a60] hover:bg-[#254d7d] text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                                    >
+                                        {isGeneratingTeacherBulk ? (
+                                            <>Generando Reportes...</>
+                                        ) : (
+                                            <>📥 Generar Reporte Docente</>
+                                        )}
+                                    </button>
+                                </div>
+
+                                {/* Parents Report Card */}
+                                <div className="bg-white border border-[#cbe0f6] rounded-[2rem] p-6 hover:shadow-xl transition-all flex flex-col justify-between space-y-4 shadow-sm">
+                                    <div className="space-y-2">
+                                        <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center border border-purple-100">
+                                            <Users className="w-6 h-6 text-purple-600" />
+                                        </div>
+                                        <h3 className="text-lg font-black text-[#1c3a60]">Reporte para Padres / Tutores</h3>
+                                        <p className="text-xs text-[#73a4db] leading-relaxed">
+                                            Genera resúmenes individuales amigables para las familias, explicando los avances en XP y gemas, y sugiriendo actividades lúdicas específicas para realizar en el hogar.
+                                        </p>
+                                    </div>
+                                    <button
+                                        disabled={isGeneratingTeacherBulk || isGeneratingParentBulk}
+                                        onClick={handleGenerateParentBulkReport}
+                                        className="w-full py-3 bg-[#346297] hover:bg-[#3d72ae] text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                                    >
+                                        {isGeneratingParentBulk ? (
+                                            <>Generando Reportes...</>
+                                        ) : (
+                                            <>📥 Generar Reporte Padres</>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
 
-                {activeTab === 'toolkit' && (
-                    <div className="flex flex-col h-full animate-fade-in bg-slate-50/50">
-                        <TeacherToolkit students={students} classroomId={selectedClassroomId} />
-                    </div>
-                )}
+                {/* UNIFIED MANAGEMENT TAB - Gestión y Acompañamiento */}
+                {activeTab === 'management' && (
+                    <div className="flex flex-col h-full animate-fade-in p-6 space-y-6">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-[#cbe0f6]">
+                            <div>
+                                <h2 className="text-xl font-black text-[#1c3a60] tracking-tight uppercase">Gestión y Acompañamiento</h2>
+                                <p className="text-xs text-[#73a4db] font-bold">Monitorea y fomenta la participación y el comportamiento en tu clase</p>
+                            </div>
+                            <div className="flex items-center gap-2 bg-[#f0f5fb] border border-[#cbe0f6] p-1 rounded-xl flex-wrap">
+                                <button 
+                                    onClick={() => setManagementSubTab('story')}
+                                    className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${managementSubTab === 'story' ? 'bg-[#1c3a60] text-white shadow-md' : 'text-[#73a4db] hover:text-[#1c3a60]'}`}
+                                >
+                                    📖 Historia
+                                </button>
+                                <button 
+                                    onClick={() => setManagementSubTab('toolkit')}
+                                    className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${managementSubTab === 'toolkit' ? 'bg-[#1c3a60] text-white shadow-md' : 'text-[#73a4db] hover:text-[#1c3a60]'}`}
+                                >
+                                    🛠️ Herramientas
+                                </button>
+                                <button 
+                                    onClick={() => setManagementSubTab('behavior')}
+                                    className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${managementSubTab === 'behavior' ? 'bg-[#1c3a60] text-white shadow-md' : 'text-[#73a4db] hover:text-[#1c3a60]'}`}
+                                >
+                                    🏆 Comportamiento
+                                </button>
+                                <button 
+                                    onClick={() => setManagementSubTab('messages')}
+                                    className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${managementSubTab === 'messages' ? 'bg-[#1c3a60] text-white shadow-md' : 'text-[#73a4db] hover:text-[#1c3a60]'}`}
+                                >
+                                    💬 Mensajes
+                                </button>
+                            </div>
+                        </div>
 
-                {activeTab === 'story' && (
-                    <div className="flex flex-col h-full animate-fade-in bg-slate-50/50">
-                        <ClassStoryFeed classroomId={selectedClassroomId} isTeacher={true} />
+                        {managementSubTab === 'story' && (
+                            <div className="flex flex-col h-full animate-fade-in bg-slate-50/50 rounded-3xl p-4 border border-[#cbe0f6]">
+                                <ClassStoryFeed classroomId={selectedClassroomId} isTeacher={true} />
+                            </div>
+                        )}
+
+                        {managementSubTab === 'toolkit' && (
+                            <div className="flex flex-col h-full animate-fade-in bg-slate-50/50 rounded-3xl p-4 border border-[#cbe0f6]">
+                                <TeacherToolkit students={students} classroomId={selectedClassroomId} />
+                            </div>
+                        )}
+
+                        {managementSubTab === 'behavior' && (
+                            <div className="flex flex-col h-full animate-fade-in bg-slate-50/50 rounded-3xl p-4 border border-[#cbe0f6]">
+                                <BehaviorTracker students={students} classroomId={selectedClassroomId} setStudents={setStudents} />
+                            </div>
+                        )}
+
+                        {managementSubTab === 'messages' && (
+                            <div className="flex flex-col h-full animate-fade-in bg-white rounded-3xl border border-[#cbe0f6] overflow-hidden">
+                                <StudentMessagesPanel 
+                                    students={students} 
+                                    progress={progress} 
+                                    worlds={worlds} 
+                                    onSendHint={handleSendDirectMessage}
+                                />
+                            </div>
+                        )}
                     </div>
                 )}
 
             {/* Mobile Bottom Navigation */}
             <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-[#1c3a60]/90 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-2xl flex justify-between items-center px-4 py-3 z-50 overflow-x-auto gap-4 custom-scrollbar">
-                <button onClick={() => setActiveTab("reports")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'reports' ? 'text-[#73a4db] scale-110' : 'text-[#73a4db]'}`}>
+                <button onClick={() => setActiveTab("classroom")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'classroom' ? 'text-[#73a4db] scale-110' : 'text-[#73a4db]'}`}>
                     <Users className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Salón</span>
                 </button>
@@ -1384,25 +1659,17 @@ export default function TeacherDashboard() {
                     <Library className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Mapas</span>
                 </button>
-                <button onClick={() => setActiveTab("story")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'story' ? 'text-[#73a4db] scale-110' : 'text-[#73a4db]'}`}>
-                    <ImageIcon className="w-5 h-5" />
-                    <span className="text-[9px] font-black uppercase tracking-widest">Feed</span>
-                </button>
-                <button onClick={() => setActiveTab("behavior")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'behavior' ? 'text-emerald-400 scale-110' : 'text-[#73a4db]'}`}>
-                    <Star className="w-5 h-5" />
-                    <span className="text-[9px] font-black uppercase tracking-widest">Puntos</span>
-                </button>
-                <button onClick={() => setActiveTab("toolkit")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'toolkit' ? 'text-amber-400 scale-110' : 'text-[#73a4db]'}`}>
-                    <Wrench className="w-5 h-5" />
-                    <span className="text-[9px] font-black uppercase tracking-widest">Tools</span>
+                <button onClick={() => setActiveTab("reports")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'reports' ? 'text-[#73a4db] scale-110' : 'text-[#73a4db]'}`}>
+                    <FileText className="w-5 h-5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Reportes</span>
                 </button>
                 <button onClick={() => setActiveTab("raid")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'raid' ? 'text-rose-400 scale-110' : 'text-[#73a4db]'}`}>
                     <Swords className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Raid</span>
                 </button>
-                <button onClick={() => setActiveTab("messages")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'messages' ? 'text-[#73a4db] scale-110' : 'text-[#73a4db]'}`}>
-                    <MessageSquare className="w-5 h-5" />
-                    <span className="text-[9px] font-black uppercase tracking-widest">Msgs</span>
+                <button onClick={() => setActiveTab("management")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'management' ? 'text-emerald-400 scale-110' : 'text-[#73a4db]'}`}>
+                    <Wrench className="w-5 h-5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Gestión</span>
                 </button>
                 <button onClick={() => signOut({ callbackUrl: "/" })} className="flex flex-col items-center gap-1.5 text-[#73a4db] hover:text-rose-400 transition-all">
                     <LogOut className="w-5 h-5" />
@@ -1441,20 +1708,7 @@ export default function TeacherDashboard() {
                 />
             )}
 
-            {/* Bulk Upload Modal */}
-            {showBulkModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-                    <div className="bg-[#1c3a60]/90 border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl">
-                        <button
-                            onClick={() => setShowBulkModal(false)}
-                            className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
-                        >
-                            <X className="w-5 h-5 text-[#73a4db]" />
-                        </button>
-                        <BulkEvidenceUploader onClose={() => setShowBulkModal(false)} />
-                    </div>
-                </div>
-            )}
+
 
 
 
@@ -2857,15 +3111,7 @@ export default function TeacherDashboard() {
                 </div>
             )}
 
-            {/* ═══ MESSAGES TAB ═══ */}
-            {activeTab === 'messages' && (
-                <StudentMessagesPanel 
-                    students={students} 
-                    progress={progress} 
-                    worlds={worlds} 
-                    onSendHint={handleSendDirectMessage}
-                />
-            )}
+
 
             </main>
         </div>
