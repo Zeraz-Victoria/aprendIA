@@ -129,6 +129,13 @@ El campo "explanation.chunks" debe tener EXACTAMENTE 6 bloques de teoría por se
 - **feedbackError (Crítico)**: No digas "Incorrecto". Explica el error común específico en el que pudo incurrir el alumno y dale una pista reflexiva (socrática) para que halle la respuesta correcta por sí mismo.
 - **feedbackSuccess**: Valida el éxito conectándolo con el progreso de la aventura.
 
+# 7. INSTRUCCIONES DE FORMATO JSON (CRÍTICO PARA EVITAR ERRORES):
+- El retorno debe ser exclusivamente el JSON estructurado solicitado, sin explicaciones ni tags markdown de bloque como \`\`\`json.
+- Para evitar que el JSON sea inválido:
+  1. Todos los saltos de línea (line breaks) dentro de los strings (cadenas de texto) DEBEN ser escapados como \\n. Nunca dejes un salto de línea real (Enter) dentro de un valor de texto.
+  2. Todas las comillas dobles dentro de las cadenas de texto DEBEN ser escapadas como \\" (ejemplo: \\"palabra\\").
+  3. No utilices caracteres especiales no válidos o fórmulas en formato LaTeX que contengan barras invertidas no escapadas.
+
 # FORMATO DE SALIDA (JSON ÚNICAMENTE):
 Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con esta estructura exacta:
 {
@@ -166,12 +173,12 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
        "content": {
           "explanation": { 
              "chunks": [
-                "## ¿Qué es?\\n...",
-                "## ¿Por qué importa?\\n...",
-                "## ¿Cómo funciona?\\n...",
-                "## Ejemplo resuelto\\n...",
-                "## Conexión con el mundo real\\n...",
-                "## ¿Sabías que...?\\n..."
+                "## ¿Qué es? — [Definición del concepto en 3 oraciones conectada al tema]",
+                "## ¿Por qué importa? — [Relevancia cotidiana de este conocimiento en 3 oraciones]",
+                "## ¿Cómo funciona? — [Procedimiento o algoritmo paso a paso con listas si aplica]",
+                "## Ejemplo resuelto — [Problema práctico resuelto detalladamente paso a paso con la temática]",
+                "## Conexión con el mundo real — [Presencia del concepto en ciencia, tecnología o comunidad]",
+                "## ¿Sabías que...? — [Dato asombroso o curiosidad histórica del concepto]"
              ],
              "analogy": "Analogía contextualizada para la Fase ${phase} basada en la vida real del estudiante" 
           },
