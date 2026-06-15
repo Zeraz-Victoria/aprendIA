@@ -86,65 +86,71 @@ export async function POST(req: Request) {
     });
 
     const prompt = `
-# PERFIL: DOCTOR EN PEDAGOGÍA Y ESPECIALISTA DE ÉLITE NEM 2022
-Tu misión es transformar el tema matemático o problemática indicada en un proyecto de impacto social y una aventura gamificada.
+# PERFIL: DOCTOR EN PEDAGOGÍA, DISEÑADOR DE VIDEOJUEGOS EDUCATIVOS Y ESPECIALISTA NEM 2022
+Tu misión es actuar como un diseñador instruccional y de gamificación de élite. Debes transformar un contenido matemático en una aventura de aprendizaje inmersiva de alto impacto y rigor pedagógico.
 
 # 1. DATOS DE ENTRADA:
 - Tema / Problemática: ${topic}
 - Diagnóstico de Aula: ${diagnostico}
 - Metodología NEM: ${metodologia}
 - Fase NEM: ${phase}
-- Nivel de Complejidad: ${dificultad}
+- Nivel de Dificultad: ${dificultad}
 - Tema Visual para Gamificación: ${theme}
-- Sesiones Requeridas: EXACTAMENTE ${sessionCount} sesiones progresivas.
+- Sesiones Requeridas: EXACTAMENTE ${sessionCount} sesiones.
 
-# 2. INSTRUCCIONES DE CALIDAD (EL ESTÁNDAR DE EXCELENCIA):
-- Debes generar una Planeación Didáctica Oficial (NEM 2022) con rigor doctoral.
-- La planeación debe estar conectada a la Metodología solicitada (${metodologia}) y dividida en ${sessionCount} partes.
-- Inmediatamente después, genera el "mapa_interactivo" que traduzca esta planeación rigurosa a un juego visual con la temática "${theme}".
+# 2. ADAPTACIÓN AL DIAGNÓSTICO DE AULA (CRÍTICO):
+Analiza el "Diagnóstico de Aula" y adapta dinámicamente todo el contenido bajo las siguientes reglas:
+- Si el diagnóstico indica rezago, barreras de aprendizaje o dificultades específicas, simplifica la complejidad del lenguaje, añade analogías más visuales y físicas, y desglosa los procedimientos en pasos más pequeños (micro-pasos).
+- Si el diagnóstico indica alumnos sobresalientes o alta motivación, aumenta el nivel de reto cognitivo de los problemas prácticos, plantea preguntas más abiertas e introduce mayor profundidad analítica.
 
-# 3. REGLAS DE CONTENIDO TEÓRICO (CRÍTICO):
-El campo "explanation.chunks" es el corazón de la experiencia de aprendizaje del alumno. Es OBLIGATORIO cumplir:
-- Debes generar EXACTAMENTE 6 chunks (párrafos/secciones) de teoría POR SESIÓN.
-- Cada chunk debe tener MÍNIMO 3 oraciones completas y sustanciales. No generes chunks de una sola oración.
-- Los 6 chunks deben seguir esta progresión pedagógica estricta:
-  1. "¿Qué es?": Definición completa y clara del concepto central de esa sesión.
-  2. "¿Por qué importa?": Relevancia en la vida cotidiana del alumno, con un ejemplo concreto.
-  3. "¿Cómo funciona?": El procedimiento o razonamiento, explicado paso a paso con listas si aplica.
-  4. "Ejemplo resuelto": Un caso completo resuelto con datos reales, mostrando cada paso.
-  5. "Conexión con el mundo real": Cómo este concepto aparece en tecnología, naturaleza, economía o comunidad.
-  6. "¿Sabías que...?": Un dato histórico, récord, paradoja o curiosidad asombrosa relacionada con el tema.
-- Usa formato Markdown dentro de los chunks: **negritas** para términos clave, listas numeradas o con guiones para procedimientos, y encabezados ## para el título de cada sección.
+# 3. ANDAMIAJE PEDAGÓGICO DE LA AVENTURA (SCROLL PROGRESSION):
+Las ${sessionCount} sesiones deben tener una progresión de dificultad y aprendizaje estructurada de la siguiente manera:
+- **Fase de Apertura (Primer 25% de las sesiones)**: Foco en la conceptualización base, exploración y conexión del tema con saberes previos. Explicación intuitiva.
+- **Fase de Desarrollo (Siguiente 50% de las sesiones)**: Foco en la modelación matemática, algoritmos, procedimientos paso a paso y resolución guiada de problemas.
+- **Fase de Cierre y Boss Fight (Último 25% de las sesiones)**: Foco en la transferencia de conocimiento, aplicaciones complejas a problemáticas comunitarias y síntesis total del contenido para derrotar al jefe final.
 
-# 4. REGLAS DE MINIJUEGO (VARIEDAD OBLIGATORIA):
-Cada sesión debe tener un minijuego de tipo DIFERENTE. Sigue esta rotación estricta por número de sesión:
-- Sesiones 1, 4, 7, 10, 13, 16, 19, 22, 25 → tipo: "word_search". Genera el campo "words" con un array de 8-10 palabras clave del tema (cada palabra DEBE tener mínimo 4 letras). Ejemplo: {"type":"word_search","words":["FRACCION","NUMERADOR","DENOMINADOR","EQUIVALENTE","SIMPLIFICAR","DECIMAL","PORCENTAJE","MIXTO"]}
-- Sesiones 2, 5, 8, 11, 14, 17, 20, 23 → tipo: "memory_match". Genera el campo "pairs" con 5-6 pares de concepto-definición. Ejemplo: {"type":"memory_match","pairs":[{"concept":"Numerador","definition":"Número de arriba en una fracción"},{"concept":"Denominador","definition":"Número de abajo en una fracción"},...]}
-- Sesiones 3, 6, 9, 12, 15, 18, 21, 24 → tipo: "multiple_choice". Genera "question", "options" (4 opciones), "correctAnswer", "feedbackSuccess", "feedbackError".
+# 4. INTEGRACIÓN NARRATIVA ORGÁNICA (GAMIFICACIÓN PROFUNDA):
+No separes la matemática de la fantasía. Integra el "Tema Visual para Gamificación" (${theme}) dentro del núcleo de la enseñanza:
+- **Narrativa del nivel**: Debe contar una historia secuencial donde el alumno avanza resolviendo misterios, ayudando a personajes, o interactuando con el entorno del tema visual.
+- **Explicaciones y Problemas**: El ejemplo resuelto y los problemas prácticos DEBEN usar elementos del tema visual (ej. si el tema es "Piratas", el problema debe involucrar monedas de oro, barcos, islas o raciones de agua, no manzanas genéricas).
+
+# 5. REGLAS DE CONTENIDO TEÓRICO (EXPLANATION.CHUNKS):
+El campo "explanation.chunks" debe tener EXACTAMENTE 6 bloques de teoría por sesión. Cada bloque debe tener MÍNIMO 3 oraciones ricas en contenido y seguir este flujo pedagógico:
+1. **¿Qué es?**: Definición rigurosa pero comprensible según la Fase NEM, conectando el concepto con la narrativa del juego.
+2. **¿Por qué importa?**: Utilidad real en la vida del estudiante y en el contexto de su aventura.
+3. **¿Cómo funciona?**: Algoritmo o procedimiento paso a paso. Usa listas numeradas y Markdown (**negritas** para términos clave).
+4. **Ejemplo Resuelto**: Un caso práctico resuelto detallando operaciones matemáticas paso a paso y aplicando elementos narrativos del tema visual.
+5. **Conexión con el Mundo Real**: Su presencia en la ciencia, tecnología, arte o comunidad.
+6. **Curiosidades**: Un dato asombroso, paradoja o historia fascinante del concepto.
+
+# 6. RETROALIMENTACIÓN SOCRÁTICA ENRIQUECIDA (MINIJUEGOS):
+- **Word Search / Memory Match**: Selecciona términos clave significativos y definiciones precisas alineadas a la Fase NEM.
+- **Multiple Choice**: La pregunta debe evaluar comprensión profunda, no memorización. 
+- **feedbackError (Crítico)**: No digas "Incorrecto". Explica el error común específico en el que pudo incurrir el alumno y dale una pista reflexiva (socrática) para que halle la respuesta correcta por sí mismo.
+- **feedbackSuccess**: Valida el éxito conectándolo con el progreso de la aventura.
 
 # FORMATO DE SALIDA (JSON ÚNICAMENTE):
 Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con esta estructura exacta:
-
 {
   "plano_didactico": {
-    "encabezado": { "proyecto": "Título", "fase": "${phase}", "metodologia": "${metodologia}", "num_sesiones": ${sessionCount} },
-    "diagnostico_pedagogico": "Análisis sociocrítico",
+    "encabezado": { "proyecto": "Título del Proyecto", "fase": "${phase}", "metodologia": "${metodologia}", "num_sesiones": ${sessionCount} },
+    "diagnostico_pedagogico": "Análisis didáctico adaptado al diagnóstico del docente",
     "estructura_curricular": {
-      "campos_formativos": ["..."],
-      "ejes_articuladores": ["..."],
-      "proposito": "...",
-      "pda": "..."
+      "campos_formativos": ["Campos oficiales correspondientes"],
+      "ejes_articuladores": ["Ejes oficiales correspondientes"],
+      "proposito": "Propósito general del proyecto de impacto social",
+      "pda": "Procesos de Desarrollo de Aprendizaje (PDA) oficiales vinculados"
     },
     "secuencia_didactica": [
       {
         "numero": 1,
-        "titulo": "...",
+        "titulo": "Título formal de la sesión",
         "duracion": "60 min",
-        "inicio": ["..."],
-        "desarrollo": ["Modelaje Docente: ...", "Acción del Alumno: ..."],
-        "cierre": ["..."],
-        "recursos": ["..."],
-        "evidencia": "..."
+        "inicio": ["Actividad de inicio"],
+        "desarrollo": ["Desarrollo pedagógico paso a paso"],
+        "cierre": ["Cierre socrático"],
+        "recursos": ["Recursos didácticos"],
+        "evidencia": "Evidencia de aprendizaje esperada"
       }
     ]
   },
@@ -152,35 +158,35 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
     {
        "session_id": 1,
        "type": "concept_story",
-       "title": "Título corto y gamificado basado en la sesión 1",
-       "session_start": "Instrucción de INICIO o narrativa envolvente adaptada a la temática visual.",
-       "session_development": "Instrucción del DESARROLLO adaptado al Reto/Puzzle del juego.",
-       "session_end": "Instrucción del CIERRE para validación.",
-       "narrative": "Narrativa de apertura para este nivel (del tema visual).",
+       "title": "Título de nivel inmersivo y gamificado",
+       "session_start": "Instrucción de inicio que introduce la misión narrativa del nivel",
+       "session_development": "Instrucción de desarrollo/reto narrativo que el minijuego representa",
+       "session_end": "Instrucción de cierre para sellar el logro de la sesión",
+       "narrative": "Narrativa introductoria del nivel conectando con el tema visual",
        "content": {
           "explanation": { 
              "chunks": [
-               "## ¿Qué es? — [REEMPLAZAR: Definición completa del concepto de esta sesión, mínimo 3 oraciones]",
-               "## ¿Por qué importa? — [REEMPLAZAR: Relevancia con ejemplo cotidiano del alumno, mínimo 3 oraciones]",
-               "## ¿Cómo funciona? — [REEMPLAZAR: Procedimiento paso a paso con listas, mínimo 3 oraciones]",
-               "## Ejemplo resuelto — [REEMPLAZAR: Caso concreto resuelto completamente con datos reales]",
-               "## Conexión con el mundo real — [REEMPLAZAR: Aparición del concepto en tecnología, naturaleza o comunidad]",
-               "## ¿Sabías que...? — [REEMPLAZAR: Dato histórico curioso, récord o paradoja asombrosa del tema]"
+                "## ¿Qué es?\\n...",
+                "## ¿Por qué importa?\\n...",
+                "## ¿Cómo funciona?\\n...",
+                "## Ejemplo resuelto\\n...",
+                "## Conexión con el mundo real\\n...",
+                "## ¿Sabías que...?\\n..."
              ],
-             "analogy": "Dato curioso o analogía ingeniosa que conecte el tema con algo que un niño de Fase ${phase} ya conoce" 
+             "analogy": "Analogía contextualizada para la Fase ${phase} basada en la vida real del estudiante" 
           },
           "miniGame": { 
              "type": "multiple_choice",
-             "question": "Pregunta de opción múltiple basada en la sesión",
-             "options": ["Correcta", "Mala 1", "Mala 2", "Mala 3"],
-             "correctAnswer": "Correcta",
-             "feedbackSuccess": "¡Excelente!",
-             "feedbackError": "Pista socrática"
+             "question": "Pregunta de opción múltiple con enfoque pedagógico",
+             "options": ["Opción Correcta", "Distractor 1", "Distractor 2", "Distractor 3"],
+             "correctAnswer": "Opción Correcta",
+             "feedbackSuccess": "Mensaje de éxito narrativo",
+             "feedbackError": "Pista socrática explicativa del error"
           },
           "practiceProblem": { 
-             "statement": "Reto final para anotar en cuaderno (Evidencia)",
-             "correctValue": "Respuesta correcta",
-             "hint": "Pista final"
+             "statement": "Reto matemático contextualizado a la narrativa para registrar en cuaderno",
+             "correctValue": "Respuesta esperada o valor numérico exacto",
+             "hint": "Pista reflexiva final"
           }
        }
     }
