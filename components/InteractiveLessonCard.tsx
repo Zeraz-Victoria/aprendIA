@@ -317,18 +317,53 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             ? formats[((data.dayNumber || 1) - 1) % formats.length]
             : "text";
 
+    // Normalize explanation chunks
+    const rawExplanationChunks = data.content?.explanation?.chunks as any;
+    const normalizedExplanationChunks = (() => {
+        if (!rawExplanationChunks) return [];
+        if (typeof rawExplanationChunks === "string") {
+            const parts = rawExplanationChunks.split(/(?=^##+ )|(?=^\*\*)/gm).map((p: any) => p.trim()).filter(Boolean);
+            if (parts.length > 0) return parts;
+            return [rawExplanationChunks];
+        }
+        if (Array.isArray(rawExplanationChunks)) {
+            if (rawExplanationChunks.length === 1 && typeof rawExplanationChunks[0] === "string" && rawExplanationChunks[0].includes("##")) {
+                return rawExplanationChunks[0].split(/(?=^##+ )|(?=^\*\*)/gm).map((p: any) => p.trim()).filter(Boolean);
+            }
+            return rawExplanationChunks.map((c: any) => typeof c === "string" ? c.trim() : String(c)).filter(Boolean);
+        }
+        return [];
+    })();
+
+    // Check for JSON-encoded practice statement and extract oraculo_teoria
+    const extractedOraculoTeoria = (() => {
+        const statement = data.content?.practiceProblem?.statement;
+        if (statement && typeof statement === "string" && statement.trim().startsWith("{") && statement.trim().endsWith("}")) {
+            try {
+                const parsed = JSON.parse(statement.trim());
+                if (parsed && parsed.oraculo_teoria) {
+                    return parsed.oraculo_teoria;
+                }
+            } catch (e) {
+                // Not JSON or parse failed
+            }
+        }
+        return null;
+    })();
+
     // For AI-generated levels with rich chunks, show narrative first then all explanation chunks.
     // For PDF-uploaded levels, keep using only the narrative (they embed all content in it).
-    const hasRichChunks = (data.content?.explanation?.chunks?.length || 0) > 1;
+    const hasRichChunks = normalizedExplanationChunks.length > 1 || !!extractedOraculoTeoria;
     const baseChunks: string[] = hasRichChunks
         ? [
             data.narrative, 
-            ...(data.content?.explanation?.chunks || []),
+            ...(extractedOraculoTeoria ? [extractedOraculoTeoria] : []),
+            ...normalizedExplanationChunks,
             data.content?.explanation?.analogy ? `## 💡 Analogía\n${data.content.explanation.analogy}` : null
           ].filter(Boolean) as string[]
         : (data.narrative 
             ? [data.narrative, data.content?.explanation?.analogy ? `## 💡 Analogía\n${data.content.explanation.analogy}` : null].filter(Boolean) as string[]
-            : (data.content?.explanation?.chunks || [""]));
+            : (normalizedExplanationChunks.length > 0 ? normalizedExplanationChunks : [""]));
 
     // If using a visual renderer (flashcards, mind maps, etc), we paginate everything at once
     // but preserve baseChunks for the TheoryRenderer to use as sections natively!
@@ -341,8 +376,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
             setCurrentChunkIndex(prev => prev + 1);
         } else {
             // Reached the end of the narrative
-            if (data.type === "concept_story" && !data.content?.miniGame) {
-                // If it's just a story with no minigame, we are done
+            if (data.type === "concept_story" && !data.content?.miniGame && !hasPractice) {
+                // If it's just a story with no minigame and no practice, we are done
                 onComplete();
             } else if (data.type === "boss_fight") {
                 // Boss fights just show story here, then pass to BossFightCamera via onComplete
@@ -861,7 +896,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             </div>
                         </div>
 
-                        {(data.type === 'guided_practice' || data.content?.miniGame) && showActivity && !isTeacherUnlocked && (
+                        {(data.type === 'guided_practice' || data.content?.miniGame || hasPractice) && showActivity && !isTeacherUnlocked && (
                             <button type="button" onClick={() => setShowTeacherAuth(!showTeacherAuth)} className="text-[#2e9f6c] hover:text-[#165b3d] bg-white/50 px-3 py-1 rounded-full text-xs font-bold transition-colors">
                                 👁️ Docente
                             </button>
@@ -951,7 +986,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                     {currentChunkIndex < paginationChunks.length - 1 ?
                                         "Continuar Leyendo" :
                                         (data.type === "boss_fight" ? "¡Enfrentar al Jefe!" :
-                                            (data.type === "guided_practice" || data.content?.miniGame ? "¡Listo para el Reto!" : "Finalizar Lección"))
+                                            (data.type === "guided_practice" || data.content?.miniGame || hasPractice ? "¡Listo para el Reto!" : "Finalizar Lección"))
                                     } <ChevronRight />
                                 </button>
                             </div>

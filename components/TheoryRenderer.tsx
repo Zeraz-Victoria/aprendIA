@@ -347,10 +347,23 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
                     if (blockMatch && blockMatch[1].length < 60) {
                         heading = blockMatch[1].trim();
                         body = blockMatch[2].trim();
-                    } else if (idx === 0) {
-                        // Narrative rarely has a heading
-                        introText += body + "\n\n";
-                        return; // skip adding narrative as a flashcard unless it's the only one
+                    } else {
+                        // Looser checks for chunks that don't start with ## or **
+                        const looserInlineMatch = chunk.match(/^([^*\r\n#]+?)\s*[-—:]+\s+([\s\S]*)/);
+                        if (looserInlineMatch && looserInlineMatch[1].length < 60) {
+                            heading = looserInlineMatch[1].trim();
+                            body = looserInlineMatch[2].trim();
+                        } else {
+                            const looserBlockMatch = chunk.match(/^([^\r\n]+)\s*[\r\n]+([\s\S]*)/);
+                            if (looserBlockMatch && looserBlockMatch[1].length < 60) {
+                                heading = looserBlockMatch[1].trim();
+                                body = looserBlockMatch[2].trim();
+                            } else if (idx === 0) {
+                                // Narrative rarely has a heading
+                                introText += body + "\n\n";
+                                return; // skip adding narrative as a flashcard unless it's the only one
+                            }
+                        }
                     }
                 }
 
@@ -374,9 +387,13 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
                 const trimmed = line.trim();
                 const isMarkdownHeading = /^(#+)\s+/.test(trimmed);
                 const isBoldHeading = trimmed.startsWith("**") && trimmed.endsWith("**") && trimmed.length > 4;
+                const isQuestionHeading = /^[¿A-Z].*\?\s*$/.test(trimmed) && trimmed.length < 50;
+                const inlineMatch = trimmed.match(/^([¿A-Z][^*\n#]{1,40})\s*[-—:]+\s+(.+)$/);
                 
-                if (isMarkdownHeading || isBoldHeading) {
-                    const headingText = trimmed.replace(/^#+\s*/, "").replace(/\*\*/g, "").replace(/:$/, "").trim();
+                if (isMarkdownHeading || isBoldHeading || isQuestionHeading || inlineMatch) {
+                    const headingText = inlineMatch 
+                        ? inlineMatch[1].trim() 
+                        : trimmed.replace(/^#+\s*/, "").replace(/\*\*/g, "").replace(/:$/, "").trim();
 
                     if (currentSection) {
                         sections.push(currentSection);
@@ -386,7 +403,8 @@ export default function TheoryRenderer({ presentationType = "text", title = "Teo
                         infographicSteps.push({ icon: icons[sections.length % icons.length], heading: currentSection.heading, text: currentSection.items.join(" ") });
                         mindMapBranches.push({ label: currentSection.heading, children: currentSection.items.slice(0, 4) });
                     }
-                    currentSection = { heading: headingText, items: [] };
+                    const firstItem = inlineMatch ? inlineMatch[2].trim() : null;
+                    currentSection = { heading: headingText, items: firstItem ? [firstItem] : [] };
                 } else if (currentSection && trimmed.length > 0) {
                     const cleanLine = trimmed.replace(/^[-•▸*]\s*/, "");
                     if (cleanLine.length > 0) {

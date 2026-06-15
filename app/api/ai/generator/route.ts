@@ -115,13 +115,16 @@ No separes la matemática de la fantasía. Integra el "Tema Visual para Gamifica
 - **Explicaciones y Problemas**: El ejemplo resuelto y los problemas prácticos DEBEN usar elementos del tema visual (ej. si el tema es "Piratas", el problema debe involucrar monedas de oro, barcos, islas o raciones de agua, no manzanas genéricas).
 
 # 5. REGLAS DE CONTENIDO TEÓRICO (EXPLANATION.CHUNKS):
-El campo "explanation.chunks" debe tener EXACTAMENTE 6 bloques de teoría por sesión. Cada bloque debe tener MÍNIMO 3 oraciones ricas en contenido y seguir este flujo pedagógico:
-1. **¿Qué es?**: Definición rigurosa pero comprensible según la Fase NEM, conectando el concepto con la narrativa del juego.
-2. **¿Por qué importa?**: Utilidad real en la vida del estudiante y en el contexto de su aventura.
-3. **¿Cómo funciona?**: Algoritmo o procedimiento paso a paso. Usa listas numeradas y Markdown (**negritas** para términos clave).
-4. **Ejemplo Resuelto**: Un caso práctico resuelto detallando operaciones matemáticas paso a paso y aplicando elementos narrativos del tema visual.
-5. **Conexión con el Mundo Real**: Su presencia en la ciencia, tecnología, arte o comunidad.
-6. **Curiosidades**: Un dato asombroso, paradoja o historia fascinante del concepto.
+El campo "explanation.chunks" debe ser obligatoriamente un ARREGLO de exactamente 6 elementos de tipo string (no una sola cadena de texto). Cada bloque debe tener MÍNIMO 3 oraciones ricas en contenido y seguir este flujo pedagógico:
+1. **¿Qué es?**: Comienza con "## ¿Qué es? — [Definición del concepto en 3 oraciones conectada al tema]".
+2. **¿Por qué importa?**: Comienza con "## ¿Por qué importa? — [Relevancia cotidiana de este conocimiento en 3 oraciones]".
+3. **¿Cómo funciona?**: Comienza con "## ¿Cómo funciona? — [Procedimiento o algoritmo paso a paso con listas si aplica]".
+4. **Ejemplo Resuelto**: Comienza con "## Ejemplo resuelto — [Problema práctico resuelto detalladamente paso a paso con la temática]".
+5. **Conexión con el Mundo Real**: Comienza con "## Conexión con el mundo real — [Presencia del concepto en ciencia, tecnología o comunidad]".
+6. **Curiosidades**: Comienza con "## ¿Sabías que...? — [Dato asombroso o curiosidad histórica del concepto]".
+Cada elemento de "chunks" debe empezar estrictamente con el prefijo "## [Título] — " para que el sistema lo pueda procesar correctamente.
+
+
 
 # 6. RETROALIMENTACIÓN SOCRÁTICA ENRIQUECIDA (MINIJUEGOS):
 - **Word Search / Memory Match**: Selecciona términos clave significativos y definiciones precisas alineadas a la Fase NEM.
@@ -273,7 +276,19 @@ REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionC
           if (interactiveMap && Array.isArray(interactiveMap)) {
             interactiveMap.forEach((nivel: any, index: number) => {
                 const rawChunks = nivel.content?.explanation?.chunks;
-                const chunks = Array.isArray(rawChunks) && rawChunks.length > 0 ? rawChunks : [nivel.paso_1_inicio?.oraculo || "Explora el mapa."];
+                let chunks: string[] = [];
+                if (typeof rawChunks === 'string') {
+                    chunks = rawChunks.split(/(?=^##+ )|(?=^\*\*)/gm).map((p: string) => p.trim()).filter(Boolean);
+                } else if (Array.isArray(rawChunks)) {
+                    if (rawChunks.length === 1 && typeof rawChunks[0] === 'string' && rawChunks[0].includes('##')) {
+                        chunks = rawChunks[0].split(/(?=^##+ )|(?=^\*\*)/gm).map((p: string) => p.trim()).filter(Boolean);
+                    } else {
+                        chunks = rawChunks.map((c: any) => typeof c === 'string' ? c.trim() : String(c)).filter(Boolean);
+                    }
+                }
+                if (chunks.length === 0) {
+                    chunks = [nivel.paso_1_inicio?.oraculo || "Explora el mapa."];
+                }
                 days.push({
                   dayNumber: index + 1,
                   type: nivel.type || "guided_practice",
