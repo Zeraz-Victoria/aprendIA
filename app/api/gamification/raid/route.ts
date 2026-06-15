@@ -85,6 +85,27 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "No active boss" }, { status: 404 });
         }
 
+        // Fetch student current gems
+        const student = await prisma.user.findUnique({
+            where: { id: studentId },
+            select: { gems: true }
+        });
+
+        if (!student) {
+            return NextResponse.json({ error: "Student not found" }, { status: 404 });
+        }
+
+        // Count existing contributions by this student to this boss
+        const attackCount = await prisma.raidContribution.count({
+            where: { raidBossId: activeBoss.id, studentId }
+        });
+
+        const nextAttackCost = 10 + 20 * attackCount;
+
+        if (student.gems < nextAttackCost) {
+            return NextResponse.json({ error: "Insufficient gems", cost: nextAttackCost, currentGems: student.gems }, { status: 400 });
+        }
+
         // Perform all writes in a single transaction to prevent connection exhaustion and race conditions
         const [updatedBoss] = await prisma.$transaction([
             prisma.raidBoss.update({
@@ -101,7 +122,7 @@ export async function POST(req: Request) {
             prisma.user.update({
                 where: { id: studentId },
                 data: {
-                    gems: { decrement: 5 },
+                    gems: { decrement: nextAttackCost },
                     xp: { increment: Math.floor(damage / 2) }
                 }
             })

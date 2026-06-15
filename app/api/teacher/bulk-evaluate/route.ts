@@ -222,12 +222,19 @@ Ejemplo exacto:
                         }
                     });
 
+                    const progressCount = await prisma.progress.count({ where: { studentId } });
+                    const evidenceCount = await prisma.evidenceEntry.count({ where: { studentId } });
+                    const totalCompletions = progressCount + evidenceCount;
+                    const multiplier = Math.max(0.1, 1 - 0.02 * totalCompletions);
+                    const baseGems = finalGrade > 8 ? 5 : 2;
+                    const actualGems = Math.max(1, Math.round(baseGems * multiplier));
+
                     // Recompensas XP Gamification
                     await prisma.user.update({
                         where: { id: studentId },
                         data: {
                             xp: { increment: finalGrade > 8 ? 50 : 25 },
-                            gems: { increment: finalGrade > 8 ? 5 : 2 }
+                            gems: { increment: actualGems }
                         }
                     });
                     console.log('XP/Gemas incrementadas para el alumno exitosamente.');

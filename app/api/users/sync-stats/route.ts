@@ -33,7 +33,16 @@ export async function POST(req: Request) {
             const dataToUpdate: any = {};
 
             if (typeof gemsToAdd === 'number') {
-                dataToUpdate.gems = Math.max(0, user.gems + gemsToAdd);
+                if (gemsToAdd > 0) {
+                    const progressCount = await prisma.progress.count({ where: { studentId } });
+                    const evidenceCount = await prisma.evidenceEntry.count({ where: { studentId } });
+                    const totalCompletions = progressCount + evidenceCount;
+                    const multiplier = Math.max(0.1, 1 - 0.02 * totalCompletions);
+                    const actualGemsToAdd = Math.max(1, Math.round(gemsToAdd * multiplier));
+                    dataToUpdate.gems = Math.max(0, user.gems + actualGemsToAdd);
+                } else {
+                    dataToUpdate.gems = Math.max(0, user.gems + gemsToAdd);
+                }
             }
 
             if (typeof livesToAdd === 'number') {

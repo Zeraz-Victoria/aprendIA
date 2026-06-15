@@ -13,6 +13,7 @@ interface RaidBoss {
     currentHealth: number;
     status: string;
     topContributors?: { name: string; avatar: string | null; totalDamage: number }[];
+    contributions?: { id: string; studentId: string; damageDealt: number }[];
 }
 
 interface RaidBossWidgetProps {
@@ -26,6 +27,9 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
     const [showModal, setShowModal] = useState(false);
     const [attacking, setAttacking] = useState(false);
     const [damageAnim, setDamageAnim] = useState<number | null>(null);
+
+    const attackCount = boss?.contributions?.filter(c => c.studentId === currentUser?.id).length || 0;
+    const nextAttackCost = 10 + 20 * attackCount;
 
     const fetchBoss = () => {
         fetch("/api/gamification/raid")
@@ -82,11 +86,11 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
     };
 
     const handleAttack = async () => {
-        if (!boss || !currentUser || stats.gems < 5) return;
+        if (!boss || !currentUser || stats.gems < nextAttackCost) return;
         setAttacking(true);
 
         // Deduct gems locally immediately
-        setStats(prev => ({ ...prev, gems: Math.max(0, prev.gems - 5) }));
+        setStats(prev => ({ ...prev, gems: Math.max(0, prev.gems - nextAttackCost) }));
 
         const randomDamage = Math.floor(Math.random() * 50) + 50;
 
@@ -251,7 +255,7 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
                             <div className="flex flex-col items-center">
                                 <button
                                     onClick={handleAttack}
-                                    disabled={attacking || stats.gems < 5 || boss.currentHealth <= 0}
+                                    disabled={attacking || stats.gems < nextAttackCost || boss.currentHealth <= 0}
                                     className="w-full relative group bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 text-white font-black text-xl py-4 rounded-2xl shadow-[0_8px_0_rgba(153,27,27,1)] active:shadow-[0_2px_0_rgba(153,27,27,1)] active:translate-y-2 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-3 overflow-hidden"
                                 >
                                     <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></div>
@@ -260,9 +264,9 @@ export default function RaidBossWidget({ externalOpen, onExternalClose }: RaidBo
                                 </button>
 
                                 <p className="mt-4 text-[#2e9f6c] font-medium flex items-center gap-1">
-                                    Costo: <span className="font-bold text-[#2e9f6c]">5</span> <span className="text-xl">💎</span>
+                                    Costo: <span className="font-bold text-[#2e9f6c]">{nextAttackCost}</span> <span className="text-xl">💎</span>
                                 </p>
-                                {stats.gems < 5 && boss.currentHealth > 0 && (
+                                {stats.gems < nextAttackCost && boss.currentHealth > 0 && (
                                     <p className="text-red-400 text-xs mt-1 font-bold">No tienes suficientes gemas.</p>
                                 )}
                             </div>

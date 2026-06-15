@@ -641,11 +641,21 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     });
 
     // Submits to DB
-    await fetch('/api/progress', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId, worldId, levelId, isBoss })
-    });
+    try {
+      const res = await fetch('/api/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, worldId, levelId, isBoss })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.updatedGems !== undefined && data.updatedXp !== undefined) {
+          setStats(s => ({ ...s, gems: data.updatedGems, xp: data.updatedXp }));
+        }
+      }
+    } catch (e) {
+      console.error("Failed to sync progress on backend", e);
+    }
   };
 
   const purchaseItem = async (studentId: string, itemId: string, cost: number): Promise<boolean> => {

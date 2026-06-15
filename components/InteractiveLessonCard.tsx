@@ -488,7 +488,14 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                             gemsToAdd: totalGems,
                             modifyStreak: 'increment'
                         })
-                    }).catch(e => console.error("Failed to sync reward", e));
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.gems !== undefined) {
+                            setStats(s => ({ ...s, gems: data.gems, streak: data.streak ?? s.streak }));
+                        }
+                    })
+                    .catch(e => console.error("Failed to sync reward", e));
                 }
             }, 0);
 

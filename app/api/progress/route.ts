@@ -93,18 +93,29 @@ export async function POST(req: Request) {
         const baseLevelGems = isBoss ? 50 : 0;
 
         // -- Achievement Verification Logic -- //
+        let updatedUserGems = 0;
+        let updatedUserXp = 0;
+
         const user = await prisma.user.findUnique({
             where: { id: studentId },
             include: { progress: true, achievements: true }
         });
 
         if (user) {
+            updatedUserGems = user.gems;
+            updatedUserXp = user.xp;
+
             const allAchievements = await prisma.achievement.findMany();
             const earnedAchievementIds = new Set(user.achievements.map((a: any) => a.achievementId));
 
+            const progressCount = await prisma.progress.count({ where: { studentId } });
+            const evidenceCount = await prisma.evidenceEntry.count({ where: { studentId } });
+            const totalCompletions = progressCount + evidenceCount;
+            const multiplier = Math.max(0.1, 1 - 0.02 * totalCompletions);
+            let totalGemsBonus = baseLevelGems > 0 ? Math.max(1, Math.round(baseLevelGems * multiplier)) : 0;
+
             const newGrants: string[] = [];
             let totalXpBonus = baseLevelXp;
-            let totalGemsBonus = baseLevelGems;
 
             for (const ach of allAchievements) {
                 if (earnedAchievementIds.has(ach.id)) continue; // Already has it
@@ -132,17 +143,24 @@ export async function POST(req: Request) {
                 }
 
                 // Update User XP & Gems
-                await prisma.user.update({
+                const updated = await prisma.user.update({
                     where: { id: user.id },
                     data: {
                         xp: { increment: totalXpBonus },
                         gems: { increment: totalGemsBonus }
-                    }
+                    },
+                    select: { gems: true, xp: true }
                 });
+                updatedUserGems = updated.gems;
+                updatedUserXp = updated.xp;
             }
         }
 
-        return NextResponse.json(newProgress, { status: 201 });
+        return NextResponse.json({
+            ...newProgress,
+            updatedGems: updatedUserGems,
+            updatedXp: updatedUserXp
+        }, { status: 201 });
     } catch (error: any) {
         // If it violates unique constraint, it means already completed. We can just return success.
         if (error.code === 'P2002') {
