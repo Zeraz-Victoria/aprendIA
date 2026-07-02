@@ -432,3 +432,23 @@ model PortfolioItem {
 
   student     User     @relation("PortfolioStudent", fields: [studentId], references: [id], onDelete: Cascade)
 }
+
+model Textbook {
+  id        String         @id @default(cuid())
+  title     String         @unique
+  code      String         @unique // Código identificador, ej: "1_TS_SPC"
+  pdfUrl    String         // Ruta de acceso al PDF en /public
+  createdAt DateTime       @default(now())
+  pages     TextbookPage[]
+}
+
+model TextbookPage {
+  id         String   @id @default(cuid())
+  pageNumber Int
+  content    String   // Contenido de texto de esta página
+  textbookId String
+  textbook   Textbook @relation(fields: [textbookId], references: [id], onDelete: Cascade)
+
+  @@unique([textbookId, pageNumber])
+  @@index([textbookId])
+}

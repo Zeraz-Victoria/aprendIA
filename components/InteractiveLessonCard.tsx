@@ -128,6 +128,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     const [showGameOver, setShowGameOver] = useState(false);
     const [gameOverTimer, setGameOverTimer] = useState(30);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [selectedPdfReading, setSelectedPdfReading] = useState<any | null>(null);
 
     // Multi-stage activity logic: "minigame" -> "practice"
     const hasMiniGame = !!data.content?.miniGame;
@@ -975,6 +976,33 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                 })()}
                             </div>
 
+                            {/* Lecturas Sugeridas */}
+                            {(data as any).lecturas_sugeridas && (data as any).lecturas_sugeridas.length > 0 && (
+                                <div className="bg-[#f0fbf5] dark:bg-[#165b3d]/40 border-2 border-dashed border-teal-200 dark:border-[#165b3d] rounded-2xl p-5 mt-4">
+                                    <div className="flex items-center gap-2 font-bold text-[#0a2d1d] dark:text-teal-300 mb-3">
+                                        <span className="text-xl">📚</span>
+                                        <span className="uppercase tracking-wider text-xs font-black">Lecturas sugeridas en tus libros de texto</span>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {(data as any).lecturas_sugeridas.map((lectura: any, idx: number) => (
+                                            <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0a2d1d] p-3.5 rounded-xl border border-teal-100 dark:border-[#165b3d] shadow-sm">
+                                                <div className="min-w-0 flex-1">
+                                                    <h4 className="font-bold text-sm text-[#0a2d1d] dark:text-slate-100 leading-tight truncate" title={lectura.libro}>{lectura.libro}</h4>
+                                                    <p className="text-xs text-[#2e9f6c] mt-0.5 font-semibold">Página {lectura.pagina}</p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedPdfReading(lectura)}
+                                                    className="px-4 py-2 bg-[#0a2d1d] hover:bg-[#165b3d] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5 self-start sm:self-center flex-shrink-0"
+                                                >
+                                                    📖 Abrir Página
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex justify-between pt-4">
                                 {currentChunkIndex > 0 ? (
                                     <button
@@ -1080,17 +1108,45 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                     </ul>
                                 </div>
                             )}
-                            {data.content.miniGame.options && data.content.miniGame.options.length > 0 && (
+                            {data.content.miniGame.options && data.content.miniGame.options.length > 0 ? (
                                 <div className="mt-4 grid grid-cols-2 gap-4">
                                     {data.content.miniGame.options.map((opt, i) => (
                                         <div key={i} className="border border-gray-300 bg-white p-3 rounded-lg text-center font-medium shadow-sm">{opt}</div>
                                     ))}
                                 </div>
-                            )}
+                            ) : null}
                         </div>
                     ) : null}
                 </div>
             </div>
+
+            {/* Visor de Libros de Texto PDF */}
+            {selectedPdfReading && (
+                <div className="fixed inset-0 z-[70] bg-black/90 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in">
+                    <div className="bg-white dark:bg-[#0a2d1d] rounded-3xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden shadow-2xl border-4 border-teal-500">
+                        <div className="bg-teal-600 p-4 flex justify-between items-center text-white">
+                            <div className="min-w-0 flex-1 mr-4">
+                                <h3 className="font-bold text-lg leading-snug truncate" title={selectedPdfReading.libro}>{selectedPdfReading.libro}</h3>
+                                <p className="text-xs text-teal-100">Mostrando página {selectedPdfReading.pagina}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedPdfReading(null)}
+                                className="bg-teal-700 hover:bg-teal-800 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-105 active:scale-95 flex-shrink-0"
+                            >
+                                Cerrar Visor
+                            </button>
+                        </div>
+                        <div className="flex-1 bg-slate-100 dark:bg-slate-900 relative">
+                            <iframe
+                                src={`${selectedPdfReading.pdfUrl}#page=${selectedPdfReading.pagina}`}
+                                className="w-full h-full border-none"
+                                title="Visor de Libro de Texto"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

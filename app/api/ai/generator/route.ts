@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from "@/lib/auth";
 import { checkAndSuspendSchool } from "@/lib/subscription";
+import { findRelevantPages } from '@/lib/textbooks';
 
 
 
@@ -85,6 +86,19 @@ export async function POST(req: Request) {
       }
     });
 
+    // Buscar páginas de libros de texto de apoyo relevantes
+    let booksContext = "";
+    try {
+      const relevantPages = await findRelevantPages(topic, 4);
+      if (relevantPages.length > 0) {
+        booksContext = relevantPages.map(page => 
+          `- Libro: "${page.bookTitle}" | Página: ${page.pageNumber} | PDF: "${page.pdfUrl}" | Contexto: "${page.snippet}"`
+        ).join('\n');
+      }
+    } catch (err) {
+      console.error("Error fetching relevant pages for prompt:", err);
+    }
+
     const prompt = `
 # PERFIL: DOCTOR EN PEDAGOGÍA, DISEÑADOR DE VIDEOJUEGOS EDUCATIVOS Y ESPECIALISTA NEM 2022
 Tu misión es actuar como un diseñador instruccional y de gamificación de élite. Debes transformar un contenido matemático en una aventura de aprendizaje inmersiva de alto impacto y rigor pedagógico.
@@ -139,6 +153,20 @@ Cada elemento de "chunks" debe empezar estrictamente con el prefijo "## [Título
   2. Todas las comillas dobles dentro de las cadenas de texto DEBEN ser escapadas como \\" (ejemplo: \\"palabra\\").
   3. No utilices caracteres especiales no válidos o fórmulas en formato LaTeX que contengan barras invertidas no escapadas.
 
+# 8. LIBROS DE TEXTO DE APOYO DISPONIBLES:
+Aquí tienes fragmentos reales y referencias de los libros de texto oficiales de 1er Grado Telesecundaria que coinciden con el tema "${topic}". Utiliza esta información para enriquecer los contenidos teóricos y asigna obligatoriamente cuáles de estas lecturas se recomiendan para cada sesión:
+${booksContext || "No se encontraron páginas específicas de apoyo. Puedes recomendar lecturas generales del programa escolar si conoces el currículum."}
+
+Regla crítica: Para cada nivel en "mapa_interactivo", debes incluir una propiedad llamada "lecturas_sugeridas" que sea un ARREGLO de objetos con la siguiente estructura:
+"lecturas_sugeridas": [
+  {
+    "libro": "Nombre exacto del libro (ej. Saberes y Pensamiento Científico - Primer Grado Telesecundaria)",
+    "pagina": número_de_pagina (ej. 47),
+    "pdfUrl": "Ruta exacta del PDF (ej. /libros de texto/libros primero/1_TS-ENS-BAJA.pdf)"
+  }
+]
+No inventes rutas de PDF, utiliza exactamente las rutas provistas en la lista anterior si las hay. Si ninguna lectura es aplicable, puedes dejar el arreglo vacío.
+
 # FORMATO DE SALIDA (JSON ÚNICAMENTE):
 Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con esta estructura exacta:
 {
@@ -169,6 +197,9 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
        "session_id": 1,
        "type": "concept_story",
        "title": "Título de nivel inmersivo y gamificado",
+       "lecturas_sugeridas": [
+          { "libro": "Nombre del Libro", "pagina": 47, "pdfUrl": "/libros de texto/libros primero/1_TS-ENS-BAJA.pdf" }
+       ],
        "session_start": "Instrucción de inicio que introduce la misión narrativa del nivel",
        "session_development": "Instrucción de desarrollo/reto narrativo que el minijuego representa",
        "session_end": "Instrucción de cierre para sellar el logro de la sesión",
@@ -297,6 +328,7 @@ REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionC
                   session_start: nivel.session_start || "",
                   session_development: nivel.session_development || "",
                   session_end: nivel.session_end || "",
+                  lecturas_sugeridas: nivel.lecturas_sugeridas || nivel.lecturas || [],
                   content: {
                     explanation: { chunks: chunks, analogy: nivel.content?.explanation?.analogy || nivel.paso_3_cierre?.metacognicion || "" },
                     miniGame: nivel.content?.miniGame,
