@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -10,10 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-        const { day, pedagogy, theme, documentText, previousGrade, isFinalBoss, vocabularyLevel } = await req.json();
+        const { day, pedagogy, theme, documentText, previousGrade, isFinalBoss } = await req.json();
 
         if (!day || !pedagogy) {
             return NextResponse.json({ error: 'Faltan datos requeridos (day, pedagogy)' }, { status: 400 });
@@ -22,7 +17,7 @@ export async function POST(req: Request) {
         console.log(`Generating narrative for Day ${day.dayNumber}: ${day.title}...`);
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash',
+            model: 'gemini-flash-latest',
             generationConfig: {
                 maxOutputTokens: 8192,
                 temperature: 0.2, // Slightly more creative for narratives
@@ -37,184 +32,114 @@ export async function POST(req: Request) {
             ? `\n\n[ALERTA DE REZAGO: El alumno tuvo dificultades severas en el nivel anterior (Calificación: ${previousGrade}/10). Simplifica el vocabulario de esta sesión al máximo, explica con ejemplos muy cotidianos y reduce la complejidad cognitiva de la actividad de desarrollo un 30%].`
             : "";
 
-        // Vocabulary complexity instruction
-        const vocabInstructions: Record<string, string> = {
-            facil: 'NIVEL DE VOCABULARIO: FÁCIL (1° a 4° de primaria). Usa palabras simples y cotidianas que un niño de 6 a 10 años entienda. Evita tecnicismos. Usa oraciones cortas y directas. Si necesitas usar un término técnico, explícalo inmediatamente con palabras sencillas.',
-            medio: 'NIVEL DE VOCABULARIO: MEDIO (5° primaria a 1° secundaria). Usa vocabulario adecuado para preadolescentes de 10 a 13 años. Puedes usar algunos términos técnicos básicos pero siempre con contexto. Oraciones de complejidad media.',
-            alto: 'NIVEL DE VOCABULARIO: ALTO (2° secundaria a preparatoria). Usa vocabulario académico apropiado para adolescentes de 13 a 18 años. Puedes usar terminología técnica y especializada del campo. Oraciones complejas con conectores lógicos.'
-        };
-        const vocabPrompt = vocabInstructions[vocabularyLevel || 'facil'] || vocabInstructions.facil;
-
         // Custom prompt per day type
         const prompt = `
-# ROL
-Eres un Diseñador Instruccional Senior especializado en la Nueva Escuela Mexicana (NEM), con maestría en Tecnología Educativa. Tu trabajo es crear experiencias de aprendizaje digitales autónomas de calidad profesional.
+# ROL Y DIRECTIVA SOBERANA
+ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
+Actúa como un Diseñador Instruccional Senior y Arquitecto de Software Educativo especializado en la NEM. Tu única función es convertir los FRAGMENTOS FIELES de una sesión en un nivel interactivo de aprendizaje autónomo.
 
-# ${vocabPrompt}
+# ENTRADA DE DATOS (FRAGMENTO SAGRADO):
+Utiliza exclusivamente la información contenida en este objeto:
+- TÍTULO: ${day.title || pedagogy.topic}
+- CONTENIDO_DE_LA_SESION: ${day.session_start || documentText?.substring(0, 500) || "Sin contenido previo."}
+- FASE: ${pedagogy.grade || "Fase General"}
+- PDA: ${pedagogy.pda || "PDA General"}
 
-# DATOS DE ENTRADA
-- TÍTULO DE LA SESIÓN: ${day.title || pedagogy.topic}
-- CONTENIDO PEDAGÓGICO: ${day.session_start || documentText?.substring(0, 800) || "Sin contenido previo."}
-- FASE ESCOLAR: ${pedagogy.grade || "Fase General"}
-- PDA (Proceso de Desarrollo de Aprendizaje): ${pedagogy.pda || "PDA General"}
-- TIPO DE NIVEL: ${day.type || "concept_story"}
-- NÚMERO DE NIVEL: ${day.dayNumber}
+# INSTRUCCIONES DE CONSTRUCCIÓN (PROHIBIDO INVENTAR):
+1. NARRATIVA DE ENTRADA (MOMENTO 1): Usa la primera parte del 'CONTENIDO_DE_LA_SESION' para situar al alumno. Si el docente planteó un problema inicial o una pregunta detonadora, esa es la introducción del nivel.
+2. EL ORÁCULO (AULA INVERTIDA): Genera un bloque de teoría lúdica y técnica que explique el concepto necesario basándote en el 'CONTENIDO_DE_LA_SESION'. El alumno debe poder aprenderlo solo leyendo este bloque.
+3. DESAFÍO TÉCNICO (MOMENTO 2): Convierte la actividad principal del 'CONTENIDO_DE_LA_SESION' en el reto central. 
+   - Si el docente pide resolver una operación, el reto es esa operación.
+   - Si el docente pide redactar un texto, el reto es esa redacción.
+   - Selecciona el componente UI: LOGIC_PUZZLE, TEXT_MASTER, CONCEPT_SORT o TRIVIA_QUEST.
+4. VALIDACIÓN Y CIERRE (MOMENTO 3): Usa la parte final del 'CONTENIDO_DE_LA_SESION' para la reflexión final o la pregunta de autoevaluación.
+5. TRANSPILACIÓN DE ROL DOCENTE (AUTONOMÍA TOTAL):
+El alumno está usando este sistema de forma autónoma, sin un maestro físico al lado. Queda ESTRICTAMENTE PROHIBIDO incluir frases como 'El docente leerá...', 'Pide a tu maestro...' o 'Se entregarán materiales'. Debes transformar cada acción del docente en contenido interactivo proporcionado por ti:
+- REGLA DE LECTURA: Si la planeación dice 'El docente lee un cuento/texto sobre [tema]', TÚ (la IA) debes redactar ese cuento o texto breve y colocarlo dentro del \`oraculo_teoria\` para que el alumno lo lea.
+- REGLA DE MATERIALES: Si la planeación dice 'El docente entrega oraciones mudas', 'Muestra imágenes de...', o 'Escribe en el pizarrón el siguiente problema', TÚ debes generar esas oraciones mudas, describir esos escenarios o redactar ese problema, y colocarlo en el \`reto_gameplay.instruccion_fiel\`.
+- REGLA DE EXPLICACIÓN: Si la planeación indica 'El docente explica qué es la fotosíntesis', TÚ asumes la voz del maestro virtual y redactas la explicación directa y amena dirigida al alumno.
+- EL OBJETIVO: El sistema debe generar todos los 'materiales didácticos faltantes' que el maestro hubiera llevado físicamente al salón, basándose siempre en el tema central de la sesión.
 
-# INSTRUCCIONES DE CALIDAD PROFESIONAL
-
-## 1. NARRATIVA DE APERTURA (historia_inicio)
-Escribe un párrafo envolvente (80-120 palabras) que:
-- Conecte con la vida cotidiana del alumno
-- Presente una situación problema o pregunta detonadora real
-- Use vocabulario accesible pero preciso
-- NO uses elementos de fantasía a menos que la planeación los mencione
-
-## 2. ORÁCULO DE TEORÍA (oraculo_teoria)
-Este es el bloque MÁS IMPORTANTE. Debe ser una explicación COMPLETA que permita aprendizaje autónomo.
-
-Estructura el contenido_html con SECCIONES CLARAS usando Markdown:
-
-### [Título del Concepto Principal]
-Explicación clara del concepto (3-4 oraciones). Usa lenguaje directo.
-
-### ¿Cómo funciona?
-Paso a paso o proceso explicado con claridad.
-
-### Ejemplo Resuelto
-Un ejemplo concreto con datos reales y su resolución paso a paso.
-
-### Dato Curioso
-Un hecho interesante que conecte el concepto con el mundo real.
-
-REGLAS del oráculo:
-- Mínimo 250 palabras, máximo 500
-- Usa \\n\\n para separar párrafos (NUNCA HTML)
-- Incluye al menos 1 ejemplo numérico resuelto si aplica
-- Usa **negritas** para términos clave
-- El alumno debe poder entender el tema SOLO leyendo este bloque
-
-## 3. RETO DE GAMEPLAY (reto_gameplay)
-OBLIGATORIO: Construye un mini-juego interactivo de opción múltiple relacionado con la sesión.
-- datos_config.pregunta: Una pregunta específica y bien formulada para el mini-juego en pantalla.
-- datos_config.respuesta_correcta: La respuesta exacta esperada del mini-juego.
-- datos_config.opciones_distractor: Genera EXACTAMENTE 3 opciones incorrectas pero plausibles.
-- datos_config.feedback_error: Una pista corta si el alumno se equivoca en el juego.
-
-## 4. INSTRUCCIÓN Y EVIDENCIA FÍSICA (instruccion_evidencia)
-OBLIGATORIO: Esta es la actividad principal que el alumno realizará EN SU LIBRETA/CUADERNO de forma física para luego tomarle foto.
-- Si el maestro proporcionó una actividad de evaluación o cierre en la planeación, úsala aquí y adáptala para que sea completamente autónoma.
-- Si no hay actividad proporcionada por el docente, INVENTA UNA basada en el tema.
-- instrucción_fiel: Instrucciones claras y paso a paso de lo que el alumno debe escribir, dibujar o calcular en su cuaderno.
-- tipo_evidencia_requerida: FOTO_DIBUJO | FOTO_TEXTO | MULTIPLE_CHOICE (generalmente foto de libreta).
-- valor_esperado_docente: Lo que el docente espera ver en la libreta del alumno (la respuesta correcta o criterios de éxito).
-- ejemplos_resolucion: Un ejemplo resuelto de lo que deben hacer en la libreta.
-
-## 5. GLOSARIO (glosario)
-Extrae entre 3 y 5 palabras técnicas o complejas del oráculo. Cada definición debe ser:
-- Máximo 15 palabras
-- Comprensible para un niño de la fase correspondiente
-- Sin usar la misma palabra en la definición
-
-## 6. AUTONOMÍA TOTAL
-El alumno está SOLO. PROHIBIDO mencionar al docente. Si la planeación dice "el docente explica...", TÚ redactas esa explicación completa. Si dice "el docente entrega materiales...", TÚ generas ese material.
+# REGLAS DE ORO:
+- Dirígete al estudiante como [NOMBRE_DEL_ESTUDIANTE].
+- FEEDBACK SOCRÁTICO: Si el alumno falla, genera una pregunta que lo guíe de vuelta a la teoría del Oráculo.
+- No agregues elementos de fantasía (piratas, magos) a menos que la planeación original los mencione.
+- GLOSARIO: Extrae entre 2 y 4 palabras complejas usadas en el oráculo y defínelas de forma simple.
+- PROHIBICIÓN DE HTML: Queda estrictamente prohibido usar etiquetas HTML como <br>, <b>, o <p>. Utiliza ÚNICAMENTE saltos de línea literales (\n\n) y Markdown estándar (** para negritas). Tu salida de texto debe ser limpia.
 ${adaptiveRescuePrompt}
 
-# FORMATO DE SALIDA (JSON estricto):
+# FORMATO DE SALIDA (JSON CRUDO):
 {
   "nivel_id": "${day.dayNumber}",
-  "pda_objetivo": "Descripción breve del PDA que se trabaja",
-  "historia_inicio": "Narrativa de apertura envolvente (80-120 palabras)",
-  "oraculo_teoria": {
-    "titulo": "Título descriptivo del concepto",
-    "contenido_html": "### Sección 1\\n\\nContenido...\\n\\n### Sección 2\\n\\nContenido... (mínimo 250 palabras, bien estructurado con secciones Markdown)",
-    "tip_clave": "La regla más importante a recordar en una oración"
-  },
+  "pda_objetivo": "...",
+  "historia_inicio": "...",
+  "oraculo_teoria": { "titulo": "...", "contenido_html": "...", "tip_clave": "..." },
   "reto_gameplay": {
-    "datos_config": {
-      "pregunta": "Pregunta de opción múltiple para jugar en la pantalla",
-      "respuesta_correcta": "Respuesta correcta",
-      "opciones_distractor": ["Opción incorrecta 1", "Opción incorrecta 2", "Opción incorrecta 3"],
-      "feedback_error": "Pista corta si se equivoca"
-    }
+    "tipo_ui": "LOGIC_PUZZLE|TEXT_MASTER|CONCEPT_SORT|TRIVIA_QUEST",
+    "tipo_evidencia_requerida": "FOTO_DIBUJO | FOTO_GRAFICA | TEXTO_ENSAYO | MULTIPLE_CHOICE",
+    "instruccion_fiel": "...",
+    "datos_config": { "pregunta": "...", "respuesta_correcta": "...", "pista_socratica": "..." }
   },
-  "instruccion_evidencia": {
-    "tipo_evidencia_requerida": "FOTO_DIBUJO|FOTO_TEXTO|TEXTO_ENSAYO",
-    "instruccion_fiel": "Instrucciones detalladas de lo que hará en la libreta",
-    "valor_esperado_docente": "Criterio o respuesta que espera el maestro",
-    "ejemplos_resolucion": "Ejemplo similar resuelto paso a paso (Markdown)"
-  },
-  "cierre_metacognicion": "Reflexión final que invite al alumno a pensar sobre su aprendizaje",
-  "presentationType": "${(() => { const types = ['flashcards', 'mind_map', 'synoptic_chart', 'infographic', 'crossword']; return types[((day.dayNumber || 1) - 1) % types.length]; })()}",
+  "cierre_metacognicion": "...",
   "glosario": [
-    { "palabra": "término", "definicion": "definición clara y breve" }
+    { "palabra": "concepto", "definicion": "definición fácil de entender" }
   ]
 }
 `;
 
-
         const result = await model.generateContent(prompt);
         const responseText = result.response.text();
 
-        let cleanText = responseText.replace(/\`\`\`json/gi, '').replace(/\`\`\`/gi, '').trim();
+        let cleanText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
         let generatedContent;
 
         try {
             const parsed = JSON.parse(cleanText);
 
-            // Construct MINIGAME portion
-            const correctAns = parsed.reto_gameplay?.datos_config?.respuesta_correcta || "Correcto";
-            const distractors = parsed.reto_gameplay?.datos_config?.opciones_distractor || ["Opción A", "Opción B", "Opción C"];
-            const allOptions = [correctAns, ...distractors.slice(0, 3)];
-            for (let i = allOptions.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
-            }
-
-            const miniGame = {
-                type: "multiple_choice",
-                question: parsed.reto_gameplay?.datos_config?.pregunta || "¿Estás listo?",
-                options: allOptions,
-                correctAnswer: correctAns,
-                feedbackSuccess: "¡Correcto! Excelente análisis.",
-                feedbackError: parsed.reto_gameplay?.datos_config?.feedback_error || "Revisa la teoría de nuevo."
-            };
-
-            // Construct NOTEBOOK/EVIDENCE portion
-            const evidenciaEjemplos = parsed.instruccion_evidencia?.ejemplos_resolucion || "";
-            const practiceProblem = {
-                statement: `**📝 INSTRUCCIÓN (LIBRETA):**\n${parsed.instruccion_evidencia?.instruccion_fiel}`,
-                correctValue: `${parsed.instruccion_evidencia?.valor_esperado_docente || "Evidencia completada"}${evidenciaEjemplos ? `\n\nEJEMPLO RESUELTO:\n${evidenciaEjemplos}` : ""}`,
-                hint: parsed.oraculo_teoria?.tip_clave || "Recuerda revisar tus apuntes.",
-                tipo_evidencia_requerida: parsed.instruccion_evidencia?.tipo_evidencia_requerida || "FOTO_TEXTO"
-            };
-
-            // Combine based on day type
+            // Map the new "Fidelidad NEM 1.0" Instructional Designer template back to what the frontend expects
             let legacyContent: any = {};
 
-            if (day.type === "concept_story" || day.type === "guided_practice") {
+            if (day.type === "concept_story") {
+                // Usually theory + minigame
                 legacyContent = {
                     explanation: {
                         chunks: [parsed.oraculo_teoria?.contenido_html || "Lee la teoría cuidadosamente."],
                         analogy: parsed.oraculo_teoria?.tip_clave || "Recuerda el concepto principal."
                     },
-                    miniGame: miniGame,
-                    practiceProblem: practiceProblem
+                    miniGame: {
+                        type: "multiple_choice",
+                        question: parsed.reto_gameplay?.datos_config?.pregunta || parsed.reto_gameplay?.instruccion_fiel,
+                        options: [parsed.reto_gameplay?.datos_config?.respuesta_correcta, "Revisar Teoría", "Volver a Leer"],
+                        correctAnswer: parsed.reto_gameplay?.datos_config?.respuesta_correcta,
+                        feedbackSuccess: "¡Correcto! Excelente análisis.",
+                        feedbackError: parsed.reto_gameplay?.datos_config?.pista_socratica || "Revisa la lectura anterior."
+                    }
+                };
+            } else if (day.type === "guided_practice") {
+                // Practice challenge
+                legacyContent = {
+                    practiceProblem: {
+                        statement: `**INSTRUCCIÓN:** ${parsed.reto_gameplay?.instruccion_fiel}\n\n**RETO:** ${parsed.reto_gameplay?.datos_config?.pregunta}`,
+                        correctValue: parsed.reto_gameplay?.datos_config?.respuesta_correcta || "Completado",
+                        hint: parsed.reto_gameplay?.datos_config?.pista_socratica || parsed.oraculo_teoria?.tip_clave || "Analiza los datos dados.",
+                        tipo_evidencia_requerida: parsed.reto_gameplay?.tipo_evidencia_requerida || "TEXTO_ENSAYO"
+                    }
                 };
             } else if (day.type === "boss_fight") {
+                // Boss evaluation
                 legacyContent = {
-                    originalProblemText: `** RETO FINAL:**\n${parsed.instruccion_evidencia?.instruccion_fiel} \n\n * Nota de Cierre: ${parsed.cierre_metacognicion}* `,
-                    tipo_evidencia_requerida: parsed.instruccion_evidencia?.tipo_evidencia_requerida || "TEXTO_ENSAYO",
+                    originalProblemText: `**RETO FINAL:**\n${parsed.reto_gameplay?.instruccion_fiel}\n\n${parsed.reto_gameplay?.datos_config?.pregunta}\n\n*Nota de Cierre: ${parsed.cierre_metacognicion}*`,
+                    tipo_evidencia_requerida: parsed.reto_gameplay?.tipo_evidencia_requerida || "TEXTO_ENSAYO",
                     solvedVariations: []
                 };
             }
 
             generatedContent = {
-                narrative: `${parsed.historia_inicio} \n\n### ${parsed.oraculo_teoria?.titulo} \n\n${parsed.oraculo_teoria?.contenido_html} `,
+                narrative: `${parsed.historia_inicio}\n\n### ${parsed.oraculo_teoria?.titulo}\n\n${parsed.oraculo_teoria?.contenido_html}`,
                 content: legacyContent,
                 pda_objetivo: parsed.pda_objetivo,
                 cierre_metacognicion: parsed.cierre_metacognicion,
                 glosario: parsed.glosario || [],
-                presentationType: parsed.presentationType || "text",
                 isFinalBoss: isFinalBoss === true
             };
 

@@ -14,7 +14,7 @@ import { useSessionGuard } from "@/hooks/useSessionGuard";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-type Tab = "students" | "insights" | "library" | "reports" | "raid" | "messages";
+type Tab = "students" | "insights" | "library" | "reports" | "raid" | "messages" | "tools";
 
 export default function TeacherDashboard() {
     useSessionGuard();
@@ -860,6 +860,12 @@ export default function TeacherDashboard() {
                     >
                         <BrainCircuit className="w-4 h-4" /> Análisis Inteligente
                     </button>
+                    <button
+                        onClick={() => setActiveTab("tools")}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all ${activeTab === 'tools' ? 'bg-purple-50 text-purple-700 shadow-sm' : 'text-slate-500 hover:bg-purple-50/50 hover:text-purple-600'}`}
+                    >
+                        <Sparkles className="w-4 h-4" /> Herramientas IA
+                    </button>
 
                     <button
                         onClick={() => setActiveTab("raid")}
@@ -1510,6 +1516,57 @@ export default function TeacherDashboard() {
                     </div>
                 )}
 
+                {/* TOOLS TAB */}
+                {activeTab === 'tools' && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <header className="mb-8">
+                            <h2 className="text-2xl font-bold text-slate-800">Herramientas IA Educativas</h2>
+                            <p className="text-slate-500">Potencia tu labor docente con inteligencia artificial avanzada.</p>
+                        </header>
+
+                        <div className="grid md:grid-cols-2 gap-8 mt-6">
+                            {/* EduPlan AI Card */}
+                            <div
+                                onClick={() => window.location.href = "/tools/eduplan"}
+                                className="group cursor-pointer bg-white p-8 rounded-[2rem] border-2 border-slate-100 hover:border-purple-200 hover:shadow-2xl hover:shadow-purple-100 transition-all duration-300 relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500" />
+                                <div className="relative">
+                                    <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                        <BrainCircuit className="w-8 h-8 text-purple-600" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-800 mb-3">EduPlan AI</h3>
+                                    <p className="text-slate-600 mb-6 leading-relaxed">
+                                        Genera planeaciones didácticas completas alineadas al Programa Sintético NEM 2022 en segundos.
+                                    </p>
+                                    <div className="flex items-center gap-2 text-purple-600 font-bold">
+                                        Abrir Herramienta <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* EduLegal Card */}
+                            <div
+                                onClick={() => window.location.href = "/tools/edulegal"}
+                                className="group cursor-pointer bg-white p-8 rounded-[2rem] border-2 border-slate-100 hover:border-green-200 hover:shadow-2xl hover:shadow-green-100 transition-all duration-300 relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500" />
+                                <div className="relative">
+                                    <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                        <FileText className="w-8 h-8 text-green-600" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-800 mb-3">EduLegal</h3>
+                                    <p className="text-slate-600 mb-6 leading-relaxed">
+                                        Asistente legal escolar. Analiza incidentes y genera guitAs de actuación basadas en la normativa vigente.
+                                    </p>
+                                    <div className="flex items-center gap-2 text-green-600 font-bold">
+                                        Abrir Herramienta <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
             </main>
 
             {/* Mobile Bottom Navigation */}
@@ -1521,6 +1578,10 @@ export default function TeacherDashboard() {
                 <button onClick={() => setActiveTab("library")} className={`flex flex-col items-center gap-1 ${activeTab === 'library' ? 'text-sky-600' : 'text-slate-400'}`}>
                     <Library className="w-5 h-5" />
                     <span className="text-[10px] font-bold">Mapas</span>
+                </button>
+                <button onClick={() => setActiveTab("tools")} className={`flex flex-col items-center gap-1 ${activeTab === 'tools' ? 'text-purple-600' : 'text-slate-400'}`}>
+                    <Sparkles className="w-5 h-5" />
+                    <span className="text-[10px] font-bold">Herramientas</span>
                 </button>
                 <button onClick={() => setActiveTab("insights")} className={`flex flex-col items-center gap-1 ${activeTab === 'insights' ? 'text-sky-600' : 'text-slate-400'}`}>
                     <BrainCircuit className="w-5 h-5" />

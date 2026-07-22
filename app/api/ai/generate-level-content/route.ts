@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import prisma from '@/lib/prisma';
 import { LevelContent } from '@/types/learning-world';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -12,9 +10,6 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
         const { worldId, levelId } = await req.json();
 
         if (!worldId || levelId === undefined) {
@@ -96,7 +91,7 @@ INSTRUCCIÓN PARA RESPUESTA CORRECTA: Este campo es la RÚBRICA DEL MAESTRO. Si 
 `;
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-flash-latest',
             generationConfig: {
                 temperature: 0.2, // Low temperature for consistent JSON layout
             }

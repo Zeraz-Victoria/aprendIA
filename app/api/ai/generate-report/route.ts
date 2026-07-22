@@ -1,15 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { trackAICall } from "@/lib/ai-tracker";
 
 export async function POST(req: Request) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
         const { studentId, studentName, reportType = 'teacher' } = await req.json();
 
         if (!studentId) {
@@ -51,7 +45,7 @@ export async function POST(req: Request) {
         }).join('\n');
 
         const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || "");
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
 
         const prompt = `# ROL Y DIRECTIVA SOBERANA
 ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
@@ -97,13 +91,6 @@ SI EL TIPO ES "DOCENTE":
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
-
-        // Increment API calls
-        const userId = (session.user as any).id;
-        const schoolId = (session.user as any).schoolId;
-        if (userId) {
-            await trackAICall(userId, schoolId);
-        }
 
         let finalReport = "";
         try {
