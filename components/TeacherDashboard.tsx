@@ -1566,6 +1566,7 @@ export default function TeacherDashboard() {
                             </div>
                         </div>
                     </div>
+                )}
 
             </main>
 
