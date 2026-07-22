@@ -3,12 +3,6 @@ import OpenAI from "openai";
 import { LessonPlan, PlanningRequest } from "../types";
 import { EJES_ARTICULADORES_NEM } from "../constants";
 
-const deepseek = new OpenAI({
-  baseURL: "https://api.deepseek.com",
-  apiKey: process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY,
-  dangerouslyAllowBrowser: true // Required for client-side usage
-});
-
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const generateLessonPlanStream = async (
@@ -21,7 +15,11 @@ export const generateLessonPlanStream = async (
   if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
     throw new Error("CONFIGURACIÓN REQUERIDA: No se detectó NEXT_PUBLIC_DEEPSEEK_API_KEY en el archivo .env.");
   }
-
+  const deepseek = new OpenAI({
+    baseURL: "https://api.deepseek.com",
+    apiKey: apiKey,
+    dangerouslyAllowBrowser: true
+  });
   const systemInstruction = `
 # PERFIL: DOCTOR EN PEDAGOGÍA Y ESPECIALISTA DE ÉLITE NEM 2022
 Tu misión es transformar cualquier rezago académico en un proyecto de impacto social.

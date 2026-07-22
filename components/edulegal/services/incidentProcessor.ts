@@ -2,14 +2,12 @@ import OpenAI from "openai";
 import { IncidentData, AnalysisResult, RiskLevel } from '../types';
 import { LEGAL_FRAMEWORK, SEV_PROTOCOLS } from '../constants';
 
-// Inicializamos el cliente de DeepSeek (usando el SDK de OpenAI)
-const client = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY,
-  baseURL: "https://api.deepseek.com",
-  dangerouslyAllowBrowser: true // Necesario para llamar desde el navegador en desarrollo
-});
-
 export const analyzeIncident = async (data: IncidentData): Promise<AnalysisResult> => {
+  const client = new OpenAI({
+    apiKey: process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY,
+    baseURL: "https://api.deepseek.com",
+    dangerouslyAllowBrowser: true
+  });
   // Configuración dinámica por estado
   const SELECTED_STATE = data.state;
   // Solo tenemos fragmentos específicos para Veracruz por ahora
