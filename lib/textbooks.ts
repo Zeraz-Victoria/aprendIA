@@ -7,6 +7,27 @@ export interface TextbookMatch {
   snippet: string;
 }
 
+function buildSpanishOrQuery(topic: string): string {
+  const stopwords = new Set([
+    'de', 'la', 'que', 'el', 'en', 'y', 'a', 'los', 'del', 'se', 'las', 'por', 'un', 'para', 'con', 'no', 'una', 'su', 'al', 'lo', 'como', 'más', 'pero', 'sus', 'le', 'ya', 'o', 'este', 'sí', 'porque', 'esta', 'entre', 'cuando', 'muy', 'sin', 'sobre', 'también', 'me', 'hasta', 'desde', 'nos', 'durante', 'uno', 'les', 'ni', 'contra', 'otros', 'ese', 'eso', 'ante', 'ellos', 'e', 'esto', 'mí', 'antes', 'algunos', 'qué', 'unos', 'yo', 'otro', 'otras', 'otra', 'él', 'tanto', 'esa', 'estos', 'mucho', 'quienes', 'nada', 'muchos', 'cual', 'poco', 'ella', 'estar', 'estas', 'algunas', 'algo', 'nosotros', 'mi', 'mis', 'tú', 'te', 'ti'
+  ]);
+
+  const words = topic
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Quitar acentos
+    .replace(/[^a-z0-9ñáéíóúü]/g, " ") // Mantener caracteres básicos
+    .split(/\s+/)
+    .map(w => w.trim())
+    .filter(w => w.length > 2 && !stopwords.has(w));
+
+  if (words.length === 0) {
+    return '';
+  }
+
+  return words.join(' | ');
+}
+
 /**
  * Realiza una búsqueda nativa de texto completo (Full-Text Search) en español
  * en las páginas de los libros de texto cargados en la base de datos.
@@ -20,23 +41,28 @@ export async function findRelevantPages(topic: string, limit: number = 3): Promi
   }
 
   try {
+    const orQuery = buildSpanishOrQuery(topic);
+    if (!orQuery) {
+      return [];
+    }
+
     // Seleccionamos "content" completo en lugar de usar la función "substring" de Postgres
-    // para evitar errores de corte de bytes UTF-8 inválidos (ej. error 0xef).
+    // para evitar errores de corte de bytes UTF-8 inválidos.
     const query = `
       SELECT 
         t.title as "bookTitle",
         t."pdfUrl" as "pdfUrl",
         tp."pageNumber" as "pageNumber",
         tp.content as "content",
-        ts_rank(to_tsvector('spanish', tp.content), plainto_tsquery('spanish', $1)) as rank
+        ts_rank(to_tsvector('spanish', tp.content), to_tsquery('spanish', $1)) as rank
       FROM "TextbookPage" tp
       JOIN "Textbook" t ON tp."textbookId" = t.id
-      WHERE to_tsvector('spanish', tp.content) @@ plainto_tsquery('spanish', $1)
+      WHERE to_tsvector('spanish', tp.content) @@ to_tsquery('spanish', $1)
       ORDER BY rank DESC, tp."pageNumber" ASC
       LIMIT $2;
     `;
 
-    const results = await prisma.$queryRawUnsafe<any[]>(query, topic.trim(), limit);
+    const results = await prisma.$queryRawUnsafe<any[]>(query, orQuery, limit);
     
     if (!results || results.length === 0) {
       return [];

@@ -159,9 +159,12 @@ No separes la matemática de la fantasía. Integra el "Tema Visual para Gamifica
 
 # 8. LIBROS DE TEXTO DE APOYO DISPONIBLES:
 Aquí tienes fragmentos reales y referencias de los libros de texto oficiales de 1er Grado Telesecundaria que coinciden con el tema "${topic}". Utiliza esta información para enriquecer los contenidos teóricos y asigna obligatoriamente cuáles de estas lecturas se recomiendan para cada sesión:
-${booksContext || "No se encontraron páginas específicas de apoyo. Puedes recomendar lecturas generales del programa escolar si conoces el currículum."}
+${booksContext || "No se encontraron páginas de apoyo en la base de datos."}
 
-Regla crítica: Para cada nivel en "mapa_interactivo", debes incluir una propiedad llamada "lecturas_sugeridas" que sea un ARREGLO de objetos con la siguiente estructura:
+Regla crítica (VERACIDAD ABSOLUTA): Para cada nivel en "mapa_interactivo", debes incluir una propiedad llamada "lecturas_sugeridas" que sea un ARREGLO de objetos con la estructura descrita abajo.
+*IMPORTANTE*: Si en la lista anterior dice "No se encontraron páginas de apoyo...", DEBES dejar el arreglo "lecturas_sugeridas" completamente vacío: []. NO inventes nombres de libros, ni números de página, ni temas, ni rutas de PDF bajo ninguna circunstancia. Solo puedes recomendar lecturas que aparezcan explícitamente listadas arriba en la sección de apoyos disponibles.
+
+Estructura de "lecturas_sugeridas":
 "lecturas_sugeridas": [
   {
     "libro": "Nombre exacto del libro (ej. Saberes y Pensamiento Científico - Primer Grado Telesecundaria)",
@@ -170,7 +173,6 @@ Regla crítica: Para cada nivel en "mapa_interactivo", debes incluir una propied
     "pdfUrl": "Ruta exacta del PDF (ej. /libros de texto/libros primero/1_TS-ENS-BAJA.pdf)"
   }
 ]
-No inventes rutas de PDF, utiliza exactamente las rutas provistas en la lista anterior si las hay. Si ninguna lectura es aplicable, puedes dejar el arreglo vacío.
 
 # FORMATO DE SALIDA (JSON ÚNICAMENTE):
 Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con esta estructura exacta:
