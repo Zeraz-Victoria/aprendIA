@@ -985,18 +985,13 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                     </div>
                                     <div className="space-y-3">
                                         {(data as any).lecturas_sugeridas.map((lectura: any, idx: number) => (
-                                            <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0a2d1d] p-3.5 rounded-xl border border-teal-100 dark:border-[#165b3d] shadow-sm">
+                                            <div key={idx} className="flex items-start gap-3 bg-white dark:bg-[#0a2d1d] p-4 rounded-xl border border-teal-100 dark:border-[#165b3d] shadow-sm">
+                                                <span className="text-teal-500 font-bold shrink-0 mt-0.5">📌</span>
                                                 <div className="min-w-0 flex-1">
-                                                    <h4 className="font-bold text-sm text-[#0a2d1d] dark:text-slate-100 leading-tight truncate" title={lectura.libro}>{lectura.libro}</h4>
-                                                    <p className="text-xs text-[#2e9f6c] mt-0.5 font-semibold">Página {lectura.pagina}</p>
+                                                    <p className="text-sm text-[#0a2d1d] dark:text-slate-200 leading-relaxed">
+                                                        Consulta la página <strong className="text-[#2e9f6c] dark:text-teal-300 font-extrabold">{lectura.pagina}</strong> de tu libro de texto físico <strong className="font-bold">"{lectura.libro}"</strong> para profundizar en este tema.
+                                                    </p>
                                                 </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setSelectedPdfReading(lectura)}
-                                                    className="px-4 py-2 bg-[#0a2d1d] hover:bg-[#165b3d] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5 self-start sm:self-center flex-shrink-0"
-                                                >
-                                                    📖 Abrir Página
-                                                </button>
                                             </div>
                                         ))}
                                     </div>
