@@ -88,12 +88,16 @@ async function seed() {
       where: { code: meta.code },
       update: {
         title: meta.title,
-        pdfUrl: meta.pdfUrl
+        pdfUrl: meta.pdfUrl,
+        grade: 'Secundaria 1',
+        modality: 'Telesecundaria'
       },
       create: {
         title: meta.title,
         code: meta.code,
-        pdfUrl: meta.pdfUrl
+        pdfUrl: meta.pdfUrl,
+        grade: 'Secundaria 1',
+        modality: 'Telesecundaria'
       }
     });
 

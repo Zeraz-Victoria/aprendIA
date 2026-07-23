@@ -435,9 +435,11 @@ model PortfolioItem {
 
 model Textbook {
   id        String         @id @default(cuid())
-  title     String         @unique
-  code      String         @unique // Código identificador, ej: "1_TS_SPC"
+  title     String
+  code      String         @unique
   pdfUrl    String         // Ruta de acceso al PDF en /public
+  grade     String?        // Grado (ej. "Primaria 1", "Secundaria 1", etc.)
+  modality  String?        // Modalidad (ej. "General", "Telesecundaria")
   createdAt DateTime       @default(now())
   pages     TextbookPage[]
 }
