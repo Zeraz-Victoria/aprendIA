@@ -80,7 +80,7 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({
       model: 'gemini-flash-latest',
       generationConfig: {
-        maxOutputTokens: 65536, // Max for Gemini 2.5 Flash — required for 25 sessions × 6 rich chunks (~51K tokens)
+        maxOutputTokens: 8192, // Max for Gemini 1.5 Flash (gemini-flash-latest)
         temperature: 0.4,
         responseMimeType: "application/json",
       }
