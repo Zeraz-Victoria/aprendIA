@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     const apiKey = rawApiKey.replace(/['"]/g, '').trim();
         if (!apiKey) throw new Error('API Key missing');
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
 
         const prompt = `# ROL Y DIRECTIVA SOBERANA
 ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:

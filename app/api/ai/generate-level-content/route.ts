@@ -101,7 +101,7 @@ INSTRUCCIÓN PARA RESPUESTA CORRECTA: Este campo es la RÚBRICA DEL MAESTRO. Si 
 `;
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-flash-latest',
             generationConfig: {
                 temperature: 0.2, // Low temperature for consistent JSON layout
             }

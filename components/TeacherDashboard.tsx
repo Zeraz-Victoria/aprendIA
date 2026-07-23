@@ -20,7 +20,7 @@ import TeacherToolkit from "./TeacherToolkit";
 import ClassStoryFeed from "./ClassStoryFeed";
 import PerformanceDashboard from "./PerformanceDashboard";
 
-type Tab = "classroom" | "library" | "reports" | "raid" | "management";
+type Tab = "classroom" | "library" | "reports" | "raid" | "management" | "tools";
 
 // Helper functions moved to top for scope visibility
 function getClassColor(progress: number) {
@@ -1151,6 +1151,7 @@ export default function TeacherDashboard() {
                             { id: 'reports', label: 'Reportes', icon: FileText },
                             { id: 'raid', label: 'Incursión', icon: Swords },
                             { id: 'management', label: 'Gestión', icon: Wrench },
+                            { id: 'tools', label: 'Herramientas', icon: Sparkles },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -1681,6 +1682,58 @@ export default function TeacherDashboard() {
                     </div>
                 )}
 
+                {/* TOOLS TAB */}
+                {activeTab === 'tools' && (
+                    <div className="space-y-8 animate-fade-in bg-white rounded-3xl p-8 border border-[#c1ebd5] shadow-sm">
+                        <header className="mb-8">
+                            <h2 className="text-2xl font-bold text-slate-800">Herramientas IA Educativas</h2>
+                            <p className="text-slate-500">Potencia tu labor docente con inteligencia artificial avanzada.</p>
+                        </header>
+
+                        <div className="grid md:grid-cols-2 gap-8 mt-6">
+                            {/* EduPlan AI Card */}
+                            <div
+                                onClick={() => window.location.href = "/tools/eduplan"}
+                                className="group cursor-pointer bg-white p-8 rounded-[2rem] border-2 border-slate-100 hover:border-purple-200 hover:shadow-2xl hover:shadow-purple-100 transition-all duration-300 relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500" />
+                                <div className="relative">
+                                    <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                        <BrainCircuit className="w-8 h-8 text-purple-600" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-800 mb-3">EduPlan AI</h3>
+                                    <p className="text-slate-600 mb-6 leading-relaxed">
+                                        Genera planeaciones didácticas completas alineadas al Programa Sintético NEM 2022 en segundos.
+                                    </p>
+                                    <div className="flex items-center gap-2 text-purple-600 font-bold">
+                                        Abrir Herramienta <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* EduLegal Card */}
+                            <div
+                                onClick={() => window.location.href = "/tools/edulegal"}
+                                className="group cursor-pointer bg-white p-8 rounded-[2rem] border-2 border-slate-100 hover:border-green-200 hover:shadow-2xl hover:shadow-green-100 transition-all duration-300 relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500" />
+                                <div className="relative">
+                                    <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                        <FileText className="w-8 h-8 text-green-600" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-800 mb-3">EduLegal</h3>
+                                    <p className="text-slate-600 mb-6 leading-relaxed">
+                                        Asistente legal escolar. Analiza incidentes y genera guías de actuación basadas en la normativa vigente.
+                                    </p>
+                                    <div className="flex items-center gap-2 text-green-600 font-bold">
+                                        Abrir Herramienta <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             {/* Mobile Bottom Navigation */}
             <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-[#0a2d1d]/90 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-2xl flex justify-between items-center px-4 py-3 z-50 overflow-x-auto gap-4 custom-scrollbar">
                 <button onClick={() => setActiveTab("classroom")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'classroom' ? 'text-[#2e9f6c] scale-110' : 'text-[#2e9f6c]'}`}>
@@ -1698,6 +1751,10 @@ export default function TeacherDashboard() {
                 <button onClick={() => setActiveTab("raid")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'raid' ? 'text-rose-400 scale-110' : 'text-[#2e9f6c]'}`}>
                     <Swords className="w-5 h-5" />
                     <span className="text-[9px] font-black uppercase tracking-widest">Raid</span>
+                </button>
+                <button onClick={() => setActiveTab("tools")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'tools' ? 'text-purple-400 scale-110' : 'text-[#2e9f6c]'}`}>
+                    <Sparkles className="w-5 h-5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Herramientas</span>
                 </button>
                 <button onClick={() => setActiveTab("management")} className={`flex-shrink-0 flex flex-col items-center gap-1.5 transition-all ${activeTab === 'management' ? 'text-emerald-400 scale-110' : 'text-[#2e9f6c]'}`}>
                     <Wrench className="w-5 h-5" />

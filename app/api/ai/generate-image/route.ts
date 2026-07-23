@@ -27,7 +27,7 @@ export async function GET(req: Request) {
 
     try {
         // Use Gemini's Imagen model
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
 
         const result = await model.generateContent({
             contents: [{

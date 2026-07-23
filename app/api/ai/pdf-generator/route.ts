@@ -66,7 +66,7 @@ export async function POST(req: Request) {
 
     console.log("Sending prompt to Gemini...");
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-flash-latest',
       generationConfig: {
         maxOutputTokens: 16384,
         temperature: 0.1, // Low temperature for consistent formatting

@@ -24,7 +24,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Configuración del servidor incompleta (API Key faltante)" }, { status: 500 });
         }
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
         const body = await req.json();
         const { imageBase64, mimeType, worldId, levelId, fileName } = body;

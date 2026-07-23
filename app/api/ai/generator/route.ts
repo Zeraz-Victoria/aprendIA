@@ -78,7 +78,7 @@ export async function POST(req: Request) {
 
     console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-flash-latest',
       generationConfig: {
         maxOutputTokens: 65536, // Max for Gemini 2.5 Flash — required for 25 sessions × 6 rich chunks (~51K tokens)
         temperature: 0.4,
@@ -256,8 +256,14 @@ REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionC
 
           console.log("Raw AI Response completed. Length:", responseText.length);
 
-          // Finalizamos stream, ahora a limpiar el markdown y parsear
-          responseText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
+          // Extract JSON block if wrapped in text or markdown
+          const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || 
+                            responseText.match(/```\n([\s\S]*?)\n```/) ||
+                            responseText.match(/{[\s\S]*}/);
+          if (jsonMatch) {
+            responseText = jsonMatch[1] || jsonMatch[0];
+          }
+          responseText = responseText.trim();
 
           const escapeUnsafeQuotes = (jsonStr: string) => {
             let isInsideString = false;
