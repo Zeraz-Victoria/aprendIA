@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     const genAI = new GoogleGenerativeAI(apiKey);
 
   try {
-    const { theme, topic, dificultad = "Básico", metodologia = "ABP", diagnostico = "Ninguno", sessionCount = 3, session_title, session_start, session_development, session_end, phase = "3" } = await req.json();
+    const { theme, topic, dificultad = "Básico", metodologia = "ABP", diagnostico = "Ninguno", sessionCount = 3, session_title, session_start, session_development, session_end, phase = "3", grade, modality } = await req.json();
 
     if (!theme || !topic) {
       return NextResponse.json({ error: 'theme and topic are required' }, { status: 400 });
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
     // Buscar páginas de libros de texto de apoyo relevantes
     let booksContext = "";
     try {
-      const relevantPages = await findRelevantPages(topic, 4);
+      const relevantPages = await findRelevantPages(topic, 4, grade, modality);
       if (relevantPages.length > 0) {
         booksContext = relevantPages.map(page => 
           `- Libro: "${page.bookTitle}" | Página: ${page.pageNumber} | PDF: "${page.pdfUrl}" | Contexto: "${page.snippet}"`

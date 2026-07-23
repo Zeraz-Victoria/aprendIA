@@ -17,7 +17,9 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
     const [difficulty, setDifficulty] = useState<"Básico" | "Intermedio" | "Avanzado">("Básico");
     const [metodologia, setMetodologia] = useState<string>("ABP");
     const [diagnostico, setDiagnostico] = useState<string>("");
-    const [phase, setPhase] = useState<string>("3");
+    const [phase, setPhase] = useState<string>("6");
+    const [grade, setGrade] = useState<string>("Secundaria 1");
+    const [modality, setModality] = useState<string>("Telesecundaria");
     const [sessionCount, setSessionCount] = useState<number>(3);
     const [isGenerating, setIsGenerating] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState("Iniciando IA...");
@@ -39,7 +41,9 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                     metodologia,
                     diagnostico,
                     phase,
-                    sessionCount
+                    sessionCount,
+                    grade,
+                    modality: grade.startsWith("Secundaria") ? modality : null
                 })
             });
 
@@ -251,27 +255,64 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                 />
                             </div>
 
-                            {/* Fase NEM */}
+                            {/* Grado Escolar */}
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
                                     <Compass className="w-4 h-4 text-[#165b3d]" />
-                                    <label className="text-xs font-black text-[#2e9f6c] uppercase tracking-widest">Fase NEM</label>
+                                    <label className="text-xs font-black text-[#2e9f6c] uppercase tracking-widest">Grado Escolar</label>
                                 </div>
-                                <div className="grid grid-cols-6 gap-2">
-                                    {["1", "2", "3", "4", "5", "6"].map(p => (
-                                        <button
-                                            key={p}
-                                            type="button"
-                                            onClick={() => setPhase(p)}
-                                            className={`py-2 rounded-xl text-xs font-bold transition-all border-2 ${phase === p
-                                                ? 'bg-violet-50 border-violet-500 text-violet-700 shadow-md'
-                                                : 'bg-white border-[#c1ebd5] text-[#2e9f6c] hover:border-[#c1ebd5]'}`}
-                                        >
-                                            Fase {p}
-                                        </button>
-                                    ))}
+                                <div className="grid grid-cols-3 gap-2">
+                                    {["Primaria 1", "Primaria 2", "Primaria 3", "Primaria 4", "Primaria 5", "Primaria 6", "Secundaria 1", "Secundaria 2", "Secundaria 3"].map(g => {
+                                        const label = g.startsWith("Primaria") ? `${g.replace("Primaria ", "")}º Primaria` : `${g.replace("Secundaria ", "")}º Secundaria`;
+                                        return (
+                                            <button
+                                                key={g}
+                                                type="button"
+                                                onClick={() => {
+                                                    setGrade(g);
+                                                    // Map phase automatically
+                                                    if (g === "Primaria 1" || g === "Primaria 2") setPhase("3");
+                                                    else if (g === "Primaria 3" || g === "Primaria 4") setPhase("4");
+                                                    else if (g === "Primaria 5" || g === "Primaria 6") setPhase("5");
+                                                    else setPhase("6");
+                                                }}
+                                                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border-2 ${grade === g
+                                                    ? 'bg-indigo-50 border-indigo-500 text-indigo-700 shadow-sm'
+                                                    : 'bg-white border-[#c1ebd5] text-[#2e9f6c] hover:border-[#c1ebd5]'}`}
+                                            >
+                                                {label}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
+
+                            {/* Modalidad (solo para Secundaria) */}
+                            {grade.startsWith("Secundaria") && (
+                                <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="flex items-center gap-2">
+                                        <Layers className="w-4 h-4 text-[#165b3d]" />
+                                        <label className="text-xs font-black text-[#2e9f6c] uppercase tracking-widest">Modalidad de Secundaria</label>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        {[
+                                            { key: "General", label: "Secundaria General" },
+                                            { key: "Telesecundaria", label: "Telesecundaria" }
+                                        ].map(m => (
+                                            <button
+                                                key={m.key}
+                                                type="button"
+                                                onClick={() => setModality(m.key)}
+                                                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all border-2 ${modality === m.key
+                                                    ? 'bg-violet-50 border-violet-500 text-violet-700 shadow-sm'
+                                                    : 'bg-white border-[#c1ebd5] text-[#2e9f6c] hover:border-[#c1ebd5]'}`}
+                                            >
+                                                {m.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Número de Sesiones */}
                             <div className="space-y-3">

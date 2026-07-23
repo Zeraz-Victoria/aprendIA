@@ -35,7 +35,12 @@ function buildSpanishOrQuery(topic: string): string {
  * @param topic El tema de interés para realizar la búsqueda semántica/palabras clave.
  * @param limit El límite de resultados recomendados (por defecto 3).
  */
-export async function findRelevantPages(topic: string, limit: number = 3): Promise<TextbookMatch[]> {
+export async function findRelevantPages(
+  topic: string, 
+  limit: number = 3,
+  grade?: string,
+  modality?: string
+): Promise<TextbookMatch[]> {
   if (!topic || topic.trim().length === 0) {
     return [];
   }
@@ -48,7 +53,7 @@ export async function findRelevantPages(topic: string, limit: number = 3): Promi
 
     // Seleccionamos "content" completo en lugar de usar la función "substring" de Postgres
     // para evitar errores de corte de bytes UTF-8 inválidos.
-    const query = `
+    let query = `
       SELECT 
         t.title as "bookTitle",
         t."pdfUrl" as "pdfUrl",
@@ -58,11 +63,25 @@ export async function findRelevantPages(topic: string, limit: number = 3): Promi
       FROM "TextbookPage" tp
       JOIN "Textbook" t ON tp."textbookId" = t.id
       WHERE to_tsvector('spanish', tp.content) @@ to_tsquery('spanish', $1)
+    `;
+
+    const params: any[] = [orQuery, limit];
+
+    if (grade) {
+      params.push(grade);
+      query += ` AND t.grade = $${params.length}`;
+    }
+    if (modality) {
+      params.push(modality);
+      query += ` AND t.modality = $${params.length}`;
+    }
+
+    query += `
       ORDER BY rank DESC, tp."pageNumber" ASC
       LIMIT $2;
     `;
 
-    const results = await prisma.$queryRawUnsafe<any[]>(query, orQuery, limit);
+    const results = await prisma.$queryRawUnsafe<any[]>(query, ...params);
     
     if (!results || results.length === 0) {
       return [];
