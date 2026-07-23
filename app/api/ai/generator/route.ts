@@ -296,6 +296,16 @@ REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionC
               parsedResponse = JSON.parse(responseText);
             } catch (parseError: any) {
               console.error("JSON Parse secundario falló:", parseError.message);
+              // Extract error position from message if possible
+              const posMatch = parseError.message.match(/at position (\d+)/) || parseError.message.match(/column (\d+)/);
+              if (posMatch) {
+                const pos = parseInt(posMatch[1], 10);
+                const startPos = Math.max(0, pos - 100);
+                const endPos = Math.min(responseText.length, pos + 100);
+                console.log(`Contexto alrededor de la posición del error (${pos}):`);
+                console.log(responseText.substring(startPos, endPos));
+                console.log("^".padStart(pos - startPos + 1));
+              }
               throw new Error("La IA retornó una estructura JSON malformada que no se pudo reparar: " + parseError.message);
             }
           }
