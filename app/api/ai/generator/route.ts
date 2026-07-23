@@ -300,23 +300,180 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
           }
           responseText = responseText.trim();
 
-          const escapeUnsafeQuotes = (jsonStr: string) => {
-            let isInsideString = false;
-            let result = '';
+          const repairJson = (jsonStr: string): string => {
+            jsonStr = jsonStr.trim();
+            const jsonMatch = jsonStr.match(/```json\n([\s\S]*?)\n```/) || 
+                              jsonStr.match(/```\n([\s\S]*?)\n```/) ||
+                              jsonStr.match(/{[\s\S]*}/);
+            if (jsonMatch) {
+              jsonStr = jsonMatch[1] || jsonMatch[0];
+            }
+            jsonStr = jsonStr.trim();
+
+            let repaired = '';
+            let inString = false;
+            let isEscaped = false;
+            
+            const contextStack: ('object' | 'array')[] = [];
+            let expect: 'value' | 'key_or_close' | 'value_or_close' | 'colon' | 'comma_or_close' | 'key' = 'value';
+
+            let lastKeyStart = -1;
+            let lastValueStart = -1;
+
             for (let i = 0; i < jsonStr.length; i++) {
               const char = jsonStr[i];
-              const prevChar = i > 0 ? jsonStr[i - 1] : '';
-              if (char === '"' && prevChar !== '\\\\') {
-                const prevNonSpace = jsonStr.substring(0, i).trim().slice(-1);
-                const nextNonSpaceIndex = jsonStr.substring(i + 1).search(/[^\s]/);
-                const nextNonSpace = nextNonSpaceIndex !== -1 ? jsonStr[i + 1 + nextNonSpaceIndex] : '';
-                const isStartOfString = /[:\\[\\{,]/.test(prevNonSpace);
-                const isEndOfString = /[:\\}\\]\,]/.test(nextNonSpace);
-                if (isStartOfString || isEndOfString) { isInsideString = !isInsideString; result += char; }
-                else { result += '\\\\"'; }
-              } else { result += char; }
+
+              if (inString) {
+                if (isEscaped) {
+                  repaired += char;
+                  isEscaped = false;
+                } else if (char === '\\') {
+                  repaired += char;
+                  isEscaped = true;
+                } else if (char === '\n') {
+                  repaired += '\\n';
+                } else if (char === '\r') {
+                  repaired += '\\r';
+                } else if (char === '\t') {
+                  repaired += '\\t';
+                } else if (char === '"') {
+                  let nextNonWs = '';
+                  for (let j = i + 1; j < jsonStr.length; j++) {
+                    if (!/\s/.test(jsonStr[j])) {
+                      nextNonWs = jsonStr[j];
+                      break;
+                    }
+                  }
+
+                  let isClosing = false;
+                  if (expect === 'key' || expect === 'key_or_close') {
+                    if (nextNonWs === ':') {
+                      isClosing = true;
+                    }
+                  } else {
+                    if (nextNonWs === ',' || nextNonWs === '}' || nextNonWs === ']' || nextNonWs === '') {
+                      isClosing = true;
+                    }
+                  }
+
+                  if (isClosing) {
+                    inString = false;
+                    repaired += char;
+                    if (expect === 'key' || expect === 'key_or_close') {
+                      expect = 'colon';
+                    } else {
+                      expect = 'comma_or_close';
+                    }
+                  } else {
+                    repaired += '\\"';
+                  }
+                } else {
+                  repaired += char;
+                }
+              } else {
+                if (char === '"') {
+                  inString = true;
+                  if (expect === 'key' || expect === 'key_or_close') {
+                    lastKeyStart = repaired.length;
+                  } else {
+                    lastValueStart = repaired.length;
+                  }
+                  repaired += char;
+                } else if (char === '{') {
+                  contextStack.push('object');
+                  expect = 'key_or_close';
+                  lastValueStart = repaired.length;
+                  repaired += char;
+                } else if (char === '[') {
+                  contextStack.push('array');
+                  expect = 'value_or_close';
+                  lastValueStart = repaired.length;
+                  repaired += char;
+                } else if (char === '}') {
+                  if (contextStack[contextStack.length - 1] === 'object') {
+                    contextStack.pop();
+                    expect = contextStack.length === 0 ? 'value' : 'comma_or_close';
+                  }
+                  repaired += char;
+                } else if (char === ']') {
+                  if (contextStack[contextStack.length - 1] === 'array') {
+                    contextStack.pop();
+                    expect = contextStack.length === 0 ? 'value' : 'comma_or_close';
+                  }
+                  repaired += char;
+                } else if (char === ':') {
+                  if (expect === 'colon') {
+                    expect = 'value';
+                  }
+                  repaired += char;
+                } else if (char === ',') {
+                  const currentContext = contextStack[contextStack.length - 1];
+                  if (currentContext === 'object') {
+                    expect = 'key';
+                  } else if (currentContext === 'array') {
+                    expect = 'value';
+                  }
+                  repaired += char;
+                } else {
+                  if (!/\s/.test(char)) {
+                    if (expect === 'value' || expect === 'value_or_close') {
+                      lastValueStart = repaired.length;
+                    }
+                  }
+                  repaired += char;
+                }
+              }
             }
-            return result;
+
+            if (inString) {
+              repaired += '"';
+              if (expect === 'key' || expect === 'key_or_close') {
+                expect = 'colon';
+              } else {
+                expect = 'comma_or_close';
+              }
+            }
+
+            if (expect === 'colon' && lastKeyStart !== -1) {
+              repaired = repaired.slice(0, lastKeyStart).trimEnd();
+              if (repaired.endsWith(',')) {
+                repaired = repaired.slice(0, -1).trimEnd();
+              }
+              expect = 'comma_or_close';
+            }
+
+            if (expect === 'value') {
+              const currentContext = contextStack[contextStack.length - 1];
+              if (currentContext === 'object') {
+                if (lastKeyStart !== -1) {
+                  repaired = repaired.slice(0, lastKeyStart).trimEnd();
+                  if (repaired.endsWith(',')) {
+                    repaired = repaired.slice(0, -1).trimEnd();
+                  }
+                }
+              } else if (currentContext === 'array') {
+                const lastComma = repaired.lastIndexOf(',');
+                if (lastComma !== -1 && lastComma >= repaired.length - 5) {
+                  repaired = repaired.slice(0, lastComma).trimEnd();
+                }
+              }
+            }
+
+            repaired = repaired.trimEnd();
+            if (repaired.endsWith(',')) {
+              repaired = repaired.slice(0, -1).trimEnd();
+            }
+
+            while (contextStack.length > 0) {
+              const open = contextStack.pop();
+              if (open === 'object') {
+                repaired += '}';
+              } else if (open === 'array') {
+                repaired += ']';
+              }
+            }
+
+            return repaired;
           };
 
           let parsedResponse;
@@ -334,7 +491,7 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
               console.log("^".padStart(pos - startPos + 1));
             }
             
-            responseText = escapeUnsafeQuotes(responseText);
+            responseText = repairJson(responseText);
             try {
               parsedResponse = JSON.parse(responseText);
             } catch (parseError: any) {
