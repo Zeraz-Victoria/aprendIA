@@ -136,7 +136,7 @@ No separes la matemática de la fantasía. Integra el "Tema Visual para Gamifica
 
 # 5. REGLAS DE CONTENIDO TEÓRICO (EXPLANATION.CHUNKS):
 - **Explicación Teórica ("explanation")**: Divide la teoría en exactamente 3 secciones/partes ("chunks") que sigan esta estructura estricta:
-  1. **¿Qué es y cómo funciona?**: Comienza con "## ¿Qué es y cómo funciona? — [Definición del concepto y procedimiento conciso en 3 oraciones]".
+  1. **¿Qué es y cómo funciona?**: Comienza con "## ¿Qué es y cómo funciona? — [Definición profunda y detallada del concepto. Explica el funcionamiento, reglas o fórmulas de manera completa paso a paso, con un mínimo de 6 a 8 oraciones ricas en contenido]".
   2. **Ejemplo Resuelto**: Comienza con "## Ejemplo resuelto — [Problema práctico resuelto detalladamente paso a paso con la temática]".
   3. **Conexión con el Mundo Real**: Comienza con "## Conexión con el mundo real — [Dato de relevancia cotidiana o curiosidad asombrosa en 2 oraciones]".
   Cada elemento de "chunks" debe empezar estrictamente con el prefijo "## [Título] — " para que el sistema lo pueda procesar correctamente.
@@ -214,7 +214,7 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
        "content": {
           "explanation": { 
              "chunks": [
-                "## ¿Qué es y cómo funciona? — [Definición del concepto y procedimiento conciso en 3 oraciones]",
+                "## ¿Qué es y cómo funciona? — [Definición profunda y detallada del concepto. Explica el funcionamiento, reglas o fórmulas de manera completa paso a paso, con un mínimo de 6 a 8 oraciones ricas en contenido]",
                 "## Ejemplo resuelto — [Problema práctico resuelto detalladamente paso a paso con la temática]",
                 "## Conexión con el mundo real — [Dato de relevancia cotidiana o curiosidad asombrosa en 2 oraciones]"
              ],
