@@ -160,6 +160,7 @@ Regla crítica: Para cada nivel en "mapa_interactivo", debes incluir una propied
   {
     "libro": "Nombre exacto del libro (ej. Saberes y Pensamiento Científico - Primer Grado Telesecundaria)",
     "pagina": número_de_pagina (ej. 47),
+    "tema": "Tema, título principal o concepto clave de esa página (ej. Factores externos que modelan el relieve)",
     "pdfUrl": "Ruta exacta del PDF (ej. /libros de texto/libros primero/1_TS-ENS-BAJA.pdf)"
   }
 ]
@@ -196,7 +197,7 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
        "type": "concept_story",
        "title": "Título de nivel inmersivo y gamificado",
        "lecturas_sugeridas": [
-          { "libro": "Nombre del Libro", "pagina": 47, "pdfUrl": "/libros de texto/libros primero/1_TS-ENS-BAJA.pdf" }
+          { "libro": "Nombre del Libro", "pagina": 47, "tema": "Título o tema de la página", "pdfUrl": "/libros de texto/libros primero/1_TS-ENS-BAJA.pdf" }
        ],
        "session_start": "Instrucción de inicio que introduce la misión narrativa del nivel",
        "session_development": "Instrucción de desarrollo/reto narrativo que el minijuego representa",

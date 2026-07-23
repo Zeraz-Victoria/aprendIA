@@ -989,7 +989,7 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                                                 <span className="text-teal-500 font-bold shrink-0 mt-0.5">📌</span>
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-sm text-[#0a2d1d] dark:text-slate-200 leading-relaxed">
-                                                        Consulta la página <strong className="text-[#2e9f6c] dark:text-teal-300 font-extrabold">{lectura.pagina}</strong> de tu libro de texto físico <strong className="font-bold">"{lectura.libro}"</strong> para profundizar en este tema.
+                                                        Consulta la página <strong className="text-[#2e9f6c] dark:text-teal-300 font-extrabold">{lectura.pagina}</strong> de tu libro de texto físico <strong className="font-bold">"{lectura.libro}"</strong>{lectura.tema ? <> con el tema <strong className="italic text-[#2e9f6c] dark:text-teal-300">"{lectura.tema}"</strong></> : null} para profundizar en este tema.
                                                     </p>
                                                 </div>
                                             </div>
