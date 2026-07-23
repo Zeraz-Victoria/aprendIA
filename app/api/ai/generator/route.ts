@@ -129,14 +129,12 @@ No separes la matemática de la fantasía. Integra el "Tema Visual para Gamifica
 - **Explicaciones y Problemas**: El ejemplo resuelto y los problemas prácticos DEBEN usar elementos del tema visual (ej. si el tema es "Piratas", el problema debe involucrar monedas de oro, barcos, islas o raciones de agua, no manzanas genéricas).
 
 # 5. REGLAS DE CONTENIDO TEÓRICO (EXPLANATION.CHUNKS):
-El campo "explanation.chunks" debe ser obligatoriamente un ARREGLO de exactamente 6 elementos de tipo string (no una sola cadena de texto). Cada bloque debe tener MÍNIMO 3 oraciones ricas en contenido y seguir este flujo pedagógico:
-1. **¿Qué es?**: Comienza con "## ¿Qué es? — [Definición del concepto en 3 oraciones conectada al tema]".
-2. **¿Por qué importa?**: Comienza con "## ¿Por qué importa? — [Relevancia cotidiana de este conocimiento en 3 oraciones]".
-3. **¿Cómo funciona?**: Comienza con "## ¿Cómo funciona? — [Procedimiento o algoritmo paso a paso con listas si aplica]".
-4. **Ejemplo Resuelto**: Comienza con "## Ejemplo resuelto — [Problema práctico resuelto detalladamente paso a paso con la temática]".
-5. **Conexión con el Mundo Real**: Comienza con "## Conexión con el mundo real — [Presencia del concepto en ciencia, tecnología o comunidad]".
-6. **Curiosidades**: Comienza con "## ¿Sabías que...? — [Dato asombroso o curiosidad histórica del concepto]".
-Cada elemento de "chunks" debe empezar estrictamente con el prefijo "## [Título] — " para que el sistema lo pueda procesar correctamente.
+- **Explicación Teórica ("explanation")**: Divide la teoría en exactamente 3 secciones/partes ("chunks") que sigan esta estructura estricta:
+  1. **¿Qué es y cómo funciona?**: Comienza con "## ¿Qué es y cómo funciona? — [Definición del concepto y procedimiento conciso en 3 oraciones]".
+  2. **Ejemplo Resuelto**: Comienza con "## Ejemplo resuelto — [Problema práctico resuelto detalladamente paso a paso con la temática]".
+  3. **Conexión con el Mundo Real**: Comienza con "## Conexión con el mundo real — [Dato de relevancia cotidiana o curiosidad asombrosa en 2 oraciones]".
+  Cada elemento de "chunks" debe empezar estrictamente con el prefijo "## [Título] — " para que el sistema lo pueda procesar correctamente.
+  *IMPORTANTE*: Sé sumamente conciso, breve y directo en todas las descripciones, explicaciones y narrativas de las sesiones para asegurar que toda la estructura quepa en el límite de la respuesta. Evita redundancias o textos excesivamente largos.
 
 
 
@@ -207,12 +205,9 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
        "content": {
           "explanation": { 
              "chunks": [
-                "## ¿Qué es? — [Definición del concepto en 3 oraciones conectada al tema]",
-                "## ¿Por qué importa? — [Relevancia cotidiana de este conocimiento en 3 oraciones]",
-                "## ¿Cómo funciona? — [Procedimiento o algoritmo paso a paso con listas si aplica]",
+                "## ¿Qué es y cómo funciona? — [Definición del concepto y procedimiento conciso en 3 oraciones]",
                 "## Ejemplo resuelto — [Problema práctico resuelto detalladamente paso a paso con la temática]",
-                "## Conexión con el mundo real — [Presencia del concepto en ciencia, tecnología o comunidad]",
-                "## ¿Sabías que...? — [Dato asombroso o curiosidad histórica del concepto]"
+                "## Conexión con el mundo real — [Dato de relevancia cotidiana o curiosidad asombrosa en 2 oraciones]"
              ],
              "analogy": "Analogía contextualizada para la Fase ${phase} basada en la vida real del estudiante" 
           },
