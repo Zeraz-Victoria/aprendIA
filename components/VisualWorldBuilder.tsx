@@ -347,6 +347,17 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                                         ${(explanation.chunks || []).map(chunk => `<div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:13px;">${chunk}</div>`).join('')}
                                         ${explanation.analogy ? `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:13px;color:#92400e;"><strong>💡 Analogía:</strong> ${explanation.analogy}</div>` : ''}
                                     </div>
+                            ` : ''}
+                            ${(day as any).lecturas_sugeridas && (day as any).lecturas_sugeridas.length > 0 ? `
+                                <div>
+                                    <div style="font-size:10px;font-weight:900;color:#047857;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📚 Lecturas Sugeridas (Libro Físico)</div>
+                                    <div style="background:#f0fbf5;border:1px solid #a7f3d0;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;font-size:13px;color:#065f46;">
+                                        ${(day as any).lecturas_sugeridas.map((lectura: any) => `
+                                            <div style="line-height:1.5;">
+                                                📌 Consulta la página <strong>${lectura.pagina}</strong> de tu libro de texto físico <strong>"${lectura.libro}"</strong>${lectura.tema ? ` con el tema <em>"${lectura.tema}"</em>` : ''} para profundizar en este tema.
+                                            </div>
+                                        `).join('')}
+                                    </div>
                                 </div>
                             ` : ''}
                             ${practice ? `
@@ -453,6 +464,24 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                             ${seq.cierre ? seq.cierre.map((c: string) => `<li>${c}</li>`).join('') : ''}
                         </ul>
                     </div>
+                    
+                    ${(() => {
+                        const relatedNode = nodes[seq.numero - 1] as any;
+                        const readings = relatedNode?.lecturas_sugeridas || [];
+                        if (readings.length === 0) return '';
+                        return `
+                        <div style="margin-top:14px;padding-top:12px;border-top:1px dashed #cbd5e1;">
+                            <strong style="font-size:12px;color:#0f172a;">📚 LECTURAS SUGERIDAS (LIBRO FÍSICO):</strong>
+                            <ul style="font-size:12px;color:#047857;margin-left:20px;margin-top:6px;line-height:1.5;list-style-type:none;padding-left:0;">
+                                ${readings.map((lectura: any) => `
+                                    <li style="margin-bottom:4px;">
+                                        📌 Consulta la página <strong>${lectura.pagina}</strong> de tu libro de texto físico <strong>"${lectura.libro}"</strong>${lectura.tema ? ` con el tema <em>"${lectura.tema}"</em>` : ''} para profundizar en este tema.
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        `;
+                    })()}
                 </div>
             `).join('')}
         </div>
