@@ -146,7 +146,12 @@ No separes la matemática de la fantasía. Integra el "Tema Visual para Gamifica
   2. **Ejemplo Resuelto**: Comienza con "## Ejemplo resuelto — [Problema práctico resuelto detalladamente paso a paso con la temática]".
   3. **Conexión con el Mundo Real**: Comienza con "## Conexión con el mundo real — [Dato de relevancia cotidiana o curiosidad asombrosa en 2 oraciones]".
   Cada elemento de "chunks" debe empezar estrictamente con el prefijo "## [Título] — " para que el sistema lo pueda procesar correctamente.
-  *IMPORTANTE*: Sé sumamente conciso, breve y directo en todas las descripciones, explicaciones y narrativas de las sesiones para asegurar que toda la estructura quepa en el límite de la respuesta. Evita redundancias o textos excesivamente largos.
+  *IMPORTANTE* (REGLAS DE CONCISIÓN EXTREMA EN NARRATIVAS Y SECUENCIA DOCENTE):
+  Para que la explicación del tema de los estudiantes pueda ser rica y extensa en el bloque "## ¿Qué es y cómo funciona?", DEBES resumir al máximo los demás textos secundarios:
+  - Las llaves "narrative", "session_start", "session_development" y "session_end" en el "mapa_interactivo" deben tener un máximo de 1 a 2 oraciones cortas y directas. Evita relatos de ficción largos o párrafos extensos en estas llaves.
+  - La sección "secuencia_didactica" del docente (las listas de "inicio", "desarrollo" y "cierre") debe contener como máximo 1 oración corta y puntual por fase, enfocada en la supervisión de la actividad del alumno.
+  - El campo "diagnostico_pedagogico" y "proposito" deben tener como máximo 2 oraciones.
+  Toda la riqueza de contenido debe residir estrictamente en la teoría de "chunks".
 
 
 
@@ -198,9 +203,9 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
         "numero": 1,
         "titulo": "Título formal de la sesión",
         "duracion": "60 min",
-        "inicio": ["Actividad de inicio"],
-        "desarrollo": ["Desarrollo pedagógico paso a paso"],
-        "cierre": ["Cierre socrático"],
+        "inicio": ["Actividad de inicio del docente (máx 1 oración)"],
+        "desarrollo": ["Guía del docente en el juego (máx 1 oración)"],
+        "cierre": ["Reflexión socrática guiada (máx 1 oración)"],
         "recursos": ["Recursos didácticos"],
         "evidencia": "Evidencia de aprendizaje esperada"
       }
@@ -214,10 +219,10 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
        "lecturas_sugeridas": [
           { "libro": "Nombre del Libro", "pagina": 47, "tema": "Título o tema de la página", "pdfUrl": "/libros de texto/libros primero/1_TS-ENS-BAJA.pdf" }
        ],
-       "session_start": "Instrucción de inicio que introduce la misión narrativa del nivel",
-       "session_development": "Instrucción de desarrollo/reto narrativo que el minijuego representa",
-       "session_end": "Instrucción de cierre para sellar el logro de la sesión",
-       "narrative": "Narrativa introductoria del nivel conectando con el tema visual",
+       "session_start": "Instrucción de inicio al alumno (máx 1 oración)",
+       "session_development": "Desafío del minijuego (máx 1 oración)",
+       "session_end": "Cierre y logro del nivel (máx 1 oración)",
+       "narrative": "Narrativa inmersiva del nivel (máx 2 oraciones)",
        "content": {
           "explanation": { 
              "chunks": [
