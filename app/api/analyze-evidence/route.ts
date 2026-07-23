@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { trackAICall } from "@/lib/ai-tracker";
+import { checkAndSuspendSchool } from "@/lib/subscription";
 
 // Initialize the Gemini API
 
@@ -23,6 +24,16 @@ export async function POST(req: Request) {
 
         if (!schoolId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Lazy-check and suspend the school if subscription is expired
+        await checkAndSuspendSchool(schoolId);
+
+        const school = await prisma.school.findUnique({ where: { id: schoolId } });
+        if (school && school.subscriptionStatus === 'SUSPENDED') {
+            return NextResponse.json({ 
+                error: "No se pudo calificar la actividad, ponte en contacto con tu maestro." 
+            }, { status: 403 });
         }
 
         const { imageBase64, mimeType, textEvidence, context, narrative, studentId, worldId, levelId, evidenceType } = await req.json();

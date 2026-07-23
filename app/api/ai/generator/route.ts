@@ -139,7 +139,8 @@ Por consecuencia:
 
 # GUÍA METODOLÓGICA DE PROYECTOS OFICIAL (TU CEREBRO Y PAUTA DE DISEÑO):
 Debes basar el diseño de la secuencia didáctica y del mapa del estudiante ESTRICTAMENTE en la metodología NEM seleccionada: "${metodologia}".
-Sigue fielmente los pasos, fases y momentos específicos que describe la guía oficial de abajo para estructurar las sesiones. Cada una de las ${sessionCount} sesiones debe representar de forma secuencial una de las fases o momentos de esta metodología:
+Sigue el flujo, fases y momentos específicos que describe la guía oficial de abajo para estructurar las sesiones. Cada una de las ${sessionCount} sesiones debe representar de forma secuencial una de las fases o momentos de esta metodología:
+*IMPORTANTE (ANTI-RECITACIÓN)*: Queda terminantemente prohibido copiar textualmente las oraciones o descripciones de las fases y momentos de la guía. Debes explicar las actividades en tus propias palabras y adaptarlas a la temática visual del juego.
 ---
 ${abpGuide}
 ---
