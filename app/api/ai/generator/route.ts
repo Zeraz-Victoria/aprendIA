@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from "@/lib/auth";
@@ -83,7 +83,13 @@ export async function POST(req: Request) {
         maxOutputTokens: 8192, // Max for Gemini 1.5 Flash (gemini-flash-latest)
         temperature: 0.4,
         responseMimeType: "application/json",
-      }
+      },
+      safetySettings: [
+        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+      ]
     });
 
     // Buscar páginas de libros de texto de apoyo relevantes
@@ -156,6 +162,7 @@ No separes la matemática de la fantasía. Integra el "Tema Visual para Gamifica
   1. Todos los saltos de línea (line breaks) dentro de los strings (cadenas de texto) DEBEN ser escapados como \\n. Nunca dejes un salto de línea real (Enter) dentro de un valor de texto.
   2. REGLA SOBERANA DE COMILLAS: Prohibido usar comillas dobles (") dentro de tus textos (ej. explicaciones, historias, diálogos, etc.). Si necesitas citar algo o destacar palabras, utiliza obligatoriamente comillas angulares (« ») o comillas simples (' '). Las comillas dobles (") en tu respuesta deben ser exclusivamente para abrir/cerrar propiedades y cadenas del JSON.
   3. No utilices caracteres especiales no válidos o fórmulas en formato LaTeX que contengan barras invertidas no escapadas.
+  4. REGLA DE REDACCIÓN (PROHIBIDO COPIAR TEXTOS LITERALES): Está terminantemente prohibido copiar oraciones o textos de manera literal de los fragmentos de libros provistos. Debes reescribir y parafrasear toda la información didáctica con tus propias palabras adaptadas al nivel del estudiante. Copiar texto literal activará los filtros de derechos de autor (recitation checks) de Google e interrumpirá la generación de forma abrupta.
 
 # 8. LIBROS DE TEXTO DE APOYO DISPONIBLES:
 Aquí tienes fragmentos reales y referencias de los libros de texto oficiales de 1er Grado Telesecundaria que coinciden con el tema "${topic}". Utiliza esta información para enriquecer los contenidos teóricos y asigna obligatoriamente cuáles de estas lecturas se recomiendan para cada sesión:
@@ -258,7 +265,7 @@ REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionC
           const responseText_raw = result.response.text();
           let responseText = responseText_raw;
 
-          console.log("Raw AI Response completed. Length:", responseText.length);
+          console.log("Raw AI Response completed. Length:", responseText.length, "Finish Reason:", result.response.candidates?.[0]?.finishReason);
 
           // Extract JSON block if wrapped in text or markdown
           const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || 
