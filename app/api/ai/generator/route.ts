@@ -78,10 +78,10 @@ export async function POST(req: Request) {
 
     console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-1.5-flash-latest',
       generationConfig: {
-        maxOutputTokens: 8192, // Max for Gemini 1.5 Flash (gemini-1.5-flash)
-        temperature: 0.4,
+        maxOutputTokens: 8192,
+        temperature: 0.2, // Slightly more creative for narratives
         responseMimeType: "application/json",
       }
     });
