@@ -119,7 +119,7 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0a2d1d]/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in-95 duration-300">
+            <div className="bg-white w-full max-w-lg max-h-[90vh] flex flex-col rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in-95 duration-300">
                 {/* Header */}
                 <div className="relative h-32 bg-gradient-to-br from-indigo-600 to-violet-700 p-8 flex items-end">
                     <button 
@@ -140,7 +140,7 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                 </div>
 
                 {/* Body */}
-                <div className="p-8 space-y-8">
+                <div className="p-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
                     {isGenerating ? (
                         <div className="py-12 flex flex-col items-center text-center space-y-6">
                             <div className="relative w-20 h-20">
@@ -353,6 +353,19 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                         cursor: pointer;
                                         border: 2px solid white;
                                         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                    }
+                                    .custom-scrollbar::-webkit-scrollbar {
+                                        width: 6px;
+                                    }
+                                    .custom-scrollbar::-webkit-scrollbar-track {
+                                        background: transparent;
+                                    }
+                                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                                        background: #c1ebd5;
+                                        border-radius: 10px;
+                                    }
+                                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                                        background: #2e9f6c;
                                     }
                                 `}} />
                             </div>
