@@ -145,13 +145,11 @@ No separes la matemática de la fantasía. Integra el "Tema Visual para Gamifica
   1. **¿Qué es y cómo funciona?**: Comienza con "## ¿Qué es y cómo funciona? — [Definición profunda y detallada del concepto. Explica el funcionamiento, reglas o fórmulas de manera completa paso a paso, con un mínimo de 6 a 8 oraciones ricas en contenido]".
   2. **Ejemplo Resuelto**: Comienza con "## Ejemplo resuelto — [Problema práctico resuelto detalladamente paso a paso con la temática]".
   3. **Conexión con el Mundo Real**: Comienza con "## Conexión con el mundo real — [Dato de relevancia cotidiana o curiosidad asombrosa en 2 oraciones]".
-  Cada elemento de "chunks" debe empezar estrictamente con el prefijo "## [Título] — " para que el sistema lo pueda procesar correctamente.
-  *IMPORTANTE* (REGLAS DE CONCISIÓN EXTREMA EN NARRATIVAS Y SECUENCIA DOCENTE):
-  Para que la explicación del tema de los estudiantes pueda ser rica y extensa en el bloque "## ¿Qué es y cómo funciona?", DEBES resumir al máximo los demás textos secundarios:
-  - Las llaves "narrative", "session_start", "session_development" y "session_end" en el "mapa_interactivo" deben tener un máximo de 1 a 2 oraciones cortas y directas. Evita relatos de ficción largos o párrafos extensos en estas llaves.
-  - La sección "secuencia_didactica" del docente (las listas de "inicio", "desarrollo" y "cierre") debe contener como máximo 1 oración corta y puntual por fase, enfocada en la supervisión de la actividad del alumno.
+  *IMPORTANTE* (LÍMITE DE MAPA INTERACTIVO Y CONCISIÓN):
+  - Si el total de sesiones solicitadas es mayor a 2 (${sessionCount} > 2), DEBES generar objetos de nivel detallados únicamente para las primeras 2 sesiones en el arreglo "mapa_interactivo". NO generes las sesiones a partir de la 3 en adelante en el mapa interactivo; el servidor se encargará de crear los esqueletos automáticamente. El arreglo "mapa_interactivo" en tu respuesta JSON debe tener como máximo 2 elementos.
+  - La sección "secuencia_didactica" del docente (las listas de "inicio", "desarrollo" y "cierre") SÍ debe contener todas las ${sessionCount} sesiones detalladas. Puedes escribir hasta 2 oraciones para describir cada fase de la secuencia docente.
   - El campo "diagnostico_pedagogico" y "proposito" deben tener como máximo 2 oraciones.
-  Toda la riqueza de contenido debe residir estrictamente en la teoría de "chunks".
+  - Toda la riqueza de contenido de aprendizaje debe residir en la teoría de "chunks" de los primeros 2 niveles generados.
 
 
 
@@ -250,7 +248,7 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
   ]
 }
 
-REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionCount} elementos y el arreglo "secuencia_didactica" también EXACTAMENTE ${sessionCount} elementos. Ambas deben empalmar lógicamente. Ningún valor numérico debe fallar. Retorna SOLO el JSON.
+REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE contener EXACTAMENTE ${sessionCount} elementos. Sin embargo, el arreglo "mapa_interactivo" debe contener únicamente los primeros 2 elementos (si ${sessionCount} > 2) para optimizar el tamaño de la respuesta. Ambas deben empalmar lógicamente. Ningún valor numérico debe fallar. Retorna SOLO el JSON.
 `;
 
     console.log("Calling Google AI (Non-stream mode)...");
@@ -383,6 +381,42 @@ REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionC
                   }
                 });
             });
+
+            // Lógica programática para rellenar de forma diferida las sesiones a partir de la 3 en adelante
+            if (days.length < sessionCount) {
+              const secuenciaDidactica = planoDidactico.secuencia_didactica || [];
+              for (let i = days.length; i < sessionCount; i++) {
+                const sessionPlan = secuenciaDidactica[i] || secuenciaDidactica[i - 1] || {};
+                days.push({
+                  dayNumber: i + 1,
+                  type: (i === sessionCount - 1) ? "boss_fight" : "concept_story",
+                  title: sessionPlan.titulo || `Sesión ${i + 1}`,
+                  narrative: "Generando contenido con IA...",
+                  session_start: Array.isArray(sessionPlan.inicio) ? sessionPlan.inicio.join('\n') : (sessionPlan.inicio || ""),
+                  session_development: Array.isArray(sessionPlan.desarrollo) ? sessionPlan.desarrollo.join('\n') : (sessionPlan.desarrollo || ""),
+                  session_end: Array.isArray(sessionPlan.cierre) ? sessionPlan.cierre.join('\n') : (sessionPlan.cierre || ""),
+                  lecturas_sugeridas: [],
+                  isGenerating: true,
+                  content: {
+                    explanation: { chunks: ["Generando contenido con IA..."], analogy: "" },
+                    miniGame: {
+                      type: "Word Search",
+                      question: "Cargando minijuego...",
+                      options: [],
+                      correctAnswer: "",
+                      feedbackSuccess: "¡Correcto!",
+                      feedbackError: "Inténtalo de nuevo."
+                    },
+                    practiceProblem: {
+                      statement: "Generando...",
+                      correctValue: "",
+                      hint: ""
+                    }
+                  }
+                });
+              }
+            }
+
             if (days.length > 0) {
               days[days.length - 1].type = "boss_fight";
               days[days.length - 1].originalProblemText = days[days.length - 1].content.practiceProblem.statement;
