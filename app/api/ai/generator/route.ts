@@ -107,7 +107,7 @@ export async function POST(req: Request) {
 
     const prompt = `
 # PERFIL: DOCTOR EN PEDAGOGÍA, DISEÑADOR DE VIDEOJUEGOS EDUCATIVOS Y ESPECIALISTA NEM 2022
-Tu misión es actuar como un diseñador instruccional y de gamificación de élite. Debes transformar un contenido matemático en una aventura de aprendizaje inmersiva de alto impacto y rigor pedagógico.
+Tu misión es actuar como un diseñador instruccional y de gamificación de élite. Debes transformar el tema, asignatura o Campo Formativo solicitado (sea Español, Historia, Geografía, Matemáticas, Ciencias, etc.) en una aventura de aprendizaje inmersiva de alto impacto y rigor pedagógico.
 
 # FILOSOFÍA DE APRENDIZAJE AUTODIDACTA (CRÍTICO):
 Toda la aventura debe estar diseñada para que el alumno sea 100% AUTODIDACTA. La narrativa del juego, la explicación teórica de los "chunks" y las analogías en el "mapa_interactivo" deben ser tan claras, completas y autónomas que el alumno sea capaz de comprender el tema y resolver todos los desafíos (minijuegos y problemas de práctica) de forma independiente, sin necesidad de que el profesor le explique el tema previamente.
@@ -132,11 +132,11 @@ Analiza el "Diagnóstico de Aula" y adapta dinámicamente todo el contenido bajo
 # 3. ANDAMIAJE PEDAGÓGICO DE LA AVENTURA (SCROLL PROGRESSION):
 Las ${sessionCount} sesiones deben tener una progresión de dificultad y aprendizaje estructurada de la siguiente manera:
 - **Fase de Apertura (Primer 25% de las sesiones)**: Foco en la conceptualización base, exploración y conexión del tema con saberes previos. Explicación intuitiva.
-- **Fase de Desarrollo (Siguiente 50% de las sesiones)**: Foco en la modelación matemática, algoritmos, procedimientos paso a paso y resolución guiada de problemas.
+- **Fase de Desarrollo (Siguiente 50% de las sesiones)**: Foco en la explicación profunda de conceptos, procedimientos, algoritmos o métodos paso a paso según la asignatura, y resolución guiada de actividades o ejercicios prácticos.
 - **Fase de Cierre y Boss Fight (Último 25% de las sesiones)**: Foco en la transferencia de conocimiento, aplicaciones complejas a problemáticas comunitarias y síntesis total del contenido para derrotar al jefe final.
 
 # 4. INTEGRACIÓN NARRATIVA ORGÁNICA (GAMIFICACIÓN PROFUNDA):
-No separes la matemática de la fantasía. Integra el "Tema Visual para Gamificación" (${theme}) dentro del núcleo de la enseñanza:
+No separes el contenido educativo de la fantasía. Integra el "Tema Visual para Gamificación" (${theme}) dentro del núcleo de la enseñanza:
 - **Narrativa del nivel**: Debe contar una historia secuencial donde el alumno avanza resolviendo misterios, ayudando a personajes, o interactuando con el entorno del tema visual.
 - **Explicaciones y Problemas**: El ejemplo resuelto y los problemas prácticos DEBEN usar elementos del tema visual (ej. si el tema es "Piratas", el problema debe involucrar monedas de oro, barcos, islas o raciones de agua, no manzanas genéricas).
 
@@ -239,8 +239,8 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
              "feedbackError": "Pista socrática explicativa del error"
           },
           "practiceProblem": { 
-             "statement": "Reto matemático contextualizado a la narrativa para registrar en cuaderno",
-             "correctValue": "Respuesta esperada o valor numérico exacto",
+             "statement": "Reto, ejercicio práctico o pregunta de análisis y reflexión contextualizada a la narrativa para registrar en cuaderno (adecuada a la asignatura)",
+             "correctValue": "Respuesta exacta esperada, valor numérico o criterio de respuesta correcta",
              "hint": "Pista reflexiva final"
           }
        }

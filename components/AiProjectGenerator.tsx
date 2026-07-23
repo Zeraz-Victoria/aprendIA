@@ -25,7 +25,7 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
     const [loadingStatus, setLoadingStatus] = useState("Iniciando IA...");
 
     const handleGenerate = async () => {
-        if (!topic.trim()) return alert("Por favor, ingresa un tema matemático.");
+        if (!topic.trim()) return alert("Por favor, ingresa un tema o problemática para el proyecto.");
 
         setIsGenerating(true);
         setLoadingStatus("Consultando a la IA...");
@@ -159,13 +159,13 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
                                     <Target className="w-4 h-4 text-[#165b3d]" />
-                                    <label className="text-xs font-black text-[#2e9f6c] uppercase tracking-widest">¿De qué tema matemático trata?</label>
+                                    <label className="text-xs font-black text-[#2e9f6c] uppercase tracking-widest">¿De qué tema o problemática trata el proyecto?</label>
                                 </div>
                                 <input 
                                     type="text"
                                     value={topic}
                                     onChange={(e) => setTopic(e.target.value)}
-                                    placeholder="Ej. Fracciones, Ecuaciones Lineales..."
+                                    placeholder="Ej. Ecosistemas, Revolución Mexicana, Fracciones..."
                                     className="w-full bg-[#f0fbf5] border border-[#c1ebd5] rounded-2xl px-6 py-4 text-lg font-bold text-[#0a2d1d] focus:ring-4 focus:ring-indigo-100 focus:border-[#2e9f6c] outline-none transition-all placeholder:text-[#2e9f6c]"
                                     autoFocus
                                 />
