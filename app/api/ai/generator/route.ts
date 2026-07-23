@@ -5,6 +5,8 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from "@/lib/auth";
 import { checkAndSuspendSchool } from "@/lib/subscription";
 import { findRelevantPages } from '@/lib/textbooks';
+import fs from 'fs';
+import path from 'path';
 
 
 
@@ -105,6 +107,17 @@ export async function POST(req: Request) {
       console.error("Error fetching relevant pages for prompt:", err);
     }
 
+    // Leer la guía metodológica oficial
+    let abpGuide = "";
+    try {
+      const guidePath = path.join(process.cwd(), 'books_markdown/abp/abp_methodology_guide.md');
+      if (fs.existsSync(guidePath)) {
+        abpGuide = fs.readFileSync(guidePath, 'utf8');
+      }
+    } catch (e) {
+      console.error("Error reading abp guide:", e);
+    }
+
     const prompt = `
 # PERFIL: DOCTOR EN PEDAGOGÍA, DISEÑADOR DE VIDEOJUEGOS EDUCATIVOS Y ESPECIALISTA NEM 2022
 Tu misión es actuar como un diseñador instruccional y de gamificación de élite. Debes transformar el tema, asignatura o Campo Formativo solicitado (sea Español, Historia, Geografía, Matemáticas, Ciencias, etc.) en una aventura de aprendizaje inmersiva de alto impacto y rigor pedagógico.
@@ -123,6 +136,13 @@ Por consecuencia:
 - Nivel de Dificultad: ${dificultad}
 - Tema Visual para Gamificación: ${theme}
 - Sesiones Requeridas: EXACTAMENTE ${sessionCount} sesiones.
+
+# GUÍA METODOLÓGICA DE PROYECTOS OFICIAL (TU CEREBRO Y PAUTA DE DISEÑO):
+Debes basar el diseño de la secuencia didáctica y del mapa del estudiante ESTRICTAMENTE en la metodología NEM seleccionada: "${metodologia}".
+Sigue fielmente los pasos, fases y momentos específicos que describe la guía oficial de abajo para estructurar las sesiones. Cada una de las ${sessionCount} sesiones debe representar de forma secuencial una de las fases o momentos de esta metodología:
+---
+${abpGuide}
+---
 
 # 2. ADAPTACIÓN AL DIAGNÓSTICO DE AULA (CRÍTICO):
 Analiza el "Diagnóstico de Aula" y adapta dinámicamente todo el contenido bajo las siguientes reglas:
