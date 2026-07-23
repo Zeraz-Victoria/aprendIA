@@ -287,13 +287,16 @@ REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionC
           let parsedResponse;
           try {
             parsedResponse = JSON.parse(responseText);
-          } catch (initialError) {
-            console.log("JSON Parse inicial falló, intentando sanear comillas...");
+          } catch (initialError: any) {
+            console.error("JSON Parse inicial falló:", initialError.message);
+            console.log("Comienzo de responseText:", responseText.substring(0, 300));
+            console.log("Fin de responseText:", responseText.slice(-300));
             responseText = escapeUnsafeQuotes(responseText);
             try {
               parsedResponse = JSON.parse(responseText);
-            } catch (parseError) {
-              throw new Error("La IA retornó una estructura JSON malformada que no se pudo reparar.");
+            } catch (parseError: any) {
+              console.error("JSON Parse secundario falló:", parseError.message);
+              throw new Error("La IA retornó una estructura JSON malformada que no se pudo reparar: " + parseError.message);
             }
           }
 
