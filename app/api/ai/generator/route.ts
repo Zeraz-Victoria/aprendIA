@@ -289,20 +289,28 @@ REGLA DE ORO: El arreglo "mapa_interactivo" DEBE contener EXACTAMENTE ${sessionC
             parsedResponse = JSON.parse(responseText);
           } catch (initialError: any) {
             console.error("JSON Parse inicial falló:", initialError.message);
-            console.log("Comienzo de responseText:", responseText.substring(0, 300));
-            console.log("Fin de responseText:", responseText.slice(-300));
+            const posMatch = initialError.message.match(/at position (\d+)/) || initialError.message.match(/column (\d+)/);
+            if (posMatch) {
+              const pos = parseInt(posMatch[1], 10);
+              const startPos = Math.max(0, pos - 100);
+              const endPos = Math.min(responseText.length, pos + 100);
+              console.log(`Contexto original del error inicial (posición ${pos}):`);
+              console.log(responseText.substring(startPos, endPos));
+              console.log("^".padStart(pos - startPos + 1));
+            }
+            
             responseText = escapeUnsafeQuotes(responseText);
             try {
               parsedResponse = JSON.parse(responseText);
             } catch (parseError: any) {
               console.error("JSON Parse secundario falló:", parseError.message);
               // Extract error position from message if possible
-              const posMatch = parseError.message.match(/at position (\d+)/) || parseError.message.match(/column (\d+)/);
-              if (posMatch) {
-                const pos = parseInt(posMatch[1], 10);
+              const secPosMatch = parseError.message.match(/at position (\d+)/) || parseError.message.match(/column (\d+)/);
+              if (secPosMatch) {
+                const pos = parseInt(secPosMatch[1], 10);
                 const startPos = Math.max(0, pos - 100);
                 const endPos = Math.min(responseText.length, pos + 100);
-                console.log(`Contexto alrededor de la posición del error (${pos}):`);
+                console.log(`Contexto alrededor de la posición del error secundario (${pos}):`);
                 console.log(responseText.substring(startPos, endPos));
                 console.log("^".padStart(pos - startPos + 1));
               }
