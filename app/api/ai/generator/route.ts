@@ -78,9 +78,9 @@ export async function POST(req: Request) {
 
     console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
     const model = genAI.getGenerativeModel({
-      model: 'gemini-flash-latest',
+      model: 'gemini-1.5-flash',
       generationConfig: {
-        maxOutputTokens: 8192, // Max for Gemini 1.5 Flash (gemini-flash-latest)
+        maxOutputTokens: 8192, // Max for Gemini 1.5 Flash (gemini-1.5-flash)
         temperature: 0.4,
         responseMimeType: "application/json",
       }
@@ -154,7 +154,7 @@ No separes la matemática de la fantasía. Integra el "Tema Visual para Gamifica
 - El retorno debe ser exclusivamente el JSON estructurado solicitado, sin explicaciones ni tags markdown de bloque como \`\`\`json.
 - Para evitar que el JSON sea inválido:
   1. Todos los saltos de línea (line breaks) dentro de los strings (cadenas de texto) DEBEN ser escapados como \\n. Nunca dejes un salto de línea real (Enter) dentro de un valor de texto.
-  2. Todas las comillas dobles dentro de las cadenas de texto DEBEN ser escapadas como \\" (ejemplo: \\"palabra\\").
+  2. REGLA SOBERANA DE COMILLAS: Prohibido usar comillas dobles (") dentro de tus textos (ej. explicaciones, historias, diálogos, etc.). Si necesitas citar algo o destacar palabras, utiliza obligatoriamente comillas angulares (« ») o comillas simples (' '). Las comillas dobles (") en tu respuesta deben ser exclusivamente para abrir/cerrar propiedades y cadenas del JSON.
   3. No utilices caracteres especiales no válidos o fórmulas en formato LaTeX que contengan barras invertidas no escapadas.
 
 # 8. LIBROS DE TEXTO DE APOYO DISPONIBLES:
