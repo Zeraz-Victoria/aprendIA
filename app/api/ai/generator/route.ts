@@ -91,7 +91,7 @@ export async function POST(req: Request) {
     console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
     
     // Buscar contenido y PDA oficiales en nuestra base de datos Fase 6
-    const officialMatch = findOfficialPda(topic, grade);
+    const officialMatch = findOfficialPda(topic, problemDescription, grade);
     let officialPdaContext = "";
     if (officialMatch) {
       officialPdaContext = `
@@ -165,6 +165,31 @@ ${problemDescription ? `- Descripción de la problemática a atender: ${problemD
 - Tema Visual para Gamificación: ${theme}
 - Sesiones Requeridas: EXACTAMENTE ${sessionCount} sesiones.
 ${officialPdaContext}
+
+# 2. CAMPOS FORMATIVOS Y ALINEACIÓN DE DISCIPLINAS (NEM 2022) - CRÍTICO:
+Tú debes estructurar la planeación del proyecto y la aventura del estudiante dentro de uno de los siguientes 4 campos formativos oficiales de la NEM basándote en el tema o la problemática que el docente redacta:
+
+1. **Lenguajes**:
+   - Propósito: Desarrollar habilidades de expresión, comprensión e interacción social mediante diferentes formas de comunicación.
+   - Disciplinas integradas: Español, Inglés, Lenguas Indígenas y Artes.
+   - Metodología sugerida: Aprendizaje Basado en Proyectos Comunitarios.
+2. **Saberes y Pensamiento Científico**:
+   - Propósito: Comprender el entorno natural y social utilizando la lógica matemática, el análisis crítico y la experimentación científica.
+   - Disciplinas integradas: Matemáticas, Biología, Física, Química y Tecnologías.
+   - Metodología sugerida: Aprendizaje Basado en Indagación (enfoque STEAM).
+3. **Ética, Naturaleza y Sociedades**:
+   - Propósito: Analizar la relación del ser humano con su entorno sociocultural y ambiental, fomentando la responsabilidad ciudadana y los derechos humanos.
+   - Disciplinas integradas: Geografía, Historia y Formación Cívica y Ética.
+   - Metodología sugerida: Aprendizaje Basado en Problemas (ABP).
+4. **De lo Humano y lo Comunitario**:
+   - Propósito: Construir la identidad personal, cuidar el cuerpo, gestionar las emociones y fortalecer los lazos de pertenencia colectiva.
+   - Disciplinas integradas: Educación Física, Vida Saludable, Educación Socioemocional y Tecnología.
+   - Metodología sugerida: Aprendizaje-Servicio (AS).
+
+*REGLA DE SINCRONIZACIÓN Y COHERENCIA TOTAL*:
+- No debe haber elementos aislados. El Campo Formativo elegido, el propósito del proyecto, las asignaturas/disciplinas que intervienen y el PDA oficial de referencia DEBEN estar totalmente entrelazados y sincronizados.
+- Si el tema y problemática se centran en el desecho de basura y cuidado del medio ambiente, la planeación debe pertenecer al campo formativo "Ética, Naturaleza y Sociedades" (o "Saberes y Pensamiento Científico" si es de enfoque experimental), integrar las disciplinas correctas (Geografía, Historia, Formación Cívica, o Biología/Química según corresponda), y estar alineada al PDA oficial seleccionado.
+- Toda la secuencia didáctica de las sesiones debe seguir rigurosamente los momentos y fases de la metodología oficial correspondiente para ese campo formativo.
 
 # GUÍA METODOLÓGICA DE PROYECTOS OFICIAL (TU CEREBRO Y PAUTA DE DISEÑO):
 Debes basar el diseño de la secuencia didáctica y del mapa del estudiante ESTRICTAMENTE en la metodología NEM seleccionada: "${metodologia}".
@@ -773,7 +798,7 @@ interface PdaItem {
   pda: string;
 }
 
-function findOfficialPda(topic: string, grade: string): PdaItem | null {
+function findOfficialPda(topic: string, problemDescription: string, grade: string): PdaItem | null {
   try {
     const jsonPath = path.join(process.cwd(), 'lib', 'nem_fase6_pda.json');
     if (!fs.existsSync(jsonPath)) {
@@ -794,13 +819,23 @@ function findOfficialPda(topic: string, grade: string): PdaItem | null {
       }
     }
     
-    const keywords = topic.toLowerCase()
+    // Extraer palabras clave del tema general
+    const topicKeywords = topic.toLowerCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]/g, " ")
       .split(/\s+/)
       .filter(w => w.length > 2);
       
-    if (keywords.length === 0) {
+    // Extraer palabras clave de la descripción de la problemática
+    const probKeywords = (problemDescription || "").toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, " ")
+      .split(/\s+/)
+      .filter(w => w.length > 2);
+      
+    const allKeywords = Array.from(new Set([...topicKeywords, ...probKeywords]));
+      
+    if (allKeywords.length === 0) {
       return null;
     }
     
@@ -813,12 +848,26 @@ function findOfficialPda(topic: string, grade: string): PdaItem | null {
       const pdaClean = item.pda.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const subjectClean = item.subject.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       
-      for (const kw of keywords) {
+      // Coincidencias del tema (peso mayor)
+      for (const kw of topicKeywords) {
         if (contentClean.includes(kw)) {
-          score += 5;
+          score += 10;
         }
         if (pdaClean.includes(kw)) {
+          score += 6;
+        }
+        if (subjectClean.includes(kw)) {
           score += 3;
+        }
+      }
+      
+      // Coincidencias de la problemática (peso medio)
+      for (const kw of probKeywords) {
+        if (contentClean.includes(kw)) {
+          score += 4;
+        }
+        if (pdaClean.includes(kw)) {
+          score += 2;
         }
         if (subjectClean.includes(kw)) {
           score += 1;
@@ -826,7 +875,7 @@ function findOfficialPda(topic: string, grade: string): PdaItem | null {
       }
       
       if (topic.toLowerCase().trim() === item.subject.toLowerCase().trim()) {
-        score += 10;
+        score += 15;
       }
       
       if (score > highestScore) {
