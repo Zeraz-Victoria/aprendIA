@@ -237,6 +237,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                         content: bakedStory.content,
                         presentationType: bakedStory.presentationType || "text",
                         glosario: bakedStory.glosario || [],
+                        lecturas_sugeridas: bakedStory.lecturas_sugeridas || node.lecturas_sugeridas || [],
                         isGenerating: false,
                         isRetrying: false
                     };

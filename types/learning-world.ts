@@ -35,6 +35,7 @@ export interface DayContent {
     presentationType?: string;
     isStudentMission?: boolean;
     insertAfterDay?: number;
+    lecturas_sugeridas?: any[];
 }
 
 export interface BossDayContent {
@@ -48,6 +49,7 @@ export interface BossDayContent {
     isRetrying?: boolean;
     isStudentMission?: boolean;
     insertAfterDay?: number;
+    lecturas_sugeridas?: any[];
 }
 
 export type LevelContent = DayContent | BossDayContent;

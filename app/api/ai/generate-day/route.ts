@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from "@/lib/auth";
+import { findRelevantPages } from '@/lib/textbooks';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -49,6 +50,32 @@ export async function POST(req: Request) {
             alto: 'NIVEL DE VOCABULARIO: ALTO (2° secundaria a preparatoria). Usa vocabulario académico apropiado para adolescentes de 13 a 18 años. Puedes usar terminología técnica y especializada del campo. Oraciones complejas con conectores lógicos.'
         };
         const vocabPrompt = vocabInstructions[vocabularyLevel || 'facil'] || vocabInstructions.facil;
+
+        // Buscar páginas de libros de texto de apoyo relevantes
+        let booksContext = "";
+        try {
+            let searchGrade = undefined;
+            if (pedagogy.grade) {
+                if (pedagogy.grade.includes("6")) {
+                    searchGrade = "Secundaria 1";
+                } else if (pedagogy.grade.includes("5")) {
+                    searchGrade = "Primaria 5";
+                } else if (pedagogy.grade.includes("4")) {
+                    searchGrade = "Primaria 3";
+                } else if (pedagogy.grade.includes("3")) {
+                    searchGrade = "Primaria 1";
+                }
+            }
+            const targetGrade = searchGrade || (pedagogy.grade && !pedagogy.grade.startsWith("Fase") ? pedagogy.grade : undefined);
+            const relevantPages = await findRelevantPages(pedagogy.topic, 4, targetGrade);
+            if (relevantPages.length > 0) {
+                booksContext = relevantPages.map(page => 
+                    `- Libro: "${page.bookTitle}" | Página: ${page.pageNumber} | PDF: "${page.pdfUrl}" | Contexto: "${page.snippet}"`
+                ).join('\n');
+            }
+        } catch (err) {
+            console.error("Error fetching relevant pages for generate-day prompt:", err);
+        }
 
         // Custom prompt per day type
         const prompt = `
@@ -124,10 +151,24 @@ Extrae entre 3 y 5 palabras técnicas o complejas del oráculo. Cada definición
 El alumno está SOLO. PROHIBIDO mencionar al docente. Si la planeación dice "el docente explica...", TÚ redactas esa explicación completa. Si dice "el docente entrega materiales...", TÚ generas ese material.
 ${adaptiveRescuePrompt}
 
+# LIBROS DE TEXTO DE APOYO DISPONIBLES:
+Aquí tienes fragmentos reales y referencias de los libros de texto oficiales que coinciden con el tema "${pedagogy.topic}". Utiliza esta información para enriquecer los contenidos teóricos (el oráculo y los ejemplos resueltos) y asigna obligatoriamente cuáles de estas lecturas se recomiendan para esta sesión:
+${booksContext || "No se encontraron páginas de apoyo en la base de datos."}
+
+Regla crítica: Si en la lista anterior dice "No se encontraron páginas de apoyo...", DEBES dejar el arreglo "lecturas_sugeridas" en la respuesta completamente vacío: []. Solo puedes recomendar lecturas que aparezcan explícitamente listadas arriba en la sección de apoyos disponibles.
+
 # FORMATO DE SALIDA (JSON estricto):
 {
   "nivel_id": "${day.dayNumber}",
   "pda_objetivo": "Descripción breve del PDA que se trabaja",
+  "lecturas_sugeridas": [
+    {
+      "libro": "Nombre exacto del libro",
+      "pagina": 47,
+      "tema": "Título o tema de la página",
+      "pdfUrl": "Ruta exacta del PDF"
+    }
+  ],
   "historia_inicio": "Narrativa de apertura envolvente (80-120 palabras)",
   "oraculo_teoria": {
     "titulo": "Título descriptivo del concepto",
@@ -424,7 +465,8 @@ ${adaptiveRescuePrompt}
                 cierre_metacognicion: parsed.cierre_metacognicion,
                 glosario: parsed.glosario || [],
                 presentationType: parsed.presentationType || "text",
-                isFinalBoss: isFinalBoss === true
+                isFinalBoss: isFinalBoss === true,
+                lecturas_sugeridas: parsed.lecturas_sugeridas || []
             };
 
         } catch (parseError) {
@@ -433,7 +475,8 @@ ${adaptiveRescuePrompt}
                 narrative: "La actividad técnica no pudo ser procesada, por favor revisa el material físico docente.",
                 content: day.type === "concept_story" ? { explanation: { chunks: ["Reflexiona sobre lo aprendido."], analogy: "El aprendizaje es un viaje infinito." } }
                     : day.type === "guided_practice" ? { practiceProblem: { statement: "Resuelve el acertijo final en tu cuaderno.", correctValue: "Revisar cuaderno", hint: "Confía en tu intuición matemática." } }
-                        : { originalProblemText: "Completa el reto final escrito en el pizarrón.", solvedVariations: [] }
+                        : { originalProblemText: "Completa el reto final escrito en el pizarrón.", solvedVariations: [] },
+                lecturas_sugeridas: []
             };
         }
 
