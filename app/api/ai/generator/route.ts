@@ -89,6 +89,22 @@ export async function POST(req: Request) {
     }
 
     console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
+    
+    // Buscar contenido y PDA oficiales en nuestra base de datos Fase 6
+    const officialMatch = findOfficialPda(topic, grade);
+    let officialPdaContext = "";
+    if (officialMatch) {
+      officialPdaContext = `
+# CONTENIDO Y PDA OFICIAL DE REFERENCIA (DEBES ALINEARTE A ESTOS):
+- Asignatura Oficial: ${officialMatch.subject}
+- Contenido Oficial NEM: ${officialMatch.content}
+- Proceso de Desarrollo de Aprendizaje (PDA) Oficial: ${officialMatch.pda}
+- Grado: ${officialMatch.grade}
+
+*INSTRUCCIÓN CRÍTICA DE ALINEACIÓN CURRICULAR*:
+TÚ DEBES basar el diseño del proyecto, las explicaciones teóricas y la secuencia didáctica ESTRICTAMENTE en este Contenido y PDA oficiales de arriba. Toda la planeación didáctica y las dinámicas del juego deben estar dirigidas a cumplir este PDA.
+`;
+    }
     const model = genAI.getGenerativeModel({
       model: 'gemini-flash-latest',
       generationConfig: {
@@ -148,6 +164,7 @@ ${problemDescription ? `- Descripción de la problemática a atender: ${problemD
 - Nivel de Dificultad: ${dificultad}
 - Tema Visual para Gamificación: ${theme}
 - Sesiones Requeridas: EXACTAMENTE ${sessionCount} sesiones.
+${officialPdaContext}
 
 # GUÍA METODOLÓGICA DE PROYECTOS OFICIAL (TU CEREBRO Y PAUTA DE DISEÑO):
 Debes basar el diseño de la secuencia didáctica y del mapa del estudiante ESTRICTAMENTE en la metodología NEM seleccionada: "${metodologia}".
@@ -663,11 +680,11 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
             days: days,
             pedagogy: {
               topic: topic,
-              pda: planoDidactico.estructura_curricular?.pda || parsedResponse.metadatos_nem?.pda || "Inferencia didáctica",
+              pda: officialMatch?.pda || planoDidactico.estructura_curricular?.pda || parsedResponse.metadatos_nem?.pda || "Inferencia didáctica",
               grade: `Fase ${planoDidactico.encabezado?.fase || parsedResponse.metadatos_nem?.fase || "3"}`,
               proposito: planoDidactico.estructura_curricular?.proposito || parsedResponse.metadatos_nem?.proposito || "",
               diagnostico: planoDidactico.diagnostico_pedagogico || parsedResponse.metadatos_nem?.diagnostico || "",
-              contenidos: planoDidactico.estructura_curricular?.campos_formativos?.[0] || parsedResponse.metadatos_nem?.contenidos || "",
+              contenidos: officialMatch?.content || planoDidactico.estructura_curricular?.campos_formativos?.[0] || parsedResponse.metadatos_nem?.contenidos || "",
               planoOficial: planoDidactico
             },
             createdAt: new Date().toISOString()
@@ -745,4 +762,80 @@ function sanitizeSuggestedReadings(aiReadings: any[], verifiedPages: any[]) {
   }
   
   return sanitized;
+}
+
+interface PdaItem {
+  grade: string;
+  subject: string;
+  content: string;
+  pda: string;
+}
+
+function findOfficialPda(topic: string, grade: string): PdaItem | null {
+  try {
+    const jsonPath = path.join(process.cwd(), 'lib', 'nem_fase6_pda.json');
+    if (!fs.existsSync(jsonPath)) {
+      return null;
+    }
+    const rawData = fs.readFileSync(jsonPath, 'utf8');
+    const pdas: PdaItem[] = JSON.parse(rawData);
+    
+    let filtered = pdas;
+    if (grade) {
+      const cleanGrade = grade.toLowerCase();
+      if (cleanGrade.includes("secundaria 1") || cleanGrade.includes("1º") || cleanGrade.includes("1°")) {
+        filtered = pdas.filter(p => p.grade === "Secundaria 1");
+      } else if (cleanGrade.includes("secundaria 2") || cleanGrade.includes("2º") || cleanGrade.includes("2°")) {
+        filtered = pdas.filter(p => p.grade === "Secundaria 2");
+      } else if (cleanGrade.includes("secundaria 3") || cleanGrade.includes("3º") || cleanGrade.includes("3°")) {
+        filtered = pdas.filter(p => p.grade === "Secundaria 3");
+      }
+    }
+    
+    const keywords = topic.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, " ")
+      .split(/\s+/)
+      .filter(w => w.length > 2);
+      
+    if (keywords.length === 0) {
+      return null;
+    }
+    
+    let bestMatch: PdaItem | null = null;
+    let highestScore = 0;
+    
+    for (const item of filtered) {
+      let score = 0;
+      const contentClean = item.content.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const pdaClean = item.pda.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const subjectClean = item.subject.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      
+      for (const kw of keywords) {
+        if (contentClean.includes(kw)) {
+          score += 5;
+        }
+        if (pdaClean.includes(kw)) {
+          score += 3;
+        }
+        if (subjectClean.includes(kw)) {
+          score += 1;
+        }
+      }
+      
+      if (topic.toLowerCase().trim() === item.subject.toLowerCase().trim()) {
+        score += 10;
+      }
+      
+      if (score > highestScore) {
+        highestScore = score;
+        bestMatch = item;
+      }
+    }
+    
+    return highestScore > 0 ? bestMatch : null;
+  } catch (err) {
+    console.error("Error in findOfficialPda:", err);
+    return null;
+  }
 }
