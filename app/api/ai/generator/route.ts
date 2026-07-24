@@ -106,8 +106,9 @@ export async function POST(req: Request) {
 
     // Buscar páginas de libros de texto de apoyo relevantes
     let booksContext = "";
+    let relevantPages: any[] = [];
     try {
-      const relevantPages = await findRelevantPages(topic, 4, grade, modality);
+      relevantPages = await findRelevantPages(topic, 4, grade, modality);
       if (relevantPages.length > 0) {
         booksContext = relevantPages.map(page => 
           `- Libro: "${page.bookTitle}" | Página: ${page.pageNumber} | PDF: "${page.pdfUrl}" | Contexto: "${page.snippet}"`
@@ -203,8 +204,11 @@ No separes el contenido educativo de la fantasía. Integra el "Tema Visual para 
 Aquí tienes fragmentos reales y referencias de los libros de texto oficiales de 1er Grado Telesecundaria que coinciden con el tema "${topic}". Utiliza esta información para enriquecer los contenidos teóricos y asigna obligatoriamente cuáles de estas lecturas se recomiendan para cada sesión:
 ${booksContext || "No se encontraron páginas de apoyo en la base de datos."}
 
-Regla crítica (VERACIDAD ABSOLUTA): Para cada nivel en "mapa_interactivo", debes incluir una propiedad llamada "lecturas_sugeridas" que sea un ARREGLO de objetos con la estructura descrita abajo.
-*IMPORTANTE*: Si en la lista anterior dice "No se encontraron páginas de apoyo...", DEBES dejar el arreglo "lecturas_sugeridas" completamente vacío: []. NO inventes nombres de libros, ni números de página, ni temas, ni rutas de PDF bajo ninguna circunstancia. Solo puedes recomendar lecturas que aparezcan explícitamente listadas arriba en la sección de apoyos disponibles.
+*REGLA CRÍTICA Y SOBERANA DE LIBROS (CERO ALUCINACIÓN)*:
+1. Solo puedes incluir lecturas que aparezcan explícitamente listadas en la sección "LIBROS DE TEXTO DE APOYO DISPONIBLES" de arriba.
+2. Está TERMINANTEMENTE PROHIBIDO inventar nombres de libros, inventar números de páginas que no estén en la lista, inventar temas o rutas de archivos PDF.
+3. Si el libro y la página no están en la lista de arriba, NO los agregues. Si la lista está vacía, el arreglo "lecturas_sugeridas" debe ser estrictamente vacío: [].
+4. Copia los campos "libro", "pagina" y "pdfUrl" EXACTAMENTE tal como aparecen en la lista de arriba. No los modifiques ni un solo carácter.
 
 Estructura de "lecturas_sugeridas":
 "lecturas_sugeridas": [
@@ -586,7 +590,7 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
                   session_start: nivel.session_start || "",
                   session_development: nivel.session_development || "",
                   session_end: nivel.session_end || "",
-                  lecturas_sugeridas: nivel.lecturas_sugeridas || nivel.lecturas || [],
+                  lecturas_sugeridas: sanitizeSuggestedReadings(nivel.lecturas_sugeridas || nivel.lecturas || [], relevantPages),
                   content: {
                     explanation: { chunks: chunks, analogy: nivel.content?.explanation?.analogy || nivel.paso_3_cierre?.metacognicion || "" },
                     miniGame: nivel.content?.miniGame,
@@ -706,4 +710,39 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
     console.error('Error in AI Generator API:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
+}
+
+function sanitizeSuggestedReadings(aiReadings: any[], verifiedPages: any[]) {
+  if (!Array.isArray(aiReadings) || !Array.isArray(verifiedPages) || verifiedPages.length === 0) {
+    return [];
+  }
+  
+  const sanitized: any[] = [];
+  
+  for (const item of aiReadings) {
+    if (!item) continue;
+    
+    const match = verifiedPages.find(p => {
+      const pageNumMatch = Number(p.pageNumber) === Number(item.pagina || item.pageNumber || item.page);
+      
+      const itemPdf = item.pdfUrl || item.pdf || item.url || '';
+      const pdfMatch = p.pdfUrl && itemPdf && p.pdfUrl.toLowerCase().trim() === itemPdf.toLowerCase().trim();
+      
+      const itemLibro = item.libro || item.book || item.bookTitle || '';
+      const titleMatch = p.bookTitle && itemLibro && p.bookTitle.toLowerCase().replace(/[^a-z0-9]/g, '') === itemLibro.toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      return pageNumMatch && (pdfMatch || titleMatch);
+    });
+    
+    if (match) {
+      sanitized.push({
+        libro: match.bookTitle,
+        pagina: Number(match.pageNumber),
+        tema: item.tema || match.snippet || "Lectura de apoyo",
+        pdfUrl: match.pdfUrl
+      });
+    }
+  }
+  
+  return sanitized;
 }

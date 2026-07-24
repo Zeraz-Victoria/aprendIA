@@ -53,6 +53,7 @@ export async function POST(req: Request) {
 
         // Buscar páginas de libros de texto de apoyo relevantes
         let booksContext = "";
+        let relevantPages: any[] = [];
         try {
             let searchGrade = undefined;
             if (pedagogy.grade) {
@@ -67,7 +68,7 @@ export async function POST(req: Request) {
                 }
             }
             const targetGrade = searchGrade || (pedagogy.grade && !pedagogy.grade.startsWith("Fase") ? pedagogy.grade : undefined);
-            const relevantPages = await findRelevantPages(pedagogy.topic, 4, targetGrade);
+            relevantPages = await findRelevantPages(pedagogy.topic, 4, targetGrade);
             if (relevantPages.length > 0) {
                 booksContext = relevantPages.map(page => 
                     `- Libro: "${page.bookTitle}" | Página: ${page.pageNumber} | PDF: "${page.pdfUrl}" | Contexto: "${page.snippet}"`
@@ -155,7 +156,11 @@ ${adaptiveRescuePrompt}
 Aquí tienes fragmentos reales y referencias de los libros de texto oficiales que coinciden con el tema "${pedagogy.topic}". Utiliza esta información para enriquecer los contenidos teóricos (el oráculo y los ejemplos resueltos) y asigna obligatoriamente cuáles de estas lecturas se recomiendan para esta sesión:
 ${booksContext || "No se encontraron páginas de apoyo en la base de datos."}
 
-Regla crítica: Si en la lista anterior dice "No se encontraron páginas de apoyo...", DEBES dejar el arreglo "lecturas_sugeridas" en la respuesta completamente vacío: []. Solo puedes recomendar lecturas que aparezcan explícitamente listadas arriba en la sección de apoyos disponibles.
+*REGLA CRÍTICA Y SOBERANA DE LIBROS (CERO ALUCINACIÓN)*:
+1. Solo puedes incluir lecturas que aparezcan explícitamente listadas en la sección "LIBROS DE TEXTO DE APOYO DISPONIBLES" de arriba.
+2. Está TERMINANTEMENTE PROHIBIDO inventar nombres de libros, inventar números de páginas que no estén en la lista, inventar temas o rutas de archivos PDF.
+3. Si el libro y la página no están en la lista de arriba, NO los agregues. Si la lista está vacía, el arreglo "lecturas_sugeridas" debe ser estrictamente vacío: [].
+4. Copia los campos "libro", "pagina" y "pdfUrl" EXACTAMENTE tal como aparecen en la lista de arriba. No los modifiques ni un solo carácter.
 
 # FORMATO DE SALIDA (JSON estricto):
 {
@@ -466,7 +471,7 @@ Regla crítica: Si en la lista anterior dice "No se encontraron páginas de apoy
                 glosario: parsed.glosario || [],
                 presentationType: parsed.presentationType || "text",
                 isFinalBoss: isFinalBoss === true,
-                lecturas_sugeridas: parsed.lecturas_sugeridas || []
+                lecturas_sugeridas: sanitizeSuggestedReadings(parsed.lecturas_sugeridas || [], relevantPages)
             };
 
         } catch (parseError) {
@@ -486,4 +491,39 @@ Regla crítica: Si en la lista anterior dice "No se encontraron páginas de apoy
         console.error('Error generating single day:', error.stack || error);
         return NextResponse.json({ error: 'Failed to generate day content', details: error.message }, { status: 500 });
     }
+}
+
+function sanitizeSuggestedReadings(aiReadings: any[], verifiedPages: any[]) {
+  if (!Array.isArray(aiReadings) || !Array.isArray(verifiedPages) || verifiedPages.length === 0) {
+    return [];
+  }
+  
+  const sanitized: any[] = [];
+  
+  for (const item of aiReadings) {
+    if (!item) continue;
+    
+    const match = verifiedPages.find(p => {
+      const pageNumMatch = Number(p.pageNumber) === Number(item.pagina || item.pageNumber || item.page);
+      
+      const itemPdf = item.pdfUrl || item.pdf || item.url || '';
+      const pdfMatch = p.pdfUrl && itemPdf && p.pdfUrl.toLowerCase().trim() === itemPdf.toLowerCase().trim();
+      
+      const itemLibro = item.libro || item.book || item.bookTitle || '';
+      const titleMatch = p.bookTitle && itemLibro && p.bookTitle.toLowerCase().replace(/[^a-z0-9]/g, '') === itemLibro.toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      return pageNumMatch && (pdfMatch || titleMatch);
+    });
+    
+    if (match) {
+      sanitized.push({
+        libro: match.bookTitle,
+        pagina: Number(match.pageNumber),
+        tema: item.tema || match.snippet || "Lectura de apoyo",
+        pdfUrl: match.pdfUrl
+      });
+    }
+  }
+  
+  return sanitized;
 }
