@@ -68,7 +68,8 @@ export async function POST(req: Request) {
                 }
             }
             const targetGrade = searchGrade || (pedagogy.grade && !pedagogy.grade.startsWith("Fase") ? pedagogy.grade : undefined);
-            relevantPages = await findRelevantPages(pedagogy.topic, 4, targetGrade);
+            const searchQuery = day.title ? `${pedagogy.topic} ${day.title}` : pedagogy.topic;
+            relevantPages = await findRelevantPages(searchQuery, 4, targetGrade);
             if (relevantPages.length > 0) {
                 booksContext = relevantPages.map(page => 
                     `- Libro: "${page.bookTitle}" | Página: ${page.pageNumber} | PDF: "${page.pdfUrl}" | Contexto: "${page.snippet}"`
