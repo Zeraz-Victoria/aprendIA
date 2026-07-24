@@ -25,7 +25,7 @@ function buildSpanishOrQuery(topic: string): string {
     return '';
   }
 
-  return words.join(' | ');
+  return words.join(' & ');
 }
 
 /**
