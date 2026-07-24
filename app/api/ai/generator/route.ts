@@ -107,8 +107,7 @@ export async function POST(req: Request) {
     // Buscar páginas de libros de texto de apoyo relevantes
     let booksContext = "";
     try {
-      const searchBuffer = problemDescription ? `${topic} ${problemDescription}` : topic;
-      const relevantPages = await findRelevantPages(searchBuffer, 4, grade, modality);
+      const relevantPages = await findRelevantPages(topic, 4, grade, modality);
       if (relevantPages.length > 0) {
         booksContext = relevantPages.map(page => 
           `- Libro: "${page.bookTitle}" | Página: ${page.pageNumber} | PDF: "${page.pdfUrl}" | Contexto: "${page.snippet}"`
