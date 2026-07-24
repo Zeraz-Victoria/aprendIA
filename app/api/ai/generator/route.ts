@@ -351,8 +351,36 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
                       isClosing = true;
                     }
                   } else {
-                    if (nextNonWs === ',' || nextNonWs === '}' || nextNonWs === ']' || nextNonWs === '') {
+                    if (nextNonWs === '}' || nextNonWs === ']' || nextNonWs === '') {
                       isClosing = true;
+                    } else if (nextNonWs === ',') {
+                      let nextAfterComma = '';
+                      const commaIdx = jsonStr.indexOf(',', i + 1);
+                      if (commaIdx !== -1) {
+                        for (let j = commaIdx + 1; j < jsonStr.length; j++) {
+                          if (!/\s/.test(jsonStr[j])) {
+                            nextAfterComma = jsonStr[j];
+                            break;
+                          }
+                        }
+                      }
+                      const parent = contextStack[contextStack.length - 1];
+                      if (parent === 'object') {
+                        if (commaIdx !== -1) {
+                          const remaining = jsonStr.slice(commaIdx + 1).trim();
+                          if (remaining === '' || remaining.startsWith('}') || /^"[a-zA-Z0-9_]+"\s*:/.test(remaining)) {
+                            isClosing = true;
+                          }
+                        } else {
+                          isClosing = true;
+                        }
+                      } else if (parent === 'array') {
+                        if (nextAfterComma === '' || nextAfterComma === ']' || /["\d\-\{\[tfn]/.test(nextAfterComma)) {
+                          isClosing = true;
+                        }
+                      } else {
+                        isClosing = true;
+                      }
                     }
                   }
 
