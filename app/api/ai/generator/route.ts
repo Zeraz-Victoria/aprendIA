@@ -90,19 +90,25 @@ export async function POST(req: Request) {
 
     console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
     
-    // Buscar contenido y PDA oficiales en nuestra base de datos Fase 6
-    const officialMatch = findOfficialPda(topic, problemDescription, grade);
+    // Buscar contenido y PDA oficiales en nuestra base de datos Fase 6 (permite múltiples coincidencias)
+    const officialMatches = findOfficialPdas(topic, problemDescription, grade);
     let officialPdaContext = "";
-    if (officialMatch) {
+    if (officialMatches.length > 0) {
       officialPdaContext = `
-# CONTENIDO Y PDA OFICIAL DE REFERENCIA (DEBES ALINEARTE A ESTOS):
-- Asignatura Oficial: ${officialMatch.subject}
-- Contenido Oficial NEM: ${officialMatch.content}
-- Proceso de Desarrollo de Aprendizaje (PDA) Oficial: ${officialMatch.pda}
-- Grado: ${officialMatch.grade}
+# CONTENIDOS Y PDA OFICIALES DE REFERENCIA (DEBES ALINEARTE A ESTOS DE FORMA ESTRICTA, SIN INVENTAR):
+${officialMatches.map((m, idx) => `
+## COINCIDENCIA OFICIAL ${idx + 1}:
+- Asignatura: ${m.subject}
+- Campo Formativo: ${getCampoFormativo(m.subject)}
+- Contenido Oficial NEM: ${m.content}
+- Proceso de Desarrollo de Aprendizaje (PDA) Oficial: ${m.pda}
+- Grado: ${m.grade}
+`).join('\n')}
 
-*INSTRUCCIÓN CRÍTICA DE ALINEACIÓN CURRICULAR*:
-TÚ DEBES basar el diseño del proyecto, las explicaciones teóricas y la secuencia didáctica ESTRICTAMENTE en este Contenido y PDA oficiales de arriba. Toda la planeación didáctica y las dinámicas del juego deben estar dirigidas a cumplir este PDA.
+*INSTRUCCIÓN CRÍTICA DE ALINEACIÓN CURRICULAR (CERO INVENCIÓN)*:
+1. TÚ DEBES basar la planeación del proyecto, las explicaciones teóricas y los desafíos ESTRICTAMENTE en los Contenidos y PDA oficiales de arriba.
+2. Si el tema o problemática abarca más de una asignatura/disciplina de arriba, DEBES listarlos a todos en las propiedades correspondientes de tu JSON.
+3. Está TERMINANTEMENTE PROHIBIDO inventar o parafrasear los textos de Contenidos y PDA. Copia exactamente letra por letra los valores provistos arriba en las propiedades del JSON.
 `;
     }
     const model = genAI.getGenerativeModel({
@@ -327,7 +333,10 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
   ]
 }
 
-REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE contener EXACTAMENTE ${sessionCount} elementos. Sin embargo, el arreglo "mapa_interactivo" debe contener únicamente el primer (1) elemento (si ${sessionCount} > 2) para optimizar el tamaño de la respuesta. Ambas deben empalmar lógicamente. Ningún valor numérico debe fallar. Retorna SOLO el JSON.
+REGLA DE ORO DE COHERENCIA Y SINCRONIZACIÓN (CERO ALUCINACIÓN):
+1. El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE contener EXACTAMENTE ${sessionCount} elementos. Sin embargo, el arreglo "mapa_interactivo" debe contener únicamente el primer (1) elemento (si ${sessionCount} > 2) para optimizar el tamaño de la respuesta.
+2. Si el proyecto integra más de una asignatura o contenido, las propiedades "contenido" y "pda" de "estructura_curricular" DEBEN escribirse en formato de lista con guiones, listando cada asignatura con su correspondiente contenido/PDA (ej. "- [Español]: La diversidad...\\n- [Inglés]: La identidad...").
+3. Copia de forma exacta, letra por letra, los Contenidos y PDA oficiales provistos arriba. No inventes asignaturas, contenidos ni PDA. Retorna SOLO el JSON.
 `;
 
     console.log("Calling Google AI (Non-stream mode)...");
@@ -706,12 +715,12 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
             days: days,
             pedagogy: {
               topic: topic,
-              pda: officialMatch?.pda || planoDidactico.estructura_curricular?.pda || parsedResponse.metadatos_nem?.pda || "Inferencia didáctica",
+              pda: officialMatches.length > 0 ? officialMatches.map(m => `- [${m.subject}]: ${m.pda}`).join('\n') : (planoDidactico.estructura_curricular?.pda || parsedResponse.metadatos_nem?.pda || "Inferencia didáctica"),
               grade: `Fase ${planoDidactico.encabezado?.fase || parsedResponse.metadatos_nem?.fase || "3"}`,
               proposito: planoDidactico.estructura_curricular?.proposito || parsedResponse.metadatos_nem?.proposito || "",
               diagnostico: planoDidactico.diagnostico_pedagogico || parsedResponse.metadatos_nem?.diagnostico || "",
-              contenidos: officialMatch?.content || planoDidactico.estructura_curricular?.contenido || parsedResponse.metadatos_nem?.contenidos || topic,
-              camposFormativos: officialMatch ? [getCampoFormativo(officialMatch.subject)] : (planoDidactico.estructura_curricular?.campos_formativos || (parsedResponse.metadatos_nem?.campos_formativos ? [parsedResponse.metadatos_nem.campos_formativos] : [])),
+              contenidos: officialMatches.length > 0 ? officialMatches.map(m => `- [${m.subject}]: ${m.content}`).join('\n') : (planoDidactico.estructura_curricular?.contenido || parsedResponse.metadatos_nem?.contenidos || topic),
+              camposFormativos: officialMatches.length > 0 ? Array.from(new Set(officialMatches.map(m => getCampoFormativo(m.subject)))) : (planoDidactico.estructura_curricular?.campos_formativos || (parsedResponse.metadatos_nem?.campos_formativos ? [parsedResponse.metadatos_nem.campos_formativos] : [])),
               planoOficial: planoDidactico
             },
             createdAt: new Date().toISOString()
@@ -798,11 +807,11 @@ interface PdaItem {
   pda: string;
 }
 
-function findOfficialPda(topic: string, problemDescription: string, grade: string): PdaItem | null {
+function findOfficialPdas(topic: string, problemDescription: string, grade: string): PdaItem[] {
   try {
     const jsonPath = path.join(process.cwd(), 'lib', 'nem_fase6_pda.json');
     if (!fs.existsSync(jsonPath)) {
-      return null;
+      return [];
     }
     const rawData = fs.readFileSync(jsonPath, 'utf8');
     const pdas: PdaItem[] = JSON.parse(rawData);
@@ -836,13 +845,10 @@ function findOfficialPda(topic: string, problemDescription: string, grade: strin
     const allKeywords = Array.from(new Set([...topicKeywords, ...probKeywords]));
       
     if (allKeywords.length === 0) {
-      return null;
+      return [];
     }
     
-    let bestMatch: PdaItem | null = null;
-    let highestScore = 0;
-    
-    for (const item of filtered) {
+    const scoredItems = filtered.map(item => {
       let score = 0;
       const contentClean = item.content.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const pdaClean = item.pda.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -850,44 +856,46 @@ function findOfficialPda(topic: string, problemDescription: string, grade: strin
       
       // Coincidencias del tema (peso mayor)
       for (const kw of topicKeywords) {
-        if (contentClean.includes(kw)) {
-          score += 10;
-        }
-        if (pdaClean.includes(kw)) {
-          score += 6;
-        }
-        if (subjectClean.includes(kw)) {
-          score += 3;
-        }
+        if (contentClean.includes(kw)) score += 10;
+        if (pdaClean.includes(kw)) score += 6;
+        if (subjectClean.includes(kw)) score += 3;
       }
       
       // Coincidencias de la problemática (peso medio)
       for (const kw of probKeywords) {
-        if (contentClean.includes(kw)) {
-          score += 4;
-        }
-        if (pdaClean.includes(kw)) {
-          score += 2;
-        }
-        if (subjectClean.includes(kw)) {
-          score += 1;
-        }
+        if (contentClean.includes(kw)) score += 4;
+        if (pdaClean.includes(kw)) score += 2;
+        if (subjectClean.includes(kw)) score += 1;
       }
       
       if (topic.toLowerCase().trim() === item.subject.toLowerCase().trim()) {
         score += 15;
       }
       
-      if (score > highestScore) {
-        highestScore = score;
-        bestMatch = item;
+      return { item, score };
+    });
+    
+    // Filtrar y ordenar por puntuación
+    const validMatches = scoredItems
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score);
+      
+    // Obtener los mejores 3 distintos
+    const uniqueMatches: PdaItem[] = [];
+    const seenCombos = new Set<string>();
+    for (const match of validMatches) {
+      const combo = `${match.item.subject}-${match.item.content}`;
+      if (!seenCombos.has(combo)) {
+        seenCombos.add(combo);
+        uniqueMatches.push(match.item);
+        if (uniqueMatches.length >= 3) break;
       }
     }
     
-    return highestScore > 0 ? bestMatch : null;
+    return uniqueMatches;
   } catch (err) {
-    console.error("Error in findOfficialPda:", err);
-    return null;
+    console.error("Error in findOfficialPdas:", err);
+    return [];
   }
 }
 
