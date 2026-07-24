@@ -244,7 +244,8 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
     "encabezado": { "proyecto": "Título del proyecto sumamente creativo, llamativo y gamificado que conecte el tema y la problemática (evita usar la palabra 'Aventura de...' de forma genérica, inventa algo único que enganche)", "fase": "${phase}", "metodologia": "${metodologia}", "num_sesiones": ${sessionCount} },
     "diagnostico_pedagogico": "Análisis didáctico adaptado al diagnóstico del docente",
     "estructura_curricular": {
-      "campos_formativos": ["Campos oficiales correspondientes"],
+      "campos_formativos": ["Campos oficiales correspondientes (ej. Lenguajes, Saberes y Pensamiento Científico)"],
+      "contenido": "Contenido del programa sintético oficial (ej. La diversidad étnica, cultural y lingüística...)",
       "ejes_articuladores": ["Ejes oficiales correspondientes"],
       "proposito": "Propósito general del proyecto de impacto social",
       "pda": "Procesos de Desarrollo de Aprendizaje (PDA) oficiales vinculados"
@@ -684,7 +685,8 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
               grade: `Fase ${planoDidactico.encabezado?.fase || parsedResponse.metadatos_nem?.fase || "3"}`,
               proposito: planoDidactico.estructura_curricular?.proposito || parsedResponse.metadatos_nem?.proposito || "",
               diagnostico: planoDidactico.diagnostico_pedagogico || parsedResponse.metadatos_nem?.diagnostico || "",
-              contenidos: officialMatch?.content || planoDidactico.estructura_curricular?.campos_formativos?.[0] || parsedResponse.metadatos_nem?.contenidos || "",
+              contenidos: officialMatch?.content || planoDidactico.estructura_curricular?.contenido || parsedResponse.metadatos_nem?.contenidos || topic,
+              camposFormativos: officialMatch ? [getCampoFormativo(officialMatch.subject)] : (planoDidactico.estructura_curricular?.campos_formativos || (parsedResponse.metadatos_nem?.campos_formativos ? [parsedResponse.metadatos_nem.campos_formativos] : [])),
               planoOficial: planoDidactico
             },
             createdAt: new Date().toISOString()
@@ -838,4 +840,21 @@ function findOfficialPda(topic: string, grade: string): PdaItem | null {
     console.error("Error in findOfficialPda:", err);
     return null;
   }
+}
+
+function getCampoFormativo(subject: string): string {
+  const clean = subject.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  if (["espanol", "ingles", "artes"].some(s => clean.includes(s))) {
+    return "Lenguajes";
+  }
+  if (["matematicas", "biologia", "fisica", "quimica", "ciencias"].some(s => clean.includes(s))) {
+    return "Saberes y Pensamiento Científico";
+  }
+  if (["geografia", "historia", "formacion civica", "f.c.e"].some(s => clean.includes(s))) {
+    return "Ética, Naturaleza y Sociedades";
+  }
+  if (["tecnologia", "tutoria", "educacion fisica", "edu.fis"].some(s => clean.includes(s))) {
+    return "De lo Humano y lo Comunitario";
+  }
+  return "Lenguajes";
 }
