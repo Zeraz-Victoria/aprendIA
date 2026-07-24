@@ -57,6 +57,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
     // AI Generator State
     const [showAIPrompt, setShowAIPrompt] = useState(initialShowAIPrompt);
     const [aiTopic, setAiTopic] = useState("");
+    const [aiProblemDescription, setAiProblemDescription] = useState("");
     const [aiDifficulty, setAiDifficulty] = useState("Básico");
     const [aiPhase, setAiPhase] = useState("3"); // Phase 1-6
     const [aiSessionCount, setAiSessionCount] = useState(3);
@@ -107,7 +108,14 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
             const res = await fetch('/api/ai/generator', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ theme, topic: aiTopic, difficulty: aiDifficulty, phase: aiPhase, sessionCount: aiSessionCount })
+                body: JSON.stringify({ 
+                    theme, 
+                    topic: aiTopic, 
+                    problemDescription: aiProblemDescription,
+                    difficulty: aiDifficulty, 
+                    phase: aiPhase, 
+                    sessionCount: aiSessionCount 
+                })
             });
             const data = await res.json();
             if (data.days) {
@@ -1059,6 +1067,16 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                                     onChange={(e) => setAiTopic(e.target.value)}
                                     placeholder="Ej. Fracciones, Ecuaciones Lineales..."
                                     className="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all font-medium"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Describe la problemática (opcional)</label>
+                                <textarea
+                                    value={aiProblemDescription}
+                                    onChange={(e) => setAiProblemDescription(e.target.value)}
+                                    placeholder="Ej. Falta de interés en cuidar el agua, reciclaje..."
+                                    className="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all font-medium min-h-[60px] resize-none text-slate-800 text-sm"
                                 />
                             </div>
                             

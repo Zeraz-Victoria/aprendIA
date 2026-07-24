@@ -13,6 +13,7 @@ interface AiProjectGeneratorProps {
 export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGeneratorProps) {
     const { addWorld, setActiveWorld } = useLearning();
     const [topic, setTopic] = useState("");
+    const [problemDescription, setProblemDescription] = useState("");
     const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("clasico");
     const [difficulty, setDifficulty] = useState<"Básico" | "Intermedio" | "Avanzado">("Básico");
     const [metodologia, setMetodologia] = useState<string>("ABP");
@@ -36,6 +37,7 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     topic,
+                    problemDescription,
                     theme: selectedTheme,
                     dificultad: difficulty,
                     metodologia,
@@ -168,6 +170,20 @@ export default function AiProjectGenerator({ onClose, onSuccess }: AiProjectGene
                                     placeholder="Ej. Ecosistemas, Revolución Mexicana, Fracciones..."
                                     className="w-full bg-[#f0fbf5] border border-[#c1ebd5] rounded-2xl px-6 py-4 text-lg font-bold text-[#0a2d1d] focus:ring-4 focus:ring-indigo-100 focus:border-[#2e9f6c] outline-none transition-all placeholder:text-[#2e9f6c]"
                                     autoFocus
+                                />
+                            </div>
+
+                            {/* Describe la Problemática */}
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <Target className="w-4 h-4 text-[#165b3d]" />
+                                    <label className="text-xs font-black text-[#2e9f6c] uppercase tracking-widest">Describe la problemática (opcional)</label>
+                                </div>
+                                <textarea 
+                                    value={problemDescription}
+                                    onChange={(e) => setProblemDescription(e.target.value)}
+                                    placeholder="Ej. Los alumnos muestran poco interés en el cuidado de plantas, mala nutrición, etc..."
+                                    className="w-full bg-[#f0fbf5] border border-[#c1ebd5] rounded-2xl px-6 py-3 text-sm font-medium text-[#0a2d1d] focus:ring-4 focus:ring-indigo-100 focus:border-[#2e9f6c] outline-none transition-all placeholder:text-[#2e9f6c] min-h-[70px] resize-none"
                                 />
                             </div>
 

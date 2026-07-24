@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     const genAI = new GoogleGenerativeAI(apiKey);
 
   try {
-    const { theme, topic, dificultad = "Básico", metodologia = "ABP", diagnostico = "Ninguno", sessionCount = 3, session_title, session_start, session_development, session_end, phase = "3", grade, modality } = await req.json();
+    const { theme, topic, problemDescription = "", dificultad = "Básico", metodologia = "ABP", diagnostico = "Ninguno", sessionCount = 3, session_title, session_start, session_development, session_end, phase = "3", grade, modality } = await req.json();
 
     if (!theme || !topic) {
       return NextResponse.json({ error: 'theme and topic are required' }, { status: 400 });
@@ -65,6 +65,16 @@ export async function POST(req: Request) {
       try {
         const parsedCached = JSON.parse(cachedPrompt.response);
         console.log("Successfully parsed cached response. Sending to frontend.");
+        if (parsedCached.days) {
+          return NextResponse.json({
+            id: crypto.randomUUID(),
+            theme: theme,
+            title: parsedCached.title || `Aventura de ${topic}`,
+            days: parsedCached.days,
+            pedagogy: parsedCached.pedagogy,
+            createdAt: new Date().toISOString()
+          });
+        }
         return NextResponse.json({
           id: crypto.randomUUID(),
           theme: theme,
@@ -97,7 +107,8 @@ export async function POST(req: Request) {
     // Buscar páginas de libros de texto de apoyo relevantes
     let booksContext = "";
     try {
-      const relevantPages = await findRelevantPages(topic, 4, grade, modality);
+      const searchBuffer = problemDescription ? `${topic} ${problemDescription}` : topic;
+      const relevantPages = await findRelevantPages(searchBuffer, 4, grade, modality);
       if (relevantPages.length > 0) {
         booksContext = relevantPages.map(page => 
           `- Libro: "${page.bookTitle}" | Página: ${page.pageNumber} | PDF: "${page.pdfUrl}" | Contexto: "${page.snippet}"`
@@ -130,6 +141,7 @@ Por consecuencia:
 
 # 1. DATOS DE ENTRADA:
 - Tema / Problemática: ${topic}
+${problemDescription ? `- Descripción de la problemática a atender: ${problemDescription}` : ''}
 - Diagnóstico de Aula: ${diagnostico}
 - Metodología NEM: ${metodologia}
 - Fase NEM: ${phase}
@@ -209,7 +221,7 @@ Estructura de "lecturas_sugeridas":
 Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con esta estructura exacta:
 {
   "plano_didactico": {
-    "encabezado": { "proyecto": "Título del Proyecto", "fase": "${phase}", "metodologia": "${metodologia}", "num_sesiones": ${sessionCount} },
+    "encabezado": { "proyecto": "Título del proyecto sumamente creativo, llamativo y gamificado que conecte el tema y la problemática (evita usar la palabra 'Aventura de...' de forma genérica, inventa algo único que enganche)", "fase": "${phase}", "metodologia": "${metodologia}", "num_sesiones": ${sessionCount} },
     "diagnostico_pedagogico": "Análisis didáctico adaptado al diagnóstico del docente",
     "estructura_curricular": {
       "campos_formativos": ["Campos oficiales correspondientes"],
@@ -639,21 +651,12 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
           // Check if variable is defined before using it
           const safeTopic = topic ? topic.toLowerCase().trim() : 'generico';
           const safeCacheKey = `${safeTopic}_s${sessionCount}`;
-          try {
-            //@ts-ignore
-            await prisma.aIPromptCache.create({
-              data: {
-                topic: safeCacheKey,
-                theme: theme.toLowerCase().trim(),
-                response: JSON.stringify(days)
-              }
-            });
-          } catch (cacheError) { console.log('Cache save skipped'); }
+          const generatedTitle = planoDidactico.encabezado?.proyecto || topic;
 
           const payload = {
             id: crypto.randomUUID(),
             theme: "custom",
-            title: `Aventura de ${topic}`,
+            title: generatedTitle,
             days: days,
             pedagogy: {
               topic: topic,
@@ -666,6 +669,21 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
             },
             createdAt: new Date().toISOString()
           };
+
+          try {
+            //@ts-ignore
+            await prisma.aIPromptCache.create({
+              data: {
+                topic: safeCacheKey,
+                theme: theme.toLowerCase().trim(),
+                response: JSON.stringify({
+                  title: payload.title,
+                  days: payload.days,
+                  pedagogy: payload.pedagogy
+                })
+              }
+            });
+          } catch (cacheError) { console.log('Cache save skipped'); }
 
           controller.enqueue(encoder.encode(JSON.stringify({ type: 'done', data: payload }) + '\n'));
           controller.close();
