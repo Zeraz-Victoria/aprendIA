@@ -221,10 +221,10 @@ No separes el contenido educativo de la fantasía. Integra el "Tema Visual para 
   2. **Ejemplo Resuelto**: Comienza con "## Ejemplo resuelto — [Problema práctico resuelto detalladamente paso a paso con la temática]".
   3. **Conexión con el Mundo Real**: Comienza con "## Conexión con el mundo real — [Dato de relevancia cotidiana o curiosidad asombrosa en 2 oraciones]".
   *IMPORTANTE* (LÍMITE DE MAPA INTERACTIVO Y CONCISIÓN):
-  - Si el total de sesiones solicitadas es mayor a 2 (${sessionCount} > 2), DEBES generar objetos de nivel detallados únicamente para las primeras 2 sesiones en el arreglo "mapa_interactivo". NO generes las sesiones a partir de la 3 en adelante en el mapa interactivo; el servidor se encargará de crear los esqueletos automáticamente. El arreglo "mapa_interactivo" en tu respuesta JSON debe tener como máximo 2 elementos.
-  - La sección "secuencia_didactica" del docente (las listas de "inicio", "desarrollo" y "cierre") SÍ debe contener todas las ${sessionCount} sesiones detalladas. Escribe exactamente 1 sola oración corta, directa y concisa por fase (inicio, desarrollo y cierre) de la secuencia docente para evitar exceder los límites de tokens.
+  - Si el total de sesiones solicitadas es mayor a 2 (${sessionCount} > 2), DEBES generar el objeto de nivel detallado únicamente para la primera (1) sesión en el arreglo "mapa_interactivo". NO generes las sesiones a partir de la 2 en adelante en el mapa interactivo; el servidor se encargará de crear los esqueletos automáticamente. El arreglo "mapa_interactivo" en tu respuesta JSON debe tener como máximo 1 elemento.
+  - La sección "secuencia_didactica" del docente (las listas de "inicio", "desarrollo" y "cierre") SÍ debe contener todas las ${sessionCount} sesiones detalladas. Escribe resúmenes ultra-cortos y concisos de máximo 8 palabras por fase (inicio, desarrollo y cierre) de la secuencia docente para evitar exceder los límites de tokens.
   - El campo "diagnostico_pedagogico" y "proposito" deben tener como máximo 2 oraciones.
-  - Toda la riqueza de contenido de aprendizaje debe residir en la teoría de "chunks" de los primeros 2 niveles generados.
+  - Toda la riqueza de contenido de aprendizaje debe residir en la teoría de "chunks" del primer nivel generado.
 
 
 
@@ -327,7 +327,7 @@ Genera un objeto JSON puro, sin etiquetas markdown ("\`\`\`json", etc.), con est
   ]
 }
 
-REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE contener EXACTAMENTE ${sessionCount} elementos. Sin embargo, el arreglo "mapa_interactivo" debe contener únicamente los primeros 2 elementos (si ${sessionCount} > 2) para optimizar el tamaño de la respuesta. Ambas deben empalmar lógicamente. Ningún valor numérico debe fallar. Retorna SOLO el JSON.
+REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE contener EXACTAMENTE ${sessionCount} elementos. Sin embargo, el arreglo "mapa_interactivo" debe contener únicamente el primer (1) elemento (si ${sessionCount} > 2) para optimizar el tamaño de la respuesta. Ambas deben empalmar lógicamente. Ningún valor numérico debe fallar. Retorna SOLO el JSON.
 `;
 
     console.log("Calling Google AI (Non-stream mode)...");
