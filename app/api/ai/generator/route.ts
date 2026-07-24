@@ -828,68 +828,132 @@ function findOfficialPdas(topic: string, problemDescription: string, grade: stri
       }
     }
     
-    // Extraer palabras clave del tema general
-    const topicKeywords = topic.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]/g, " ")
-      .split(/\s+/)
-      .filter(w => w.length > 2);
-      
-    // Extraer palabras clave de la descripción de la problemática
-    const probKeywords = (problemDescription || "").toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]/g, " ")
-      .split(/\s+/)
-      .filter(w => w.length > 2);
-      
-    const allKeywords = Array.from(new Set([...topicKeywords, ...probKeywords]));
-      
-    if (allKeywords.length === 0) {
-      return [];
+    // Mapeo de sinónimos para expandir la búsqueda curricular
+    const synonymMap: { [key: string]: string[] } = {
+      "animal": ["biodiversidad", "seres vivos", "biologia", "naturaleza"],
+      "animales": ["biodiversidad", "seres vivos", "biologia", "naturaleza"],
+      "planta": ["biodiversidad", "seres vivos", "biologia", "naturaleza"],
+      "plantas": ["biodiversidad", "seres vivos", "biologia", "naturaleza"],
+      "basura": ["contaminacion", "degradacion", "medio ambiente", "residuos"],
+      "desechos": ["contaminacion", "degradacion", "medio ambiente", "residuos"],
+      "residuos": ["contaminacion", "degradacion", "medio ambiente"],
+      "drogas": ["adicciones", "prevencion", "salud", "sustancias"],
+      "alcohol": ["adicciones", "prevencion", "salud"],
+      "bullying": ["conflictos", "convivencia", "cultura de paz", "dialogo"],
+      "violencia": ["conflictos", "convivencia", "cultura de paz", "dialogo"],
+      "pelea": ["conflictos", "convivencia", "dialogo"],
+      "comida": ["alimentos", "dieta", "nutrientes", "salud"],
+      "alimentacion": ["alimentos", "dieta", "nutrientes", "salud"],
+      "nutricion": ["alimentos", "dieta", "nutrientes", "salud"],
+      "saludable": ["alimentos", "dieta", "salud"],
+      "agua": ["aguas", "cuencas", "recurso"],
+      "lluvia": ["agua", "aguas", "clima"]
+    };
+    
+    const cleanAndTokenize = (text: string) => {
+      return text.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, " ")
+        .split(/\s+/)
+        .filter(w => w.length > 2);
+    };
+    
+    const topicKeywords = cleanAndTokenize(topic);
+    const probKeywords = cleanAndTokenize(problemDescription || "");
+    
+    // Expandir con sinónimos
+    const expandedTopicKeywords = [...topicKeywords];
+    for (const kw of topicKeywords) {
+      if (synonymMap[kw]) {
+        expandedTopicKeywords.push(...synonymMap[kw]);
+      }
     }
     
-    const scoredItems = filtered.map(item => {
-      let score = 0;
-      const contentClean = item.content.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const pdaClean = item.pda.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const subjectClean = item.subject.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      
-      // Coincidencias del tema (peso mayor)
-      for (const kw of topicKeywords) {
-        if (contentClean.includes(kw)) score += 10;
-        if (pdaClean.includes(kw)) score += 6;
-        if (subjectClean.includes(kw)) score += 3;
+    const expandedProbKeywords = [...probKeywords];
+    for (const kw of probKeywords) {
+      if (synonymMap[kw]) {
+        expandedProbKeywords.push(...synonymMap[kw]);
       }
-      
-      // Coincidencias de la problemática (peso medio)
-      for (const kw of probKeywords) {
-        if (contentClean.includes(kw)) score += 4;
-        if (pdaClean.includes(kw)) score += 2;
-        if (subjectClean.includes(kw)) score += 1;
-      }
-      
-      if (topic.toLowerCase().trim() === item.subject.toLowerCase().trim()) {
-        score += 15;
-      }
-      
-      return { item, score };
-    });
+    }
     
-    // Filtrar y ordenar por puntuación
-    const validMatches = scoredItems
-      .filter(x => x.score > 0)
-      .sort((a, b) => b.score - a.score);
+    const allKeywords = Array.from(new Set([...expandedTopicKeywords, ...expandedProbKeywords]));
+    
+    let uniqueMatches: PdaItem[] = [];
+    
+    if (allKeywords.length > 0) {
+      const scoredItems = filtered.map(item => {
+        let score = 0;
+        const contentClean = item.content.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const pdaClean = item.pda.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const subjectClean = item.subject.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        
+        // Coincidencias del tema (peso mayor)
+        for (const kw of expandedTopicKeywords) {
+          if (contentClean.includes(kw)) score += 10;
+          if (pdaClean.includes(kw)) score += 6;
+          if (subjectClean.includes(kw)) score += 3;
+        }
+        
+        // Coincidencias de la problemática (peso medio)
+        for (const kw of expandedProbKeywords) {
+          if (contentClean.includes(kw)) score += 4;
+          if (pdaClean.includes(kw)) score += 2;
+          if (subjectClean.includes(kw)) score += 1;
+        }
+        
+        if (topic.toLowerCase().trim() === item.subject.toLowerCase().trim()) {
+          score += 15;
+        }
+        
+        return { item, score };
+      });
       
-    // Obtener los mejores 3 distintos
-    const uniqueMatches: PdaItem[] = [];
-    const seenCombos = new Set<string>();
-    for (const match of validMatches) {
-      const combo = `${match.item.subject}-${match.item.content}`;
-      if (!seenCombos.has(combo)) {
-        seenCombos.add(combo);
-        uniqueMatches.push(match.item);
-        if (uniqueMatches.length >= 3) break;
+      const validMatches = scoredItems
+        .filter(x => x.score > 0)
+        .sort((a, b) => b.score - a.score);
+        
+      const seenCombos = new Set<string>();
+      for (const match of validMatches) {
+        const combo = `${match.item.subject}-${match.item.content}`;
+        if (!seenCombos.has(combo)) {
+          seenCombos.add(combo);
+          uniqueMatches.push(match.item);
+          if (uniqueMatches.length >= 3) break;
+        }
       }
+    }
+    
+    // FALLBACK: Si no hay coincidencias con palabras clave, detectamos asignatura por descarte y devolvemos 3 PDA reales del Excel
+    if (uniqueMatches.length === 0 && filtered.length > 0) {
+      const fullText = (topic + " " + (problemDescription || "")).toLowerCase();
+      let targetSubject = "Español"; // Fallback general
+      
+      if (["mate", "numero", "suma", "algebra", "ecuacion", "calculo", "geometria", "fraccion"].some(w => fullText.includes(w))) {
+        targetSubject = "Matemáticas";
+      } else if (["biolo", "celula", "seres vivos", "animal", "planta", "ecosistema", "cuerpo", "salud"].some(w => fullText.includes(w))) {
+        targetSubject = "Biología";
+      } else if (["fisic", "fuerza", "energia", "movimiento", "atomo"].some(w => fullText.includes(w))) {
+        targetSubject = "Física";
+      } else if (["quimic", "tabla periodica", "reaccion", "mezcla", "sustancia"].some(w => fullText.includes(w))) {
+        targetSubject = "Química";
+      } else if (["geograf", "mapa", "tierra", "relieve", "clima", "pais", "nacion", "frontera"].some(w => fullText.includes(w))) {
+        targetSubject = "Geografía";
+      } else if (["histor", "pasado", "independencia", "revolucion", "epoca", "siglo", "presidente", "guerra"].some(w => fullText.includes(w))) {
+        targetSubject = "Historia";
+      } else if (["civica", "etica", "derechos", "ley", "ciudadano", "valores", "f.c.e"].some(w => fullText.includes(w))) {
+        targetSubject = "Formación Cívica y Ética";
+      } else if (["tecnolo", "maquina", "herramienta", "digital", "computa", "innovacion"].some(w => fullText.includes(w))) {
+        targetSubject = "Tecnología";
+      } else if (["artes", "dibujo", "musica", "pintura", "teatro", "danza", "escultura"].some(w => fullText.includes(w))) {
+        targetSubject = "Artes";
+      }
+      
+      let fallbackMatches = filtered.filter(p => p.subject === targetSubject);
+      if (fallbackMatches.length === 0) {
+        fallbackMatches = filtered; // Fallback absoluto
+      }
+      
+      uniqueMatches = fallbackMatches.slice(0, 3);
     }
     
     return uniqueMatches;
