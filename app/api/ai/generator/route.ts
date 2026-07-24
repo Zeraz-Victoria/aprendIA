@@ -168,7 +168,7 @@ No separes el contenido educativo de la fantasía. Integra el "Tema Visual para 
   3. **Conexión con el Mundo Real**: Comienza con "## Conexión con el mundo real — [Dato de relevancia cotidiana o curiosidad asombrosa en 2 oraciones]".
   *IMPORTANTE* (LÍMITE DE MAPA INTERACTIVO Y CONCISIÓN):
   - Si el total de sesiones solicitadas es mayor a 2 (${sessionCount} > 2), DEBES generar objetos de nivel detallados únicamente para las primeras 2 sesiones en el arreglo "mapa_interactivo". NO generes las sesiones a partir de la 3 en adelante en el mapa interactivo; el servidor se encargará de crear los esqueletos automáticamente. El arreglo "mapa_interactivo" en tu respuesta JSON debe tener como máximo 2 elementos.
-  - La sección "secuencia_didactica" del docente (las listas de "inicio", "desarrollo" y "cierre") SÍ debe contener todas las ${sessionCount} sesiones detalladas. Puedes escribir hasta 2 oraciones para describir cada fase de la secuencia docente.
+  - La sección "secuencia_didactica" del docente (las listas de "inicio", "desarrollo" y "cierre") SÍ debe contener todas las ${sessionCount} sesiones detalladas. Escribe exactamente 1 sola oración corta, directa y concisa por fase (inicio, desarrollo y cierre) de la secuencia docente para evitar exceder los límites de tokens.
   - El campo "diagnostico_pedagogico" y "proposito" deben tener como máximo 2 oraciones.
   - Toda la riqueza de contenido de aprendizaje debe residir en la teoría de "chunks" de los primeros 2 niveles generados.
 
@@ -592,7 +592,7 @@ REGLA DE ORO: El arreglo "secuencia_didactica" dentro de "plano_didactico" DEBE 
             if (days.length < sessionCount) {
               const secuenciaDidactica = planoDidactico.secuencia_didactica || [];
               for (let i = days.length; i < sessionCount; i++) {
-                const sessionPlan = secuenciaDidactica[i] || secuenciaDidactica[i - 1] || {};
+                const sessionPlan = secuenciaDidactica[i] || (secuenciaDidactica.length > 0 ? secuenciaDidactica[secuenciaDidactica.length - 1] : {});
                 days.push({
                   dayNumber: i + 1,
                   type: (i === sessionCount - 1) ? "boss_fight" : "concept_story",

@@ -157,10 +157,214 @@ ${adaptiveRescuePrompt}
 `;
 
 
+        const repairJson = (jsonStr: string): string => {
+            jsonStr = jsonStr.trim();
+            const jsonMatch = jsonStr.match(/```json\n([\s\S]*?)\n```/) || 
+                              jsonStr.match(/```\n([\s\S]*?)\n```/) ||
+                              jsonStr.match(/{[\s\S]*}/);
+            if (jsonMatch) {
+              jsonStr = jsonMatch[1] || jsonMatch[0];
+            }
+            jsonStr = jsonStr.trim();
+
+            let repaired = '';
+            let inString = false;
+            let isEscaped = false;
+            
+            const contextStack: ('object' | 'array')[] = [];
+            let expect: 'value' | 'key_or_close' | 'value_or_close' | 'colon' | 'comma_or_close' | 'key' = 'value';
+
+            let lastKeyStart = -1;
+            let lastValueStart = -1;
+
+            for (let i = 0; i < jsonStr.length; i++) {
+              const char = jsonStr[i];
+
+              if (inString) {
+                if (isEscaped) {
+                  repaired += char;
+                  isEscaped = false;
+                } else if (char === '\\') {
+                  repaired += char;
+                  isEscaped = true;
+                } else if (char === '\n') {
+                  repaired += '\\n';
+                } else if (char === '\r') {
+                  repaired += '\\r';
+                } else if (char === '\t') {
+                  repaired += '\\t';
+                } else if (char === '"') {
+                  let nextNonWs = '';
+                  for (let j = i + 1; j < jsonStr.length; j++) {
+                    if (!/\s/.test(jsonStr[j])) {
+                      nextNonWs = jsonStr[j];
+                      break;
+                    }
+                  }
+
+                  let isClosing = false;
+                  if (expect === 'key' || expect === 'key_or_close') {
+                    if (nextNonWs === ':') {
+                      isClosing = true;
+                    }
+                  } else {
+                    if (nextNonWs === '}' || nextNonWs === ']' || nextNonWs === '') {
+                      isClosing = true;
+                    } else if (nextNonWs === ',') {
+                      let nextAfterComma = '';
+                      const commaIdx = jsonStr.indexOf(',', i + 1);
+                      if (commaIdx !== -1) {
+                        for (let j = commaIdx + 1; j < jsonStr.length; j++) {
+                          if (!/\s/.test(jsonStr[j])) {
+                            nextAfterComma = jsonStr[j];
+                            break;
+                          }
+                        }
+                      }
+                      const parent = contextStack[contextStack.length - 1];
+                      if (parent === 'object') {
+                        if (commaIdx !== -1) {
+                          const remaining = jsonStr.slice(commaIdx + 1).trim();
+                          if (remaining === '' || remaining.startsWith('}') || /^"[a-zA-Z0-9_]+"\s*:/.test(remaining)) {
+                            isClosing = true;
+                          }
+                        } else {
+                          isClosing = true;
+                        }
+                      } else if (parent === 'array') {
+                        if (nextAfterComma === '' || nextAfterComma === ']' || /["\d\-\{\[tfn]/.test(nextAfterComma)) {
+                          isClosing = true;
+                        }
+                      } else {
+                        isClosing = true;
+                      }
+                    }
+                  }
+
+                  if (isClosing) {
+                    inString = false;
+                    repaired += char;
+                    if (expect === 'key' || expect === 'key_or_close') {
+                      expect = 'colon';
+                    } else {
+                      expect = 'comma_or_close';
+                    }
+                  } else {
+                    repaired += '\\"';
+                  }
+                } else {
+                  repaired += char;
+                }
+              } else {
+                if (char === '"') {
+                  inString = true;
+                  if (expect === 'key' || expect === 'key_or_close') {
+                    lastKeyStart = repaired.length;
+                  } else {
+                    lastValueStart = repaired.length;
+                  }
+                  repaired += char;
+                } else if (char === '{') {
+                  contextStack.push('object');
+                  expect = 'key_or_close';
+                  lastValueStart = repaired.length;
+                  repaired += char;
+                } else if (char === '[') {
+                  contextStack.push('array');
+                  expect = 'value_or_close';
+                  lastValueStart = repaired.length;
+                  repaired += char;
+                } else if (char === '}') {
+                  if (contextStack[contextStack.length - 1] === 'object') {
+                    contextStack.pop();
+                    expect = contextStack.length === 0 ? 'value' : 'comma_or_close';
+                  }
+                  repaired += char;
+                } else if (char === ']') {
+                  if (contextStack[contextStack.length - 1] === 'array') {
+                    contextStack.pop();
+                    expect = contextStack.length === 0 ? 'value' : 'comma_or_close';
+                  }
+                  repaired += char;
+                } else if (char === ':') {
+                  if (expect === 'colon') {
+                    expect = 'value';
+                  }
+                  repaired += char;
+                } else if (char === ',') {
+                  const currentContext = contextStack[contextStack.length - 1];
+                  if (currentContext === 'object') {
+                    expect = 'key';
+                  } else if (currentContext === 'array') {
+                    expect = 'value';
+                  }
+                  repaired += char;
+                } else {
+                  if (!/\s/.test(char)) {
+                    if (expect === 'value' || expect === 'value_or_close') {
+                      lastValueStart = repaired.length;
+                    }
+                  }
+                  repaired += char;
+                }
+              }
+            }
+
+            if (inString) {
+              repaired += '"';
+              if (expect === 'key' || expect === 'key_or_close') {
+                expect = 'colon';
+              } else {
+                expect = 'comma_or_close';
+              }
+            }
+
+            if (expect === 'colon' && lastKeyStart !== -1) {
+              repaired = repaired.slice(0, lastKeyStart).trimEnd();
+              if (repaired.endsWith(',')) {
+                repaired = repaired.slice(0, -1).trimEnd();
+              }
+              expect = 'comma_or_close';
+            }
+
+            if (expect === 'value') {
+              const currentContext = contextStack[contextStack.length - 1];
+              if (currentContext === 'object') {
+                if (lastKeyStart !== -1) {
+                  repaired = repaired.slice(0, lastKeyStart).trimEnd();
+                  if (repaired.endsWith(',')) {
+                    repaired = repaired.slice(0, -1).trimEnd();
+                  }
+                }
+              } else if (currentContext === 'array') {
+                const lastComma = repaired.lastIndexOf(',');
+                if (lastComma !== -1 && lastComma >= repaired.length - 5) {
+                  repaired = repaired.slice(0, lastComma).trimEnd();
+                }
+              }
+            }
+
+            repaired = repaired.trimEnd();
+            if (repaired.endsWith(',')) {
+              repaired = repaired.slice(0, -1).trimEnd();
+            }
+
+            while (contextStack.length > 0) {
+              const open = contextStack.pop();
+              if (open === 'object') {
+                repaired += '}';
+              } else if (open === 'array') {
+                repaired += ']';
+              }
+            }
+
+            return repaired;
+        };
+
         const result = await model.generateContent(prompt);
         const responseText = result.response.text();
 
-        let cleanText = responseText.replace(/\`\`\`json/gi, '').replace(/\`\`\`/gi, '').trim();
+        let cleanText = repairJson(responseText);
         let generatedContent;
 
         try {

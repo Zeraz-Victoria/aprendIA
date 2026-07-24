@@ -59,6 +59,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
     const [aiTopic, setAiTopic] = useState("");
     const [aiDifficulty, setAiDifficulty] = useState("Básico");
     const [aiPhase, setAiPhase] = useState("3"); // Phase 1-6
+    const [aiSessionCount, setAiSessionCount] = useState(3);
     const [isGenerating, setIsGenerating] = useState(false);
     const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
@@ -106,7 +107,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
             const res = await fetch('/api/ai/generator', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ theme, topic: aiTopic, difficulty: aiDifficulty, phase: aiPhase })
+                body: JSON.stringify({ theme, topic: aiTopic, difficulty: aiDifficulty, phase: aiPhase, sessionCount: aiSessionCount })
             });
             const data = await res.json();
             if (data.days) {
@@ -1088,6 +1089,26 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                                         <option value="Intermedio">Intermedio (Retador)</option>
                                         <option value="Avanzado">Avanzado (Olimpiada)</option>
                                     </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-sm font-bold text-slate-700">Número de Sesiones (Niveles)</label>
+                                    <span className="text-xs font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">{aiSessionCount}</span>
+                                </div>
+                                <input 
+                                    type="range" 
+                                    min="1" 
+                                    max="20" 
+                                    value={aiSessionCount}
+                                    onChange={(e) => setAiSessionCount(Number(e.target.value))}
+                                    className="w-full accent-amber-500"
+                                />
+                                <div className="flex justify-between text-[9px] text-slate-400 font-bold px-1 mt-1">
+                                    <span>Básico (1-5)</span>
+                                    <span>Medio (6-12)</span>
+                                    <span>Completo (13-20)</span>
                                 </div>
                             </div>
 
