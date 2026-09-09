@@ -33,9 +33,9 @@ function loadCatalog(): TextbookEntry[] {
  */
 export function findRelevantTextbookPages(topic: string, grade?: string, limit = 4): TextbookEntry[] {
     const catalog = loadCatalog();
-    if (catalog.length === 0 || !topic) return [];
+    if (catalog.length === 0) return [];
 
-    const cleanTopic = topic.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const cleanTopic = (topic || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const keywords = cleanTopic.split(/\s+/).filter(w => w.length > 3);
 
     const matches: { entry: TextbookEntry; score: number }[] = [];
@@ -46,20 +46,21 @@ export function findRelevantTextbookPages(topic: string, grade?: string, limit =
         // Coincidencia de grado
         if (grade) {
             const cleanGrade = grade.toLowerCase();
+            if (cleanGrade.includes("1") && entry.grade.includes("1")) score += 3;
             if (cleanGrade.includes("2") && entry.grade.includes("2")) score += 3;
             if (cleanGrade.includes("3") && entry.grade.includes("3")) score += 3;
-            if (entry.grade.includes("Multigrado")) score += 1;
+            if (entry.grade.includes("Multigrado")) score += 2;
         }
 
         const snippetLower = entry.snippet.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const bookLower = entry.bookTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
         for (const kw of keywords) {
-            if (snippetLower.includes(kw)) score += 2;
-            if (bookLower.includes(kw)) score += 1;
+            if (snippetLower.includes(kw)) score += 3;
+            if (bookLower.includes(kw)) score += 2;
         }
 
-        if (score > 2) {
+        if (score >= 1) {
             matches.push({ entry, score });
         }
     }
@@ -67,5 +68,23 @@ export function findRelevantTextbookPages(topic: string, grade?: string, limit =
     // Ordenar por relevancia
     matches.sort((a, b) => b.score - a.score);
 
-    return matches.slice(0, limit).map(m => m.entry);
+    if (matches.length > 0) {
+        return matches.slice(0, limit).map(m => m.entry);
+    }
+
+    // Fallback: si no hubo filtro específico por palabras clave, retornar 4 páginas del grado especificado
+    if (grade) {
+        const cleanGrade = grade.toLowerCase();
+        const gradeFallback = catalog.filter(e => {
+            if (cleanGrade.includes("1") && e.grade.includes("1")) return true;
+            if (cleanGrade.includes("2") && e.grade.includes("2")) return true;
+            if (cleanGrade.includes("3") && e.grade.includes("3")) return true;
+            return e.grade.includes("Multigrado");
+        });
+        if (gradeFallback.length > 0) {
+            return gradeFallback.slice(0, limit);
+        }
+    }
+
+    return catalog.slice(0, limit);
 }

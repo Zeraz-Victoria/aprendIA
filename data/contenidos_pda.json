@@ -1,0 +1,986 @@
+[
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "La diversidad de lenguas y su uso en la comunicación familiar, escolar y comunitaria.",
+    "pda": "Reconoce la riqueza lingüística de México y el mundo, a partir de obras literarias procedentes de distintas culturas."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "La diversidad étnica, cultural y lingüística de México a favor de una sociedad intercultural.",
+    "pda": "Comprende las ideas centrales y secundarias de textos relacionados con la diversidad étnica, cultural y lingüística, que favorecen una sociedad intercultural, para comentarlas en forma oral y escrita."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Las lenguas como manifestación de la identidad y del sentido de pertenencia.",
+    "pda": "Describe en un texto cómo el lenguaje oral manifiesta las identidades personal y colectiva, para reconocer lo común y lo diferente."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "El dinamismo de las lenguas y su relevancia como patrimonio cultural.",
+    "pda": "Identifica y expresa la relevancia de valorar las lenguas como legado de la comunidad."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "La función creativa del español en la expresión de necesidades e intereses comunitarios.",
+    "pda": "Identifica una situación problemática de la comunidad, haciendo uso del pensamiento crítico, para plantear diversas formas creativas de resolverla, por ejemplo, con un cuento."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Los elementos y los recursos estéticos de la lengua española en la literatura oral y escrita.",
+    "pda": "Reconoce los recursos estéticos en textos literarios líricos, orales y escritos, y disfruta de poemas, canciones, juegos de palabras, entre otros."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Textos literarios escritos en español o traducidos.",
+    "pda": "Reconoce el valor estético de diversos géneros literarios en textos de su libre elección, para elaborar comentarios y promover su lectura."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Creaciones literarias tradicionales y contemporáneas.",
+    "pda": "Recupera y clasifica creaciones literarias de la comunidad o de un lugar de interés, como mitos, leyendas, fábulas, epopeyas, cantares de gesta, refranes, coplas, canciones, corridos, juegos de palabras, entre otras, para promover de manera creativa su lectura."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Recursos literarios en lengua española para expresar sensaciones, emociones, sentimientos e ideas vinculados con las familias, la escuela y la comunidad.",
+    "pda": "Identifica recursosliterarios en lengua española y los emplea en la elaboración de cartas personales y biografías, para expresar sensaciones, emociones, sentimientos e ideas que experimenta en su entorno familiar, escolar o comunitario."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Los géneros periodísticos y sus recursos para comunicar sucesos significativos familiares, escolares, comunitarios y sociales.",
+    "pda": "Identifica sucesos significativos familiares, escolares, comunitarios y sociales que forman parte de la memoria colectiva y los comunica haciendo uso de las características de los géneros periodísticos informativos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Comunicación asertiva y dialógica para erradicar expresiones de violencia.",
+    "pda": "Realiza, de maneracolectiva, una propuesta oral o por escrito, para promover acciones que posibiliten erradicar la violencia en las familias y la escuela. Elabora solicitudes de gestión de espacios y recursos para dar a conocer la propuesta."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Mensajes para promover una vida saludable, expresados en medios comunitarios o masivos de comunicación.",
+    "pda": "Identifica las características y recursos de mensajes que promueven una vida saludable a través de los diferentes medios comunitarios o masivos de comunicación impresos o audiovisuales."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Textos de divulgación científica.",
+    "pda": "Identifica las características del texto de divulgación científica y elabora uno."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1° ESP",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Manifestaciones culturales y artísticas que favorecen una sociedad incluyente.",
+    "pda": "Reconoce manifestacionesculturales y artísticas creadas o ejecutadas por personas con alguna discapacidad, para distinguir sus valores estéticos y creativos y las comparte en forma oral o escrita con la comunidad."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "La diversidad  lingüística y sus  formas de expresión en México y el  mundo.",
+    "pda": "Hace uso del alfabeto, los números y las expresiones básicas en inglés, para nombrar y recuperar datos\nfactuales y características básicas de lenguas reconocidas en México y el mundo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "La identidad y cultura de pueblos de habla inglesa.",
+    "pda": "Recupera información para llevar a cabo presentaciones en inglés, orales y escritas, que describan rasgos étnicos, culturales e identitarios de hablantes de lengua inglesa."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Las manifestaciones culturales, lingüísticas y\n artísticas en inglés, a favor de la interculturalidad.",
+    "pda": "Elabora un cómic o manga en inglés sobre situaciones donde se rescata la importancia de la interculturalidad."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Uso de diversos textos en inglés que promueven la preservación y conservación de las lenguas.",
+    "pda": "Recupera textos informativos y científicos en inglés, que refieran formas de conservación y preservación de las lenguas, y las difunde."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "El uso del inglés para expresar necesidades, intereses y problemas de la comunidad",
+    "pda": "Investiga en textos en inglés soluciones implementadas sobre problemas de una comunidad, e informa de\nmanera oral o escrita sus hallazgos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Elementos y\n recursos estéticos\n del inglés.",
+    "pda": "Recupera de distintos tipos de textos literarios en inglés, expresiones, elementos y recursos estéticos y elabora un glosario."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Manifestaciones\n artísticas y culturales\n del inglés.",
+    "pda": "Realiza una lectura crítica y emite su opinión en inglés sobre diversas manifestaciones culturales y artísticas de pueblos de habla inglesa."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Creaciones literarias tradicionales y\n contemporáneas en inglés.",
+    "pda": "Selecciona textos literarios en inglés que aborden temas de la comunidad o de algún lugar de interés, los resume y difunde por distintos medios."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "El inglés para expresar sensaciones, emociones, sentimientos e ideas vinculados con las familias, la escuela y la comunidad.",
+    "pda": "Lleva a cabo juegos del lenguaje en inglés para expresar senciones, emociones, sentimientos e ideas sobre las familias y la escuela."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Relatos en inglés para expresa sucesos\n significativos familiares, escolares,  comunitarios y sociales.",
+    "pda": "Entrevista y narra en inglés sucesos significativos familiares, escolares, comunitarios o sociales recuperados de la memoria colectiva."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Comunicación asertiva y dialógica en inglés, para sensibilizar sobre la erradicación de la violencia en las familias y la escuela.",
+    "pda": "Recupera de distintos textos en inglés, expresiones de violencia presentes en las familias y las escuelas.\nReflexiona y comunica de forma oral y escrita una postura de rechazo a la violencia, mediante la\ncomunicación asertiva y dialógica."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Mensajes en inglés en medios de\ncomunicación masiva, que promuevan una vida\nsaludable.",
+    "pda": "Recupera en inglés mensajes que promuevan una vida saludables y los difunde de manera oral o escrita, a través de distintos medios de comunicación."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "El uso del inglés en la construcción de mensajes a favor de la inclusión.",
+    "pda": "Investiga en diversas fuentes en inglés sobre las características de los mensajes que presentan\ninformación a favor de la interacción, sensibilización y empatía con la diversidad y expone su punto de vista."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ING",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "El uso del inglés en las manifestaciones culturales y artísticas que favorecen la construcción de una sociedad incluyente",
+    "pda": "Elabora semblanzas en inglés sobre personas en condición de discapacidad, destacadas por contribuir a\nla cultural y las artes, y las difunde."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Diversidad de lenguajes artísticos en la riqueza\n pluricultural de México y del mundo.",
+    "pda": "Reconoce en manifestaciones artísticas de México y del mundo el uso del cuerpo, del espacio y del tiempo, para valorarlas como parte de la riqueza pluricultural."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Manifestaciones culturales y artísticas que conforman la diversidad étnica, cultural y lingüística.",
+    "pda": "Identifica diferentes manifestaciones culturales y artísticas de pueblos indígenas y afrodescendientes de\nMéxico y del mundo, para interpretar significados que permitan fomentar una sociedad intercultural."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Identidad y sentido de pertenencia en\n manifestaciones artísticas.",
+    "pda": "Aprecia la intención expresiva en diversas manifestaciones artísticas, para la construcción crítica de las identidades personale y colectiva."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Patrimonio cultural de la comunidad en manifestaciones artísticas que fomentan la\n identidad y el sentido de pertenencia.",
+    "pda": "Interpreta manifestaciones artísticas del patrimonio cultural de la comunidad y de México, para fomentar\nlas identidades personal y colectiva, así como el sentido de pertenencia."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Los lenguajes artísticos en la expresión de\n problemas de la comunidad.",
+    "pda": "Usa intencionalmente formas, colores, movimientos y sonidos, entre otros elementos de las artes, para recrear una situación problemática de su contexto y manifestar una postura crítica."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Elementos de las artes y recursos estéticos apreciados en el entorno natural y social, así como en diversas manifestaciones artísticas.",
+    "pda": "Identifica el uso intencional del cuerpo, del espacio y del tiempo en manifestaciones artísticas,\npara apreciar e interpretar sus sentidos y significados. Percibe cualidades estéticas en el entorno natural y social, para interpretar sus sentidos y significados."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Valor estético de la naturaleza, de la vida cotidiana y de diferentes manifestaciones culturales y\n artísticas.",
+    "pda": "Disfruta de manifestaciones culturales y artísticas de la comunidad y de otros lugares, para reconocer sus\ngustos e intereses estéticos. Disfruta los valores estéticos presentes en la naturaleza, para apreciarla\ny expresarla."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Creaciones artísticas que tienen su origen\n en textos literarios.",
+    "pda": "Explora con formas, colores, movimientos, sonidos, entre otros elementos de las artes,\npara reinterpretar textos literarios de la comunidad u otros lugares, haciendo uso de diversos lenguajes\nartísticos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Expresión artística de sensaciones,\nemociones, sentimientos e ideas, a partir de\n experiencias familiares, escolares o comunitarias.",
+    "pda": "Recrea lúdicamente sensaciones, emociones, sentimientos e ideas, mediante el uso del cuerpo, del espacio y del tiempo, para expresar la relación con su entorno familiar."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Memoria colectiva representada por medios artísticos, para registrar experiencias comunitarias.",
+    "pda": "Recupera de la memoria colectiva acontecimientos significativos de las familias, escuela o comunidad, para\nrepresentarlos de manera creativa."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Procesos creativos que ponen en\n práctica la comunicación dialógica, como\n estrategia para erradicar expresiones de violencia.",
+    "pda": "Expresa, mediante elementos de las artes como las formas, colores, movimientos y sonidos, la relevancia del diálogo como una alternativa a las manifestaciones de violencia presentes en la familia, escuela y comunidad."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Vida saludable expresada a través de mensajes\n construidos con elementos de las artes, para\n difundirlos por distintos medios de comunicación.",
+    "pda": "Emplea intencionalmente formas, colores, movimientos, sonidos, entre otros elementos de las artes, para representar una vida saludable y la difunde por un medio de comunicación escolar."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Sistemas alternativos y aumentativos de\n comunicación, como herramientas creativas que\n favorecen la inclusión.",
+    "pda": "Identifica algunas características sensoriales de la Lengua de Señas Mexicana, el código Braille, los tableros de comunicación y otros sistemas alternativos y aumentativos, parafomentar la interacción,\nsensibilización y empatía\ncon la diversidad."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°ARTES",
+    "campo_formativo": "LENGUAJES",
+    "contenido": "Manifestaciones artísticas que emplean sistemas\n alternativos y aumentativos de comunicación,\n elaboradas por personas en condición de discapacidad y/o diseñadas para ellas.",
+    "pda": "Reconoce los valores estéticos y creativos de las manifestaciones artísticas realizadas por personas\ncon alguna discapacidad, para fomentar la inclusión."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Expresión de fracciones como decimales y de\ndecimales como fracciones.",
+    "pda": "Usa diversas estrategias al convertir números fraccionarios a decimales y viceversa."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Extensión de los números a positivos y negativos y su orden.",
+    "pda": "Reconoce la necesidad de los números negativos a partir de usar cantidades que tienen al cero como referencia. Compara y ordena números con signo (enteros, fracciones y decimales) en la recta numérica y analiza en qué casos se cumple la propiedad de densidad."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Extensión del significado de las operaciones y sus relaciones inversas.",
+    "pda": "Reconoce el significado de las cuatro operaciones básicas y sus relaciones inversas al resolver problemas que impliquen el uso de números con signo.\nComprueba y argumenta si cada una de estas operaciones cumple las propiedades: conmutativa, asociativa y distributiva.\nIdentifica y aplica la jerarquía de operaciones y símbolos de agrupación al realizar cálculos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Regularidades y Patrones.",
+    "pda": "Representa algebraicamente una sucesión con progresión aritmética de figuras y números."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Introducción al álgebra.",
+    "pda": "Interpreta y plantea diversas situaciones del lenguaje común al lenguaje algebraico y viceversa.\nRepresenta algebraicamente perímetros de figuras."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Ecuaciones lineales y cuadráticas.",
+    "pda": "Resuelve ecuaciones de la forma Ax=B, Ax+B=C, Ax+B=Cx+D con el uso de las propiedades de la igualdad.\nModela y resuelve problemas cuyo planteamiento es una ecuación lineal.\nResuelve problemas de porcentajes en diversas situaciones."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Funciones.",
+    "pda": "Relaciona e interpreta relaciones proporcional y no proporcional a partir de su representación tabular, gráfica y con diagramas.\nModela y resuelve diversas situaciones a través de ecuaciones proporcionales con constante positiva y negativa."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Rectas y ángulos.",
+    "pda": "Explora las figuras básicas como rectas y ángulos y su notación.\nEncuentra y calcula los ángulos que se forman al intersecar dos segmentos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Construcción y propiedades de las figuras planas y\ncuerpos.",
+    "pda": "Utiliza la regla y el compás para trazar: punto medio, mediatriz de un segmento, segmentos y ángulos congruentes, bisectriz de un ángulo, rectas perpendiculares, rectas paralelas. Identifica y traza las rectas\nnotables en triángulos y cuadriláteros.\nConstruye y clasifica triángulos y cuadriláteros a partir del análisis de distinta información."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Circunferencia, círculo y esfera.",
+    "pda": "Identifica y traza las rectas notables en la circunferencia y las relaciones entre ellas. Investiga figuras relacionadas con círculos y propiedades de los círculos.\nConstruye circunferencias a partir de distinta información. Verifica los criterios de existencia y unicidad de estas figuras."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Medición y cálculo en diferentes contextos.",
+    "pda": "Introduce la idea de distancia entre dos puntos como la longitud del segmento que los une.\nEncuentra la distancia de un punto a una recta y la distancia entre dos rectas paralelas.\nExplora la desigualdad del triángulo.\nObtiene y aplica fórmulas o usa otras estrategias para calcular el perímetro y el área de polígonos regulares e\nirregulares y del círculo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Obtención y representación de información.",
+    "pda": "Usa tablas, gráficas de barras y circulares para el análisis de información."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Interpretación de la información a través de medidas de tendencia central y de dispersión.",
+    "pda": "Determina e interpreta la frecuencia absoluta, la frecuencia relativa, la media, la mediana y la moda en un\nconjunto de datos. Usa e interpreta las medidas de tendencia central (moda, media aritmética y mediana) y\nel rango de un conjunto de datos, y justifica con base en ellas sus decisiones."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°MAT",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Azar y probabilidad",
+    "pda": "Compara cualitativamente dos o más eventos a partir de sus resultados posibles, usa relaciones como:“es más probable que…”, “es menos probable que…”.Identifica eventos en los que interviene el azar,determina el espacio muestral y experimenta.\nIdentifica diversos procedimientos de conteo y resuelve problemas."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°BIO",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Funcionamiento del cuerpo humano\ncoordinado por los sistemas nervioso y endocrino.",
+    "pda": "Explica la participación de los sistemas nervioso y endocrino en la coordinación de las funciones del cuerpo humano, reconoce el papel general de las hormonas y sus efectos en la maduración sexual y en la reproducción.\nExplica los efectos del consumo de sustancias adictivas en el sistema nervioso y en el funcionamiento integral del cuerpo humano argumenta la importancia de evitar su consumo a partir del análisis de sus implicaciones en la salud, la sexualidad, la economía y la sociedad; comparte sus aprendizajes por distintos medios."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°BIO",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Salud sexual y reproductivas, prevención de infecciones de transmisión sexual y del embarazo en adolescentes.",
+    "pda": "Compara las maneras en que la cultura influye en el concepto de sexualidad; reconoce que todas las culturas tienen maneras distintas de comprender el género, la sexualidad y la reproducción; y reflexiona acerca de que el inicio de la actividad sexual debe ser de manera consensuada.\nCuestiona los mitos, estereotipos y costumbres que impactan negativamente en la salud de las niñas y mujeres, reconoce la importancia de la igualdad de género y la responsabilidad compartida del hombre y la mujer en la crianza, como base para la toma de decisiones en la prevención del embarazo adolescente.\nValora el uso consistente del condón para disminuir el riesgo de infecciones de transmisión sexual, compara la efectividad de los métodos anticonceptivos como una ayuda para prevenir o planificar el embarazo en la perspectiva de su proyecto de vida."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°BIO",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Prevención de enfermedades relacionadas con la alimentación y el consumo de alimentos ultra procesados.",
+    "pda": "Identifica causas de la obesidad y la diabetes relacionadas con la dieta y el sedentarismo a fin de formular su proyecto de vida saludable, incluye factores protectores y propone acciones para reducir factores de riesgo, incluyendo su entorno familiar y comunitario. Formula hipótesis acerca de las  consecuencias de carencia o exceso de nutrimentos en la dieta; interpreta datos que muestran la correlación entre la incidencia de enfermedades como la caries e hipertensión y el consumo de exceso de sal, azúcar y grasas saturadas."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°BIO",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "La diversidad de saberes e intercambio de conocimientos acerca de los seres vivos y las relaciones con el medio\nambiente.",
+    "pda": "Reconoce la importancia de los conocimientos, prácticas e innovaciones de los pueblos originarios acerca de los seres vivos, intercambia vivencias y experiencias asociadas al aprovechamiento y la protección como el uso de la herbolaria, la milpa o la conservación de los bosques.\nExplica por qué los saberes de los pueblos originarios han aportado al aprovechamiento de los recursos naturales en el ecosistema local, analiza sus contribuciones a la agricultura, el pastoreo y la pesca sustentables, comunica sus hallazgos usando diferentes lenguajes  y representaicones."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°BIO",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Los procesos vitales de los seres vivos: nutrición, relación con el medio y reproducción.",
+    "pda": "Compara las características comunes de los seres vivos, identifica que todos tienen estructuras especializadas asociadas a la nutrición, la relación con el medio y la reproducción y los distingue como rasgos adaptativos que favorecen la sobrevivencia de las especies.\nClasifica organismos de acuerdo con características comunes asociadas a la nutrición y reproducción, propone hipótesis en torno a posibles relaciones de parentesco entre ellos y las contrasta con fuentes de consulta, reconoce que todas las clasificaciones tienen alcances y limitaciones."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°BIO",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "La biodiversidad como expresión del cambio de los seres vivos en el tiempo.",
+    "pda": "Analiza información acerca del estado de la biodiversidad local a partir de fuentes directas, orales, escritas, audiovisuales o internet, expone razones sobre su importancia cultural, biológica, estética y ética, propone acciones para su cuidado.\nIndaga las principales aportaciones de Darwin y Wallace, las identifica como una de las explicaciones más fundamentadas acerca del origen de la biodiversidad, reflexiona acerca de cómo han cambiado, reconoce que los conocimientos científicos son un proceso en construcción permanente."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°BIO",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "El calentamiento global como una consecuencia de la alteración de los ciclos biogeoquímicos en los\necosistemas.",
+    "pda": "Representa la transferencia de materia y energía entre los organismos de un ecosistema mediante redes y pirámides tróficas; elabora explicaciones, inferencias y predicciones consistentes con los modelos generados acerca de la perdida o incremento de organismos en los eslabones.\nIdentifica interacciones de competencia e interdependencia en el ecosistema local, explica cómo regulan el funcionamiento y mantenimiento en la dinámica general del ecosistema.\nAnaliza las prácticas de consumo que han alterado los ciclos biogeoquímicos del carbono y nitrógeno, sus efectos asociados al calentamiento global y sus impactos en el medio ambiente y la salud."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°BIO",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Importancia del microscopio para el conocimiento de la unidad y la diversidad de los seres vivos.",
+    "pda": "Compara cómo han cambiado las primeras observaciones microscópicas respecto a las actuales, valora el avance en el conocimiento de las bacterias, las células y los virus.\nDescribe las estructuras y funciones básicas de la célula a partir de modelos, explica\nla participación de la membrana y el citoplasma en las funciones de nutrición y relación, y del núcleo en la reproducción y herencia.\nFormula preguntas y contrasta explicaciones acerca de la manipulación genética, comparte sus hallazgos respecto de sus beneficios y riesgos en los ámbitos de la salud y el medio ambiente, participa en debates en los que defiende su postura."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°BIO",
+    "campo_formativo": "SABERES Y PENSAMIENTO CIENTÍFICO",
+    "contenido": "Las vacunas: su relevancia en el control de algunas enfermedades infecciosas.",
+    "pda": "Describe las características generales de las bacterias y los virus, formula hipótesis en torno al por qué de la rápida propagación de las enfermedades infecciosas que causan, y las contrasta con evidencias reportadas en fuentes con sustento científico.\nValora la importancia y la necesidad de proteger la salud con el  uso de las vacunas para el control de algunas enfermedades infecciosas; evalua sus riesgos y beneficios sociales y ecnonómicos; reconoce la interacción de los conocimientos científicos y tecnológicos, sus alcances y limitaciones."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "El espacio geográfico como un producto social y colectiva.",
+    "pda": "Comprende que el espacio geográfico se conforma de interrelaciones sociedadnaturaleza.\nReconoce que el patrimonio biocultural es resultado de la relación entre las formas de\norganización económico-social, la cultura y la biodiversidad a través del tiempo.\nDistingue la distribución de las regiones bioculturales principales en México y el mundo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Las categorías de análisis espacial y representaciones del espacio geográfico.",
+    "pda": "Reconoce saberes ancestrales acerca del espacio geográfico, formas de ubicación y\nrepresentaciones en México y el mundo.\nComprende las categorías de análisis espacial para explicar las características del espacio\ngeográfico: lugar, región, paisaje y territorio.\nUtiliza los conceptos de localización, distribución, diversidad, temporalidad y cambio e\ninteracción para el estudio del espacio geográfico."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "La distribución y dinámica de las aguas continentales y oceánicas en la Tierra.",
+    "pda": "Analiza la distribución de las aguas continentales en México y el Mundo: principales ríos,\nlagos, aguas subterráneas, llanuras inundables y humedales.\nReconoce la importancia de las cuencas hidrográficas para el desarrollo económico en\nMéxico, así como para la conservación del agua y la tierra.\nValora el mar territorial, la zona económica exclusiva de México y sus litorales, como\nrecursos que contribuyen al desarrollo del país, lo que fortalece la conciencia marítima."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "La relación de las placas tectónicas conel relieve, la\nsismicidad y el vulcanismo.",
+    "pda": "Identifica qué son las placas tectónicas, cuáles son sus características y dinámica.\nArgumenta la relación entre las placas tectónicas con las regiones sísmicas y volcánicas\nen México y el mundo, para fortalecer la cultura de la prevención.\nRelaciona los movimientos de las placas tectónicas con la distribución del relieve de la\nsuperficie terrestre y reconoce otros agentes que lo modelan."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Los riesgos de desastre, su relación con los procesos naturales y la vulnerabilidad de la población en lugares específicos.",
+    "pda": "Identifica que los desastres pueden ser originados por procesos naturales o por las\nactividades humanas.\nRelaciona los efectos ambientales, sociales y económicos de los desastres recientes en\nMéxico y el mundo, tomando en cuenta la vulnerabilidad de la población.\nValora la importancia de consolidar una cultura de prevención de desastres con la\nparticipación de instituciones, organismos y sociedad."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Crecimiento, distribución, composición y migración de la población.",
+    "pda": "Analiza las implicaciones sociales, ambientales y económicas del crecimiento, distribución\ny composición de la población en diferentes países, con base en información estadística\ny cartográfica.\nEmplea las nociones de concentración y dispersión de la población para explicar los rasgos\ny problemas del espacio urbano y el rural.\nDistingue la movibilidad como un derecho humano, los tipos de migración y los principales flujos migratorios para comprender los\nefectos socioeconómicos y culturales en los lugares de atracción y expulsión de población."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Los procesos productivos y sus consecuencias\nambientales y sociales en la comunidad México y el mundo.",
+    "pda": "Compara procesos productivos y espacios económicos en México y el mundo, para\nreconocer sus implicaciones sociales, económicas y ambientales.\nAnaliza y relaciona distintos procesos productivos sustantivos en la conformación social,\neconómica y espacial de las sociedades a nivel mundial, para identificar sus\ncontradicciones y desigualdades."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Las prácticas deproducción, distribución y consumo sustentables como alternativas para preservar el\nmedio ambiente y asegurar el bienestar de las generaciones presentes y futuras.",
+    "pda": "Comprende qué es la sustentabilidad e identifica prácticas de producción, distribución y\nconsumo sustentables.\nArgumenta sobre prácticas sustentables de producción, distribución y consumo que\npueden contribuir al bienestar de la comunidad y de México.\nPropone alternativas sustentables de desarrollo social para la preservación del medio\nambiente y el bienestar de las generaciones presentes y futuras."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Las desigualdades socioeconómicas en México y el mundo, y sus efectos en la calidad de vida de las\npersonas.",
+    "pda": "Comprende qué son las desigualdades socioeconómicas e identifica sus efectos y\nrepercusiones en la vida de las personas.\nArgumenta las desigualdades socioeconómicas en México y el mundo, mediante la\ninterpretación del Índice de Desarrollo Humano (IDH) y el Índice para una vida mejor, para\nexplicar sus efectos en la calidad de vida.\nPropone acciones para reducir las desigualdades socioeconómicas en la comunidad,\nMéxico y el mundo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Los conflictos territoriales actuales en México y el mundo, y sus implicaciones ambientales y sociales.",
+    "pda": "Debate acerca de la multicausalidad de los conflictos territoriales en México y el mundo, la importancia de la\nubicación geográfica de las partes involucradas y las consecuencias ambientales, sociales,\neconómicas y políticas en México y el mundo.\nPromueve alternativas de resolución justas y pacíficas a los conflictos territoriales que\nafectan a la comunidad, a México y al mundo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Los retos sociales y ambientales en la comunidad, en México y el mundo.",
+    "pda": "Reconoce cómo las problemáticas sociales y ambientales afectan a la comunidad.\nAsume responsabilidad como agente de cambio para encontrar soluciones a las\nproblemáticas sociales y ambientales de la comunidad."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "La diversidad de grupos sociales y culturales en México.",
+    "pda": "Reconoce la diversidad de pueblos originarios, afromexicanos, migrantes, grupos\nurbanos, grupos sociales en México, como parte de la identidad nacional pluricultural y la\ncompara con la diversidad social y cultural en el mundo.\nValora la importancia del espacio en la conformación de las identidades juveniles."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "El suelo, recurso estratégico para la seguridad alimentaria y la vida en el planeta.",
+    "pda": "Indaga sobre el origen, los usos y los problemas del suelo en la localidad.\nReflexiona acerca de la contradicción que existe entre los países con suelo de vocación\nagrícola y la poca productividad asociada con los problemas del suelo (sobreexplotación,\ndegradación, pérdida, entre otros).\nComparte alternativas para la protección y recuperación del suelo y colabora de manera\norganizada y solidaria en acciones comunitarias orientadas a ese fin en la localidad donde\nvive."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°GEO",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "El reto del cambio climático.",
+    "pda": "Reconoce las relaciones e interacciones entre los elementos y los factores del clima como\nbase para comprender, de manera general, la distribución de las regiones naturales en la\nTierra, y analizar la biodiversidad en el mundo.\nIndaga y analiza de manera crítica los cambios ocurridos en el clima, sus causas y\nconsecuencias en México y el mundo.\nAsume una postura crítica y activa ante los fenómenos derivados del calentamiento global y el cambio climático."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°HIST",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Los albores de la humanidad: los pueblos antiguos del mundo y su devenir",
+    "pda": "Busca, localiza y estudia con sus pares fuentes que dan cuenta de mitos fundacionales de pueblos antiguos.\nReflexiona acerca de la importancia de las fuentes históricas para la interpretación de hechos y procesos.\nCompara y encuentra lo común y lo diverso entre mitos fundacionales de pueblos antiguos de México y de otras partes del mundo.\nReflexiona y toma postura en torno a las teorías que explican el poblamiento original de América.\nDistingue y clasifica evidencias históricas que le permiten acercarse al conocimiento de del poblamiento original de América.\nInvestiga acerca de restos fósiles humanos encontrados en los que hoy es el territorio de nuestro país.\nReflexiona en torno al caso del llamado Hombre de Tepexpan y la necesidad de una historia inclusiva que recupere las aportaciones de las mujeres.\nReconozca que la Historia es una reconstrucción científica del pasado que se hace desde el presente y que al igual que otras ciencias, la ideología y la\nmetodología del historiador determinan su mirada del pasado.\nConoce sistemas que tienen como propósito abordar la historia de los primeros pueblos en el territorio de lo que ahora es nuestro país.\nEmplea alguno de estos sistemas para ubicar en el espacio y en el tiempo aspectos de la vida cotidiana de los pueblos antiguos que surgieron en Mesoamérica, Aridoamérica y Oasisamérica.\nVincula y compara sus representaciones e ideas sobre el nacimiento, la vida o la muerte con las que construyeron los antiguos pueblos de México.\nPone en juego su capacidad de convertirse en integrante de una cultura mesoamericana para exponer la razón y el sentido de los sacrificios rituales.\nDesarrolla teóricamente el entramado de causas de diverso tipo que dieron lugar a la agricultura mesoamericana y el impacto civilizatorio de ésta en las sociedades que la practicaron.\nReconoce el significado en su vida de la práctica histórica del cultivo del maíz como unaconsecuencia de larga duración.\nReconstruye aspectos de la vida cotidiana en los ámbitos de la economía, la cultura, sociedad y la política de los pueblos de Mesoamérica.\nRecopila información histórica sobre los pueblos aridoamericanos y oasisamericanos y la organiza en un friso cronológico.\nCompara el desarrollo histórico de pueblos originarios de\nNorteamérica y Sudamérica y comprende sus semejanzas y diferencias."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°HIST",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "La conformación de las metrópolis y los sistemas de dominación",
+    "pda": "Formula preguntas, recopila información y comparte sus hallazgos entorno a los pueblos originarios de México ¿cuántos pueblos son?\n¿dónde están? ¿de dónde llegaron? ¿cómo vivían antes? ¿Cómo viven ahora? ¿qué permanece? ¿qué cambió? ¿se reconoce en él?\nConstruye una línea del tiempo con la historia de algún pueblo originario que le sea entrañable.\nIndaga los orígenes de la población afromexicana, sus aportaciones sociales y a la cultura de nuestro  país.\nIdentifica representaciones asumidas de los pueblos indígenas y afromexicanos sobre el nacimiento, la vida, la muerte, la tierra, la naturaleza, la tierra, la agua, el territorio en su comunidad.\nInvestiga el arribo a largo de la historia a nuestro país, a lo largo de la historia y lo expone a sus pares en la organización cronológica que considere más adecuada."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°HIST",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Las gestas de resistencia y los movimientos independentistas",
+    "pda": "Indaga sobre rebeliones y levantamientos de pueblos indígenas y afromexicanos en la historia de nuestro país y se acerca a comprender\nsus causas. Emite juicios acerca de agravios o crímenes a los que han sido sujetos los pueblos indígenas y afromexicanos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°HIST",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "La construcción histórica de las ideas sobre las juventudes e infancias.",
+    "pda": "Identifica las ideas y representaciones de las personas de acuerdo con su edad en diversos momentos históricos.\nComprende los cambios y permanencias en las características y tareas que las sociedades asignan a las personas, de acuerdo con su edad.\nExplica, con base en fuentes, las actividades asignadas a las personas según su edad en sociedades y momentos históricos diversos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°HIST",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Las mujeres y sus historias.",
+    "pda": "Revisa fuentes históricas para identificar la participación de las mujeres en la sociedad en diversos momentos históricos.\nIndaga sobre el protagonismo social de las mujeres en diferentes procesos históricos, para reconocer la relevancia de su participación.\nContrasta fuentes históricas para identificar cambios y permanencias en la participación de las mujeres en diversos momentos históricos.\nAnaliza los testimonios producidos por las mujeres en distintos momentos históricos.\nArgumenta las causas de los principales cambios históricos que ha tenido la participación social de las mujeres.\nArgumenta cómo el “deber ser” de las mujeres ha cambiado a través del tiempo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°HIST",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Las luchas de las mujeres por sus derechos.",
+    "pda": "Identifica los orígenes históricos de movimientos y organizaciones de mujeres en la lucha por la igualdad y el reconocimiento de sus derechos.\nComprende los cambios y permanencias en las luchas de las mujeres por una vida igualitaria y libre de violencia.\nAnaliza las causas de los movimientos feministas en la actualidad en México y el mundo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°HIST",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Relaciones de poder y lucha por los derechos de grupos históricamente discriminados o subrepresentados.",
+    "pda": "Identifica las problemáticas de violencia hacia pueblos originarios, afrodescendientes, migrantes y comunidad LGBTTTQ+ en distintos procesos históricos.\nArgumenta sobre los cambios y permanencias en la lucha por erradicar la violencia hacia pueblos originarios, afrodescendientes, migrantes y comunidad LGBTTTQ+ en distintos procesos históricos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°HIST",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Discriminación, racismo y prejuicios como construcciones históricas.",
+    "pda": "Identifica las causas históricas del racismo y la xenofobia y las relaciona críticamente con sus consecuencias.\nAnaliza la relevancia histórica del racismo en la justificación de actos que atentaron contra la vida de personas o grupos.\nComprende las causas y consecuencias históricas del racismo y propone acciones en su vida cotidiana y en la de su comunidad escolar para combatirlo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°HIST",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Movilidades humanas, migraciones y nuevos\nescenarios para la vida.",
+    "pda": "Comprende procesos históricos relevantes en los que grupos humanos se desplazaron por los territorios a lo largo del tiempo.\nExplica procesos históricos relevantes en los que grupos humanos se desplazaron por territorios en periodos de tiempo de corta o larga\nduración"
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°HIST",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Amor, amistad, familias y relaciones entre las personas en la historia.",
+    "pda": "Comprende que la forma en la que las personas piensan y actúan en relación con el amor, la amistad y las familias se construyen en la sociedad\ny cambian históricamente.\nExplica los cambios que las concepciones sobre el amor, la amistad y las familias han tenido a lo largo del tiempo y en diversos contextos sociales y geográficos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Grupos sociales yculturales en laconformación de las identidades juveniles.",
+    "pda": "Valora la diversidad de grupos e identidades juveniles en la escuela y en la comunidad y fortalece el respeto a formas de ser, pensar y expresarse en el marco de los derechos humanos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Los derechos humanos en México y en el mundo como valores compartidos por las sociedades actuales.",
+    "pda": "Asume una postura crítica acerca de la vigencia de los derechos humanos como valores compartidos por distintas sociedades del mundo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Movimientos sociales y políticos por los derechos\nhumanos en el mundo y en México.",
+    "pda": "Asume una postura ética acerca de los movimientos sociales y políticos que originaron los derechos humanos en el mundo y su influencia\nen México."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Consecuencias de la desigualdad en la calidad de vida de las personas y comunidades.",
+    "pda": "Analiza las causas que dan origen a las diferencias en la calidad de vida de la población en México y el mundo y las compara con su derecho a la igualdad sustantiva y a una vida digna."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Normas, leyes, instituciones y organizaciones\nencargadas de proteger, defender y exigir la aplicación de los derechos humanos en la convivencia diaria.",
+    "pda": "Aprecia los beneficios de participar en la comunidad y el país, en la construcción y aplicación de normas y leyes para garantizar la convivencia y el ejercicio de los derechos humanos en la comunidad y el país."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "El conflicto en la convivencia humana desde la cultura de paz.",
+    "pda": "Analiza distintos tipos de conflictos en sus espacios de convivencia, su estructura y formas de solucionarlos desde la cultura de paz como una\noportunidad de crecimiento personal y social."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "La cultura de paz y la creación de ambientes que\ngaranticen el respeto a la vida y la dignidad del ser humano.",
+    "pda": "Comprende la influencia que tiene la cultura de paz en la convivencia escolar, familiar y comunitaria, para favorecer ambientes libres de discriminación y racismo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Personas, grupos y organizaciones a favor de la cultura de paz.",
+    "pda": "Aprecia las acciones de personas, grupos u organizaciones en México a favor de la cultura de paz para promover ambientes libres de violencia."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Principios éticos como referente para un desarrollo sustentable.",
+    "pda": "Reflexiona éticamente acerca de la relación de las comunidades con su contexto socionatural para impulsar acciones que promuevan el desarrollo sustentable así como actitudes de cuidado y respeto a otros seres vivos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Igualdad sustantiva en el marco de la interculturalidad, la inclusión y la perspectiva de\ngénero.",
+    "pda": "Aprecia la interculturalidad y el respeto al derecho a la igualdad sustantiva para establecer relaciones incluyentes y respetuosas de la diversidad, rechazando la discriminación y el racismo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Medidas de protección y mecanismos de denuncia en el rechazo a la violencia de género, sexual y la\ntrata de personas.",
+    "pda": "Analiza situaciones de violencia escolar, de género, sexual y la trata de personas, con base en la perspectiva de género y demanda la aplicación de medidas de protección para garantizar el derecho a una vida libre de violencia."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Principios y valores de la cultura democrática como\nforma de gobierno y de vida.",
+    "pda": "Aprecia en los principios y valores de la democracia una forma de vida y de gobierno, para tomar decisiones que fortalezcan la convivencia\nen los espacios donde participa."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Proyectos como un recurso para atender problemáticas de la comunidad desde una ciudadanía democrática.",
+    "pda": "Participa en actividades y proyectos en su entorno escolar y social, en donde aplica mecanismos de participación democrática y los rasgos de la\nciudadanía responsable y crítica."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Instituciones, organizaciones y mecanismos de\nrepresentación democrática.",
+    "pda": "Aprecia la función de las instituciones y organizaciones sociales y políticas, así como de los mecanismos de participación y representación\nciudadana, que fortalecen la vida democrática."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "Defensa del derecho al acceso a la protección de datos personales, a la información, la transparencia y la rendición de cuentas en un gobierno democrático.",
+    "pda": "Destaca la importancia de que las servidora y los servidores públicos y representantes populares desempeñen sus funciones con apego a la ley de manera honesta, transparente y limitada, utilizando los recursos públicos para beneficio de la sociedad."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°F.C.E",
+    "campo_formativo": "ÉTICA, NATURALEZA Y SOCIEDADES",
+    "contenido": "El derecho a la salud y la prevención en el consumo de drogas.",
+    "pda": "Reconoce que el consumo de drogas afecta el derecho a la dignidad y la salud de las personas, y demanda la aplicación de medidas que contribuyan a la prevención y protección."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TEC",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Herramientas, máquinas e instrumentos, como extensión corporal, en la satisfacción continua de\nintereses y necesidades humanas.",
+    "pda": "Explora las posibilidades corporales y la delegación de funciones en herramientas, máquinas, instrumentos y formas de organización para identificar sus funciones y procesos de cambio técnico, en la satisfacción de intereses y necesidades de diversas sociedades."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TEC",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Materiales, procesos técnicos y comunidad.",
+    "pda": "Distingue el origen, transformación y características tecnológicas de los materiales que comparten técnicas similares, para utilizarlos desde una perspectiva local, eficiente y sustentable."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TEC",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Usos e implicaciones de la energía en los procesos\ntécnicos.",
+    "pda": "Comprende la función de la energía en los sistemas técnicos y sus implicaciones en el desarrollo tecnológico para la toma de decisiones responsables, que permitan prever y disminuir riesgos personales, sociales y naturales."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TEC",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Factores que inciden en los procesos técnicos.",
+    "pda": "Comprende la satisfacción de necesidades como la base de la creación e innovación técnica para reflexionar acerca de la influencia de intereses, prejuicios, estereotipos y aspiraciones, que favorecen o limitan la igualdad de oportunidades, en el desarrollo de procesos\ntécnicos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TEC",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Procesos técnicos.",
+    "pda": "Describe los elementos que interactúan en los sistemas técnicos (formas de organización, medios, materiales, energía, conocimientos, saberes, experiencias) para comprender su vínculo con la sociedad, la cultura y la naturaleza."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TEC",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Comunicación y representación técnica.",
+    "pda": "Explora la importancia del lenguaje técnico y el consenso en su uso desde diferentes contextos, para proponer formas de representación y comunicar sus ideas."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TEC",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Pensamiento estratégico y creativo en la resolución de problemas.",
+    "pda": "Analiza necesidades del entorno cercano para plantear un problema, investigar alternativas de solución y seleccionar la que mejor se adapte a los criterios y condiciones contextuales."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TEC",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Evaluación de sistemas tecnológicos.",
+    "pda": "Comprende la importancia de la evaluación de los procesos como parte de la innovación y mejora continua, para el logro de la eficiencia, eficacia, fiabilidad y factibilidad de los sistemas técnicos."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TUTO",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Formas de ser, pensar, actuar y relacionarse",
+    "pda": "Reconoce ideas, gustos, necesidades, posibilidades, intereses, deseos y experiencias, para favorecer el autoconocimiento y\ndescubrimiento de nuevas potencialidades."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TUTO",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Los sentimientos y su influencia en la toma de\ndecisiones.",
+    "pda": "Distingue entre emociones, estados de ánimo y sentimientos como elementos que contribuyen a la construcción de relaciones afectivas inclusivas y equitativas. Reconoce que los sentimientos son resultado de las vivencias y la cultura."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TUTO",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Construcción del proyecto de vida.",
+    "pda": "Reconoce cambios presentes a lo largo de la vida y en la adolescencia para definir metas personales y en colectivo, a alcanzar en un corto, mediano y largo plazo. Valora metas individuales y de otras personas a partir de identificar situaciones y fomar de actuar que las afectan, para favorecer su logro y el bienestar colectivo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TUTO",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Prevención de sistuaciones de riesgo.",
+    "pda": "Incorpora prácticas que inciden en la prevención de situaciones de riesgo ante accidentes, adicciones, formas de violencia y fenómenos naturales, para favorecer el desarrollo personal, familiar y comunitario, así como el cuidado del medio ambiente."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°TUTO",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Educación integral en Sexualidad.",
+    "pda": "Identifica las dimensiones de la sexualidad: biológica, psicológica, social, cultural, entre otras en distintos momentos de su vida, para establecer relaciones en favor del bienestar."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°EDU.FIS.",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Capacidades, habilidades y destrezas motrices.",
+    "pda": "Explora las capacidades, habilidades y destrezas motrices, para enriquecer y ampliar el potencial propio y de las demás personas."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°EDU.FIS.",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Potencialidades cognitivas, expresivas, motrices,\ncreativas y de relación.",
+    "pda": "Pone en práctica los elementos de la condición física en actividades motrices y recreativas, para reconocerlas como alternativas que fomentan el bienestar individual y colectivo."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°EDU.FIS.",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Estilos de vida activos y saludables.",
+    "pda": "Implementa acciones que le permiten mantenerse físicamente activo en diferentes momentos del día, para favorecer la práctica de estilos de vida saludables."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°EDU.FIS.",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Pensamiento lúdico, estratégico y creativo.",
+    "pda": "Toma decisiones individuales y colectivas en situaciones de juego (defensivas u ofensivas), con el propósito de valorar su efectividad."
+  },
+  {
+    "grado": "1° Secundaria",
+    "fase": "Fase 6",
+    "materia": "1°EDU.FIS.",
+    "campo_formativo": "DE LO HUMANO Y LO COMUNITARIO",
+    "contenido": "Interacción motriz.",
+    "pda": "Pone a prueba la interacción motriz en situaciones de juego, iniciación deportiva y deporte educativo, con el fin de alcanzar metas comunes y obtener satisfacción al colaborar con las demás personas."
+  }
+]

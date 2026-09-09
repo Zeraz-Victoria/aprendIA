@@ -216,6 +216,25 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                 }),
               ],
             }),
+
+            ...(safeArray(plan.libros_recomendados).length > 0 ? [
+              new Paragraph({ text: "LIBROS DE TEXTO RECOMENDADOS (TELESECUNDARIA NEM)", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
+              ...safeArray(plan.libros_recomendados).map(lib => new Table({
+                width: { size: 100, type: WidthType.PERCENTAGE },
+                rows: [
+                  new TableRow({
+                    children: [
+                      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: `${lib.libro} (${lib.grado}) - PÁGINA ${lib.pagina}`, bold: true, color: "FFFFFF" })] })], shading: { fill: "312e81", type: ShadingType.CLEAR } })
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({ children: [new Paragraph({ text: lib.extracto || lib.snippet || 'Página recomendada para consulta.' })] })
+                    ]
+                  })
+                ]
+              }))
+            ] : [])
           ],
         }],
       });
@@ -336,6 +355,25 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         styles: { fontSize: 8, cellPadding: 4 },
         margin: { left: margin, right: margin }
       });
+      currentY = (doc as any).lastAutoTable.finalY + 8;
+
+      if (safeArray(plan.libros_recomendados).length > 0) {
+        if (currentY > 230) { doc.addPage(); currentY = 20; }
+        autoTable(doc, {
+          startY: currentY,
+          head: [['LIBRO DE TEXTO (TELESECUNDARIA)', 'PÁG.', 'RESUMEN / EXTRACTO']],
+          body: safeArray(plan.libros_recomendados).map(lib => [
+            `${lib.libro} (${lib.grado})`,
+            `Pág. ${lib.pagina}`,
+            lib.extracto || lib.snippet || 'Consulta recomendada'
+          ]) as any,
+          theme: 'grid',
+          headStyles: { fillColor: [67, 56, 202], fontSize: 9 },
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: { 0: { cellWidth: 50, fontStyle: 'bold' }, 1: { cellWidth: 20 } },
+          margin: { left: margin, right: margin }
+        });
+      }
 
       const totalPages = (doc as any).internal.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
@@ -415,7 +453,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
             </div>
             <div className="flex flex-wrap gap-3">
               {safeArray(plan.estructura_curricular?.ejes_articuladores).map((e, i) => (
-                <span key={i} className="text-[9px] font-black bg-white/10 px-4 py-2 rounded-xl border border-white/10">{e}</span>
+                <span key={i} className="text-xs font-bold bg-white text-purple-950 px-4 py-2 rounded-xl border border-white/30 shadow-sm">{e}</span>
               ))}
             </div>
           </div>
@@ -496,6 +534,35 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
             </div>
           ))}
         </div>
+
+        {/* Sección de Libros de Texto Recomendados (Telesecundaria NEM) */}
+        {safeArray(plan.libros_recomendados).length > 0 && (
+          <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-950 rounded-[2.5rem] p-8 text-white shadow-2xl space-y-6">
+            <div className="flex items-center gap-4 border-b border-white/10 pb-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                <BookOpen className="w-6 h-6 text-indigo-300" />
+              </div>
+              <div>
+                <h4 className="text-xl font-display font-black text-white">📚 Libros de Texto Recomendados (Telesecundaria NEM)</h4>
+                <p className="text-xs font-medium text-slate-300">Páginas de consulta recomendadas por Gemini AI para apoyar esta planeación</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {safeArray(plan.libros_recomendados).map((lib, bIdx) => (
+                <div key={bIdx} className="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/10 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase text-indigo-300 tracking-wider">{lib.libro}</span>
+                    <span className="bg-indigo-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full">Pág. {lib.pagina}</span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-200">{lib.grado}</p>
+                  {(lib.extracto || lib.snippet) && (
+                    <p className="text-xs italic text-slate-300 leading-relaxed bg-black/20 p-3 rounded-xl">"{lib.extracto || lib.snippet}"</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-16">

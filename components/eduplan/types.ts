@@ -65,6 +65,14 @@ export interface NewEvaluation {
   criterios: string[];
 }
 
+export interface RecommendedBookPage {
+  libro: string;
+  grado: string;
+  pagina: number;
+  snippet?: string;
+  extracto?: string;
+}
+
 export interface LessonPlan {
   encabezado: {
     proyecto: string;
@@ -84,6 +92,7 @@ export interface LessonPlan {
   };
   secuencia_didactica: SecuenciaDidactica[];
   evaluacion_formativa: NewEvaluation;
+  libros_recomendados?: RecommendedBookPage[];
 }
 
 export interface PlanningRequest {

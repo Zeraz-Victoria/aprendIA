@@ -5,6 +5,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { checkUserSubscriptionAccess } from '@/lib/subscription';
 import { EJES_ARTICULADORES_NEM } from '@/components/eduplan/constants';
 import { findRelevantTextbookPages } from '@/lib/textbooks-index';
+import { findRelevantContenidosAndPDA } from '@/lib/contenidos-index';
 
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
@@ -32,11 +33,20 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Clave de API de IA no configurada en el servidor.' }, { status: 500 });
         }
 
-        // Buscar recomendaciones de libros de texto indexados
+        // 1. Buscar Contenidos y PDA oficiales del documento Excel indexado
+        const matchingContenidosPDA = findRelevantContenidosAndPDA(contextoAdicional || metodologia || '', 6);
+        const contenidosPromptSnippet = matchingContenidosPDA.length > 0
+            ? `CONTENIDOS Y PDA OFICIALES DEL PROGRAMA SINTÉTICO (EXTRAÍDOS DEL DOCUMENTO OFICIAL FASE 6 / ${grado}):\n` +
+              matchingContenidosPDA.map((item, idx) => 
+                `${idx + 1}. [${item.campo_formativo} - ${item.materia}]\n   - CONTENIDO: "${item.contenido}"\n   - PDA: "${item.pda}"`
+              ).join('\n')
+            : '';
+
+        // 2. Buscar recomendaciones de libros de texto indexados
         const recommendedBooks = findRelevantTextbookPages(contextoAdicional || metodologia || 'Aprendizaje', grado, 4);
         const booksPromptSnippet = recommendedBooks.length > 0
             ? `LIBROS DE TEXTO DE LA NEM INDEXADOS RECOMENDADOS PARA ESTE GRADO:\n` +
-              recommendedBooks.map(b => `- ${b.bookTitle} (${b.grade}) - Página ${b.page}: "${b.snippet.substring(0, 150)}..."`).join('\n')
+              recommendedBooks.map(b => `- Libro: "${b.bookTitle}" (${b.grade}), Página ${b.page}: "${b.snippet.substring(0, 150)}..."`).join('\n')
             : '';
 
         const prompt = `
@@ -50,7 +60,12 @@ SOLICITUD:
 - Problemática/Contexto: ${contextoAdicional || 'Desarrollo de competencias y pensamiento crítico'}
 - Escuela: ${nombreEscuela} | Docente: ${nombreDocente}
 
+${contenidosPromptSnippet}
+
 ${booksPromptSnippet}
+
+### ⚠️ INSTRUCCIÓN OBLIGATORIA SOBRE CONTENIDOS Y PDA:
+En la sección "vinculacion", DEBES UTILIZAR prioritariamente los Contenidos y PDA oficiales extraídos arriba que tengan relación directa con la problemática expresada por el docente.
 
 ### ⚠️ EJES ARTICULADORES VÁLIDOS (LISTA CERRADA — NO INVENTES OTROS):
 Para el campo "ejes_articuladores", SOLO puedes usar entre 1 y 4 de esta lista exacta:
@@ -75,8 +90,8 @@ ESTRUCTURA JSON REQUERIDA (DEVUELVE ÚNICAMENTE UN JSON VÁLIDO):
     "vinculacion": [
       {
         "campo": "Lenguajes",
-        "contenido": "Contenido curricular oficial del programa sintético para ${grado}",
-        "pdas": ["Proceso de Desarrollo de Aprendizaje (PDA) oficial adaptado a ${grado}"]
+        "contenido": "Contenido oficial seleccionado del catálogo",
+        "pdas": ["PDA oficial seleccionado del catálogo"]
       }
     ]
   },
@@ -102,7 +117,15 @@ ESTRUCTURA JSON REQUERIDA (DEVUELVE ÚNICAMENTE UN JSON VÁLIDO):
     "instrumento": "Rúbrica holística y lista de cotejo",
     "evidencia_proceso": "Portafolio de evidencias formativo",
     "criterios": ["Comprensión del concepto central", "Participación colaborativa en clase"]
-  }
+  },
+  "libros_recomendados": [
+    {
+      "libro": "Nombre del Libro de Texto",
+      "grado": "${grado}",
+      "pagina": 45,
+      "extracto": "Resumen o justificación del uso de esta página."
+    }
+  ]
 }
 `;
 
@@ -119,6 +142,16 @@ ESTRUCTURA JSON REQUERIDA (DEVUELVE ÚNICAMENTE UN JSON VÁLIDO):
 
         const cleanedText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
         const plan = JSON.parse(cleanedText);
+
+        // Si la IA omitió libros_recomendados o vino vacío, inyectar los libros encontrados por el servidor
+        if (!plan.libros_recomendados || plan.libros_recomendados.length === 0) {
+            plan.libros_recomendados = recommendedBooks.map(b => ({
+                libro: b.bookTitle,
+                grado: b.grade,
+                pagina: b.page,
+                extracto: b.snippet.substring(0, 180) + '...'
+            }));
+        }
 
         return NextResponse.json({ success: true, plan });
     } catch (error: any) {
