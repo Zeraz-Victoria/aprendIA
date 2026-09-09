@@ -18,7 +18,7 @@ interface UnifiedWorldCreatorProps {
 }
 
 const WORLD_THEMES: { key: ThemeKey; label: string; icon: string; bg: string }[] = [
-    { key: 'clasico', label: 'Clásico Escolar', icon: '🏫', bg: 'bg-sky-500' },
+    { key: 'clasico', label: 'Clásico Escolar', icon: '🏫', bg: 'bg-sky-600' },
     { key: 'fuego', label: 'Infierno de Fuego', icon: '🔥', bg: 'bg-orange-600' },
     { key: 'hielo', label: 'Tundra de Hielo', icon: '🧊', bg: 'bg-cyan-600' },
     { key: 'selva', label: 'Selva Mística', icon: '🌿', bg: 'bg-emerald-600' },
@@ -114,7 +114,6 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
         setWorldLoadingText("Transformando sesiones didácticas en niveles gamificados...");
 
         try {
-            // Unificar las sesiones de la planeación para enviar como contexto a la IA de Mundos
             const sesiones = lessonPlan.secuencia_didactica.flatMap(f => f.sesiones || []);
             const primerSesion = sesiones[0];
 
@@ -155,17 +154,17 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
             if (onWorldCreated) onWorldCreated();
             onClose();
         } catch (err: any) {
-            setWorldError(err.message || 'Error inesperado al crear el mundo virtual.');
+            setWorldError(err.message || 'Error al procesar la creación del mundo.');
             setIsGeneratingWorld(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-lg flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+            <div className="bg-slate-900 text-slate-100 rounded-[2.5rem] shadow-2xl border border-slate-800 w-full max-w-5xl max-h-[94vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-300">
                 
                 {/* Header Wizard Navigation */}
-                <div className="bg-slate-900 text-white px-8 py-5 flex items-center justify-between shrink-0 border-b border-white/10">
+                <div className="bg-slate-950 text-white px-8 py-5 flex items-center justify-between shrink-0 border-b border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-2xl text-white shadow-lg">
                             <GraduationCap className="w-6 h-6" />
@@ -178,14 +177,14 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
 
                     {/* Progress Steps Indicators */}
                     <div className="hidden sm:flex items-center gap-2">
-                        <div className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${step === 1 ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'}`}>1. Planeación NEM</div>
-                        <span className="text-slate-600">→</span>
-                        <div className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${step === 2 ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'}`}>2. Descarga PDF/Word</div>
-                        <span className="text-slate-600">→</span>
-                        <div className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${step === 3 ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'}`}>3. Mundo Virtual</div>
+                        <div className={`px-3.5 py-1.5 rounded-full text-xs font-black transition-all ${step === 1 ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-800 text-slate-400'}`}>1. Planeación NEM</div>
+                        <span className="text-slate-600 font-bold">→</span>
+                        <div className={`px-3.5 py-1.5 rounded-full text-xs font-black transition-all ${step === 2 ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-800 text-slate-400'}`}>2. Descarga PDF/Word</div>
+                        <span className="text-slate-600 font-bold">→</span>
+                        <div className={`px-3.5 py-1.5 rounded-full text-xs font-black transition-all ${step === 3 ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-800 text-slate-400'}`}>3. Mundo Virtual</div>
                     </div>
 
-                    <button onClick={onClose} className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors">
+                    <button onClick={onClose} className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700">
                         <X size={20} />
                     </button>
                 </div>
@@ -197,95 +196,95 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
                     {step === 1 && (
                         <div className="space-y-8 max-w-3xl mx-auto">
                             <div className="text-center space-y-2">
-                                <span className="bg-indigo-50 text-indigo-700 text-xs font-black px-4 py-1.5 rounded-full border border-indigo-100 uppercase tracking-wider">
+                                <span className="bg-indigo-950 text-indigo-300 text-xs font-black px-4 py-1.5 rounded-full border border-indigo-800 uppercase tracking-wider">
                                     Paso 1: Parámetros Didácticos NEM
                                 </span>
-                                <h3 className="text-2xl sm:text-3xl font-display font-black text-slate-900">
+                                <h3 className="text-2xl sm:text-3xl font-display font-black text-slate-100">
                                     Genera la Planeación base para tu Mundo
                                 </h3>
-                                <p className="text-sm text-slate-500 max-w-xl mx-auto">
+                                <p className="text-sm text-slate-400 max-w-xl mx-auto">
                                     Captura tu contexto educativo. Gemini AI indexará tus Libros de Telesecundaria y Contenidos/PDA oficiales para construir el plano didáctico.
                                 </p>
                             </div>
 
                             {planError && (
-                                <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm flex items-center gap-3">
-                                    <AlertTriangle className="w-5 h-5 shrink-0" />
+                                <div className="p-4 bg-red-950/80 border border-red-800/80 rounded-2xl text-red-200 text-sm flex items-center gap-3">
+                                    <AlertTriangle className="w-5 h-5 shrink-0 text-red-400" />
                                     <span>{planError}</span>
                                 </div>
                             )}
 
-                            <div className="bg-slate-50 rounded-3xl p-6 sm:p-8 border border-slate-200/80 space-y-6">
+                            <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-6 shadow-xl">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase mb-1.5 block">Docente responsable *</label>
+                                        <label className="text-xs font-black text-indigo-300 uppercase mb-2 block tracking-wider">Docente responsable *</label>
                                         <input
                                             type="text"
                                             placeholder="Nombre Completo"
                                             value={nombreDocente}
                                             onChange={e => setNombreDocente(e.target.value)}
-                                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full bg-slate-950 text-slate-100 border border-slate-700 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-indigo-500 placeholder-slate-500"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase mb-1.5 block">Institución Educativa *</label>
+                                        <label className="text-xs font-black text-indigo-300 uppercase mb-2 block tracking-wider">Institución Educativa *</label>
                                         <input
                                             type="text"
                                             placeholder="Nombre de la Escuela"
                                             value={nombreEscuela}
                                             onChange={e => setNombreEscuela(e.target.value)}
-                                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full bg-slate-950 text-slate-100 border border-slate-700 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-indigo-500 placeholder-slate-500"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase mb-1.5 block">CCT</label>
-                                        <input type="text" placeholder="Ej. 30DTV" value={cct} onChange={e => setCct(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium outline-none" />
+                                        <label className="text-xs font-black text-indigo-300 uppercase mb-2 block tracking-wider">CCT</label>
+                                        <input type="text" placeholder="Ej. 30DTV" value={cct} onChange={e => setCct(e.target.value)} className="w-full bg-slate-950 text-slate-100 border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:border-indigo-500" />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase mb-1.5 block">Zona</label>
-                                        <input type="text" placeholder="Ej. 51" value={zonaEscolar} onChange={e => setZonaEscolar(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium outline-none" />
+                                        <label className="text-xs font-black text-indigo-300 uppercase mb-2 block tracking-wider">Zona</label>
+                                        <input type="text" placeholder="Ej. 51" value={zonaEscolar} onChange={e => setZonaEscolar(e.target.value)} className="w-full bg-slate-950 text-slate-100 border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:border-indigo-500" />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase mb-1.5 block">Grado *</label>
-                                        <select value={grado} onChange={e => handleGradoChange(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold outline-none cursor-pointer">
+                                        <label className="text-xs font-black text-indigo-300 uppercase mb-2 block tracking-wider">Grado *</label>
+                                        <select value={grado} onChange={e => handleGradoChange(e.target.value)} className="w-full bg-slate-950 text-slate-100 border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-bold outline-none cursor-pointer focus:border-indigo-500">
                                             {FASES_NEM.map(f => (
-                                                <optgroup key={f.id} label={f.nombre}>
-                                                    {f.grados.map(g => <option key={g} value={g}>{g}</option>)}
+                                                <optgroup key={f.id} label={f.nombre} className="bg-slate-900 text-slate-200">
+                                                    {f.grados.map(g => <option key={g} value={g} className="bg-slate-900 text-white">{g}</option>)}
                                                 </optgroup>
                                             ))}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase mb-1.5 block">Sesiones</label>
-                                        <input type="number" min={1} max={15} value={numSesiones} onChange={e => setNumSesiones(parseInt(e.target.value) || 1)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold outline-none" />
+                                        <label className="text-xs font-black text-indigo-300 uppercase mb-2 block tracking-wider">Sesiones</label>
+                                        <input type="number" min={1} max={15} value={numSesiones} onChange={e => setNumSesiones(parseInt(e.target.value) || 1)} className="w-full bg-slate-950 text-slate-100 border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-bold outline-none focus:border-indigo-500" />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold text-slate-700 uppercase mb-1.5 block">Metodología Sugerida NEM</label>
-                                    <select value={metodologia} onChange={e => setMetodologia(e.target.value as Methodology)} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-indigo-700 outline-none cursor-pointer">
-                                        {METODOLOGIAS.map(m => <option key={m} value={m}>{m}</option>)}
+                                    <label className="text-xs font-black text-indigo-300 uppercase mb-2 block tracking-wider">Metodología Sugerida NEM</label>
+                                    <select value={metodologia} onChange={e => setMetodologia(e.target.value as Methodology)} className="w-full bg-slate-950 text-indigo-300 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none cursor-pointer focus:border-indigo-500">
+                                        {METODOLOGIAS.map(m => <option key={m} value={m} className="bg-slate-900 text-white">{m}</option>)}
                                     </select>
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold text-slate-700 uppercase mb-1.5 block">Diagnóstico Local / Problemática a abordar</label>
+                                    <label className="text-xs font-black text-indigo-300 uppercase mb-2 block tracking-wider">Diagnóstico Local / Problemática a abordar</label>
                                     <textarea
                                         rows={3}
                                         placeholder="Ej: Los alumnos desperdician el agua en la comunidad y no separan la basura. Se requiere concientizar sobre el desarrollo sustentable."
                                         value={contexto}
                                         onChange={e => setContexto(e.target.value)}
-                                        className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full bg-slate-950 text-slate-100 border border-slate-700 rounded-2xl p-4 text-sm font-medium outline-none focus:border-indigo-500 placeholder-slate-600"
                                     />
                                 </div>
 
                                 <button
                                     onClick={handleGeneratePlan}
                                     disabled={isGeneratingPlan}
-                                    className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-2xl font-black text-base shadow-xl shadow-indigo-500/25 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                    className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-2xl font-black text-base shadow-xl shadow-indigo-500/25 transition-all flex items-center justify-center gap-3 disabled:opacity-50 hover:scale-[1.01]"
                                 >
                                     {isGeneratingPlan ? (
                                         <>
@@ -294,7 +293,7 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
                                         </>
                                     ) : (
                                         <>
-                                            <Sparkles className="w-5 h-5" />
+                                            <Sparkles className="w-5 h-5 text-amber-300" />
                                             <span>Generar Planeación Didáctica y Ver Vista Previa</span>
                                         </>
                                     )}
@@ -306,9 +305,9 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
                     {/* STEP 2: Vista Previa, Descarga de Planeación y Configuración del Mundo */}
                     {step === 2 && lessonPlan && (
                         <div className="space-y-8">
-                            <div className="bg-gradient-to-r from-indigo-900 to-purple-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-purple-950 rounded-3xl p-6 sm:p-8 text-white border border-indigo-800/60 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div className="space-y-2 text-center md:text-left">
-                                    <span className="bg-white/10 text-indigo-300 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                                    <span className="bg-indigo-900/80 text-indigo-300 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider border border-indigo-700/50">
                                         Paso 2: Planeación Completa Lista
                                     </span>
                                     <h3 className="text-2xl font-display font-black text-white">{lessonPlan.encabezado.proyecto}</h3>
@@ -318,14 +317,14 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
                                 <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
                                     <button
                                         onClick={handleGenerateWorldFromPlan}
-                                        className="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-6 py-3.5 rounded-2xl shadow-lg shadow-emerald-500/30 transition-all flex items-center gap-2 text-sm hover:scale-105"
+                                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-6 py-3.5 rounded-2xl shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2 text-sm hover:scale-105"
                                     >
                                         <Play className="w-5 h-5 fill-current" />
                                         <span>🎮 Generar Mundo Virtual Ahora</span>
                                     </button>
                                     <button
                                         onClick={() => setStep(1)}
-                                        className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-3.5 rounded-2xl transition-all flex items-center gap-1.5"
+                                        className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-3.5 rounded-2xl transition-all border border-slate-700 flex items-center gap-1.5"
                                     >
                                         <ArrowLeft className="w-4 h-4" /> Editar Datos
                                     </button>
@@ -333,29 +332,29 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
                             </div>
 
                             {/* Selector de Tema visual para el Mundo Virtual */}
-                            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 space-y-4">
+                            <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                                        <Palette className="w-4 h-4 text-purple-600" /> Elige la Temática de tu Mundo Virtual
+                                    <h4 className="text-sm font-black text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                                        <Palette className="w-4 h-4 text-purple-400" /> Elige la Temática de tu Mundo Virtual
                                     </h4>
-                                    <span className="text-xs text-slate-500 font-medium">Tema seleccionado: <strong>{WORLD_THEMES.find(t => t.key === selectedTheme)?.label}</strong></span>
+                                    <span className="text-xs text-indigo-300 font-bold">Tema: <strong>{WORLD_THEMES.find(t => t.key === selectedTheme)?.label}</strong></span>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                                     {WORLD_THEMES.map(t => (
                                         <button
                                             key={t.key}
                                             onClick={() => setSelectedTheme(t.key)}
-                                            className={`p-4 rounded-2xl border-2 text-center transition-all flex flex-col items-center gap-2 ${selectedTheme === t.key ? 'bg-white border-purple-600 shadow-md scale-105' : 'bg-white/60 border-slate-200 hover:bg-white'}`}
+                                            className={`p-4 rounded-2xl border-2 text-center transition-all flex flex-col items-center gap-2 ${selectedTheme === t.key ? 'bg-indigo-950 border-purple-500 shadow-lg scale-105' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
                                         >
                                             <span className="text-2xl">{t.icon}</span>
-                                            <span className="text-xs font-bold text-slate-800">{t.label}</span>
+                                            <span className="text-xs font-bold text-slate-200">{t.label}</span>
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
                             {/* Render de la Vista Previa y Botones de Descarga PDF/Word */}
-                            <div className="bg-slate-100 rounded-3xl p-4 sm:p-6 border border-slate-200">
+                            <div className="bg-slate-950 rounded-3xl p-2 sm:p-4 border border-slate-800">
                                 <LessonPlanPreview plan={lessonPlan} />
                             </div>
                         </div>
@@ -366,20 +365,20 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
                         <div className="py-16 text-center space-y-8 max-w-xl mx-auto">
                             <div className="relative inline-block">
                                 <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-2xl mx-auto animate-bounce">
-                                    <Sparkles className="w-12 h-12" />
+                                    <Sparkles className="w-12 h-12 text-amber-300" />
                                 </div>
                                 <Loader2 className="w-32 h-32 text-indigo-500 animate-spin absolute -top-4 -left-4 opacity-40 pointer-events-none" />
                             </div>
 
                             <div className="space-y-3">
-                                <h3 className="text-2xl font-display font-black text-slate-900">Construyendo tu Mundo Virtual...</h3>
-                                <p className="text-sm font-medium text-slate-500 animate-pulse">{worldLoadingText}</p>
+                                <h3 className="text-2xl font-display font-black text-slate-100">Construyendo tu Mundo Virtual...</h3>
+                                <p className="text-sm font-bold text-indigo-300 animate-pulse">{worldLoadingText}</p>
                             </div>
 
                             {worldError && (
-                                <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm space-y-3">
-                                    <p>⚠️ {worldError}</p>
-                                    <button onClick={() => setStep(2)} className="bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-xs">
+                                <div className="p-6 bg-red-950/80 border border-red-800/80 rounded-2xl text-red-200 text-sm space-y-4">
+                                    <p className="font-bold">⚠️ {worldError}</p>
+                                    <button onClick={() => setStep(2)} className="bg-red-600 hover:bg-red-500 text-white font-black px-6 py-2.5 rounded-xl text-xs shadow-md transition-all">
                                         Volver a la Planeación
                                     </button>
                                 </div>

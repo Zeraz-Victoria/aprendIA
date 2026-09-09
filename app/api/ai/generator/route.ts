@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
-
+import { checkUserSubscriptionAccess } from '@/lib/subscription';
 import { findRelevantTextbookPages } from '@/lib/textbooks-index';
 
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const { theme, topic, difficulty = "Básico", session_title, session_start, session_development, session_end } = await req.json();
 
     if (!theme || !topic) {
-      return NextResponse.json({ error: 'theme and topic are required' }, { status: 400 });
+      return NextResponse.json({ error: 'Faltan parámetros obligatorios (tema y título)' }, { status: 400 });
     }
 
     // Buscar sugerencias de libros de texto indexados
@@ -24,35 +24,35 @@ export async function POST(req: Request) {
       : '';
 
     const session = await getServerSession(authOptions);
+    const userId = (session?.user as any)?.id;
     const schoolId = (session?.user as any)?.schoolId;
 
-    if (schoolId) {
-      const school = await prisma.school.findUnique({ where: { id: schoolId } });
-      //@ts-ignore
-      if (school && school.subscriptionStatus === 'SUSPENDED') {
-        return NextResponse.json({ error: 'Tu cuenta ha sido suspendida. No puedes generar nuevos mapas de Aventura. Contacta a un administrador.' }, { status: 403 });
+    if (userId && schoolId) {
+      const subCheck = await checkUserSubscriptionAccess(userId, schoolId);
+      if (!subCheck.allowed) {
+        return NextResponse.json({ error: subCheck.reason, subscriptionExpired: true }, { status: 402 });
       }
     }
 
     if (!process.env.AI_API_KEY) {
       console.error("CRITICAL: AI_API_KEY is not defined");
-      return NextResponse.json({ error: 'AI API Key not configured' }, { status: 500 });
+      return NextResponse.json({ error: 'La clave de API de IA no está configurada.' }, { status: 500 });
     }
 
     // Attempt to fetch from Cache first to save AI API tokens
-    //@ts-ignore
-    const cachedPrompt = await prisma.aIPromptCache.findUnique({
-      where: {
-        topic_theme: {
-          topic: topic.toLowerCase().trim(),
-          theme: theme.toLowerCase().trim()
+    try {
+      //@ts-ignore
+      const cachedPrompt = await prisma.aIPromptCache.findUnique({
+        where: {
+          topic_theme: {
+            topic: topic.toLowerCase().trim(),
+            theme: theme.toLowerCase().trim()
+          }
         }
-      }
-    });
+      });
 
-    if (cachedPrompt) {
-      console.log(`[CACHE HIT] Returning cached map for Topic: ${topic} | Theme: ${theme}`);
-      try {
+      if (cachedPrompt) {
+        console.log(`[CACHE HIT] Returning cached map for Topic: ${topic} | Theme: ${theme}`);
         return NextResponse.json({
           id: crypto.randomUUID(),
           theme: theme,
@@ -60,10 +60,9 @@ export async function POST(req: Request) {
           days: JSON.parse(cachedPrompt.response),
           createdAt: new Date().toISOString()
         });
-      } catch (e) {
-        console.error("Failed to parse cached response", e);
-        // Fallthrough to regenerate if the cache is corrupt
       }
+    } catch (e) {
+      console.warn("Non-fatal prompt cache lookup error:", e);
     }
 
     console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
@@ -259,8 +258,8 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
       createdAt: new Date().toISOString()
     });
 
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('Error in AI Generator API:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Error al procesar la generación del mundo con IA.' }, { status: 500 });
   }
 }
