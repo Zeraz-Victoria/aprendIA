@@ -1,4 +1,3 @@
-
 import OpenAI from "openai";
 import { LessonPlan, PlanningRequest } from "../types";
 import { EJES_ARTICULADORES_NEM } from "../constants";
@@ -12,14 +11,28 @@ export const generateLessonPlanStream = async (
 ): Promise<LessonPlan> => {
   const apiKey = process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
 
+  // Si no hay API key de DeepSeek en el cliente, usar la API de backend de Gemini AI
   if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
-    throw new Error("CONFIGURACIÓN REQUERIDA: No se detectó NEXT_PUBLIC_DEEPSEEK_API_KEY en el archivo .env.");
+    const res = await fetch("/api/ai/eduplan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params)
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Ocurrió un error al generar la planeación.");
+    }
+    return data.plan as LessonPlan;
   }
+
+  // Si la API key de DeepSeek está disponible, usar DeepSeek directamente
   const deepseek = new OpenAI({
     baseURL: "https://api.deepseek.com",
     apiKey: apiKey,
     dangerouslyAllowBrowser: true
   });
+
   const systemInstruction = `
 # PERFIL: DOCTOR EN PEDAGOGÍA Y ESPECIALISTA DE ÉLITE NEM 2022
 Tu misión es transformar cualquier rezago académico en un proyecto de impacto social.
@@ -122,15 +135,27 @@ Elige entre 1 y 4 ejes que sean pertinentes al diagnóstico. No modifiques ni in
     return JSON.parse(content) as LessonPlan;
 
   } catch (error: any) {
-    console.error("Error en AI Service:", error);
+    console.error("Error en AI Service cliente, reintentando por backend:", error);
 
-    // Automatic retry for overload (503) or rate limits (429)
-    if (retries > 0 && (error.status === 503 || error.status === 429 || error.message.includes("overload"))) {
+    // Fallback al backend de Gemini AI si falla la llamada directa de DeepSeek
+    try {
+      const res = await fetch("/api/ai/eduplan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params)
+      });
+      const data = await res.json();
+      if (res.ok && data.plan) return data.plan as LessonPlan;
+    } catch {
+      // Ignorar para mostrar el error original si falla también
+    }
+
+    if (retries > 0 && (error.status === 503 || error.status === 429 || error?.message?.includes("overload"))) {
       console.log(`Reintentando... (${retries} intentos restantes)`);
       await sleep(2000);
       return generateLessonPlanStream(params, onChunk, retries - 1);
     }
 
-    throw new Error(`ERROR DE GENERACIÓN (DEEPSEEK): ${error.message.substring(0, 100)}`);
+    throw new Error(`ERROR DE GENERACIÓN: ${error.message ? error.message.substring(0, 100) : "Fallo al conectar con el servidor de IA."}`);
   }
 };
