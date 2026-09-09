@@ -143,13 +143,13 @@ ESTRUCTURA JSON REQUERIDA (DEVUELVE ÚNICAMENTE UN JSON VÁLIDO):
         const cleanedText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
         const plan = JSON.parse(cleanedText);
 
-        // Si la IA omitió libros_recomendados o vino vacío, inyectar los libros encontrados por el servidor
-        if (!plan.libros_recomendados || plan.libros_recomendados.length === 0) {
+        // Inyectar SIEMPRE las recomendaciones de libros de texto verificadas de los 19 PDF indexados reales
+        if (recommendedBooks.length > 0) {
             plan.libros_recomendados = recommendedBooks.map(b => ({
                 libro: b.bookTitle,
                 grado: b.grade,
                 pagina: b.page,
-                extracto: b.snippet.substring(0, 180) + '...'
+                extracto: b.snippet.substring(0, 220) + '...'
             }));
         }
 

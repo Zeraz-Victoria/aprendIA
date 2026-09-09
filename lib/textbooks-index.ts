@@ -41,17 +41,19 @@ export function findRelevantTextbookPages(topic: string, grade?: string, limit =
     const matches: { entry: TextbookEntry; score: number }[] = [];
 
     for (const entry of catalog) {
-        let score = 0;
-
-        // Coincidencia de grado
+        // Filtro estricto por grado si se especifica
         if (grade) {
             const cleanGrade = grade.toLowerCase();
-            if (cleanGrade.includes("1") && entry.grade.includes("1")) score += 3;
-            if (cleanGrade.includes("2") && entry.grade.includes("2")) score += 3;
-            if (cleanGrade.includes("3") && entry.grade.includes("3")) score += 3;
-            if (entry.grade.includes("Multigrado")) score += 2;
+            let matchesGrade = false;
+            if (cleanGrade.includes("1") && entry.grade.includes("1")) matchesGrade = true;
+            if (cleanGrade.includes("2") && entry.grade.includes("2")) matchesGrade = true;
+            if (cleanGrade.includes("3") && entry.grade.includes("3")) matchesGrade = true;
+            if (entry.grade.includes("Multigrado")) matchesGrade = true;
+
+            if (!matchesGrade) continue;
         }
 
+        let score = 0;
         const snippetLower = entry.snippet.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const bookLower = entry.bookTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
@@ -60,19 +62,19 @@ export function findRelevantTextbookPages(topic: string, grade?: string, limit =
             if (bookLower.includes(kw)) score += 2;
         }
 
-        if (score >= 1) {
+        if (score >= 3) {
             matches.push({ entry, score });
         }
     }
 
-    // Ordenar por relevancia
+    // Ordenar por relevancia de score
     matches.sort((a, b) => b.score - a.score);
 
     if (matches.length > 0) {
         return matches.slice(0, limit).map(m => m.entry);
     }
 
-    // Fallback: si no hubo filtro específico por palabras clave, retornar 4 páginas del grado especificado
+    // Fallback: si no hubo coincidencias exactas por palabra clave, retornar las primeras 4 páginas útiles del grado
     if (grade) {
         const cleanGrade = grade.toLowerCase();
         const gradeFallback = catalog.filter(e => {
