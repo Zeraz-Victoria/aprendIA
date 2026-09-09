@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
 
+import { findRelevantTextbookPages } from '@/lib/textbooks-index';
+
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
@@ -13,6 +15,13 @@ export async function POST(req: Request) {
     if (!theme || !topic) {
       return NextResponse.json({ error: 'theme and topic are required' }, { status: 400 });
     }
+
+    // Buscar sugerencias de libros de texto indexados
+    const textbookSuggestions = findRelevantTextbookPages(topic, difficulty, 3);
+    const textbookSnippet = textbookSuggestions.length > 0
+      ? `\nSUGERENCIA DE LIBROS DE TEXTO DE TELESECUNDARIA (Sugerir estas páginas en el oráculo/teoría al alumno):\n` +
+        textbookSuggestions.map(b => `- ${b.bookTitle} (Página ${b.page}): "${b.snippet.substring(0, 140)}..."`).join('\n')
+      : '';
 
     const session = await getServerSession(authOptions);
     const schoolId = (session?.user as any)?.schoolId;
@@ -77,6 +86,7 @@ INICIO: """ ${session_start || `Basado en el tema original: ${topic}`} """
 DESARROLLO: """ ${session_development || `Desarrolla la temática educativa gamificada de: ${theme} con la NEM`} """
 CIERRE: """ ${session_end || `Validación metacognitiva del tema ${topic}`} """
 --- FIN DE DATOS ---
+${textbookSnippet}
 
 # INSTRUCCIONES DE Y CREACIÓN Y EXPANSIÓN:
 El texto anterior es un resumen didáctico extremadamente conciso. Tu tarea es INVENTAR y EXPANDIR este concepto en un nivel de juego completo.
