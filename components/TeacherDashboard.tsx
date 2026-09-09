@@ -16,6 +16,7 @@ import autoTable from "jspdf-autotable";
 
 import SubscriptionLockModal from "./SubscriptionLockModal";
 import SubscriptionBanner from "./SubscriptionBanner";
+import UnifiedWorldCreator from "./UnifiedWorldCreator";
 
 type Tab = "students" | "insights" | "library" | "reports" | "raid" | "messages" | "tools";
 
@@ -44,6 +45,7 @@ export default function TeacherDashboard() {
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showBulkModal, setShowBulkModal] = useState(false);
     const [showBuilderModal, setShowBuilderModal] = useState(false);
+    const [showUnifiedCreatorModal, setShowUnifiedCreatorModal] = useState(false);
     const [builderInitialAIPrompt, setBuilderInitialAIPrompt] = useState(false);
     const [builderWorld, setBuilderWorld] = useState<LearningWorld | null>(null);
 
@@ -999,14 +1001,12 @@ export default function TeacherDashboard() {
                                 onClick={() => {
                                     if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
                                     if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) en tu plan actual. Borra un mapa para crear otro.`);
-                                    setBuilderWorld(null);
-                                    setBuilderInitialAIPrompt(true);
-                                    setShowBuilderModal(true);
+                                    setShowUnifiedCreatorModal(true);
                                 }}
-                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-amber-100 hover:bg-amber-200'} text-amber-900 border border-amber-300 px-5 py-2 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2`}
+                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'} text-white px-6 py-2.5 rounded-xl font-extrabold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2 text-sm hover:scale-105`}
                             >
-                                <Sparkles className="w-4 h-4 text-amber-500" />
-                                Auto-Generar con IA
+                                <Sparkles className="w-4 h-4 text-amber-300" />
+                                ➕ Crear Nuevo Mundo (Planeación NEM + IA)
                             </button>
 
                             <button
@@ -1543,20 +1543,24 @@ export default function TeacherDashboard() {
                         <div className="grid md:grid-cols-2 gap-8 mt-6">
                             {/* EduPlan AI Card */}
                             <div
-                                onClick={() => window.location.href = "/tools/eduplan"}
-                                className="group cursor-pointer bg-white p-8 rounded-[2rem] border-2 border-slate-100 hover:border-purple-200 hover:shadow-2xl hover:shadow-purple-100 transition-all duration-300 relative overflow-hidden"
+                                onClick={() => {
+                                    setActiveTab("library");
+                                    setShowUnifiedCreatorModal(true);
+                                }}
+                                className="group cursor-pointer bg-gradient-to-br from-indigo-900 to-purple-950 p-8 rounded-[2rem] text-white hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 relative overflow-hidden"
                             >
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500" />
-                                <div className="relative">
-                                    <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                                        <BrainCircuit className="w-8 h-8 text-purple-600" />
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500" />
+                                <div className="relative space-y-3">
+                                    <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <BrainCircuit className="w-7 h-7 text-indigo-300" />
                                     </div>
-                                    <h3 className="text-2xl font-bold text-slate-800 mb-3">EduPlan AI</h3>
-                                    <p className="text-slate-600 mb-6 leading-relaxed">
-                                        Genera planeaciones didácticas completas alineadas al Programa Sintético NEM 2022 en segundos.
+                                    <span className="bg-indigo-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">Integrado en Biblioteca</span>
+                                    <h3 className="text-2xl font-bold text-white mb-2">EduPlan AI (Crear Mundos)</h3>
+                                    <p className="text-slate-300 text-sm leading-relaxed">
+                                        EduPlan AI ahora es el motor didáctico principal. Para crear un Mundo Virtual, primero generas y descargas tu Planeación Didáctica NEM.
                                     </p>
-                                    <div className="flex items-center gap-2 text-purple-600 font-bold">
-                                        Abrir Herramienta <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    <div className="flex items-center gap-2 text-indigo-300 font-black pt-2 text-sm">
+                                        Crear Mundo con Planeación NEM <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                     </div>
                                 </div>
                             </div>
@@ -1653,6 +1657,11 @@ export default function TeacherDashboard() {
                         <BulkEvidenceUploader onClose={() => setShowBulkModal(false)} />
                     </div>
                 </div>
+            )}
+
+            {/* Unified World Creator Modal (EduPlan NEM -> World) */}
+            {showUnifiedCreatorModal && (
+                <UnifiedWorldCreator onClose={() => setShowUnifiedCreatorModal(false)} />
             )}
 
 
