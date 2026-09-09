@@ -3,8 +3,6 @@ import prisma from '@/lib/prisma';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { trackAICall } from "@/lib/ai-tracker";
-import { withRetry } from "@/lib/db-retry";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
@@ -23,7 +21,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Configuración del servidor incompleta (API Key faltante)" }, { status: 500 });
         }
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
         const body = await req.json();
         const { imageBase64, mimeType, worldId, levelId, fileName } = body;
@@ -88,12 +86,6 @@ Ejemplo exacto:
             imagePart
         ]);
 
-        // Increment API calls for the teacher
-        const userId = (session?.user as any)?.id;
-        if (userId) {
-            await trackAICall(userId, schoolId);
-        }
-
         const responseText = result.response.text();
         let evaluationData;
 
@@ -136,7 +128,7 @@ Ejemplo exacto:
             const normalizeStr = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
             const searchName = normalizeStr(evaluationData.nombreAlumno);
 
-            const matchedStudent = students.find((s: any) => {
+            const matchedStudent = students.find(s => {
                 if (!s.name) return false;
                 const dbName = normalizeStr(s.name);
                 // Búsqueda cruzada simple
@@ -156,92 +148,92 @@ Ejemplo exacto:
 
         // 5. Guardar/Actualizar progreso y evidencia en BD si se encontró el estudiante
         if (studentId) {
-            await withRetry(async () => {
-                console.log(`Procediendo a insertar evidencia para: studentId=${studentId}, worldId=${worldId}, levelId=${levelId}`);
-                const numericLevelId = parseInt(levelId, 10);
+            console.log(`Procediendo a insertar evidencia para: studentId=${studentId}, worldId=${worldId}, levelId=${levelId}`);
+            const numericLevelId = parseInt(levelId, 10);
 
-                // Actualizar status de la evidencia (o crearla)
-                const existingEvidence = await prisma.evidenceEntry.findFirst({
-                    where: {
-                        studentId: studentId,
-                        worldId: worldId,
-                        levelId: numericLevelId
+            // Actualizar status de la evidencia (o crearla)
+            const existingEvidence = await prisma.evidenceEntry.findFirst({
+                where: {
+                    studentId: studentId,
+                    worldId: worldId,
+                    levelId: numericLevelId
+                }
+            });
+
+            if (existingEvidence) {
+                console.log(`Actualizando evidencia existente: ${existingEvidence.id}`);
+                await prisma.evidenceEntry.update({
+                    where: { id: existingEvidence.id },
+                    data: {
+                        status: 'COMPLETED',
+                        studentAnswer: "Evidencia revisada por maestro/IA",
+                        grade: finalGrade,
+                        feedback: `${evaluationData.categoria || 'Evaluado'}\n\nCalificación: ${finalGrade}/10\n\n${evaluationData.feedback || 'Revisado'}`,
+                        isCorrect: evaluationData.puedeAvanzar,
+                        canAdvance: evaluationData.puedeAvanzar
                     }
                 });
+            } else {
+                console.log(`Creando nueva evidencia...`);
+                await prisma.evidenceEntry.create({
+                    data: {
+                        studentId: studentId,
+                        worldId: worldId,
+                        levelId: numericLevelId,
+                        status: 'COMPLETED',
+                        studentAnswer: "Evidencia revisada por maestro/IA",
+                        grade: finalGrade,
+                        feedback: `${evaluationData.categoria || 'Evaluado'}\n\nCalificación: ${finalGrade}/10\n\n${evaluationData.feedback || 'Revisado'}`,
+                        isCorrect: evaluationData.puedeAvanzar,
+                        canAdvance: evaluationData.puedeAvanzar
+                    }
+                });
+                console.log('Evidencia insertada con éxito en EvidenceEntry.');
+            }
 
-                if (existingEvidence) {
-                    console.log(`Actualizando evidencia existente: ${existingEvidence.id}`);
-                    await prisma.evidenceEntry.update({
-                        where: { id: existingEvidence.id },
-                        data: {
-                            status: 'COMPLETED',
-                            studentAnswer: "Evidencia revisada por maestro/IA",
-                            grade: finalGrade,
-                            feedback: `${evaluationData.categoria || 'Evaluado'}\n\nCalificación: ${finalGrade}/10\n\n${evaluationData.feedback || 'Revisado'}`,
-                            isCorrect: evaluationData.puedeAvanzar,
-                            canAdvance: evaluationData.puedeAvanzar,
-                            imageUrl: null // Clear image after evaluation to save storage
-                        }
-                    });
-                } else {
-                    console.log(`Creando nueva evidencia...`);
-                    await prisma.evidenceEntry.create({
-                        data: {
-                            studentId: studentId,
-                            worldId: worldId,
-                            levelId: numericLevelId,
-                            status: 'COMPLETED',
-                            studentAnswer: "Evidencia revisada por maestro/IA",
-                            grade: finalGrade,
-                            feedback: `${evaluationData.categoria || 'Evaluado'}\n\nCalificación: ${finalGrade}/10\n\n${evaluationData.feedback || 'Revisado'}`,
-                            isCorrect: evaluationData.puedeAvanzar,
-                            canAdvance: evaluationData.puedeAvanzar,
-                            imageUrl: null // Never store image — only keep evaluation data
-                        }
-                    });
-                    console.log('Evidencia insertada con éxito en EvidenceEntry.');
-                }
-
-                // Actualizar Progreso si avanzó
-                if (evaluationData.puedeAvanzar) {
-                    // Use upsert to avoid race conditions and unique constraint errors
-                    await prisma.progress.upsert({
-                        where: {
-                            studentId_worldId_levelId: {
-                                studentId: studentId,
-                                worldId: worldId,
-                                levelId: numericLevelId
-                            }
-                        },
-                        update: {},
-                        create: {
+            // Actualizar Progreso si avanzó
+            if (evaluationData.puedeAvanzar) {
+                const existingProgress = await prisma.progress.findUnique({
+                    where: {
+                        studentId_worldId_levelId: {
                             studentId: studentId,
                             worldId: worldId,
                             levelId: numericLevelId
                         }
-                    });
+                    }
+                });
 
-                    // Recompensas XP Gamification
-                    await prisma.user.update({
-                        where: { id: studentId },
+                if (!existingProgress) {
+                    await prisma.progress.create({
                         data: {
-                            xp: { increment: finalGrade > 8 ? 50 : 25 },
-                            gems: { increment: finalGrade > 8 ? 5 : 2 }
+                            studentId: studentId,
+                            worldId: worldId,
+                            levelId: numericLevelId,
+                            // grade ya no existe en progress
                         }
                     });
-                    console.log('XP/Gemas incrementadas para el alumno exitosamente.');
-                } else if (finalGrade < 6) {
-                    // Student failed: deduct 1 life
-                    const student = await prisma.user.findUnique({ where: { id: studentId }, select: { lives: true } });
-                    if (student && student.lives > 0) {
-                        await prisma.user.update({
-                            where: { id: studentId },
-                            data: { lives: { decrement: 1 } }
-                        });
-                        console.log(`💔 Vida descontada al alumno ${studentId}. Calificación: ${finalGrade}`);
-                    }
                 }
-            });
+
+                // Recompensas XP Gamification
+                await prisma.user.update({
+                    where: { id: studentId },
+                    data: {
+                        xp: { increment: finalGrade > 8 ? 50 : 25 },
+                        gems: { increment: finalGrade > 8 ? 5 : 2 }
+                    }
+                });
+                console.log('XP/Gemas incrementadas para el alumno exitosamente.');
+            } else if (finalGrade < 6) {
+                // Student failed: deduct 1 life
+                const student = await prisma.user.findUnique({ where: { id: studentId }, select: { lives: true } });
+                if (student && student.lives > 0) {
+                    await prisma.user.update({
+                        where: { id: studentId },
+                        data: { lives: { decrement: 1 } }
+                    });
+                    console.log(`💔 Vida descontada al alumno ${studentId}. Calificación: ${finalGrade}`);
+                }
+            }
         } else {
             console.log('Alerta: No se pudo guardar la evidencia porque studentId es NULL.');
         }

@@ -30,9 +30,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'AI API Key not configured' }, { status: 500 });
     }
 
-    console.log("=== AUTO-GENERATOR INIT ===");
-    console.log("Payload:", { theme, topic, difficulty });
-
     // Attempt to fetch from Cache first to save AI API tokens
     //@ts-ignore
     const cachedPrompt = await prisma.aIPromptCache.findUnique({
@@ -47,13 +44,11 @@ export async function POST(req: Request) {
     if (cachedPrompt) {
       console.log(`[CACHE HIT] Returning cached map for Topic: ${topic} | Theme: ${theme}`);
       try {
-        const parsedCached = JSON.parse(cachedPrompt.response);
-        console.log("Successfully parsed cached response. Sending to frontend.");
         return NextResponse.json({
           id: crypto.randomUUID(),
           theme: theme,
           title: `Aventura de ${topic}`,
-          days: parsedCached,
+          days: JSON.parse(cachedPrompt.response),
           createdAt: new Date().toISOString()
         });
       } catch (e) {
@@ -63,7 +58,10 @@ export async function POST(req: Request) {
     }
 
     console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-flash-latest',
+      generationConfig: { responseMimeType: 'application/json' }
+    });
 
     const prompt = `
 # ROL Y DIRECTIVA SOBERANA
@@ -109,15 +107,19 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
    }
 `;
 
-    console.log("Calling Google AI...");
     const result = await model.generateContent(prompt);
     let responseText = result.response.text();
 
-    console.log("Raw AI Response completed. Length:", responseText.length);
-    console.log("Raw AI Response Snip:", responseText.substring(0, 100)); // Debugging log
+    console.log("Raw AI Response:", responseText); // Debugging log
 
-    // Clean up markdown if the model hallucinated it
-    responseText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
+    // Extract JSON block if wrapped in text or markdown
+    const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || 
+                      responseText.match(/```\n([\s\S]*?)\n```/) ||
+                      responseText.match(/{[\s\S]*}/);
+    if (jsonMatch) {
+      responseText = jsonMatch[1] || jsonMatch[0];
+    }
+    responseText = responseText.trim();
 
     // A robust function to escape quotes used inside string values but preserve structural JSON quotes
     const escapeUnsafeQuotes = (jsonStr: string) => {
@@ -155,13 +157,11 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
     try {
       // Intentar primero el JSON puro que generó la IA (suele venir perfecto con Gemini 2.5 Flash)
       parsedResponse = JSON.parse(responseText);
-      console.log("JSON parsed successfully on first try");
     } catch (initialError) {
       console.log("JSON Parse inicial falló, intentando sanear comillas...");
       responseText = escapeUnsafeQuotes(responseText);
       try {
         parsedResponse = JSON.parse(responseText);
-        console.log("JSON parsed successfully on second try");
       } catch (parseError) {
         console.error("Failed to parse AI JSON after escaping:", parseError);
         console.error("Attempted to parse:", responseText);
@@ -227,15 +227,6 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
       // Fallback in case Gemini hallucinates the old format
       days = parsedResponse;
     }
-
-    if (days.length === 0) {
-      console.error("AI generated 0 days for topic:", topic);
-      return NextResponse.json({ 
-        error: 'La IA no pudo estructurar los niveles del mapa. Intenta con un tema más específico o reintenta en unos segundos.',
-        raw: responseText 
-      }, { status: 422 });
-    }
-
     // Save to Cache so future requests don't hit the Gemini API
     try {
       //@ts-ignore

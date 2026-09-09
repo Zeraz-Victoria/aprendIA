@@ -4,7 +4,6 @@ import prisma from '@/lib/prisma';
 import { LevelContent } from '@/types/learning-world';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-
 import { checkUserSubscriptionAccess } from '@/lib/subscription';
 
 export const maxDuration = 60;
@@ -106,7 +105,7 @@ INSTRUCCIÓN PARA RESPUESTA CORRECTA: Este campo es la RÚBRICA DEL MAESTRO. Si 
 `;
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-flash-latest',
             generationConfig: {
                 temperature: 0.2, // Low temperature for consistent JSON layout
             }

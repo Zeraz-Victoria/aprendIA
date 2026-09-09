@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as mammoth from 'mammoth';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 // Allow this route up to 60 seconds to finish (vital for Vercel + slow AI generation)
 export const maxDuration = 60;
@@ -12,14 +10,8 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = (session.user as any)?.role;
-    if (!['TEACHER', 'SUPERADMIN'].includes(role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-
     const formData = await req.formData();
     const file = formData.get('file') as File;
-    const vocabularyLevel = (formData.get('vocabularyLevel') as string) || 'facil';
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
@@ -29,18 +21,6 @@ export async function POST(req: Request) {
       console.error("CRITICAL: AI_API_KEY is not defined");
       return NextResponse.json({ error: 'AI API Key not configured' }, { status: 500 });
     }
-
-    if (file.size > 4 * 1024 * 1024) {
-      return NextResponse.json({ error: 'El archivo excede el límite de 4MB. Por favor, comprime el PDF o procesa el documento en partes.' }, { status: 400 });
-    }
-
-    // Vocabulary complexity instruction
-    const vocabInstructions: Record<string, string> = {
-      facil: 'NIVEL DE VOCABULARIO: FÁCIL (1° a 4° de primaria). Usa palabras simples y cotidianas que un niño de 6 a 10 años entienda. Evita tecnicismos. Usa oraciones cortas y directas. Si necesitas usar un término técnico, explícalo inmediatamente con palabras sencillas.',
-      medio: 'NIVEL DE VOCABULARIO: MEDIO (5° primaria a 1° secundaria). Usa vocabulario adecuado para preadolescentes de 10 a 13 años. Puedes usar algunos términos técnicos básicos pero siempre con contexto. Oraciones de complejidad media.',
-      alto: 'NIVEL DE VOCABULARIO: ALTO (2° secundaria a preparatoria). Usa vocabulario académico apropiado para adolescentes de 13 a 18 años. Puedes usar terminología técnica y especializada del campo. Oraciones complejas con conectores lógicos.'
-    };
-    const vocabPrompt = vocabInstructions[vocabularyLevel] || vocabInstructions.facil;
 
     console.log("Reading buffer...");
     const arrayBuffer = await file.arrayBuffer();
@@ -61,9 +41,9 @@ export async function POST(req: Request) {
 
     console.log("Sending prompt to Gemini...");
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-flash-latest',
       generationConfig: {
-        maxOutputTokens: 16384,
+        maxOutputTokens: 8192,
         temperature: 0.1, // Low temperature for consistent formatting
         responseMimeType: "application/json",
       }
@@ -72,41 +52,33 @@ export async function POST(req: Request) {
     const isDemo = file.name === "examen_demo.pdf";
     const prompt = `
 # ROL
-Eres un Analista de Datos Pedagógicos experto en la Nueva Escuela Mexicana (NEM). Tu función es desglosar documentos de planeación educativa en fragmentos técnicos detallados sin alterar el contenido original.
-
-# ${vocabPrompt}
+Actúa como un Analista de Datos Pedagógicos experto en la NEM. Tu función es desglosar documentos de planeación educativa en fragmentos técnicos sin alterar el contenido original.
 
 # OBJETIVO
-Extraer CADA sesión del documento y organizarla en un esquema JSON. Debes capturar la mayor cantidad posible de información pedagógica por sesión para que otro sistema pueda generar contenido de aprendizaje autónomo de alta calidad.
+Extraer cada sesión detallada en el documento y organizarla en un esquema JSON estricto. Debes anonimizar datos personales (nombres de docentes o escuelas) y usar etiquetas genéricas.
 
-${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\n\n--- INICIO --- \n${extractedWordText.substring(0, 50000)}\n--- FIN ---\n` : "He adjuntado a este mensaje un documento PDF con una planeación docente completa.\n"}
+${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\n\n--- INICIO --- \n${extractedWordText.substring(0, 40000)}\n--- FIN ---\n` : "He adjuntado a este mensaje un documento PDF con una planeación docente completa.\n"}
 
-# REGLAS DE EXTRACCIÓN:
-1. IDENTIFICACIÓN CURRICULAR: Extrae la Fase (1 a 6), el Campo Formativo, los PDA y la Metodología (ABP, STEAM, Proyectos Comunitarios o Servicio).
-2. SEGMENTACIÓN DE SESIONES: Para cada sesión extrae:
-   - titulo: Un título descriptivo y atractivo
-   - resumen_didactico: Resumen DETALLADO (3-5 oraciones) que capture: el concepto central, las actividades planificadas, los materiales mencionados, y el objetivo de aprendizaje. Este resumen es CRÍTICO para la calidad del contenido generado — entre más detallado, mejor.
-   - tipo_sesion: Clasifica como "teoria" (explicación de conceptos), "practica" (ejercicios/problemas) o "evaluacion" (examen/proyecto final)
-   - recursos_mencionados: Lista de todos los materiales, textos, o recursos que el docente planea usar
-3. GARANTÍA JSON: Retorna JSON puro sin bloque markdown. Respeta TODAS las propiedades.
-4. NO anonimices los contenidos pedagógicos — solo datos personales.
+# REGLAS DE EXTRACCIÓN (FIDELIDAD TOTAL):
+1. IDENTIFICACIÓN CURRICULAR: Extrae la Fase (1 a 6), el Campo Formativo, los PDA y la Metodología (ABP, STEAM, Proyectos Comunitarios o Servicio). Asegúrate de llenar estas propiedades en "datos_generales".
+2. SEGMENTACIÓN DE SESIONES (LAZY LOADING): Analiza cada sesión. Extrae su título y redacta un **resumen extremadamente corto (máximo 2 oraciones)** describiendo el concepto matemático central o la dinámica de aprendizaje en el campo "resumen_didactico". NO copies el texto original completo.
+3. GARANTÍA JSON: Retorna absolutamente un JSON puro sin bloque markdown. Respeta TODAS las propiedades y estructura enviadas. No recortes ni trunques la respuesta.
 
-# FORMATO DE SALIDA (JSON):
+# FORMATO DE SALIDA (JSON CRUDO):
 {
   "datos_generales": {
-    "titulo_proyecto": "Título completo del proyecto o unidad",
-    "fase": "1-6",
-    "metodologia": "ABP|STEAM|Proyectos Comunitarios|Otro",
-    "campo_formativo": "Campo formativo principal",
-    "pda_listado": ["PDA 1", "PDA 2"]
+    "titulo_proyecto": "",
+    "fase": "",
+    "metodologia": "",
+    "campo_formativo": "",
+    "pda_listado": []
   },
   "sesiones_extraidas": [
     {
       "numero": 1,
-      "titulo": "Título descriptivo de la sesión",
-      "resumen_didactico": "Resumen detallado de 3-5 oraciones con concepto, actividades y objetivo",
-      "tipo_sesion": "teoria|practica|evaluacion",
-      "recursos_mencionados": ["recurso 1", "recurso 2"]
+      "titulo": "",
+      "resumen_didactico": "",
+      "recursos_mencionados": []
     }
   ]
 }
@@ -128,11 +100,6 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
     const candidate = result.response.candidates?.[0];
     const finishReason = candidate?.finishReason || 'UNKNOWN';
     console.log(`Received response from Gemini. Finish Reason: ${finishReason}, Length: ${responseText.length}`);
-
-    // Warn if the response was truncated (MAX_TOKENS hit)
-    if (finishReason === 'MAX_TOKENS' || finishReason as string === 'LENGTH') {
-      console.warn('⚠️ WARNING: Gemini response was TRUNCATED due to token limit. Some sessions may be missing.');
-    }
 
     // Strict JSON stripping
     responseText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
@@ -203,26 +170,15 @@ ${isWord ? `He extraído el siguiente texto de una planeación docente en Word:\
 
     console.log("Successfully parsed Data Analyst extraction.");
 
+    // Map the new "sesiones_extraidas" format into what the frontend expects
     const extractedDays = p.sesiones_extraidas || [];
     const mappedDays = extractedDays.map((s: any, index: number) => {
-      const isLast = index === extractedDays.length - 1;
-      // Determine type from AI classification
-      let dayType = "guided_practice";
-      if (s.tipo_sesion === "teoria") {
-        dayType = "concept_story";
-      } else if (s.tipo_sesion === "evaluacion") {
-        dayType = isLast ? "boss_fight" : "guided_practice";
-      }
-
-      // Force last module to be boss_fight if it wasn't already assigned
-      if (isLast && dayType !== "boss_fight") {
-        dayType = "boss_fight";
-      }
+      const isLast = index === extractedDays.length - 1; // Boss Fix: Only the last day is the boss
       return {
         dayNumber: s.numero,
-        type: dayType,
+        type: isLast ? "boss_fight" : "guided_practice", // Determine type based on being actual last
         title: s.titulo,
-        session_start: s.resumen_didactico || "",
+        session_start: s.resumen_didactico || s.texto_bruto_sesion || "", // Store the short summary to pass to the Lazy Loader Level Generator
         session_development: "",
         session_end: "",
         narrative: "(Generando contenido con IA...)",
