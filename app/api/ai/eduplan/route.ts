@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { checkUserSubscriptionAccess } from '@/lib/subscription';
 import { EJES_ARTICULADORES_NEM } from '@/components/eduplan/constants';
+import { findRelevantTextbookPages } from '@/lib/textbooks-index';
 
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
@@ -31,6 +32,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Clave de API de IA no configurada en el servidor.' }, { status: 500 });
         }
 
+        // Buscar recomendaciones de libros de texto indexados
+        const recommendedBooks = findRelevantTextbookPages(contextoAdicional || metodologia || 'Aprendizaje', grado, 4);
+        const booksPromptSnippet = recommendedBooks.length > 0
+            ? `LIBROS DE TEXTO DE LA NEM INDEXADOS RECOMENDADOS PARA ESTE GRADO:\n` +
+              recommendedBooks.map(b => `- ${b.bookTitle} (${b.grade}) - Página ${b.page}: "${b.snippet.substring(0, 150)}..."`).join('\n')
+            : '';
+
         const prompt = `
 # PERFIL: DOCTOR EN PEDAGOGÍA Y ESPECIALISTA DE ÉLITE NEM 2022
 Tu misión es generar un plano didáctico integral (Planeación NEM 2022) en formato JSON estricto.
@@ -41,6 +49,8 @@ SOLICITUD:
 - Número de Sesiones: ${numSesiones}
 - Problemática/Contexto: ${contextoAdicional || 'Desarrollo de competencias y pensamiento crítico'}
 - Escuela: ${nombreEscuela} | Docente: ${nombreDocente}
+
+${booksPromptSnippet}
 
 ### ⚠️ EJES ARTICULADORES VÁLIDOS (LISTA CERRADA — NO INVENTES OTROS):
 Para el campo "ejes_articuladores", SOLO puedes usar entre 1 y 4 de esta lista exacta:
