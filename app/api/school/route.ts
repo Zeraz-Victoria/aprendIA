@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { checkSchoolSubscriptionAccess } from '@/lib/subscription';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 
@@ -25,7 +26,12 @@ export async function GET() {
             return NextResponse.json({ error: 'Escuela no encontrada' }, { status: 404 });
         }
 
-        return NextResponse.json(school);
+        const subStatusInfo = await checkSchoolSubscriptionAccess(schoolId);
+
+        return NextResponse.json({
+            ...school,
+            subscriptionStatusInfo: subStatusInfo
+        });
     } catch (error) {
         console.error('Error fetching school data:', error);
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });

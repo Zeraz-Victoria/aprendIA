@@ -107,10 +107,15 @@ export async function POST(req: Request) {
         if (plan === 'INTERMEDIATE') { maxMaps = 5; maxStudents = 50; subscriptionPlan = 'INTERMEDIATE'; }
         else if (plan === 'PREMIUM') { maxMaps = 10; maxStudents = 80; subscriptionPlan = 'PREMIUM'; }
 
+        const now = new Date();
+        const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
         const virtualSchool = await prisma.school.create({
             data: {
                 name: `Licencia de ${name.trim()}`,
                 subscriptionPlan: subscriptionPlan as any,
+                subscriptionStatus: 'ACTIVE',
+                subscriptionEndsAt: thirtyDaysFromNow,
                 maxMaps,
                 maxStudents
             }
@@ -156,7 +161,14 @@ export async function PATCH(req: Request) {
             else if (subscriptionPlan === 'PREMIUM') { updateData.maxMaps = 10; updateData.maxStudents = 80; }
             else { updateData.maxMaps = 1; updateData.maxStudents = 25; }
         }
-        if (subscriptionStatus) updateData.subscriptionStatus = subscriptionStatus;
+        if (subscriptionStatus) {
+            updateData.subscriptionStatus = subscriptionStatus;
+            if (subscriptionStatus === 'ACTIVE') {
+                // Al activar la suscripción, otorgar 30 días de vigencia
+                const now = new Date();
+                updateData.subscriptionEndsAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+            }
+        }
         if (maxMaps !== undefined) updateData.maxMaps = parseInt(maxMaps);
         if (maxStudents !== undefined) updateData.maxStudents = parseInt(maxStudents);
 

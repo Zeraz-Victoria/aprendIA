@@ -5,6 +5,8 @@ import { LevelContent } from '@/types/learning-world';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
+import { checkUserSubscriptionAccess } from '@/lib/subscription';
+
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +16,14 @@ export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const userId = (session.user as any).id;
+        const schoolId = (session.user as any).schoolId;
+
+        const subCheck = await checkUserSubscriptionAccess(userId, schoolId);
+        if (!subCheck.allowed) {
+            return NextResponse.json({ error: subCheck.reason, subscriptionExpired: true }, { status: 402 });
+        }
 
         const { worldId, levelId } = await req.json();
 

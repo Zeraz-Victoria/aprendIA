@@ -5,6 +5,8 @@ import { User, Key, ArrowRight, BookOpen, Sparkles } from "lucide-react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
+import { getDeviceFingerprint } from "@/lib/fingerprint";
+
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -13,6 +15,7 @@ export default function Home() {
   const [studentCode, setStudentCode] = useState("");
   const [password, setPassword] = useState("");
   const [loginRole, setLoginRole] = useState<"STUDENT" | "TEACHER">("STUDENT");
+  const [teacherAuthMode, setTeacherAuthMode] = useState<"LOGIN" | "REGISTER">("LOGIN");
   const [error, setError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -38,7 +41,6 @@ export default function Home() {
   }
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
     if (!name.trim()) return;
 
     setIsLoggingIn(true);
@@ -60,7 +62,62 @@ export default function Home() {
       setError(loginRole === 'STUDENT' ? "Usuario no encontrado. Verifica tu nombre y tu código secreto." : "Credenciales incorrectas.");
       setIsLoggingIn(false);
     }
-    // On success, useSession will update and the redirect logic above fires
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+
+    if (loginRole === "TEACHER" && teacherAuthMode === "REGISTER") {
+      if (!password.trim()) {
+        setError("La contraseña es requerida para crear tu cuenta.");
+        return;
+      }
+      setIsLoggingIn(true);
+      setError("");
+
+      const fingerprint = getDeviceFingerprint();
+
+      try {
+        const res = await fetch("/api/auth/register-teacher", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name.trim(),
+            password: password.trim(),
+            fingerprint
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.error || "Error al crear la cuenta.");
+          setIsLoggingIn(false);
+          return;
+        }
+
+        // Iniciar sesión automáticamente
+        await signOut({ redirect: false });
+        const loginRes = await signIn("credentials", {
+          name: name.trim(),
+          password: password.trim(),
+          loginRole: "TEACHER",
+          redirect: false,
+        });
+
+        if (loginRes?.error) {
+          setError("Cuenta creada exitosamente. Por favor ingresa tu contraseña.");
+          setTeacherAuthMode("LOGIN");
+          setIsLoggingIn(false);
+        }
+      } catch {
+        setError("Error de red al conectar con el servidor.");
+        setIsLoggingIn(false);
+      }
+    } else {
+      await handleLogin(e);
+    }
   };
 
   return (
@@ -91,7 +148,7 @@ export default function Home() {
           </div>
 
           <div className="p-8">
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleFormSubmit} className="space-y-6">
 
               {/* Role Selection Tabs */}
               <div className="flex bg-slate-100 rounded-xl p-1 shadow-inner">
@@ -110,6 +167,37 @@ export default function Home() {
                   🎓 Soy Maestro
                 </button>
               </div>
+
+              {/* Sub-toggle para Maestro */}
+              {loginRole === "TEACHER" && (
+                <div className="flex bg-sky-50 rounded-lg p-1 border border-sky-100 animate-fade-in">
+                  <button
+                    type="button"
+                    onClick={() => { setTeacherAuthMode("LOGIN"); setError(""); }}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${teacherAuthMode === "LOGIN" ? "bg-sky-600 text-white shadow-sm" : "text-sky-700 hover:bg-sky-100/50"}`}
+                  >
+                    Ingresar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setTeacherAuthMode("REGISTER"); setError(""); }}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${teacherAuthMode === "REGISTER" ? "bg-sky-600 text-white shadow-sm" : "text-sky-700 hover:bg-sky-100/50"}`}
+                  >
+                    ✨ Crear Cuenta (3 Días Gratis)
+                  </button>
+                </div>
+              )}
+
+              {/* Banner Promocional de Registro */}
+              {loginRole === "TEACHER" && teacherAuthMode === "REGISTER" && (
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-amber-900 p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 shadow-sm animate-fade-in">
+                  <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0 animate-bounce-slow" />
+                  <div>
+                    <strong className="block text-slate-900">🎁 ¡3 Días Gratis de Plan Medio!</strong>
+                    <span>5 Mapas, hasta 50 alumnos y Tutor Gemini IA activados al crear tu cuenta.</span>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -200,12 +288,20 @@ export default function Home() {
                 disabled={!name.trim() || (loginRole === "STUDENT" && !studentCode.trim()) || (loginRole === "TEACHER" && !password.trim()) || isLoggingIn}
                 className="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg shadow-sky-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
               >
-                {isLoggingIn ? "Ingresando..." : <>Ingresar <ArrowRight className="w-5 h-5" /></>}
+                {isLoggingIn
+                  ? "Procesando..."
+                  : loginRole === "TEACHER" && teacherAuthMode === "REGISTER"
+                    ? <>Crear Cuenta y Comenzar Prueba <ArrowRight className="w-5 h-5" /></>
+                    : <>Ingresar <ArrowRight className="w-5 h-5" /></>}
               </button>
 
               <div className="text-center">
                 <p className="text-xs text-slate-400">
-                  {loginRole === "STUDENT" ? "Pide el código secreto a tu profesor." : "Ingresa con tu nombre registrado."}
+                  {loginRole === "STUDENT"
+                    ? "Pide el código secreto a tu profesor."
+                    : teacherAuthMode === "REGISTER"
+                      ? "Crearás tu cuenta con 3 días gratis de prueba (1 cuenta por dispositivo)."
+                      : "Ingresa con tu nombre registrado."}
                 </p>
               </div>
             </form>

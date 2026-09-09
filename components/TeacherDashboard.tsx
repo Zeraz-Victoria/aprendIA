@@ -9,10 +9,13 @@ import VisualWorldBuilder from "./VisualWorldBuilder";
 import BulkEvidenceUploader from "./BulkEvidenceUploader";
 import { Users, BrainCircuit, BookOpen, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp, X, Library, Plus, UploadCloud, Map, FileText, Pencil, Trash2, UserPlus, LogOut, Swords, Send, MessageSquare, RotateCcw, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useSessionGuard } from "@/hooks/useSessionGuard";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+
+import SubscriptionLockModal from "./SubscriptionLockModal";
+import SubscriptionBanner from "./SubscriptionBanner";
 
 type Tab = "students" | "insights" | "library" | "reports" | "raid" | "messages";
 
@@ -245,6 +248,8 @@ export default function TeacherDashboard() {
         setIsAwardingGems(false);
     };
 
+    const { data: session } = useSession();
+
     // Subscription & Limits State
     const [schoolInfo, setSchoolInfo] = useState<any>(null);
 
@@ -257,7 +262,9 @@ export default function TeacherDashboard() {
             .catch(console.error);
     }, []);
 
-    const isSuspended = schoolInfo?.subscriptionStatus === 'SUSPENDED';
+    const isSuspended = schoolInfo?.subscriptionStatus === 'SUSPENDED' || schoolInfo?.subscriptionStatusInfo?.isExpired;
+    const showBanner = !isSuspended && schoolInfo?.subscriptionStatusInfo?.showBanner;
+    const daysLeft = schoolInfo?.subscriptionStatusInfo?.daysLeft || 3;
     const studentsLimitReached = schoolInfo && schoolInfo._count?.users >= schoolInfo.maxStudents;
     const mapsLimitReached = schoolInfo && schoolInfo._count?.worlds >= schoolInfo.maxMaps;
 
@@ -825,13 +832,22 @@ export default function TeacherDashboard() {
     // Metrics already calculated above handler
 
     return (
-        <div className="min-h-screen bg-slate-50 flex">
+        <div className="min-h-screen bg-slate-50 flex flex-col">
             {isSuspended && (
-                <div className="fixed top-0 left-0 w-full z-[100] bg-red-600 text-white text-center py-3 font-bold shadow-lg flex items-center justify-center gap-2">
-                    <AlertTriangle className="w-5 h-5" />
-                    CUENTA SUSPENDIDA. NO PUEDE CREAR MAPAS NI ALUMNOS HASTA QUE SE REGULARICE SU SUSCRIPCIÓN.
-                </div>
+                <SubscriptionLockModal
+                    teacherName={(session?.user as any)?.name || "Docente"}
+                    reason={schoolInfo?.subscriptionStatusInfo?.reason}
+                />
             )}
+
+            {showBanner && (
+                <SubscriptionBanner
+                    daysLeft={daysLeft}
+                    teacherName={(session?.user as any)?.name || "Docente"}
+                />
+            )}
+
+            <div className="flex-1 flex overflow-hidden">
 
             {/* Sidebar */}
             <aside className="w-64 bg-white/80 backdrop-blur-sm border-r border-sky-100 hidden md:flex flex-col">
@@ -1511,6 +1527,7 @@ export default function TeacherDashboard() {
                 )}
 
             </main>
+            </div>
 
             {/* Mobile Bottom Navigation */}
             <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-sky-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-between items-center px-6 py-3 z-50">

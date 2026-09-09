@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { trackAICall } from "@/lib/ai-tracker";
+import { checkUserSubscriptionAccess } from "@/lib/subscription";
 import prisma from "@/lib/prisma";
 
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
@@ -14,6 +15,12 @@ export async function POST(req: Request) {
 
         const userId = (session.user as any).id;
         const schoolId = (session.user as any).schoolId;
+
+        // Verificar si la suscripción de la escuela está activa
+        const subCheck = await checkUserSubscriptionAccess(userId, schoolId);
+        if (!subCheck.allowed) {
+            return NextResponse.json({ error: subCheck.reason, subscriptionExpired: true }, { status: 402 });
+        }
 
         const { problemText, studentAttempt, studentName = 'Estudiante' } = await req.json();
 

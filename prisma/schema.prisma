@@ -102,12 +102,21 @@ model School {
   subscriptionPlan   SubscriptionPlan   @default(BASIC)
   subscriptionStatus SubscriptionStatus @default(ACTIVE)
   apiCalls           Int                @default(0)
+  trialEndsAt        DateTime?
+  subscriptionEndsAt DateTime?
   classrooms         Classroom[]
   grades             Grade[]
   raidBosses         RaidBoss[]
   messages           TeacherMessage[]
   users              User[]
   worlds             World[]
+}
+
+model RegistrationFingerprint {
+  id          String   @id @default(cuid())
+  fingerprint String   @unique
+  ipAddress   String?
+  createdAt   DateTime @default(now())
 }
 
 model World {

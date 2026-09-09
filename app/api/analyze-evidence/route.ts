@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { trackAICall } from "@/lib/ai-tracker";
+import { checkUserSubscriptionAccess } from "@/lib/subscription";
 
 // Initialize the Gemini API
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
@@ -15,9 +16,15 @@ export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         const schoolId = (session?.user as any)?.schoolId;
+        const userId = (session?.user as any)?.id;
 
-        if (!schoolId) {
+        if (!schoolId && !userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const subCheck = await checkUserSubscriptionAccess(userId, schoolId);
+        if (!subCheck.allowed) {
+            return NextResponse.json({ error: subCheck.reason, subscriptionExpired: true }, { status: 402 });
         }
 
         const { imageBase64, mimeType, textEvidence, context, narrative, studentId, worldId, levelId, evidenceType } = await req.json();
@@ -149,7 +156,6 @@ FORMATO DE SALIDA ESPERADO (JSON ESTRICTO):
         const responseText = result.response.text();
 
         // Increment API calls for user and school
-        const userId = (session?.user as any)?.id;
         if (userId) {
             await trackAICall(userId, schoolId);
         }
