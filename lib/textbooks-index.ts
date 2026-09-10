@@ -34,7 +34,9 @@ const SPANISH_STOPWORDS = new Set([
     "todos", "todas", "otro", "otra", "otros", "otras", "mismo", "misma", "alguno", "alguna",
     "algunos", "algunas", "ante", "bajo", "cabe", "con", "contra", "desde", "hacia", "hasta",
     "para", "por", "segun", "sin", "so", "sobre", "tras", "durante", "mediante", "este", "esta",
-    "estos", "estas", "este", "esta", "estos", "estas", "del", "las", "los", "una", "uno", "unos", "unas"
+    "estos", "estas", "del", "las", "los", "una", "uno", "unos", "unas", "pero", "muy", "que",
+    "mucha", "mucho", "existe", "podria", "tiempo", "tiempos", "sufrimos", "tiene", "tienen",
+    "tenemos", "hacer", "hace", "hacen", "donde", "dondequiera"
 ]);
 
 function normalizeText(text: string): string {
