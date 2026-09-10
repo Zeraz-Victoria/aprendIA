@@ -54,17 +54,33 @@ export function findRelevantTextbookPages(topic: string, grade?: string, limit =
     const catalog = loadCatalog();
     if (!catalog || catalog.length === 0) return [];
 
+    const cleanGrade = grade ? grade.toLowerCase() : "";
+
+    // Filtrar estrictamente el catálogo para incluir ÚNICAMENTE libros del grado seleccionado (o Multigrado)
+    const gradeCatalog = catalog.filter(entry => {
+        if (!cleanGrade) return true;
+        const entryGrade = entry.grade.toLowerCase();
+        if (cleanGrade.includes("1") && entryGrade.includes("1")) return true;
+        if (cleanGrade.includes("2") && entryGrade.includes("2")) return true;
+        if (cleanGrade.includes("3") && entryGrade.includes("3")) return true;
+        if (entryGrade.includes("multigrado")) return true;
+        return false;
+    });
+
+    if (gradeCatalog.length === 0) return [];
+
     const normTopic = normalizeText(topic);
     const keywords = normTopic
         .split(/\s+/)
         .filter(w => w.length > 2 && !SPANISH_STOPWORDS.has(w));
 
-    if (keywords.length === 0) return [];
+    if (keywords.length === 0) {
+        return gradeCatalog.filter(e => e.snippet.length > 100).slice(0, limit);
+    }
 
-    const cleanGrade = grade ? grade.toLowerCase() : "";
     const matches: { entry: TextbookEntry; score: number }[] = [];
 
-    for (const entry of catalog) {
+    for (const entry of gradeCatalog) {
         const normSnippet = normalizeText(entry.snippet);
         const normBook = normalizeText(entry.bookTitle);
         const normField = normalizeText(entry.field);
@@ -98,18 +114,6 @@ export function findRelevantTextbookPages(topic: string, grade?: string, limit =
 
         // Debe haber al menos 1 palabra clave relevante con score >= 5
         if (score >= 5 && matchedCount >= 1) {
-            let isSameGrade = false;
-            if (cleanGrade) {
-                if (cleanGrade.includes("1") && entry.grade.includes("1")) isSameGrade = true;
-                if (cleanGrade.includes("2") && entry.grade.includes("2")) isSameGrade = true;
-                if (cleanGrade.includes("3") && entry.grade.includes("3")) isSameGrade = true;
-                if (entry.grade.includes("multigrado") || entry.grade.includes("Multigrado")) isSameGrade = true;
-            }
-
-            if (isSameGrade) {
-                score += 8; // Priorizar el grado seleccionado por el docente
-            }
-
             matches.push({ entry, score });
         }
     }
@@ -121,21 +125,7 @@ export function findRelevantTextbookPages(topic: string, grade?: string, limit =
         return matches.slice(0, limit).map(m => m.entry);
     }
 
-    // Si no hubo coincidencias por palabras clave específicas, buscar páginas principales del campo formativo en ese grado
-    if (grade) {
-        const cleanGrade = grade.toLowerCase();
-        const gradeFallback = catalog.filter(e => {
-            if (cleanGrade.includes("1") && e.grade.includes("1")) return true;
-            if (cleanGrade.includes("2") && e.grade.includes("2")) return true;
-            if (cleanGrade.includes("3") && e.grade.includes("3")) return true;
-            return e.grade.includes("multigrado") || e.grade.includes("Multigrado");
-        });
-        if (gradeFallback.length > 0) {
-            // Escoger fragmentos que tengan contenido pedagógico relevante (más de 100 caracteres)
-            return gradeFallback.filter(e => e.snippet.length > 100).slice(0, limit);
-        }
-    }
-
-    return catalog.slice(0, limit);
+    // Si no hubo coincidencias por palabras clave específicas en el grado, retornar páginas con contenido del grado seleccionado
+    return gradeCatalog.filter(e => e.snippet.length > 100).slice(0, limit);
 }
 
