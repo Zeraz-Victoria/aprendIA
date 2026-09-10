@@ -32,6 +32,24 @@ export async function POST(req: Request) {
       if (!subCheck.allowed) {
         return NextResponse.json({ error: subCheck.reason, subscriptionExpired: true }, { status: 402 });
       }
+
+      const school = await prisma.school.findUnique({
+        where: { id: schoolId },
+        select: { apiCalls: true, subscriptionPlan: true, subscriptionStatus: true }
+      });
+
+      if (school) {
+        if (school.subscriptionStatus === 'SUSPENDED') {
+          return NextResponse.json({ error: 'Cuenta suspendida. Contacta a soporte para continuar.' }, { status: 403 });
+        }
+
+        const maxCreations = school.subscriptionPlan === 'PREMIUM' ? 30 : (school.subscriptionPlan === 'INTERMEDIATE' ? 7 : 3);
+        if (school.apiCalls >= maxCreations) {
+          return NextResponse.json({
+            error: `Has alcanzado el límite máximo histórico de ${maxCreations} planeaciones/mundos creados para tu plan (${school.apiCalls}/${maxCreations}). Aunque borres mundos existentes, el cupo de generación con IA de tu cuenta ha finalizado. Contacta a soporte por WhatsApp para ampliar tu plan.`
+          }, { status: 403 });
+        }
+      }
     }
 
     if (!process.env.AI_API_KEY) {

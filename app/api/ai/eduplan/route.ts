@@ -9,6 +9,9 @@ import { findRelevantContenidosAndPDA } from '@/lib/contenidos-index';
 
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
+import prisma from '@/lib/prisma';
+import { trackAICall } from '@/lib/ai-tracker';
+
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -20,6 +23,27 @@ export async function POST(req: Request) {
         const subCheck = await checkUserSubscriptionAccess(userId, schoolId);
         if (!subCheck.allowed) {
             return NextResponse.json({ error: subCheck.reason, subscriptionExpired: true }, { status: 402 });
+        }
+
+        // Verificar límite estricto de creaciones históricas (máximo 7 para Plan Medio / cuentas nuevas)
+        if (schoolId) {
+            const school = await prisma.school.findUnique({
+                where: { id: schoolId },
+                select: { apiCalls: true, subscriptionPlan: true, subscriptionStatus: true }
+            });
+
+            if (school) {
+                if (school.subscriptionStatus === 'SUSPENDED') {
+                    return NextResponse.json({ error: 'Cuenta suspendida. Contacta a soporte para continuar.' }, { status: 403 });
+                }
+
+                const maxCreations = school.subscriptionPlan === 'PREMIUM' ? 30 : (school.subscriptionPlan === 'INTERMEDIATE' ? 7 : 3);
+                if (school.apiCalls >= maxCreations) {
+                    return NextResponse.json({
+                        error: `Has alcanzado el límite máximo histórico de ${maxCreations} planeaciones/mundos creados para tu plan (${school.apiCalls}/${maxCreations}). Aunque borres mundos existentes, el cupo de generación con IA de tu cuenta ha finalizado. Contacta a soporte por WhatsApp para ampliar tu plan.`
+                    }, { status: 403 });
+                }
+            }
         }
 
         const params = await req.json();
@@ -153,6 +177,9 @@ ESTRUCTURA JSON REQUERIDA (DEVUELVE ÚNICAMENTE UN JSON VÁLIDO):
                 extracto: b.snippet.substring(0, 220) + '...'
             }));
         }
+
+        // Incrementar el contador histórico de creaciones con IA
+        await trackAICall(userId, schoolId);
 
         return NextResponse.json({ success: true, plan });
     } catch (error: any) {

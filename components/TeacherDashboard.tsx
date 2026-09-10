@@ -269,6 +269,8 @@ export default function TeacherDashboard() {
     const daysLeft = schoolInfo?.subscriptionStatusInfo?.daysLeft || 3;
     const studentsLimitReached = schoolInfo && schoolInfo._count?.users >= schoolInfo.maxStudents;
     const mapsLimitReached = schoolInfo && schoolInfo._count?.worlds >= schoolInfo.maxMaps;
+    const maxCreationsLimit = schoolInfo?.subscriptionPlan === 'PREMIUM' ? 30 : (schoolInfo?.subscriptionPlan === 'INTERMEDIATE' ? 7 : 3);
+    const lifetimeLimitReached = schoolInfo && (schoolInfo.apiCalls || 0) >= maxCreationsLimit;
 
     // Student Management State
     const [showAddStudentModal, setShowAddStudentModal] = useState(false);
@@ -1000,10 +1002,11 @@ export default function TeacherDashboard() {
                             <button
                                 onClick={() => {
                                     if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
-                                    if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) en tu plan actual. Borra un mapa para crear otro.`);
+                                    if (lifetimeLimitReached) return alert(`Has alcanzado el límite máximo histórico de ${maxCreationsLimit} planeaciones/mundos creados para tu plan (${schoolInfo.apiCalls || 0}/${maxCreationsLimit}). Aunque borres mundos existentes, el cupo de generación con IA de tu cuenta ha finalizado. Contacta a soporte por WhatsApp para ampliar tu plan.`);
+                                    if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) activos simultáneamente en tu plan actual. Borra un mapa para liberar espacio.`);
                                     setShowUnifiedCreatorModal(true);
                                 }}
-                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'} text-white px-6 py-2.5 rounded-xl font-extrabold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2 text-sm hover:scale-105`}
+                                className={`${isSuspended || mapsLimitReached || lifetimeLimitReached ? 'bg-slate-400' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'} text-white px-6 py-2.5 rounded-xl font-extrabold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2 text-sm hover:scale-105`}
                             >
                                 <Sparkles className="w-4 h-4 text-amber-300" />
                                 ➕ Crear Nuevo Mundo (Planeación NEM + IA)
@@ -1012,10 +1015,11 @@ export default function TeacherDashboard() {
                             <button
                                 onClick={() => {
                                     if (isSuspended) return alert("Tu cuenta está suspendida. Contacta a un administrador.");
-                                    if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) en tu plan actual. Borra un mapa para crear otro.`);
+                                    if (lifetimeLimitReached) return alert(`Has alcanzado el límite máximo histórico de ${maxCreationsLimit} planeaciones/mundos creados para tu plan (${schoolInfo.apiCalls || 0}/${maxCreationsLimit}). Aunque borres mundos existentes, el cupo de generación con IA de tu cuenta ha finalizado. Contacta a soporte por WhatsApp para ampliar tu plan.`);
+                                    if (mapsLimitReached) return alert(`Has alcanzado el límite de ${schoolInfo.maxMaps} mapa(s) activos simultáneamente en tu plan actual. Borra un mapa para liberar espacio.`);
                                     setShowUploadModal(true);
                                 }}
-                                className={`${isSuspended || mapsLimitReached ? 'bg-slate-400' : 'bg-sky-600 hover:bg-sky-700'} text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-sky-200 transition-all flex items-center gap-2`}
+                                className={`${isSuspended || mapsLimitReached || lifetimeLimitReached ? 'bg-slate-400' : 'bg-sky-600 hover:bg-sky-700'} text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-sky-200 transition-all flex items-center gap-2`}
                             >
                                 <Plus className="w-4 h-4" />
                                 Generar con IA (PDF)
