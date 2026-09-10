@@ -269,7 +269,7 @@ export default function TeacherDashboard() {
     const daysLeft = schoolInfo?.subscriptionStatusInfo?.daysLeft || 3;
     const studentsLimitReached = schoolInfo && schoolInfo._count?.users >= schoolInfo.maxStudents;
     const mapsLimitReached = schoolInfo && schoolInfo._count?.worlds >= schoolInfo.maxMaps;
-    const maxCreationsLimit = schoolInfo?.subscriptionPlan === 'PREMIUM' ? 30 : (schoolInfo?.subscriptionPlan === 'INTERMEDIATE' ? 7 : 3);
+    const maxCreationsLimit = schoolInfo?.subscriptionPlan === 'PREMIUM' ? 20 : (schoolInfo?.subscriptionPlan === 'INTERMEDIATE' ? 7 : 3);
     const lifetimeLimitReached = schoolInfo && (schoolInfo.apiCalls || 0) >= maxCreationsLimit;
 
     // Student Management State

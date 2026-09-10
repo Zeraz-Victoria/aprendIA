@@ -85,7 +85,7 @@ export async function POST(req: Request) {
                     return NextResponse.json({ error: 'Cuenta suspendida. Contacte al administrador.' }, { status: 403 });
                 }
 
-                const maxCreations = school.subscriptionPlan === 'PREMIUM' ? 30 : (school.subscriptionPlan === 'INTERMEDIATE' ? 7 : 3);
+                const maxCreations = school.subscriptionPlan === 'PREMIUM' ? 20 : (school.subscriptionPlan === 'INTERMEDIATE' ? 7 : 3);
                 if (school.apiCalls >= maxCreations) {
                     return NextResponse.json({
                         error: `Has alcanzado el límite máximo histórico de ${maxCreations} planeaciones/mundos creados para tu plan (${school.apiCalls}/${maxCreations}). Aunque borres mundos existentes, el cupo de generación con IA de tu cuenta ha finalizado. Contacta a soporte por WhatsApp para ampliar tu plan.`
