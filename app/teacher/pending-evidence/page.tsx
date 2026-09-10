@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Camera, CheckCircle, Clock, ArrowLeft, Image as ImageIcon, Check, X, Upload } from "lucide-react";
 import Link from 'next/link';
+import UserAccountMenu from "@/components/UserAccountMenu";
 
 export default function PendingEvidencePage() {
     const { data: session, status } = useSession();
@@ -106,14 +107,17 @@ export default function PendingEvidencePage() {
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Header */}
             <div className="bg-sky-600 text-white p-4 shadow-md sticky top-0 z-10">
-                <div className="flex items-center gap-3">
-                    <Link href="/teacher" className="p-2 hover:bg-sky-700 rounded-full transition-colors">
-                        <ArrowLeft className="w-6 h-6" />
-                    </Link>
-                    <div>
-                        <h1 className="font-bold text-xl leading-tight">Cámara Docente</h1>
-                        <p className="text-sky-200 text-sm">Evidencias Pendientes ({pendingList.length})</p>
+                <div className="flex items-center justify-between gap-3 max-w-5xl mx-auto">
+                    <div className="flex items-center gap-3">
+                        <Link href="/teacher" className="p-2 hover:bg-sky-700 rounded-full transition-colors">
+                            <ArrowLeft className="w-6 h-6" />
+                        </Link>
+                        <div>
+                            <h1 className="font-bold text-xl leading-tight">Cámara Docente</h1>
+                            <p className="text-sky-200 text-sm">Evidencias Pendientes ({pendingList.length})</p>
+                        </div>
                     </div>
+                    <UserAccountMenu />
                 </div>
             </div>
 

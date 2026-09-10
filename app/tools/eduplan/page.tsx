@@ -5,6 +5,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import EduPlanApp from "@/components/eduplan/App";
 
+import UserAccountMenu from "@/components/UserAccountMenu";
+import { ArrowLeft } from "lucide-react";
+
 export default function EduPlanPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
@@ -31,6 +34,20 @@ export default function EduPlanPage() {
     if (status === "unauthenticated") return null;
 
     return (
-        <EduPlanApp onBack={() => router.push("/teacher")} />
+        <div className="min-h-screen flex flex-col bg-slate-50">
+            <header className="h-14 bg-white border-b border-slate-200 px-4 flex items-center justify-between sticky top-0 z-50 shadow-xs">
+                <button
+                    type="button"
+                    onClick={() => router.push("/teacher")}
+                    className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+                >
+                    <ArrowLeft className="w-4 h-4" /> Volver al Panel Docente
+                </button>
+                <UserAccountMenu />
+            </header>
+            <div className="flex-1">
+                <EduPlanApp onBack={() => router.push("/teacher")} />
+            </div>
+        </div>
     );
 }
