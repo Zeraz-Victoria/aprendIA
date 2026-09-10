@@ -1541,30 +1541,6 @@ export default function TeacherDashboard() {
                         </header>
 
                         <div className="grid md:grid-cols-2 gap-8 mt-6">
-                            {/* EduPlan AI Card */}
-                            <div
-                                onClick={() => {
-                                    setActiveTab("library");
-                                    setShowUnifiedCreatorModal(true);
-                                }}
-                                className="group cursor-pointer bg-gradient-to-br from-indigo-900 to-purple-950 p-8 rounded-[2rem] text-white hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 relative overflow-hidden"
-                            >
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500" />
-                                <div className="relative space-y-3">
-                                    <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <BrainCircuit className="w-7 h-7 text-indigo-300" />
-                                    </div>
-                                    <span className="bg-indigo-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">Integrado en Biblioteca</span>
-                                    <h3 className="text-2xl font-bold text-white mb-2">EduPlan AI (Crear Mundos)</h3>
-                                    <p className="text-slate-300 text-sm leading-relaxed">
-                                        EduPlan AI ahora es el motor didáctico principal. Para crear un Mundo Virtual, primero generas y descargas tu Planeación Didáctica NEM.
-                                    </p>
-                                    <div className="flex items-center gap-2 text-indigo-300 font-black pt-2 text-sm">
-                                        Crear Mundo con Planeación NEM <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                    </div>
-                                </div>
-                            </div>
-
                             {/* EduLegal Card */}
                             <div
                                 onClick={() => window.location.href = "/tools/edulegal"}
@@ -1577,7 +1553,7 @@ export default function TeacherDashboard() {
                                     </div>
                                     <h3 className="text-2xl font-bold text-slate-800 mb-3">EduLegal</h3>
                                     <p className="text-slate-600 mb-6 leading-relaxed">
-                                        Asistente legal escolar. Analiza incidentes y genera guitAs de actuación basadas en la normativa vigente.
+                                        Asistente legal escolar. Analiza incidentes y genera guías de actuación basadas en la normativa vigente.
                                     </p>
                                     <div className="flex items-center gap-2 text-green-600 font-bold">
                                         Abrir Herramienta <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
