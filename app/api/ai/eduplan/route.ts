@@ -67,7 +67,8 @@ export async function POST(req: Request) {
             : '';
 
         // 2. Buscar recomendaciones de libros de texto indexados
-        const searchTopic = `${contextoAdicional || ''} ${metodologia || ''}`.trim() || 'Aprendizaje';
+        const pdaTerms = matchingContenidosPDA.map(c => `${c.contenido} ${c.pda}`).join(' ');
+        const searchTopic = `${contextoAdicional || ''} ${pdaTerms}`.trim() || metodologia || 'Aprendizaje';
         const recommendedBooks = findRelevantTextbookPages(searchTopic, grado, 4);
         const booksPromptSnippet = recommendedBooks.length > 0
             ? `LIBROS DE TEXTO DE LA NEM INDEXADOS RECOMENDADOS PARA ESTE GRADO:\n` +

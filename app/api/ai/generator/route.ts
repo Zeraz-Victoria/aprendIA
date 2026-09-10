@@ -10,17 +10,37 @@ const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { theme, topic, difficulty = "Básico", session_title, session_start, session_development, session_end } = await req.json();
+    const body = await req.json();
+    const {
+      theme,
+      topic,
+      difficulty = "Básico",
+      lessonPlan,
+      sesiones: rawSesiones,
+      session_title,
+      session_start,
+      session_development,
+      session_end
+    } = body;
 
     if (!theme || !topic) {
       return NextResponse.json({ error: 'Faltan parámetros obligatorios (tema y título)' }, { status: 400 });
     }
 
+    // Extraer lista de sesiones si viene de una planeación EduPlan
+    let sesionesList: any[] = [];
+    if (Array.isArray(rawSesiones) && rawSesiones.length > 0) {
+      sesionesList = rawSesiones;
+    } else if (lessonPlan?.secuencia_didactica && Array.isArray(lessonPlan.secuencia_didactica)) {
+      sesionesList = lessonPlan.secuencia_didactica.flatMap((f: any) => f.sesiones || []);
+    }
+
     // Buscar sugerencias de libros de texto indexados
-    const textbookSuggestions = findRelevantTextbookPages(topic, difficulty, 3);
+    const searchTopicForBooks = topic + (lessonPlan?.diagnostico_pedagogico ? ` ${lessonPlan.diagnostico_pedagogico}` : '');
+    const textbookSuggestions = findRelevantTextbookPages(searchTopicForBooks, difficulty, 4);
     const textbookSnippet = textbookSuggestions.length > 0
-      ? `\nSUGERENCIA DE LIBROS DE TEXTO DE TELESECUNDARIA (Sugerir estas páginas en el oráculo/teoría al alumno):\n` +
-        textbookSuggestions.map(b => `- ${b.bookTitle} (Página ${b.page}): "${b.snippet.substring(0, 140)}..."`).join('\n')
+      ? `\nREFERENCIAS DE LIBROS DE TEXTO DE TELESECUNDARIA (Sugerir estas páginas en la teoría/oráculo del juego):\n` +
+        textbookSuggestions.map(b => `- ${b.bookTitle} (Página ${b.page}): "${b.snippet.substring(0, 160)}..."`).join('\n')
       : '';
 
     const session = await getServerSession(authOptions);
@@ -57,92 +77,205 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'La clave de API de IA no está configurada.' }, { status: 500 });
     }
 
-    // Attempt to fetch from Cache first to save AI API tokens
-    try {
-      //@ts-ignore
-      const cachedPrompt = await prisma.aIPromptCache.findUnique({
-        where: {
-          topic_theme: {
-            topic: topic.toLowerCase().trim(),
-            theme: theme.toLowerCase().trim()
+    // Cache lookup solo cuando no hay planeación personalizada (las planeaciones son únicas)
+    const hasCustomPlan = sesionesList.length > 0 || !!lessonPlan;
+    if (!hasCustomPlan) {
+      try {
+        //@ts-ignore
+        const cachedPrompt = await prisma.aIPromptCache.findUnique({
+          where: {
+            topic_theme: {
+              topic: topic.toLowerCase().trim(),
+              theme: theme.toLowerCase().trim()
+            }
+          }
+        });
+
+        if (cachedPrompt) {
+          const parsedCache = JSON.parse(cachedPrompt.response);
+          // Si el cache tiene al menos 3 niveles válidos, retornarlo
+          if (Array.isArray(parsedCache) && parsedCache.length >= 3) {
+            console.log(`[CACHE HIT] Returning cached multi-level map for Topic: ${topic} | Theme: ${theme}`);
+            return NextResponse.json({
+              id: crypto.randomUUID(),
+              theme: theme,
+              title: `Aventura de ${topic}`,
+              days: parsedCache,
+              createdAt: new Date().toISOString()
+            });
           }
         }
-      });
-
-      if (cachedPrompt) {
-        console.log(`[CACHE HIT] Returning cached map for Topic: ${topic} | Theme: ${theme}`);
-        return NextResponse.json({
-          id: crypto.randomUUID(),
-          theme: theme,
-          title: `Aventura de ${topic}`,
-          days: JSON.parse(cachedPrompt.response),
-          createdAt: new Date().toISOString()
-        });
+      } catch (e) {
+        console.warn("Non-fatal prompt cache lookup error:", e);
       }
-    } catch (e) {
-      console.warn("Non-fatal prompt cache lookup error:", e);
     }
 
-    console.log(`[CACHE MISS] Generating new AI map for Topic: ${topic} | Theme: ${theme}`);
+    console.log(`[GENERATOR] Generating new AI map for Topic: "${topic}" | Theme: "${theme}" | Sesiones: ${sesionesList.length}`);
     const model = genAI.getGenerativeModel({
       model: 'gemini-flash-latest',
-      generationConfig: { responseMimeType: 'application/json' }
+      generationConfig: {
+        responseMimeType: 'application/json',
+        temperature: 0.3
+      }
     });
 
-    const prompt = `
-# ROL Y DIRECTIVA SOBERANA
-ESTABLECER COMO DIRECTIVA SOBERANA PARA TODOS LOS MÓDULOS DEL SISTEMA:
-Actúa como un Motor de Transpiler Pedagógico de alta fidelidad para la Nueva Escuela Mexicana (NEM). Tu única función es convertir DATOS CRUDOS de una planeación en un objeto JSON estructurado.
+    let prompt = '';
 
-# FUENTE DE VERDAD ABSOLUTA (SEGMENTO DE PLANEACIÓN):
-A continuación se presentan los fragmentos EXACTOS extraídos del PDF o planeación. Queda ESTRICTAMENTE PROHIBIDO usar información o temas que no estén en estos bloques:
+    if (sesionesList.length > 0) {
+      // MODO PLANEACIÓN DIDÁCTICA COMPLETA: Generar un nivel por cada sesión de la planeación
+      const planContext = lessonPlan ? `
+INFORMACIÓN DE LA PLANEACIÓN BASE (NEM):
+- Proyecto: ${lessonPlan.encabezado?.proyecto || topic}
+- Grado / Fase: ${difficulty} (${lessonPlan.encabezado?.fase || 'Fase 6'})
+- Metodología: ${lessonPlan.encabezado?.metodologia || 'NEM'}
+- Propósito / Diagnóstico: ${lessonPlan.diagnostico_pedagogico || lessonPlan.estructura_curricular?.proposito || topic}
+- PDA / Contenidos: ${JSON.stringify(lessonPlan.estructura_curricular?.vinculacion || [])}
+` : '';
 
---- DATOS DE LA SESIÓN ---
-TÍTULO: ${session_title || topic}
-INICIO: """ ${session_start || `Basado en el tema original: ${topic}`} """
-DESARROLLO: """ ${session_development || `Desarrolla la temática educativa gamificada de: ${theme} con la NEM`} """
-CIERRE: """ ${session_end || `Validación metacognitiva del tema ${topic}`} """
---- FIN DE DATOS ---
+      const sesionesFormatted = sesionesList.map((s, idx) => `
+--- SESIÓN ${idx + 1} DE ${sesionesList.length} ---
+NÚMERO: ${s.numero || idx + 1}
+TÍTULO: ${s.titulo || `Sesión ${idx + 1}`}
+INICIO: ${Array.isArray(s.inicio) ? s.inicio.join(" ") : (s.inicio || "Exploración e indagación de saberes previos")}
+DESARROLLO: ${Array.isArray(s.desarrollo) ? s.desarrollo.join(" ") : (s.desarrollo || "Actividades prácticas y modelaje")}
+CIERRE: ${Array.isArray(s.cierre) ? s.cierre.join(" ") : (s.cierre || "Reflexión metacognitiva y evaluación")}
+RECURSOS: ${Array.isArray(s.recursos) ? s.recursos.join(", ") : (s.recursos || "")}
+EVIDENCIA: ${s.evidencia || ""}
+`).join('\n');
+
+      prompt = `
+# ROL: ARQUITECTO PEDAGÓGICO DE GAMIFICACIÓN EDUCATIVA (NUEVA ESCUELA MEXICANA)
+Tu misión es transformar CADA UNA DE LAS ${sesionesList.length} SESIONES de la planeación docente adjunta en una ruta secuencial de niveles interactivos para un Mundo Virtual gamificado.
+
+${planContext}
+
+AMBIENTACIÓN NARRATIVA SELECCIONADA: "${theme}" (Ejemplos: Infierno de Fuego, Tundra de Hielo, Selva Mística, Ciudad Neón, Clásico Escolar).
+Debes tejer la ambientación de "${theme}" con los contenidos pedagógicos reales de cada sesión.
+
 ${textbookSnippet}
 
-# INSTRUCCIONES DE Y CREACIÓN Y EXPANSIÓN:
-El texto anterior es un resumen didáctico extremadamente conciso. Tu tarea es INVENTAR y EXPANDIR este concepto en un nivel de juego completo.
-1. NARRATIVA DE ENTRADA: Crea una historia envolvente de aventura basada en el resumen didáctico. Transforma el concepto aburrido en una intro emocionante.
-2. DESAFÍO TÉCNICO: Diseña un problema matemático o lógico jugable que evalúe directamente el concepto del resumen. Asegúrate de incluir la respuesta correcta y una pista socrática para ayudar al alumno si se equivoca.
-3. METACOGNICIÓN: Inventa una reflexión de cierre motivadora relacionada al desarrollo.
-4. CUMPLIMIENTO NEM: Clasifica el nivel en la Fase correspondiente (1-6) y extrae o inventa el PDA directamente relacionado al tema.
+SESIONES DIDÁCTICAS A TRANSFORMAR (DEBES GENERAR EXACTAMENTE ${sesionesList.length} NIVELES, UNO POR CADA SESIÓN):
+${sesionesFormatted}
 
-# FORMATO DE SALIDA (JSON ÚNICAMENTE):
-Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiquetas markdown.
-   Toda respuesta de generación de niveles debe seguir esta estructura estricta:
-   {
-     "metadatos_nem": { "fase": "1-6", "metodologia": "Seleccionada", "pda": "PDA_Original" },
-     "mapa_interactivo": [{
-       "sesion_id": "ID",
-       "paso_1_inicio": { 
-          "narrativa": "Actividad de Inicio transcrita",
-          "oraculo": "Teoría necesaria para el alumno (Aula Invertida)"
-       },
-       "paso_2_desarrollo": { 
-         "componente_ui": "LOGIC_PUZZLE|TEXT_MASTER|CONCEPT_SORT|TRIVIA",
-         "instruccion": "Actividad de Desarrollo transcrita",
-         "valor_correcto": "Dato_Docente",
-         "pista_socratica": "Pregunta guía ante un error"
-       },
-       "paso_3_cierre": { "metacognicion": "Actividad de Cierre transcrita" }
-     }]
-   }
+### REGLAS DE CONSTRUCCIÓN DE NIVELES:
+1. Para cada sesión $i$ (desde 1 hasta ${sesionesList.length}):
+   - Nivel 1 (Día 1): "type": "concept_story". Narrativa de apertura en el mundo de "${theme}" que introduce la aventura. En "chunks" incluye la teoría clara y menciona las páginas del libro de texto. Incluye un primer reto interactivo.
+   - Niveles intermedios (Día 2 a ${sesionesList.length - 1}): "type": "guided_practice". Continúa la historia, presenta el reto práctico de la sesión correspondiente, con pregunta clara ("statement"), respuesta correcta esperada ("correctValue") y una pista socrática ("hint") que guíe al alumno ante un error.
+   - Último Nivel (Día ${sesionesList.length}): "type": "boss_fight". La Batalla Final o Desafío Épico del Proyecto. El reto debe evaluar el producto central o síntesis de todo el proyecto. Incluye "originalProblemText" y un arreglo con 2 "hints".
+
+ESTRUCTURA JSON REQUERIDA (DEVUELVE ESTRICTAMENTE UN ARREGLO JSON CON LOS ${sesionesList.length} NIVELES):
+[
+  {
+    "dayNumber": 1,
+    "type": "concept_story",
+    "title": "Título llamativo del Nivel 1 basado en la Sesión 1",
+    "narrative": "Historia inmersiva con temática ${theme} conectada al inicio de la sesión...",
+    "content": {
+      "explanation": {
+        "chunks": ["Explicación amigable del concepto central y orientación con el libro de texto"],
+        "analogy": "Analogía clara conectada al mundo real o a la ambientación"
+      },
+      "practiceProblem": {
+        "statement": "Pregunta o reto directo derivado de la actividad de desarrollo",
+        "correctValue": "Respuesta correcta exacta o palabra clave",
+        "hint": "¿Qué sucede si recuerdas el concepto clave?"
+      }
+    },
+    "pda_objetivo": "PDA de la sesión",
+    "cierre_metacognicion": "Reflexión del cierre de la sesión"
+  },
+  {
+    "dayNumber": ${sesionesList.length},
+    "type": "boss_fight",
+    "title": "Jefe Final: Desafío Épico del Proyecto",
+    "originalProblemText": "El reto integrador culminante que resuelve la misión principal del proyecto...",
+    "hints": ["Pista socrática inicial", "Pista socrática avanzada"],
+    "content": {
+      "explanation": {
+        "chunks": ["¡Has llegado a la prueba final de la aventura! Demuestra todo lo aprendido."],
+        "analogy": "La síntesis de tus conocimientos es la clave para la victoria."
+      },
+      "practiceProblem": {
+        "statement": "El reto integrador culminante que resuelve la misión principal...",
+        "correctValue": "Respuesta correcta final",
+        "hint": "Integra los conceptos aprendidos en las sesiones previas."
+      }
+    },
+    "pda_objetivo": "PDA final",
+    "cierre_metacognicion": "Conclusión metacognitiva del proyecto"
+  }
+]
 `;
+    } else {
+      // MODO TEMA DIRECTO: Generar aventura estándar de 3 a 5 niveles
+      const singleSessionContext = session_title || session_start || session_development
+        ? `
+DATOS DE REFERENCIA:
+- Título: ${session_title || topic}
+- Inicio: ${session_start || 'Introducción'}
+- Desarrollo: ${session_development || 'Actividades prácticas'}
+- Cierre: ${session_end || 'Evaluación'}
+` : '';
+
+      prompt = `
+# ROL: DISEÑADOR INSTRUCCIONAL EXPERTO EN GAMIFICACIÓN EDUCATIVA (NEM)
+Crea una aventura pedagógica secuencial de 4 niveles que conecte el tema "${topic}" con la ambientación temática "${theme}" para el grado "${difficulty}".
+
+${singleSessionContext}
+
+${textbookSnippet}
+
+REGLAS DE DISEÑO:
+- Día 1: "concept_story" (Descubrimiento Guiado, Narrativa inmersiva, teoría y oráculo con libros de texto, primer reto).
+- Día 2: "guided_practice" (Práctica guiada y resolución de problemas, con pregunta directa, respuesta correcta y pista socrática).
+- Día 3: "guided_practice" (Reto avanzado de aplicación contextualizada).
+- Día 4: "boss_fight" (Jefe Final integrador y épico con 2 pistas socráticas).
+
+ESTRUCTURA JSON REQUERIDA (DEVUELVE ESTRICTAMENTE UN ARREGLO JSON):
+[
+  {
+    "dayNumber": 1,
+    "type": "concept_story",
+    "title": "Título del Día 1",
+    "narrative": "Historia inmersiva contextualizada en ${theme}...",
+    "content": {
+      "explanation": {
+        "chunks": ["Teoría y explicación clara del tema"],
+        "analogy": "Analogía cotidiana"
+      },
+      "practiceProblem": {
+        "statement": "Pregunta o desafío del Nivel 1",
+        "correctValue": "Respuesta correcta",
+        "hint": "Pista socrática"
+      }
+    }
+  },
+  {
+    "dayNumber": 4,
+    "type": "boss_fight",
+    "title": "Jefe Final: El Gran Desafío",
+    "originalProblemText": "Desafío integrador de pensamiento crítico...",
+    "hints": ["Pista 1", "Pista 2"],
+    "content": {
+      "practiceProblem": {
+        "statement": "Desafío integrador...",
+        "correctValue": "Respuesta correcta",
+        "hint": "Pista socrática"
+      }
+    }
+  }
+]
+`;
+    }
 
     const result = await model.generateContent(prompt);
     let responseText = result.response.text();
 
-    console.log("Raw AI Response:", responseText); // Debugging log
-
     // Extract JSON block if wrapped in text or markdown
     const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || 
                       responseText.match(/```\n([\s\S]*?)\n```/) ||
-                      responseText.match(/{[\s\S]*}/);
+                      responseText.match(/\[[\s\S]*\]/) ||
+                      responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       responseText = jsonMatch[1] || jsonMatch[0];
     }
@@ -151,38 +284,35 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
     // A robust function to escape quotes used inside string values but preserve structural JSON quotes
     const escapeUnsafeQuotes = (jsonStr: string) => {
       let isInsideString = false;
-      let result = '';
+      let res = '';
 
       for (let i = 0; i < jsonStr.length; i++) {
         const char = jsonStr[i];
         const prevChar = i > 0 ? jsonStr[i - 1] : '';
 
-        if (char === '"' && prevChar !== '\\\\') {
-          // Look behind for : { [ , or look ahead for : } ] , to detect structural boundaries
+        if (char === '"' && prevChar !== '\\') {
           const prevNonSpace = jsonStr.substring(0, i).trim().slice(-1);
           const nextNonSpaceIndex = jsonStr.substring(i + 1).search(/[^\s]/);
           const nextNonSpace = nextNonSpaceIndex !== -1 ? jsonStr[i + 1 + nextNonSpaceIndex] : '';
 
-          const isStartOfString = /[:\\[\\{,]/.test(prevNonSpace);
-          const isEndOfString = /[:\\}\\]\,]/.test(nextNonSpace);
+          const isStartOfString = /[:\[\{,]/.test(prevNonSpace);
+          const isEndOfString = /[:\}\]\,]/.test(nextNonSpace);
 
           if (isStartOfString || isEndOfString) {
             isInsideString = !isInsideString;
-            result += char;
+            res += char;
           } else {
-            // It's an inner quote inside a string value
-            result += '\\\\"';
+            res += '\\"';
           }
         } else {
-          result += char;
+          res += char;
         }
       }
-      return result;
+      return res;
     };
 
     let parsedResponse;
     try {
-      // Intentar primero el JSON puro que generó la IA (suele venir perfecto con Gemini 2.5 Flash)
       parsedResponse = JSON.parse(responseText);
     } catch (initialError) {
       console.log("JSON Parse inicial falló, intentando sanear comillas...");
@@ -196,82 +326,121 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
       }
     }
 
-    try {
-      // If Gemini wrapped the whole response in an array despite instructions:
-      if (Array.isArray(parsedResponse) && parsedResponse.length > 0 && parsedResponse[0].mapa_interactivo) {
-        parsedResponse = parsedResponse[0];
-      }
-
-      // If the root is nested inside a `response` or `data` wrapper
-      if (parsedResponse.response && parsedResponse.response.mapa_interactivo) {
-        parsedResponse = parsedResponse.response;
-      }
-    } catch (wrapperError) {
-      console.error("Error un-wrapping AI response:", wrapperError);
+    // Normalizar a un arreglo de niveles
+    let rawLevels: any[] = [];
+    if (Array.isArray(parsedResponse)) {
+      rawLevels = parsedResponse;
+    } else if (parsedResponse.days && Array.isArray(parsedResponse.days)) {
+      rawLevels = parsedResponse.days;
+    } else if (parsedResponse.mapa_interactivo && Array.isArray(parsedResponse.mapa_interactivo)) {
+      rawLevels = parsedResponse.mapa_interactivo;
+    } else if (parsedResponse.mapa_aprendizaje && Array.isArray(parsedResponse.mapa_aprendizaje)) {
+      rawLevels = parsedResponse.mapa_aprendizaje;
+    } else if (parsedResponse.niveles && Array.isArray(parsedResponse.niveles)) {
+      rawLevels = parsedResponse.niveles;
+    } else {
+      rawLevels = [parsedResponse];
     }
 
-    // Adapt new JSON format to old Data Schema to avoid frontend breakage
-    let days: any[] = [];
-    const interactiveMap = parsedResponse.mapa_aprendizaje || parsedResponse.mapa_de_juego || parsedResponse.mapa_interactivo || (Array.isArray(parsedResponse) ? parsedResponse : []);
+    // Mapear y garantizar estructura estándar para el frontend
+    const days = rawLevels.map((lvl: any, index: number) => {
+      const isLast = index === rawLevels.length - 1 && rawLevels.length > 1;
+      const isFirst = index === 0;
+      
+      const defaultType = isLast ? "boss_fight" : (isFirst ? "concept_story" : "guided_practice");
+      const type = lvl.type || defaultType;
 
-    console.log("=== DEBUG GENERATOR ===");
-    console.log("IS ARRAY?", Array.isArray(interactiveMap));
-    console.log("INTERACTIVE MAP DUMP:", JSON.stringify(interactiveMap, null, 2));
+      const title = lvl.title || lvl.titulo_nivel || lvl.config_nivel?.titulo || lvl.sesion_id || `Nivel ${index + 1}`;
+      const narrative = lvl.narrative || lvl.paso_1_inicio?.narrativa || lvl.config_nivel?.narrativa_inicio || lvl.contexto_narrativo || "";
 
-    if (interactiveMap && Array.isArray(interactiveMap)) {
-      let globalIndex = 1;
-      interactiveMap.forEach((etapa: any) => {
-        // En V4 map_interactivo itera niveles directo. En V3 estaba anidado bajo "niveles:"
-        const arrToIterate = etapa.niveles && Array.isArray(etapa.niveles) ? etapa.niveles : [etapa];
+      const explanationChunks = lvl.content?.explanation?.chunks || 
+        (lvl.paso_1_inicio?.oraculo ? [lvl.paso_1_inicio.oraculo] : [lvl.config_nivel?.oraculo_teoria?.contenido_html || ""]);
+      const analogy = lvl.content?.explanation?.analogy || lvl.paso_3_cierre?.metacognicion || "";
 
-        arrToIterate.forEach((nivel: any) => {
-          days.push({
-            dayNumber: globalIndex++,
-            type: "guided_practice", // Fallback for all items currently
-            title: nivel.titulo_nivel || nivel.config_nivel?.titulo || nivel.sesion_id || "Nivel",
-            narrative: nivel.paso_1_inicio?.narrativa || nivel.config_nivel?.narrativa_inicio || nivel.paso_1_inicio?.narrativa_contexto || nivel.contexto_narrativo || "",
-            content: {
-              explanation: {
-                chunks: [nivel.paso_1_inicio?.oraculo || nivel.config_nivel?.oraculo_teoria?.contenido_html || nivel.paso_1_inicio?.oraculo_teoria || ""],
-                analogy: nivel.paso_3_cierre?.metacognicion || nivel.cierre_formativo?.actividad_reflexion || ""
-              },
-              practiceProblem: {
-                statement: nivel.paso_2_desarrollo?.instruccion || nivel.interaccion_desarrollo?.validacion?.pregunta || nivel.interaccion_desarrollo?.instruccion_docente || nivel.paso_2_desarrollo?.datos_juego?.pregunta || nivel.paso_2_desarrollo?.instruccion_fiel || "Pregunta no definida",
-                correctValue: (nivel.paso_2_desarrollo?.valor_correcto || nivel.interaccion_desarrollo?.validacion?.respuesta_esperada || nivel.paso_2_desarrollo?.datos_juego?.respuesta_correcta) ?? "N/A",
-                hint: nivel.paso_2_desarrollo?.pista_socratica || nivel.interaccion_desarrollo?.validacion?.pista_socratica || nivel.paso_2_desarrollo?.datos_juego?.pista_socratica || ""
-              }
+      const practiceStatement = lvl.content?.practiceProblem?.statement || 
+        lvl.originalProblemText || 
+        lvl.paso_2_desarrollo?.instruccion || 
+        lvl.interaccion_desarrollo?.validacion?.pregunta || 
+        "Completa el desafío del nivel para avanzar.";
+      const practiceCorrectValue = lvl.content?.practiceProblem?.correctValue ?? 
+        lvl.paso_2_desarrollo?.valor_correcto ?? 
+        lvl.interaccion_desarrollo?.validacion?.respuesta_esperada ?? 
+        "correcto";
+      const practiceHint = lvl.content?.practiceProblem?.hint || 
+        lvl.hints?.[0] || 
+        lvl.paso_2_desarrollo?.pista_socratica || 
+        "Piensa en los conceptos revisados en esta sesión.";
+
+      const hints = Array.isArray(lvl.hints) && lvl.hints.length > 0 ? lvl.hints : [practiceHint, "Revisa la teoría del nivel anterior."];
+
+      if (type === "boss_fight" || isLast) {
+        return {
+          dayNumber: index + 1,
+          type: "boss_fight",
+          title: title.startsWith("Jefe") ? title : `Jefe Final: ${title}`,
+          originalProblemText: lvl.originalProblemText || practiceStatement,
+          hints: hints,
+          pda_objetivo: lvl.pda_objetivo || "",
+          cierre_metacognicion: lvl.cierre_metacognicion || "",
+          content: {
+            explanation: {
+              chunks: explanationChunks,
+              analogy: analogy
+            },
+            practiceProblem: {
+              statement: practiceStatement,
+              correctValue: practiceCorrectValue,
+              hint: practiceHint
             }
-          });
-        });
-      });
-      // Mark the last element as Boss Fight
-      if (days.length > 0) {
-        days[days.length - 1].type = "boss_fight";
-        days[days.length - 1].originalProblemText = days[days.length - 1].content.practiceProblem.statement;
-        days[days.length - 1].hints = [days[days.length - 1].content.practiceProblem.hint];
+          }
+        };
       }
-    } else if (Array.isArray(parsedResponse)) {
-      // Fallback in case Gemini hallucinates the old format
-      days = parsedResponse;
-    }
-    // Save to Cache so future requests don't hit the Gemini API
-    try {
-      //@ts-ignore
-      await prisma.aIPromptCache.create({
-        data: {
-          topic: topic.toLowerCase().trim(),
-          theme: theme.toLowerCase().trim(),
-          response: JSON.stringify(days)
+
+      return {
+        dayNumber: index + 1,
+        type: type,
+        title: title,
+        narrative: narrative,
+        pda_objetivo: lvl.pda_objetivo || "",
+        cierre_metacognicion: lvl.cierre_metacognicion || "",
+        content: {
+          explanation: {
+            chunks: explanationChunks,
+            analogy: analogy
+          },
+          practiceProblem: {
+            statement: practiceProblemStatement(practiceStatement),
+            correctValue: String(practiceCorrectValue),
+            hint: practiceHint
+          }
         }
-      });
-    } catch (cacheError) {
-      console.error("Failed to save to aiPromptCache (non-fatal):", cacheError);
+      };
+    });
+
+    function practiceProblemStatement(st: string): string {
+      return st || "Resuelve el problema planteado.";
+    }
+
+    // Guardar en cache solo si es una generación estándar multi-nivel
+    if (!hasCustomPlan && days.length >= 3) {
+      try {
+        //@ts-ignore
+        await prisma.aIPromptCache.create({
+          data: {
+            topic: topic.toLowerCase().trim(),
+            theme: theme.toLowerCase().trim(),
+            response: JSON.stringify(days)
+          }
+        });
+      } catch (cacheError) {
+        console.error("Failed to save to aiPromptCache (non-fatal):", cacheError);
+      }
     }
 
     return NextResponse.json({
       id: crypto.randomUUID(),
-      theme: "custom", // Internal enum mapping could go here
-      title: `Aventura de ${topic}`,
+      theme: theme || "clasico",
+      title: topic,
       days: days,
       createdAt: new Date().toISOString()
     });
@@ -281,3 +450,4 @@ Genera un objeto JSON que mapee estos campos. No incluyas explicaciones ni etiqu
     return NextResponse.json({ error: error?.message || 'Error al procesar la generación del mundo con IA.' }, { status: 500 });
   }
 }
+

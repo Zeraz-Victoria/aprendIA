@@ -33,11 +33,40 @@ const SPANISH_STOPWORDS = new Set([
     "cual", "cuales", "donde", "quien", "quienes", "pero", "sino", "porque", "cada", "todo", "toda",
     "todos", "todas", "otro", "otra", "otros", "otras", "mismo", "misma", "alguno", "alguna",
     "algunos", "algunas", "ante", "bajo", "cabe", "con", "contra", "desde", "hacia", "hasta",
-    "para", "por", "segun", "sin", "so", "sobre", "tras", "durante", "mediante", "este", "esta",
-    "estos", "estas", "del", "las", "los", "una", "uno", "unos", "unas", "pero", "muy", "que",
-    "mucha", "mucho", "existe", "podria", "tiempo", "tiempos", "sufrimos", "tiene", "tienen",
-    "tenemos", "hacer", "hace", "hacen", "donde", "dondequiera"
+    "por", "segun", "sin", "so", "tras", "durante", "mediante", "del", "las", "los", "una", "uno", "unos", "unas",
+    "muy", "que", "mucha", "mucho", "existe", "podria", "tiempo", "tiempos", "sufrimos", "tiene", "tienen",
+    "tenemos", "hacer", "hace", "hacen", "donde", "dondequiera", "nivel", "secundaria", "grado", "fase", "alumnos",
+    "escuela", "docente", "trabajo", "aula", "proyecto", "proyectos", "aprender", "aprendizaje", "tema", "temas",
+    "desarrollo", "actividad", "actividades", "evaluacion", "estudiantes", "maestro", "maestra"
 ]);
+
+const FIELD_KEYWORDS: Record<string, string[]> = {
+    'Saberes y Pensamiento Científico': [
+        'matematicas', 'fracciones', 'fraccion', 'decimales', 'ecuaciones', 'ecuacion', 'algebra', 'algebraico',
+        'geometria', 'geometrico', 'fisica', 'quimica', 'biologia', 'celula', 'celulas', 'fuerza', 'fuerzas',
+        'energia', 'velocidad', 'densidad', 'atomo', 'atomos', 'protones', 'tabla periodica', 'ecosistema',
+        'ecosistemas', 'biodiversidad', 'gravedad', 'planetas', 'sol', 'organos', 'cuerpo', 'genetica', 'adn',
+        'calculo', 'volumen', 'area', 'perimetro', 'proporcionalidad', 'porcentaje', 'pitagoras', 'poligonos',
+        'angulos', 'probabilidad', 'estadistica', 'graficas', 'numeros', 'operaciones', 'suma', 'resta', 'multiplicacion', 'division'
+    ],
+    'Ética, Naturaleza y Sociedades': [
+        'historia', 'revolucion', 'independencia', 'mexico', 'sociedad', 'sociedades', 'derechos', 'humanos',
+        'constitucion', 'leyes', 'gobierno', 'democracia', 'democrata', 'cultura', 'paz', 'conflictos', 'conflicto',
+        'violencia', 'discriminacion', 'genero', 'igualdad', 'territorio', 'geografia', 'clima', 'migracion',
+        'pueblos', 'indigenas', 'colonial', 'mesoamerica', 'tlaxcala', 'aztecas', 'mayas', 'ciudadania', 'etica', 'valores'
+    ],
+    'Lenguajes': [
+        'lengua', 'lenguas', 'lenguaje', 'lenguajes', 'espanol', 'ingles', 'lectura', 'redaccion', 'poesia', 'poema',
+        'poemas', 'cuento', 'cuentos', 'novela', 'teatro', 'ensayo', 'argumentacion', 'argumentar', 'debate',
+        'comunicacion', 'dialogo', 'texto', 'textos', 'literario', 'narrativo', 'discurso', 'noticia', 'periodico',
+        'metafora', 'metaforas', 'rima', 'rimas', 'ortografia', 'gramatica', 'entrevista', 'resena'
+    ],
+    'De lo Humano y lo Comunitario': [
+        'salud', 'emociones', 'emocion', 'autoestima', 'adicciones', 'adiccion', 'drogas', 'droga', 'fentanilo',
+        'alcohol', 'tabaco', 'alimentacion', 'nutricion', 'ejercicio', 'deporte', 'educacion fisica',
+        'proyecto de vida', 'convivencia', 'comunidad', 'familia', 'sexualidad', 'prevencion', 'higiene', 'bienestar', 'asertividad'
+    ]
+};
 
 function normalizeText(text: string): string {
     return (text || "")
@@ -47,6 +76,22 @@ function normalizeText(text: string): string {
         .replace(/[^a-z0-9\s]/g, " ");
 }
 
+function isFrontMatter(entry: TextbookEntry): boolean {
+    if (entry.page <= 5) return true;
+    const norm = normalizeText(entry.snippet);
+    if (
+        norm.includes("estimadas maestras") ||
+        norm.includes("direccion general de materiales") ||
+        norm.includes("secretaria de educacion publica") ||
+        norm.includes("indice general") ||
+        norm.includes("directorio") ||
+        norm.includes("comision nacional de libros de texto gratuito")
+    ) {
+        return true;
+    }
+    return false;
+}
+
 /**
  * Busca recomendaciones de libros de texto basadas en el tema y el grado escolar.
  */
@@ -54,66 +99,94 @@ export function findRelevantTextbookPages(topic: string, grade?: string, limit =
     const catalog = loadCatalog();
     if (!catalog || catalog.length === 0) return [];
 
+    const normTopic = normalizeText(topic);
+    const rawTokens = normTopic
+        .split(/\s+/)
+        .filter(w => w.length > 2 && !SPANISH_STOPWORDS.has(w));
+
+    // Expandir lemas básicos de plurales en español
+    const keywords: string[] = [];
+    rawTokens.forEach(kw => {
+        keywords.push(kw);
+        if (kw.endsWith('es') && kw.length > 4) keywords.push(kw.slice(0, -2));
+        else if (kw.endsWith('s') && kw.length > 3) keywords.push(kw.slice(0, -1));
+    });
+
+    // Detectar campos formativos prioritarios según las palabras del tema
+    const boostedFields = new Set<string>();
+    for (const [field, kws] of Object.entries(FIELD_KEYWORDS)) {
+        for (const kw of kws) {
+            if (normTopic.includes(kw)) {
+                boostedFields.add(field);
+            }
+        }
+    }
+
     const cleanGrade = grade ? grade.toLowerCase() : "";
 
-    // Filtrar estrictamente el catálogo para incluir ÚNICAMENTE libros del grado seleccionado (o Multigrado)
+    // Filtrar por grado si existen libros de ese grado
     const gradeCatalog = catalog.filter(entry => {
         if (!cleanGrade) return true;
         const entryGrade = entry.grade.toLowerCase();
         if (cleanGrade.includes("1") && entryGrade.includes("1")) return true;
         if (cleanGrade.includes("2") && entryGrade.includes("2")) return true;
         if (cleanGrade.includes("3") && entryGrade.includes("3")) return true;
-        if (entryGrade.includes("multigrado")) return true;
         return false;
     });
 
-    if (gradeCatalog.length === 0) return [];
-
-    const normTopic = normalizeText(topic);
-    const keywords = normTopic
-        .split(/\s+/)
-        .filter(w => w.length > 2 && !SPANISH_STOPWORDS.has(w));
-
-    if (keywords.length === 0) {
-        return gradeCatalog.filter(e => e.snippet.length > 100).slice(0, limit);
-    }
+    // Si el grado no tiene libros propios indexados (ej. 1° de Telesecundaria), buscamos en todo el catálogo de Fase 6
+    const searchPool = (gradeCatalog.length > 0) ? gradeCatalog : catalog;
 
     const matches: { entry: TextbookEntry; score: number }[] = [];
 
-    for (const entry of gradeCatalog) {
-        const normSnippet = normalizeText(entry.snippet);
-        const normBook = normalizeText(entry.bookTitle);
-        const normField = normalizeText(entry.field);
+    for (const entry of searchPool) {
+        if (isFrontMatter(entry)) continue;
+
+        const snippetNorm = normalizeText(entry.snippet);
+        const bookNorm = normalizeText(entry.bookTitle);
+        const fieldNorm = normalizeText(entry.field);
+
+        const snippetWords = new Set(snippetNorm.split(/\s+/));
+        const bookWords = new Set(bookNorm.split(/\s+/));
+        const fieldWords = new Set(fieldNorm.split(/\s+/));
 
         let score = 0;
-        let matchedCount = 0;
+        let matchedKeywordsCount = 0;
 
         for (const kw of keywords) {
             let kwMatched = false;
 
-            if (normSnippet.includes(kw)) {
-                score += 5;
+            if (snippetWords.has(kw)) {
+                score += 15;
                 kwMatched = true;
-            }
-            if (normBook.includes(kw)) {
-                score += 3;
-                kwMatched = true;
-            }
-            if (normField.includes(kw)) {
-                score += 2;
+            } else if (kw.length >= 5 && snippetNorm.includes(kw)) {
+                score += 6;
                 kwMatched = true;
             }
 
-            if (kwMatched) matchedCount++;
+            if (bookWords.has(kw)) {
+                score += 10;
+                kwMatched = true;
+            }
+            if (fieldWords.has(kw)) {
+                score += 6;
+                kwMatched = true;
+            }
+
+            if (kwMatched) matchedKeywordsCount++;
         }
 
-        // Bonificación por coincidencia múltiple de palabras clave en el mismo fragmento
-        if (matchedCount >= 2) {
-            score += matchedCount * 5;
+        // Boost si coincide con el campo formativo temático detectado
+        if (boostedFields.has(entry.field)) {
+            score += 18;
         }
 
-        // Debe haber al menos 1 palabra clave relevante con score >= 5
-        if (score >= 5 && matchedCount >= 1) {
+        // Bonificación por coincidencia múltiple de palabras clave
+        if (matchedKeywordsCount >= 2) {
+            score += matchedKeywordsCount * 12;
+        }
+
+        if (score >= 15 && matchedKeywordsCount >= 1) {
             matches.push({ entry, score });
         }
     }
@@ -125,7 +198,16 @@ export function findRelevantTextbookPages(topic: string, grade?: string, limit =
         return matches.slice(0, limit).map(m => m.entry);
     }
 
-    // Si no hubo coincidencias por palabras clave específicas en el grado, retornar páginas con contenido del grado seleccionado
-    return gradeCatalog.filter(e => e.snippet.length > 100).slice(0, limit);
+    // Fallback: si no hubo coincidencias exactas, buscar páginas reales de contenido (no introductorias)
+    const fallbackEntries = searchPool.filter(e => !isFrontMatter(e) && e.page > 15 && e.snippet.length > 120);
+    
+    // Priorizar libros del campo formativo detectado
+    const prioritized = fallbackEntries.filter(e => boostedFields.has(e.field));
+    if (prioritized.length > 0) {
+        return prioritized.slice(0, limit);
+    }
+
+    return fallbackEntries.slice(0, limit);
 }
+
 

@@ -115,19 +115,16 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
 
         try {
             const sesiones = lessonPlan.secuencia_didactica.flatMap(f => f.sesiones || []);
-            const primerSesion = sesiones[0];
 
             const payload = {
                 theme: selectedTheme,
                 topic: worldTitle || lessonPlan.encabezado.proyecto,
                 difficulty: grado,
-                session_title: primerSesion?.titulo || worldTitle,
-                session_start: primerSesion?.inicio?.join(" ") || "Inicio de la aventura pedagógica",
-                session_development: primerSesion?.desarrollo?.join(" ") || "Desarrollo de las actividades",
-                session_end: primerSesion?.cierre?.join(" ") || "Evaluación y cierre metacognitivo"
+                lessonPlan: lessonPlan,
+                sesiones: sesiones
             };
 
-            setWorldLoadingText("Indexando libros de texto y retos interactivos...");
+            setWorldLoadingText("Indexando libros de texto y transformando todas las sesiones en niveles interactivos...");
 
             const res = await fetch('/api/ai/generator', {
                 method: 'POST',
