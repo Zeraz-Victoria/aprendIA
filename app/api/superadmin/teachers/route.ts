@@ -23,60 +23,117 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
-        // 3. Consulta Optimizada a Prisma
-        const teachers = await prisma.user.findMany({
-            where: { role: "TEACHER" },
-            include: {
-                _count: {
-                    select: { ownedClassrooms: true }
-                },
-                school: {
-                    include: {
-                        _count: {
-                            select: { 
-                                users: { where: { role: "STUDENT" } } 
-                            }
-                        },
-                        users: {
-                            where: { apiCalls: { gt: 0 } },
-                            select: {
-                                id: true,
-                                name: true,
-                                role: true,
-                                apiCalls: true
+        let formattedTeachers: any[] = [];
+
+        try {
+            // 3. Consulta Optimizada a Prisma (full query)
+            const teachers = await prisma.user.findMany({
+                where: { role: "TEACHER" },
+                include: {
+                    _count: {
+                        select: { ownedClassrooms: true }
+                    },
+                    school: {
+                        include: {
+                            _count: {
+                                select: { 
+                                    users: { where: { role: "STUDENT" } } 
+                                }
                             },
-                            orderBy: { apiCalls: 'desc' },
-                            take: 20
+                            users: {
+                                where: { apiCalls: { gt: 0 } },
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    role: true,
+                                    apiCalls: true
+                                },
+                                orderBy: { apiCalls: 'desc' },
+                                take: 20
+                            }
                         }
                     }
-                }
-            },
-            orderBy: { name: 'asc' }
-        });
+                },
+                orderBy: { name: 'asc' }
+            });
 
-        // 4. Formateo (Sin apiCalls para evitar el crash)
-        const formattedTeachers = teachers.map((t: any) => ({
-            id: t.id,
-            name: t.name,
-            classroomsCount: t._count?.ownedClassrooms || 0,
-            studentsCount: t.school?._count?.users || 0,
-            lastActivity: t.lastActivity,
-            createdAt: t.school?.createdAt || t.lastActivity,
-            schoolId: t.school?.id,
-            subscriptionPlan: t.school?.subscriptionPlan || 'BASIC',
-            subscriptionStatus: t.school?.subscriptionStatus || 'ACTIVE',
-            apiCalls: t.school?.apiCalls || 0,
-            apiCallsBreakdown: t.school?.users || []
-        }));
+            // 4. Formateo
+            formattedTeachers = teachers.map((t: any) => ({
+                id: t.id,
+                name: t.name,
+                classroomsCount: t._count?.ownedClassrooms || 0,
+                studentsCount: t.school?._count?.users || 0,
+                lastActivity: t.lastActivity,
+                createdAt: t.school?.createdAt || t.lastActivity,
+                schoolId: t.school?.id,
+                subscriptionPlan: t.school?.subscriptionPlan || 'BASIC',
+                subscriptionStatus: t.school?.subscriptionStatus || 'ACTIVE',
+                apiCalls: t.school?.apiCalls || 0,
+                apiCallsBreakdown: t.school?.users || []
+            }));
+        } catch (fullQueryError) {
+            console.warn("Full teacher query failed, trying minimal query:", fullQueryError);
+            // Fallback: minimal query without relations that may not exist
+            try {
+                const teachers = await prisma.user.findMany({
+                    where: { role: "TEACHER" },
+                    include: {
+                        school: true
+                    },
+                    orderBy: { name: 'asc' }
+                });
+
+                formattedTeachers = teachers.map((t: any) => ({
+                    id: t.id,
+                    name: t.name,
+                    classroomsCount: 0,
+                    studentsCount: 0,
+                    lastActivity: t.lastActivity || null,
+                    createdAt: t.school?.createdAt || null,
+                    schoolId: t.school?.id,
+                    subscriptionPlan: t.school?.subscriptionPlan || 'BASIC',
+                    subscriptionStatus: t.school?.subscriptionStatus || 'ACTIVE',
+                    apiCalls: t.school?.apiCalls || 0,
+                    apiCallsBreakdown: []
+                }));
+            } catch (minimalError) {
+                console.error("Even minimal teacher query failed:", minimalError);
+                // Last resort: raw SQL query
+                try {
+                    const rawTeachers: any[] = await prisma.$queryRaw`
+                        SELECT u.id, u.name, u."schoolId"
+                        FROM "User" u
+                        WHERE u.role = 'TEACHER'
+                        ORDER BY u.name ASC
+                    `;
+                    formattedTeachers = rawTeachers.map((t: any) => ({
+                        id: t.id,
+                        name: t.name,
+                        classroomsCount: 0,
+                        studentsCount: 0,
+                        lastActivity: null,
+                        createdAt: null,
+                        schoolId: t.schoolId,
+                        subscriptionPlan: 'BASIC',
+                        subscriptionStatus: 'ACTIVE',
+                        apiCalls: 0,
+                        apiCallsBreakdown: []
+                    }));
+                } catch (rawError: any) {
+                    console.error("Raw SQL teacher query also failed:", rawError);
+                    return NextResponse.json({ error: "Failed to fetch teachers", detail: rawError?.message?.substring(0, 300) }, { status: 500 });
+                }
+            }
+        }
 
         // 5. Guardar en Caché antes de responder
         cachedTeachers = formattedTeachers;
         lastFetch = now;
 
         return NextResponse.json(formattedTeachers);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching teachers:", error);
-        return NextResponse.json({ error: "Failed to fetch teachers" }, { status: 500 });
+        return NextResponse.json({ error: "Failed to fetch teachers", detail: error?.message?.substring(0, 300) }, { status: 500 });
     }
 }
 

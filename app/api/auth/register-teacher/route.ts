@@ -30,34 +30,40 @@ export async function POST(req: Request) {
         const ipAddress = forwardedFor ? forwardedFor.split(",")[0].trim() : (realIp || null);
 
         // 1. CANDADO ANTI-ABUSO: Verificar si el dispositivo o IP ya creó una prueba gratis
-        if (fingerprint) {
-            const existingFingerprint = await prisma.registrationFingerprint.findUnique({
-                where: { fingerprint }
-            });
+        // Wrapped in try-catch in case RegistrationFingerprint table doesn't exist yet
+        try {
+            if (fingerprint) {
+                const existingFingerprint = await prisma.registrationFingerprint.findUnique({
+                    where: { fingerprint }
+                });
 
-            if (existingFingerprint) {
-                return NextResponse.json(
-                    {
-                        error: "Ya se ha creado una cuenta de prueba gratuita en este dispositivo. Contacta al administrador al 2723303963 para contratar un plan."
-                    },
-                    { status: 400 }
-                );
+                if (existingFingerprint) {
+                    return NextResponse.json(
+                        {
+                            error: "Ya se ha creado una cuenta de prueba gratuita en este dispositivo. Contacta al administrador al 2723303963 para contratar un plan."
+                        },
+                        { status: 400 }
+                    );
+                }
             }
-        }
 
-        if (ipAddress && ipAddress !== "127.0.0.1" && ipAddress !== "::1") {
-            const existingIp = await prisma.registrationFingerprint.findFirst({
-                where: { ipAddress }
-            });
+            if (ipAddress && ipAddress !== "127.0.0.1" && ipAddress !== "::1") {
+                const existingIp = await prisma.registrationFingerprint.findFirst({
+                    where: { ipAddress }
+                });
 
-            if (existingIp) {
-                return NextResponse.json(
-                    {
-                        error: "Ya se ha creado una cuenta de prueba gratuita desde esta red de internet. Contacta al administrador al 2723303963 para activar tu plan."
-                    },
-                    { status: 400 }
-                );
+                if (existingIp) {
+                    return NextResponse.json(
+                        {
+                            error: "Ya se ha creado una cuenta de prueba gratuita desde esta red de internet. Contacta al administrador al 2723303963 para activar tu plan."
+                        },
+                        { status: 400 }
+                    );
+                }
             }
+        } catch (fingerprintError) {
+            // Table may not exist in production yet — skip fingerprint check
+            console.warn("RegistrationFingerprint check skipped (table may not exist):", fingerprintError);
         }
 
         // 2. Verificar si ya existe un usuario con este nombre
@@ -78,16 +84,37 @@ export async function POST(req: Request) {
         const now = new Date();
         const trialEndsAt = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // 72 horas
 
-        const school = await prisma.school.create({
-            data: {
-                name: `Licencia de ${cleanName}`,
-                subscriptionPlan: "INTERMEDIATE",
-                maxMaps: 5,
-                maxStudents: 50,
-                subscriptionStatus: "ACTIVE",
-                trialEndsAt: trialEndsAt
+        let school;
+        try {
+            school = await prisma.school.create({
+                data: {
+                    name: `Licencia de ${cleanName}`,
+                    subscriptionPlan: "INTERMEDIATE",
+                    maxMaps: 5,
+                    maxStudents: 50,
+                    subscriptionStatus: "ACTIVE",
+                    trialEndsAt: trialEndsAt
+                }
+            });
+        } catch (schoolError: any) {
+            console.error("Error creating school (possibly missing columns):", schoolError);
+            // Try minimal school creation without optional fields
+            try {
+                school = await prisma.school.create({
+                    data: {
+                        name: `Licencia de ${cleanName}`,
+                        subscriptionPlan: "INTERMEDIATE",
+                        subscriptionStatus: "ACTIVE"
+                    }
+                });
+            } catch (schoolError2: any) {
+                console.error("Error creating minimal school:", schoolError2);
+                return NextResponse.json(
+                    { error: "Error al crear la licencia. La base de datos puede necesitar actualización. Contacta al administrador.", detail: schoolError2.message?.substring(0, 200) },
+                    { status: 500 }
+                );
             }
-        });
+        }
 
         // 4. Hashear la contraseña
         const hashedPassword = await bcrypt.hash(cleanPassword, 10);
@@ -103,16 +130,18 @@ export async function POST(req: Request) {
             }
         });
 
-        // 6. Guardar el candado de registro por dispositivo/IP
+        // 6. Guardar el candado de registro por dispositivo/IP (non-blocking)
         if (fingerprint) {
-            await prisma.registrationFingerprint.create({
-                data: {
-                    fingerprint,
-                    ipAddress: ipAddress || undefined
-                }
-            }).catch((err) => {
-                console.error("Error guardando fingerprint de registro:", err);
-            });
+            try {
+                await prisma.registrationFingerprint.create({
+                    data: {
+                        fingerprint,
+                        ipAddress: ipAddress || undefined
+                    }
+                });
+            } catch (err) {
+                console.warn("Error guardando fingerprint de registro (tabla puede no existir):", err);
+            }
         }
 
         return NextResponse.json(
@@ -127,10 +156,13 @@ export async function POST(req: Request) {
             },
             { status: 201 }
         );
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error en registro de docente:", error);
         return NextResponse.json(
-            { error: "Ocurrió un error al crear la cuenta. Inténtalo de nuevo." },
+            { 
+                error: "Ocurrió un error al crear la cuenta. Inténtalo de nuevo.",
+                detail: error?.message?.substring(0, 300) || "Unknown error"
+            },
             { status: 500 }
         );
     }
