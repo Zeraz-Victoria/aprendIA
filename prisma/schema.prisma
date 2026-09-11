@@ -119,9 +119,8 @@ model RegistrationFingerprint {
   fingerprint String   @unique
   ipAddress   String?
   createdAt   DateTime @default(now())
-  schoolId    String?
-  school      School?  @relation(fields: [schoolId], references: [id])
 }
+
 
 model World {
   id               String           @id @default(cuid())

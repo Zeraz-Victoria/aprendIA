@@ -136,8 +136,7 @@ export async function POST(req: Request) {
                 const fpRecord = await prisma.registrationFingerprint.create({
                     data: {
                         fingerprint,
-                        ipAddress: ipAddress || undefined,
-                        schoolId: school.id
+                        ipAddress: ipAddress || undefined
                     }
                 });
                 // actualizar la escuela para referenciar la huella recién creada
