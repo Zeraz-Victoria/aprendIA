@@ -57,8 +57,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Clave de API de IA no configurada en el servidor.' }, { status: 500 });
         }
 
-        // 1. Buscar Contenidos y PDA oficiales del documento Excel indexado
-        const matchingContenidosPDA = findRelevantContenidosAndPDA(contextoAdicional || metodologia || '', 6);
+        // 1. Buscar Contenidos y PDA oficiales del documento Excel indexado con detector disciplinar
+        const matchingContenidosPDA = findRelevantContenidosAndPDA(contextoAdicional || metodologia || '', 6, grado);
         const contenidosPromptSnippet = matchingContenidosPDA.length > 0
             ? `CONTENIDOS Y PDA OFICIALES DEL PROGRAMA SINTÉTICO (EXTRAÍDOS DEL DOCUMENTO OFICIAL FASE 6 / ${grado}):\n` +
               matchingContenidosPDA.map((item, idx) => 
@@ -66,9 +66,9 @@ export async function POST(req: Request) {
               ).join('\n')
             : '';
 
-        // 2. Buscar recomendaciones de libros de texto indexados
-        const pdaTerms = matchingContenidosPDA.map(c => `${c.contenido} ${c.pda}`).join(' ');
-        const searchTopic = `${contextoAdicional || ''} ${pdaTerms}`.trim() || metodologia || 'Aprendizaje';
+        // 2. Buscar recomendaciones de libros de texto indexados (focalizado en el tema del docente)
+        const primaryPda = matchingContenidosPDA.length > 0 ? matchingContenidosPDA[0].contenido : '';
+        const searchTopic = contextoAdicional?.trim() || primaryPda || metodologia || 'Aprendizaje';
         const recommendedBooks = findRelevantTextbookPages(searchTopic, grado, 4);
         const booksPromptSnippet = recommendedBooks.length > 0
             ? `LIBROS DE TEXTO DE LA NEM INDEXADOS RECOMENDADOS PARA ESTE GRADO:\n` +
@@ -90,8 +90,12 @@ ${contenidosPromptSnippet}
 
 ${booksPromptSnippet}
 
-### ⚠️ INSTRUCCIÓN OBLIGATORIA SOBRE CONTENIDOS Y PDA:
-En la sección "vinculacion", DEBES UTILIZAR prioritariamente los Contenidos y PDA oficiales extraídos arriba que tengan relación directa con la problemática expresada por el docente.
+### ⚠️ INSTRUCCIÓN OBLIGATORIA SOBRE CONTENIDOS Y PDA (REGLA DEL ASTERISCO *):
+1. En la sección "vinculacion", revisa los Contenidos y PDA oficiales del programa sintético listados arriba.
+2. Si un PDA oficial se ajusta de manera exacta o al 100% a la problemática o tema del docente, úsalo tal cual de forma literal (SIN asterisco).
+3. Si la problemática planteada por el docente es muy específica y NINGÚN PDA del catálogo oficial se adapta al 100%, TIENES AUTORIZACIÓN PARA ADAPTAR, CONTEXTUALIZAR O MODIFICAR EL PDA para que responda con exactitud al diagnóstico pedagógico de la escuela.
+4. REGLA ESTRICTA: SIEMPRE que adaptes o modifiques un PDA original, DEBES AGREGAR OBLIGATORIAMENTE UN ASTERISCO AL FINAL DEL TEXTO DEL PDA (ejemplo: "Resuelve problemas vinculados a su comunidad que implican el cálculo de porcentajes y fracciones.*").
+5. De este modo, el docente sabrá con certeza que los PDA que terminan en asterisco (*) son PDA contextualizados por la IA a su realidad escolar, mientras que los que no tienen asterisco son literales del programa oficial.
 
 ### ⚠️ EJES ARTICULADORES VÁLIDOS (LISTA CERRADA — NO INVENTES OTROS):
 Para el campo "ejes_articuladores", SOLO puedes usar entre 1 y 4 de esta lista exacta:

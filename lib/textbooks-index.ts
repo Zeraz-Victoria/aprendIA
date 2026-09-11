@@ -37,7 +37,8 @@ const SPANISH_STOPWORDS = new Set([
     "muy", "que", "mucha", "mucho", "existe", "podria", "tiempo", "tiempos", "sufrimos", "tiene", "tienen",
     "tenemos", "hacer", "hace", "hacen", "donde", "dondequiera", "nivel", "secundaria", "grado", "fase", "alumnos",
     "escuela", "docente", "trabajo", "aula", "proyecto", "proyectos", "aprender", "aprendizaje", "tema", "temas",
-    "desarrollo", "actividad", "actividades", "evaluacion", "estudiantes", "maestro", "maestra"
+    "desarrollo", "actividad", "actividades", "evaluacion", "estudiantes", "maestro", "maestra",
+    "algo", "algun", "tambien", "puede", "pueden", "general", "manera", "forma", "parte", "totalmente", "bien", "caso", "casos"
 ]);
 
 const FIELD_KEYWORDS: Record<string, string[]> = {
@@ -198,16 +199,39 @@ export function findRelevantTextbookPages(topic: string, grade?: string, limit =
         return matches.slice(0, limit).map(m => m.entry);
     }
 
-    // Fallback: si no hubo coincidencias exactas, buscar páginas reales de contenido (no introductorias)
-    const fallbackEntries = searchPool.filter(e => !isFrontMatter(e) && e.page > 15 && e.snippet.length > 120);
-    
-    // Priorizar libros del campo formativo detectado
-    const prioritized = fallbackEntries.filter(e => boostedFields.has(e.field));
-    if (prioritized.length > 0) {
-        return prioritized.slice(0, limit);
+    // Si no hubo coincidencias exactas en el grado, buscar en el acervo Multigrado oficial
+    const multigradoCatalog = catalog.filter(entry => entry.grade.toLowerCase().includes("multigrado"));
+    const multigradoMatches: { entry: TextbookEntry; score: number }[] = [];
+
+    for (const entry of multigradoCatalog) {
+        if (isFrontMatter(entry)) continue;
+        const snippetNorm = normalizeText(entry.snippet);
+        const snippetWords = new Set(snippetNorm.split(/\s+/));
+        let matchedCount = 0;
+        let score = 0;
+
+        for (const kw of keywords) {
+            if (snippetWords.has(kw)) {
+                score += 15;
+                matchedCount++;
+            } else if (kw.length >= 5 && snippetNorm.includes(kw)) {
+                score += 8;
+                matchedCount++;
+            }
+        }
+
+        if (matchedCount >= 1 && score >= 15) {
+            multigradoMatches.push({ entry, score });
+        }
     }
 
-    return fallbackEntries.slice(0, limit);
+    multigradoMatches.sort((a, b) => b.score - a.score);
+    if (multigradoMatches.length > 0) {
+        return multigradoMatches.slice(0, limit).map(m => m.entry);
+    }
+
+    // NUNCA devolver páginas aleatorias a ciegas: si el tema no está en los libros, se devuelve vacío
+    return [];
 }
 
 

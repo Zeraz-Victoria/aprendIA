@@ -531,11 +531,33 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                 </div>
               </div>
               <div className="space-y-3">
-                {safeArray(item.pdas).map((pda, pIdx) => (
-                  <div key={pIdx} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-[13px] font-medium text-slate-200 leading-relaxed flex gap-3">
-                    <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5" /> {pda}
-                  </div>
-                ))}
+                {safeArray(item.pdas).map((pda, pIdx) => {
+                  const isAdapted = typeof pda === 'string' && pda.trim().endsWith('*');
+                  return (
+                    <div
+                      key={pIdx}
+                      className={`p-4 rounded-2xl border text-[13px] font-medium leading-relaxed flex flex-col gap-2 transition-all ${
+                        isAdapted
+                          ? 'bg-amber-950/20 border-amber-500/40 text-amber-100 shadow-sm shadow-amber-950/30'
+                          : 'bg-slate-950 border-slate-800 text-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2
+                          size={16}
+                          className={`shrink-0 mt-0.5 ${isAdapted ? 'text-amber-400' : 'text-emerald-400'}`}
+                        />
+                        <span className="flex-1">{pda}</span>
+                      </div>
+                      {isAdapted && (
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-300/90 ml-7 bg-amber-900/30 px-2.5 py-1 rounded-lg border border-amber-700/30 w-fit">
+                          <span>✨</span>
+                          <span>* PDA adaptado / contextualizado por la IA para alinearse a la problemática del aula</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}
