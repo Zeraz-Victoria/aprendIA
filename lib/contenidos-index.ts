@@ -147,16 +147,12 @@ export function findRelevantContenidosAndPDA(query: string, limit = 6, grade?: s
 
     // Filtrar por grado si se proporciona
     const cleanGrade = grade ? grade.toLowerCase() : "";
-    const filteredList = list.filter(item => {
-        if (!cleanGrade) return true;
+    const filteredList = grade ? list.filter(item => {
         const itemGrade = item.grado.toLowerCase();
-        if (cleanGrade.includes("1") && itemGrade.includes("1")) return true;
-        if (cleanGrade.includes("2") && itemGrade.includes("2")) return true;
-        if (cleanGrade.includes("3") && itemGrade.includes("3")) return true;
-        return true;
-    });
+        return itemGrade === cleanGrade;
+    }) : list;
 
-    const candidatePool = filteredList.length > 0 ? filteredList : list;
+    const candidatePool = filteredList;
 
     const scored = candidatePool.map(item => {
         let score = 0;
@@ -186,6 +182,6 @@ export function findRelevantContenidosAndPDA(query: string, limit = 6, grade?: s
         return bestMatches.slice(0, limit).map(s => s.item);
     }
 
-    // Fallback: Devolver primeros elementos
-    return candidatePool.slice(0, limit);
+    // No coincidencias: devolver array vacío
+    return [];
 }

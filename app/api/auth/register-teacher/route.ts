@@ -133,14 +133,20 @@ export async function POST(req: Request) {
         // 6. Guardar el candado de registro por dispositivo/IP (non-blocking)
         if (fingerprint) {
             try {
-                await prisma.registrationFingerprint.create({
+                const fpRecord = await prisma.registrationFingerprint.create({
                     data: {
                         fingerprint,
-                        ipAddress: ipAddress || undefined
+                        ipAddress: ipAddress || undefined,
+                        schoolId: school.id
                     }
                 });
+                // actualizar la escuela para referenciar la huella recién creada
+                await prisma.school.update({
+                    where: { id: school.id },
+                    data: { registrationFingerprintId: fpRecord.id }
+                });
             } catch (err) {
-                console.warn("Error guardando fingerprint de registro (tabla puede no existir):", err);
+                console.warn("Error guardando fingerprint de registro (tabla puede no existir o conflicto):", err);
             }
         }
 

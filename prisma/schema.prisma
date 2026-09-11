@@ -104,6 +104,8 @@ model School {
   apiCalls           Int                @default(0)
   trialEndsAt        DateTime?
   subscriptionEndsAt DateTime?
+  registrationFingerprintId String? @unique
+  registrationFingerprint   RegistrationFingerprint? @relation(fields: [registrationFingerprintId], references: [id])
   classrooms         Classroom[]
   grades             Grade[]
   raidBosses         RaidBoss[]
@@ -117,6 +119,8 @@ model RegistrationFingerprint {
   fingerprint String   @unique
   ipAddress   String?
   createdAt   DateTime @default(now())
+  schoolId    String?
+  school      School?  @relation(fields: [schoolId], references: [id])
 }
 
 model World {
