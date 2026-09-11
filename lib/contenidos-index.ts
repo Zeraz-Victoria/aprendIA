@@ -38,17 +38,29 @@ const NEM_STOPWORDS = new Set([
 ]);
 
 const MATERIA_KEYWORDS: Record<string, string[]> = {
-    '1° MAT': ['matematicas', 'matematica', 'fraccion', 'fracciones', 'decimal', 'decimales', 'ecuacion', 'ecuaciones', 'algebra', 'algebraico', 'geometria', 'geometrico', 'recta', 'porcentaje', 'reparto', 'proporcionalidad', 'angulos', 'triangulos', 'poligonos', 'area', 'perimetro', 'volumen', 'probabilidad', 'estadistica', 'grafica', 'graficas', 'numeros', 'multiplicacion', 'division', 'suma', 'resta', 'calculo'],
-    '1° ESP': ['lenguaje', 'lengua', 'espanol', 'lectura', 'redaccion', 'texto', 'textos', 'cuento', 'cuentos', 'poema', 'poemas', 'poesia', 'ensayo', 'debate', 'noticia', 'periodico', 'entrevista', 'comunicacion', 'dialogo', 'literario', 'literatura', 'ortografia', 'gramatica', 'argumentacion'],
-    '1° ING': ['ingles', 'english', 'idioma', 'vocabulario', 'pronunciacion', 'traduccion', 'bilingue'],
-    '1° BIO': ['biologia', 'celula', 'celulas', 'biodiversidad', 'ecosistema', 'ecosistemas', 'seres vivos', 'genetica', 'adn', 'organos', 'cuerpo humano', 'salud', 'nutricion', 'vacunas', 'microorganismos', 'flora', 'fauna', 'fotosintesis'],
-    '1° GEO': ['geografia', 'mapa', 'mapas', 'territorio', 'espacio geografico', 'clima', 'relieve', 'cuencas', 'hidrografica', 'aguas', 'rios', 'lagos', 'placas tectonicas', 'sismos', 'volcanes', 'migracion', 'poblacion'],
-    '1° HIST': ['historia', 'historico', 'independencia', 'revolucion', 'mesoamerica', 'colonizacion', 'colonia', 'pueblos indigenas', 'constitucion', 'porfiriato', 'antiguedad', 'siglo', 'epoca'],
-    '1° F.C.E': ['civica', 'etica', 'derechos', 'derechos humanos', 'leyes', 'normas', 'justicia', 'igualdad', 'genero', 'discriminacion', 'inclusion', 'democracia', 'ciudadania', 'violencia', 'cultura de paz', 'paz', 'acoso'],
-    '1° ART': ['artes', 'artistico', 'musica', 'danza', 'teatro', 'pintura', 'dibujo', 'sonido', 'colores', 'expresion artistica'],
-    '1° TEC': ['tecnologia', 'tecnico', 'herramientas', 'maquinas', 'instrumentos', 'innovacion', 'procesos tecnicos', 'artesanal', 'industrial', 'digital'],
-    '1° TUTO': ['tutoria', 'socioemocional', 'emociones', 'autoestima', 'proyecto de vida', 'empatia', 'convivencia escolar', 'adicciones'],
-    '1° EDU.FIS': ['educacion fisica', 'deporte', 'motricidad', 'juego', 'actividad fisica', 'corporalidad', 'recreacion']
+    // ── 1° Secundaria ──────────────────────────────────────────────────────────
+    '1° MAT':     ['matematicas', 'matematica', 'fraccion', 'fracciones', 'decimal', 'decimales', 'ecuacion', 'ecuaciones', 'algebra', 'algebraico', 'geometria', 'geometrico', 'recta', 'porcentaje', 'reparto', 'proporcionalidad', 'angulos', 'triangulos', 'poligonos', 'area', 'perimetro', 'volumen', 'probabilidad', 'estadistica', 'grafica', 'graficas', 'numeros', 'multiplicacion', 'division', 'suma', 'resta', 'calculo'],
+    '1° ESP':     ['lenguaje', 'lengua', 'espanol', 'lectura', 'redaccion', 'texto', 'textos', 'cuento', 'cuentos', 'poema', 'poemas', 'poesia', 'ensayo', 'debate', 'noticia', 'periodico', 'entrevista', 'comunicacion', 'dialogo', 'literario', 'literatura', 'ortografia', 'gramatica', 'argumentacion'],
+    '1° ING':     ['ingles', 'english', 'idioma', 'vocabulario', 'pronunciacion', 'traduccion', 'bilingue'],
+    '1° BIO':     ['biologia', 'celula', 'celulas', 'biodiversidad', 'ecosistema', 'ecosistemas', 'seres vivos', 'genetica', 'adn', 'organos', 'cuerpo humano', 'salud', 'nutricion', 'vacunas', 'microorganismos', 'flora', 'fauna', 'fotosintesis'],
+    '1° GEO':     ['geografia', 'mapa', 'mapas', 'territorio', 'espacio geografico', 'clima', 'relieve', 'cuencas', 'hidrografica', 'aguas', 'rios', 'lagos', 'placas tectonicas', 'sismos', 'volcanes', 'migracion', 'poblacion'],
+    '1° HIST':    ['historia', 'historico', 'independencia', 'revolucion', 'mesoamerica', 'colonizacion', 'colonia', 'pueblos indigenas', 'constitucion', 'porfiriato', 'antiguedad', 'siglo', 'epoca'],
+    '1° F.C.E':   ['civica', 'etica', 'derechos', 'derechos humanos', 'leyes', 'normas', 'justicia', 'igualdad', 'genero', 'discriminacion', 'inclusion', 'democracia', 'ciudadania', 'violencia', 'cultura de paz', 'paz', 'acoso'],
+    '1° ART':     ['artes', 'artistico', 'musica', 'danza', 'teatro', 'pintura', 'dibujo', 'sonido', 'colores', 'expresion artistica'],
+    '1° TEC':     ['tecnologia', 'tecnico', 'herramientas', 'maquinas', 'instrumentos', 'innovacion', 'procesos tecnicos', 'artesanal', 'industrial', 'digital'],
+    '1° TUTO':    ['tutoria', 'socioemocional', 'emociones', 'autoestima', 'proyecto de vida', 'empatia', 'convivencia escolar', 'adicciones'],
+    '1° EDU.FIS': ['educacion fisica', 'deporte', 'motricidad', 'juego', 'actividad fisica', 'corporalidad', 'recreacion'],
+    // ── 2° Secundaria ──────────────────────────────────────────────────────────
+    '2° MAT':     ['matematicas', 'matematica', 'fraccion', 'fracciones', 'decimal', 'decimales', 'ecuacion', 'ecuaciones', 'algebra', 'algebraico', 'geometria', 'geometrico', 'recta', 'porcentaje', 'reparto', 'proporcionalidad', 'angulos', 'triangulos', 'poligonos', 'area', 'perimetro', 'volumen', 'probabilidad', 'estadistica', 'grafica', 'graficas', 'numeros', 'calculo'],
+    '2° ESP':     ['lenguaje', 'lengua', 'espanol', 'lectura', 'redaccion', 'texto', 'textos', 'cuento', 'cuentos', 'poema', 'poemas', 'poesia', 'ensayo', 'debate', 'noticia', 'periodico', 'entrevista', 'comunicacion', 'dialogo', 'literario', 'literatura', 'ortografia', 'gramatica', 'argumentacion'],
+    '2° ING':     ['ingles', 'english', 'idioma', 'vocabulario', 'pronunciacion', 'traduccion', 'bilingue'],
+    '2° FIS':     ['fisica', 'fuerza', 'fuerzas', 'velocidad', 'aceleracion', 'movimiento', 'energia', 'trabajo', 'potencia', 'inercia', 'newton', 'cinematica', 'dinamica', 'calor', 'temperatura', 'termodinamica', 'electricidad', 'magnetismo', 'onda', 'sonido', 'luz', 'optica', 'presion', 'densidad', 'flotacion', 'gravedad', 'caida libre', 'tiro parabolico', 'circuito', 'voltaje', 'resistencia', 'ondas mecanicas', 'medicion', 'unidades'],
+    '2° HIST':    ['historia', 'historico', 'independencia', 'revolucion', 'virreinato', 'colonia', 'colonizacion', 'conquista', 'mesoamerica', 'constitucion', 'porfiriato', 'siglo', 'epoca', 'aztecas', 'mayas', 'espana', 'colonial', 'hernandez cortes', 'independencia', 'reforma', 'juarez', 'porfirio'],
+    '2° F.C.E':   ['civica', 'etica', 'derechos', 'derechos humanos', 'leyes', 'normas', 'justicia', 'igualdad', 'genero', 'discriminacion', 'inclusion', 'democracia', 'ciudadania', 'violencia', 'paz', 'acoso', 'identidad juvenil', 'bienestar colectivo'],
+    '2° ART':     ['artes', 'artistico', 'musica', 'danza', 'teatro', 'pintura', 'dibujo', 'sonido', 'colores', 'expresion artistica'],
+    '2° TEC':     ['tecnologia', 'tecnico', 'herramientas', 'maquinas', 'instrumentos', 'innovacion', 'materiales', 'procesos tecnicos', 'artesanal', 'industrial', 'digital'],
+    '2° TUTO':    ['tutoria', 'socioemocional', 'emociones', 'autoestima', 'proyecto de vida', 'empatia', 'sentimientos', 'convivencia escolar', 'adicciones', 'toma de decisiones'],
+    '2° EDU.FIS': ['educacion fisica', 'deporte', 'motricidad', 'juego', 'actividad fisica', 'corporalidad', 'recreacion', 'condicion fisica', 'habilidades motrices'],
 };
 
 /**
