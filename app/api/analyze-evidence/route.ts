@@ -62,9 +62,34 @@ export async function POST(req: Request) {
 
         try {
             if (context) {
-                const parsedContext = typeof context === 'string' ? JSON.parse(context) : context;
-                instruccionFiel = parsedContext.reto_gameplay?.instruccion_fiel || parsedContext.instruccion_fiel || parsedContext.statement || context;
-                respuestaCorrecta = parsedContext.reto_gameplay?.respuesta_correcta || parsedContext.respuesta_correcta || parsedContext.correctValue || "Sin rúbrica definida.";
+                let parsedContext = typeof context === 'string' ? JSON.parse(context) : context;
+
+                // Si viene el objeto completo de día (desde AdventureMap)
+                const practice = parsedContext.content?.practiceProblem || parsedContext.content?.evidenceProblem;
+                let innerStatement: any = null;
+                const rawStatement = practice?.statement || parsedContext.statement;
+                if (rawStatement && typeof rawStatement === 'string' && rawStatement.trim().startsWith('{')) {
+                    try {
+                        innerStatement = JSON.parse(rawStatement.trim());
+                    } catch {}
+                }
+
+                instruccionFiel = 
+                    innerStatement?.instruccion_fiel ||
+                    innerStatement?.ejercicio_libreta?.instruccion ||
+                    parsedContext.reto_gameplay?.instruccion_fiel || 
+                    parsedContext.instruccion_fiel || 
+                    parsedContext.ejercicio_libreta?.instruccion ||
+                    practice?.statement ||
+                    parsedContext.statement || 
+                    context;
+
+                respuestaCorrecta = 
+                    parsedContext.reto_gameplay?.respuesta_correcta || 
+                    practice?.correctValue ||
+                    parsedContext.respuesta_correcta || 
+                    parsedContext.correctValue || 
+                    "Sin rúbrica definida.";
             }
         } catch (e) {
             instruccionFiel = context || "Sin desafío original.";
