@@ -119,6 +119,7 @@ model RegistrationFingerprint {
   fingerprint String   @unique
   ipAddress   String?
   createdAt   DateTime @default(now())
+  school      School?
 }
 
 
