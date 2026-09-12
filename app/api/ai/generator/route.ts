@@ -35,6 +35,11 @@ export async function POST(req: Request) {
       sesionesList = lessonPlan.secuencia_didactica.flatMap((f: any) => f.sesiones || []);
     }
 
+    // Extraer grade limpio para adaptar lenguaje al alumno
+    const gradeLabel = difficulty || lessonPlan?.encabezado?.grado || "";
+    const isSecundaria = gradeLabel.toLowerCase().includes("secund") || gradeLabel.toLowerCase().includes("fase 6") || ["1°","2°","3°"].some(g => gradeLabel.startsWith(g) && gradeLabel.toLowerCase().includes("secund"));
+    const pdaList: string[] = (lessonPlan?.estructura_curricular?.vinculacion || []).map((v: any) => v.pda || v.contenido || "").filter(Boolean);
+
     // Buscar sugerencias de libros de texto indexados
     const searchTopicForBooks = topic + (lessonPlan?.diagnostico_pedagogico ? ` ${lessonPlan.diagnostico_pedagogico}` : '');
     const textbookSuggestions = findRelevantTextbookPages(searchTopicForBooks, difficulty, 4);
@@ -373,6 +378,13 @@ ESTRUCTURA JSON REQUERIDA (DEVUELVE ESTRICTAMENTE UN ARREGLO JSON):
 
       const hints = Array.isArray(lvl.hints) && lvl.hints.length > 0 ? lvl.hints : [practiceHint, "Revisa la teoría del nivel anterior."];
 
+      // Datos completos de la sesión original para enriquecer el contenido al alumno
+      const rawSession = sesionesList[index] || {};
+      const sessionStart  = Array.isArray(rawSession.inicio)      ? rawSession.inicio.join(" ")      : (rawSession.inicio      || session_start      || "");
+      const sessionDev    = Array.isArray(rawSession.desarrollo)   ? rawSession.desarrollo.join(" ")   : (rawSession.desarrollo   || session_development || "");
+      const sessionEnd    = Array.isArray(rawSession.cierre)       ? rawSession.cierre.join(" ")       : (rawSession.cierre       || session_end         || "");
+      const sessionPDA    = lvl.pda_objetivo || pdaList[index] || pdaList[0] || "";
+
       if (type === "boss_fight" || isLast) {
         return {
           dayNumber: index + 1,
@@ -380,8 +392,13 @@ ESTRUCTURA JSON REQUERIDA (DEVUELVE ESTRICTAMENTE UN ARREGLO JSON):
           title: title.startsWith("Jefe") ? title : `Jefe Final: ${title}`,
           originalProblemText: lvl.originalProblemText || practiceStatement,
           hints: hints,
-          pda_objetivo: lvl.pda_objetivo || "",
+          pda_objetivo: sessionPDA,
           cierre_metacognicion: lvl.cierre_metacognicion || "",
+          grade: gradeLabel,
+          session_start: sessionStart,
+          session_development: sessionDev,
+          session_end: sessionEnd,
+          isGenerating: true,
           content: {
             explanation: {
               chunks: explanationChunks,
@@ -401,8 +418,13 @@ ESTRUCTURA JSON REQUERIDA (DEVUELVE ESTRICTAMENTE UN ARREGLO JSON):
         type: type,
         title: title,
         narrative: narrative,
-        pda_objetivo: lvl.pda_objetivo || "",
+        pda_objetivo: sessionPDA,
         cierre_metacognicion: lvl.cierre_metacognicion || "",
+        grade: gradeLabel,
+        session_start: sessionStart,
+        session_development: sessionDev,
+        session_end: sessionEnd,
+        isGenerating: true,
         content: {
           explanation: {
             chunks: explanationChunks,

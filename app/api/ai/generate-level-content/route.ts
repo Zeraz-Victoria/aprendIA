@@ -27,140 +27,168 @@ export async function POST(req: Request) {
         const { worldId, levelId } = await req.json();
 
         if (!worldId || levelId === undefined) {
-            return NextResponse.json({ error: 'Faltan parámetros worldId o levelId' }, { status: 400 });
+            return NextResponse.json({ error: 'Faltan parametros worldId o levelId' }, { status: 400 });
         }
 
         if (!process.env.AI_API_KEY) {
             return NextResponse.json({ error: 'AI API Key not configured' }, { status: 500 });
         }
 
-        // 1. Fetch World from DB
-        const world = await prisma.world.findUnique({
-            where: { id: worldId }
-        });
-
-        if (!world) {
-            return NextResponse.json({ error: 'Mundo no encontrado' }, { status: 404 });
-        }
+        const world = await prisma.world.findUnique({ where: { id: worldId } });
+        if (!world) return NextResponse.json({ error: 'Mundo no encontrado' }, { status: 404 });
 
         let days: LevelContent[] = [];
-        try {
-            days = JSON.parse(world.daysJson);
-        } catch {
-            return NextResponse.json({ error: 'Error parseando daysJson' }, { status: 500 });
-        }
+        try { days = JSON.parse(world.daysJson); }
+        catch { return NextResponse.json({ error: 'Error parseando daysJson' }, { status: 500 }); }
 
         const dayIndex = days.findIndex(d => d.dayNumber === levelId);
-        if (dayIndex === -1) {
-            return NextResponse.json({ error: 'Nivel no encontrado en el mundo' }, { status: 404 });
-        }
+        if (dayIndex === -1) return NextResponse.json({ error: 'Nivel no encontrado' }, { status: 404 });
 
-        const day = days[dayIndex];
+        const day = days[dayIndex] as any;
 
-        // If it's already generated, return early
-        if (!(day as any).isGenerating) {
+        // Si ya fue generado, retornar sin volver a llamar a la IA
+        if (!day.isGenerating) {
             return NextResponse.json({ message: 'El nivel ya estaba generado', day });
         }
 
-        const sessionRawText = (day as any).session_start || day.title; // session_start contains the huge chunk from Epic 1
+        // Recopilar informacion pedagogica completa del nivel
+        const pdaObjetivo  = day.pda_objetivo       || day.title || '';
+        const sessionStart = day.session_start       || day.title || '';
+        const sessionDev   = day.session_development || '';
+        const sessionEnd   = day.session_end         || '';
+        const grade        = day.grade               || world.theme || '';
+        const levelType    = day.type                || 'guided_practice';
 
-        console.log(`Generating content for World ${worldId}, Level ${levelId}...`);
+        // Adaptar lenguaje al grado
+        const isSecundaria = grade.toLowerCase().includes('secund') ||
+            grade.toLowerCase().includes('fase 6') ||
+            /^[123]°\s*secund/i.test(grade);
+
+        const languageInstruction = isSecundaria
+            ? `NIVEL DE LENGUAJE: Secundaria (${grade}). Usa vocabulario tecnico-curricular. Explicaciones rigurosas y precisas.`
+            : `NIVEL DE LENGUAJE: Primaria (${grade}). Oraciones cortas, palabras simples, analogias del hogar, emojis ocasionales (🌟💡📖). Sin tecnicismos.`;
+
+        console.log(`[RICH CONTENT] World ${worldId} | Level ${levelId} | Grade: ${grade}`);
 
         const prompt = `
-Eres un Motor de Diseño Instruccional Autónomo. Tu objetivo es convertir un fragmento de planeación docente en una experiencia interactiva y directa para el alumno, DEVOLVIENDO ÚNICAMENTE UN JSON VÁLIDO.
+Eres un Disenador Instruccional Senior de la Nueva Escuela Mexicana (NEM). Genera un nivel COMPLETO Y AUTOSUFICIENTE: el alumno aprende solo, sin el docente.
 
-CONTENIDO DE LA SESIÓN ORIGINAL (Extraído de la planeación):
----
-${sessionRawText}
----
+DATOS PEDAGOGICOS:
+- GRADO: ${grade}
+- PDA A ALCANZAR: "${pdaObjetivo}"
+- TIPO DE NIVEL: ${levelType}
+- SESION INICIO: ${sessionStart}
+- SESION DESARROLLO: ${sessionDev}
+- SESION CIERRE: ${sessionEnd}
 
-REGLAS DE ORO:
-1. TRANSPILACIÓN DE ROL DOCENTE (AUTONOMÍA TOTAL): El alumno está solo frente a la pantalla. PROHIBIDO decir 'El docente leerá...', 'Pide a tu maestro...' o 'Se te entregarán...'.
-   - Si la planeación dice 'El docente lee un cuento', TÚ redactas el cuento.
-   - Si dice 'El docente entrega oraciones mudas', TÚ generas esas oraciones mudas y las pones en el reto.
-   - Si dice 'El docente explica', TÚ asumes la voz y explicas el concepto en el 'oraculo_teoria'.
-2. SEPARACIÓN ESTRICTA (CRÍTICO): El campo 'oraculo_teoria' es SOLO para explicar. El campo 'instruccion_fiel' TIENE PROHIBIDO repetir la teoría. Aquí DEBES INVENTAR un problema práctico, un ejercicio o una pregunta nueva para que el alumno lo resuelva y demuestre lo aprendido. NUNCA resumas la teoría aquí.
-3. TIPO DE EVIDENCIA: Analiza qué producto físico o digital exige el docente y asigna uno de estos valores a 'tipo_evidencia_requerida': FOTO_FISICA, TEXTO_DIGITAL, MULTIPLE_CHOICE.
-4. FORMATO LIMPIO: Usa \\n\\n para saltos de línea. PROHIBIDO usar etiquetas HTML (<br>, <p>, <b>).
+${languageInstruction}
 
-FORMATO DE SALIDA ESPERADO (JSON ESTRICTO, SIN COMENTARIOS):
+REGLAS ABSOLUTAS:
+1. AUTONOMIA: PROHIBIDO "El docente...", "Pide a tu maestro...", "Se te entregara...". Si el docente hace algo en la sesion, TU lo haces en el nivel.
+2. ORACULO (min 400 palabras): Es el libro virtual del alumno. Usa ## subtitulos, - listas, **negritas**. Incluye el concepto completo, ejemplos concretos dentro del texto y una analogia cotidiana.
+3. SEPARACION ESTRICTA: oraculo_teoria solo explica. instruccion_fiel NUNCA repite la teoria, es un EJERCICIO NUEVO.
+4. EJERCICIO LIBRETA: actividad fisica para cuaderno, basada en el DESARROLLO de la sesion.
+5. SIN HTML. Solo Markdown y saltos de linea con \\n\\n.
+
+DEVUELVE UNICAMENTE ESTE JSON (sin texto extra, sin comentarios):
 {
-  "historia_inicio": "Texto narrativo inmersivo...",
-  "oraculo_teoria": { 
-    "titulo": "...", 
-    "contenido_markdown": "Explicación directa al alumno actuando como su tutor..." 
+  "historia_inicio": "Narrativa inmersiva de 3-5 oraciones...",
+  "oraculo_teoria": {
+    "titulo": "Titulo motivador del tema",
+    "contenido_markdown": "Explicacion COMPLETA minimo 400 palabras. ## Subtitulos. **Negritas**. - Listas. Ejemplos resueltos dentro del texto. Analogia cotidiana al final.",
+    "tip_clave": "Una sola frase que resume lo mas importante"
+  },
+  "ejemplos_resueltos": [
+    { "problema": "Ejemplo 1 enunciado", "solucion": "Solucion paso a paso del ejemplo 1" },
+    { "problema": "Ejemplo 2 distinto al 1", "solucion": "Solucion paso a paso del ejemplo 2" }
+  ],
+  "glosario": [
+    { "palabra": "termino1", "definicion": "definicion en 1-2 oraciones simples" },
+    { "palabra": "termino2", "definicion": "definicion en 1-2 oraciones simples" },
+    { "palabra": "termino3", "definicion": "definicion en 1-2 oraciones simples" }
+  ],
+  "ejercicio_libreta": {
+    "instruccion": "Instruccion especifica para el cuaderno. Que escribir/dibujar/calcular exactamente.",
+    "tipo": "OPERACION"
   },
   "reto_gameplay": {
-    "instruccion_fiel": "EJERCICIO NUEVO INVENTADO...",
-    "respuesta_correcta": "LA RESPUESTA AL EJERCICIO INVENTADO...",
+    "instruccion_fiel": "Reto NUEVO en pantalla. NO repetir teoria. Problema practico diferente a los ejemplos.",
+    "respuesta_correcta": "Respuesta exacta o rubrica detallada.",
     "tipo_evidencia_requerida": "FOTO_FISICA",
-    "opciones": ["Opcion 1", "Opcion 2", "Opcion 3", "Opcion 4"]
+    "opciones": []
   },
-  "cierre_metacognicion": "Pregunta de reflexión final."
+  "cierre_metacognicion": "Pregunta de reflexion para conectar lo aprendido con la vida del alumno."
 }
 
-INSTRUCCIÓN CRÍTICA PARA 'opciones': Esta llave DEBE contener un array de 4 strings con respuestas lógicas SOLO si 'tipo_evidencia_requerida' es 'MULTIPLE_CHOICE'. Si es otro tipo, devuelve un array vacío []. ¡ESTÁ ESTRICTAMENTE PROHIBIDO INCLUIR COMENTARIOS (//) EN TU RESPUESTA JSON!
-
-INSTRUCCIÓN PARA RESPUESTA CORRECTA: Este campo es la RÚBRICA DEL MAESTRO. Si el reto incluye tablas, conteos, o varios pasos, tu respuesta DEBE contener el desglose exacto (ej. 'Puntos: 10, Comas: 6. Por lo tanto, el mayor es el punto'). Está PROHIBIDO dar respuestas de una sola palabra si el ejercicio requiere análisis físico.
+ejercicio_libreta.tipo: OPERACION | REDACCION | DIBUJO | TABLA | INVESTIGACION | EXPERIMENTO
+tipo_evidencia_requerida: FOTO_FISICA | TEXTO_DIGITAL | MULTIPLE_CHOICE (si MULTIPLE_CHOICE, "opciones" tiene 4 strings)
 `;
 
         const model = genAI.getGenerativeModel({
             model: 'gemini-flash-latest',
-            generationConfig: {
-                temperature: 0.2, // Low temperature for consistent JSON layout
-            }
+            generationConfig: { temperature: 0.25 }
         });
 
         const result = await model.generateContent(prompt);
-        let responseText = result.response.text();
-
-        responseText = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
+        let responseText = result.response.text().replace(/```json/gi, '').replace(/```/gi, '').trim();
 
         let aiData: any = {};
         try {
             aiData = JSON.parse(responseText);
-        } catch (e) {
-            console.error("Failed to parse prompt JSON output", e, responseText);
-            try {
-                const match = responseText.match(/\\{[\\s\\S]*\\}/);
-                if (match) aiData = JSON.parse(match[0]);
-                else throw new Error("Regex JSON extraction failed");
-            } catch (e2) {
+        } catch {
+            const match = responseText.match(/\{[\s\S]*\}/);
+            if (match) {
+                try { aiData = JSON.parse(match[0]); }
+                catch { return NextResponse.json({ error: 'AI returned malformed JSON', raw: responseText }, { status: 500 }); }
+            } else {
                 return NextResponse.json({ error: 'AI returned malformed JSON', raw: responseText }, { status: 500 });
             }
         }
 
-        // Map AI output to `LevelContent`
+        const oraculoTitle    = aiData.oraculo_teoria?.titulo             || 'Teoria';
+        const oraculoContent  = aiData.oraculo_teoria?.contenido_markdown || '';
+        const tipClave        = aiData.oraculo_teoria?.tip_clave           || '';
+        const ejemplos        = Array.isArray(aiData.ejemplos_resueltos)   ? aiData.ejemplos_resueltos : [];
+        const glosario        = Array.isArray(aiData.glosario)             ? aiData.glosario           : [];
+        const ejercicioLibreta = aiData.ejercicio_libreta                  || null;
+
+        const oraculoFull = `### ${oraculoTitle}\n\n${oraculoContent}${tipClave ? `\n\n💡 **Tip clave:** ${tipClave}` : ''}`;
+
+        const tipoEvidencia =
+            aiData.reto_gameplay?.tipo_evidencia_requerida === 'FOTO_FISICA'     ? 'FOTO_DIBUJO'    :
+            aiData.reto_gameplay?.tipo_evidencia_requerida === 'TEXTO_DIGITAL'   ? 'TEXTO_ENSAYO'   :
+            aiData.reto_gameplay?.tipo_evidencia_requerida === 'MULTIPLE_CHOICE' ? 'MULTIPLE_CHOICE': 'TEXTO_ENSAYO';
+
         const mappedContent = {
             ...day,
-            narrative: aiData.historia_inicio || "(Historia)",
+            narrative: aiData.historia_inicio || day.narrative || '(Historia)',
             content: {
-                ...(day as any).content,
+                ...day.content,
                 practiceProblem: {
-                    ...(day as any).content?.practiceProblem,
+                    ...day.content?.practiceProblem,
                     statement: JSON.stringify({
-                        oraculo_teoria: `### ${aiData.oraculo_teoria?.titulo || "Teoría"}\n\n${aiData.oraculo_teoria?.contenido_markdown || ""}`,
-                        instruccion_fiel: aiData.reto_gameplay?.instruccion_fiel || "",
-                        cierre: aiData.cierre_metacognicion || ""
+                        oraculo_teoria:    oraculoFull,
+                        ejemplos_resueltos: ejemplos,
+                        ejercicio_libreta:  ejercicioLibreta,
+                        instruccion_fiel:   aiData.reto_gameplay?.instruccion_fiel || '',
+                        cierre:             aiData.cierre_metacognicion || ''
                     }),
-                    // Default to TEXTO_ENSAYO if the AI returns something foreign
-                    tipo_evidencia_requerida: aiData.reto_gameplay?.tipo_evidencia_requerida === "FOTO_FISICA" ? "FOTO_DIBUJO" :
-                        aiData.reto_gameplay?.tipo_evidencia_requerida === "TEXTO_DIGITAL" ? "TEXTO_ENSAYO" :
-                            aiData.reto_gameplay?.tipo_evidencia_requerida === "MULTIPLE_CHOICE" ? "MULTIPLE_CHOICE" : "TEXTO_ENSAYO",
-                    options: aiData.reto_gameplay?.opciones || [],
-                    correctValue: aiData.reto_gameplay?.respuesta_correcta || "Respuesta de rúbrica no generada",
-                    hint: ""
+                    tipo_evidencia_requerida: tipoEvidencia,
+                    options:      aiData.reto_gameplay?.opciones  || [],
+                    correctValue: aiData.reto_gameplay?.respuesta_correcta || 'Rubrica no generada',
+                    hint: tipClave || ''
                 }
             },
-            isGenerating: false // Flag to mark it ready!
+            glosario:          glosario,
+            ejercicio_libreta: ejercicioLibreta,
+            isGenerating:      false
         };
 
         days[dayIndex] = mappedContent;
 
-        // Save back to DB!
         await prisma.world.update({
             where: { id: worldId },
-            data: { daysJson: JSON.stringify(days) }
+            data:  { daysJson: JSON.stringify(days) }
         });
 
         return NextResponse.json({ message: 'Day generated', day: mappedContent });

@@ -56,7 +56,6 @@ export async function checkAiQuota(schoolId: string) {
             apiCalls: true,
             subscriptionPlan: true,
             subscriptionStatus: true,
-            monthlyAiLimit: true,
         }
     });
 
@@ -64,17 +63,17 @@ export async function checkAiQuota(schoolId: string) {
         return { allowed: false, currentCalls: 0, limit: 0, error: "Escuela no encontrada." };
     }
 
+    const limits = getPlanConfig(school.subscriptionPlan);
+    const maxAiCalls = limits.monthlyAiCalls;
+
     if (school.subscriptionStatus === "SUSPENDED") {
         return {
             allowed: false,
             currentCalls: school.apiCalls,
-            limit: school.monthlyAiLimit,
+            limit: maxAiCalls,
             error: "Tu cuenta está suspendida. Contacta a un administrador para reactivar tu servicio."
         };
     }
-
-    const limits = getPlanConfig(school.subscriptionPlan);
-    const maxAiCalls = school.monthlyAiLimit || limits.monthlyAiCalls;
 
     if (school.apiCalls >= maxAiCalls) {
         return {
@@ -115,14 +114,14 @@ export async function incrementAiUsage(schoolId: string, userId?: string) {
 export async function extendSchoolSubscription(schoolId: string, daysToAdd: number) {
     const school = await prisma.school.findUnique({
         where: { id: schoolId },
-        select: { nextPaymentDate: true, subscriptionStatus: true }
+        select: { subscriptionEndsAt: true, subscriptionStatus: true }
     });
 
     if (!school) throw new Error("Escuela no encontrada");
 
     const now = new Date();
-    const currentDue = school.nextPaymentDate && new Date(school.nextPaymentDate) > now
-        ? new Date(school.nextPaymentDate)
+    const currentDue = school.subscriptionEndsAt && new Date(school.subscriptionEndsAt) > now
+        ? new Date(school.subscriptionEndsAt)
         : now;
 
     const newDueDate = new Date(currentDue.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
@@ -131,7 +130,7 @@ export async function extendSchoolSubscription(schoolId: string, daysToAdd: numb
     const updated = await prisma.school.update({
         where: { id: schoolId },
         data: {
-            nextPaymentDate: newDueDate,
+            subscriptionEndsAt: newDueDate,
             subscriptionStatus: "ACTIVE",
         }
     });

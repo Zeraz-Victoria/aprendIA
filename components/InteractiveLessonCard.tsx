@@ -133,6 +133,8 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     const hasMiniGame = !!data.content?.miniGame;
     const hasPractice = !!(data.content?.practiceProblem || (data as any).reto_gameplay?.instruccion_fiel || (data as any).originalProblemText || data.type === 'guided_practice');
     const [activityStage, setActivityStage] = useState<"minigame" | "practice">(hasMiniGame && data.type !== 'guided_practice' ? "minigame" : "practice");
+    const [notebookDone, setNotebookDone] = useState(false);
+    const [showEjemplos, setShowEjemplos] = useState(false);
 
     // TTS State
     const [isSpeaking, setIsSpeaking] = useState(false);
@@ -542,80 +544,209 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
     };
 
     const renderGuidedPractice = () => {
-        const statement = safeParsePromptText(
-            data.content?.practiceProblem?.statement ||
-            (data.content as any)?.evidenceProblem?.statement ||
-            (data as any).originalProblemText ||
-            data.content?.explanation?.analogy ||
-            data.narrative
-        );
+        // Parse the rich JSON statement produced by generate-level-content
+        let parsedStatement: any = null;
+        const rawStatement = data.content?.practiceProblem?.statement ||
+            (data.content as any)?.evidenceProblem?.statement;
+
+        if (rawStatement && typeof rawStatement === 'string') {
+            try {
+                const trimmed = rawStatement.trim();
+                if (trimmed.startsWith('{')) parsedStatement = JSON.parse(trimmed);
+            } catch { /* not JSON, use as plain text */ }
+        }
+
+        const oraculoText      = parsedStatement?.oraculo_teoria      || null;
+        const instruccionFiel  = parsedStatement?.instruccion_fiel     || null;
+        const cierreReflexion  = parsedStatement?.cierre               || null;
+        const ejercicioLibreta = parsedStatement?.ejercicio_libreta     || (data as any).ejercicio_libreta || null;
+        const ejemplosResueltos: { problema: string; solucion: string }[] =
+            parsedStatement?.ejemplos_resueltos || (data as any).ejemplos_resueltos || [];
+        const glosarioDat: { palabra: string; definicion: string }[] =
+            (data as any).glosario || [];
+
+        // Fallback for legacy plain-text statements
+        const legacyStatement = !parsedStatement
+            ? safeParsePromptText(rawStatement || (data as any).originalProblemText || data.narrative)
+            : null;
+
+        const tipoLibretaEmoji: Record<string, string> = {
+            OPERACION: '🔢', REDACCION: '✏️', DIBUJO: '🎨',
+            TABLA: '📊', INVESTIGACION: '🔍', EXPERIMENTO: '🧪'
+        };
 
         return (
             <div className="space-y-6 animate-fade-in-up">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-teal-100 dark:border-slate-700">
-                    <div className="bg-teal-50 dark:bg-slate-700 p-6 rounded-xl border border-teal-100 dark:border-slate-600">
-                        <div className="prose prose-sky dark:prose-invert prose-lg max-w-full break-words min-w-0 overflow-hidden">
-                            {renderSafeContent(
-                                (statement || "Resuelve el siguiente acertijo.")
-                                    .replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)
-                                    .replace(/<br\s*\/?>/gi, '\n\n')
-                                    .replace(/<b>(.*?)<\/b>/gi, '**$1**')
-                                    .replace(/<i>(.*?)<\/i>/gi, '*$1*')
-                                    .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
-                                    .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+
+                {/* ─── ORÁCULO / TEORÍA ─── */}
+                {oraculoText && (
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-teal-100 dark:border-slate-700">
+                        <div className="bg-teal-50 dark:bg-slate-700 p-5 rounded-xl border border-teal-100 dark:border-slate-600">
+                            <div className="prose prose-sky dark:prose-invert prose-base max-w-full break-words min-w-0 overflow-hidden">
+                                {renderSafeContent(
+                                    oraculoText
+                                        .replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)
+                                        .replace(/<br\s*\/?>/gi, '\n\n')
+                                        .replace(/<b>(.*?)<\/b>/gi, '**$1**')
+                                        .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+                                )}
+                            </div>
+                            {speechSupported && (
+                                <div className="mt-3 flex justify-end">
+                                    <button
+                                        onClick={() => handleSpeak(oraculoText.replace(/[#*_\[\]]/g, '').replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName))}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${isSpeaking ? 'bg-teal-200 text-teal-700 animate-pulse' : 'bg-teal-100 text-teal-600 hover:bg-teal-200'}`}
+                                    >
+                                        <Volume2 className="w-4 h-4" />
+                                        {isSpeaking ? 'Escuchando...' : 'Escuchar'}
+                                    </button>
+                                </div>
                             )}
                         </div>
+                    </div>
+                )}
 
-                        {speechSupported && (
-                            <div className="mt-4 flex justify-end">
-                                <button
-                                    onClick={() => handleSpeak((statement || "Resuelve el siguiente acertijo.").replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName))}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${isSpeaking ? 'bg-teal-200 text-teal-700 animate-pulse' : 'bg-teal-100 text-teal-600 hover:bg-teal-200'}`}
-                                    title="Leer en voz alta"
-                                >
-                                    <Volume2 className="w-4 h-4" />
-                                    {isSpeaking ? "Escuchando..." : "Escuchar"}
-                                </button>
+                {/* ─── Legacy plain text fallback ─── */}
+                {legacyStatement && (
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-teal-100 dark:border-slate-700">
+                        <div className="bg-teal-50 dark:bg-slate-700 p-5 rounded-xl border border-teal-100 dark:border-slate-600">
+                            <div className="prose prose-sky dark:prose-invert prose-base max-w-full break-words">
+                                {renderSafeContent(
+                                    legacyStatement
+                                        .replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName)
+                                        .replace(/<br\s*\/?>/gi, '\n\n')
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ─── EJEMPLOS RESUELTOS ─── */}
+                {ejemplosResueltos.length > 0 && (
+                    <div className="rounded-2xl border border-blue-200 dark:border-blue-800 overflow-hidden shadow-sm">
+                        <button
+                            type="button"
+                            onClick={() => setShowEjemplos(v => !v)}
+                            className="w-full flex items-center justify-between px-5 py-4 bg-blue-50 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 font-bold text-base hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
+                        >
+                            <span className="flex items-center gap-2">
+                                <span className="text-xl">💡</span>
+                                Ejemplos Resueltos ({ejemplosResueltos.length})
+                            </span>
+                            <ChevronRight className={`w-5 h-5 transition-transform ${showEjemplos ? 'rotate-90' : ''}`} />
+                        </button>
+                        {showEjemplos && (
+                            <div className="p-5 bg-white dark:bg-slate-800 space-y-4">
+                                {ejemplosResueltos.map((ej, idx) => (
+                                    <div key={idx} className="border border-blue-100 dark:border-blue-900 rounded-xl overflow-hidden">
+                                        <div className="bg-blue-50 dark:bg-blue-900/30 px-4 py-3">
+                                            <p className="text-xs font-bold uppercase tracking-widest text-blue-500 mb-1">Problema {idx + 1}</p>
+                                            <p className="text-slate-800 dark:text-slate-200 font-medium text-sm">{ej.problema}</p>
+                                        </div>
+                                        <div className="bg-green-50 dark:bg-green-900/20 px-4 py-3 border-t border-blue-100 dark:border-blue-900">
+                                            <p className="text-xs font-bold uppercase tracking-widest text-green-600 mb-1">Solución</p>
+                                            <div className="prose prose-sm dark:prose-invert max-w-full">
+                                                {renderSafeContent(ej.solucion)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>
-                </div>
+                )}
 
-                {(() => {
-                    let ejemplosText = "";
-                    const rawStatement = data.content?.practiceProblem?.statement || (data.content as any)?.evidenceProblem?.statement;
-                    if (rawStatement && typeof rawStatement === "string") {
-                        try {
-                            const parsed = JSON.parse(rawStatement);
-                            if (parsed.ejemplos_resolucion) {
-                                ejemplosText = parsed.ejemplos_resolucion;
-                            } else if (parsed.reto_gameplay?.ejemplos_resolucion) {
-                                ejemplosText = parsed.reto_gameplay.ejemplos_resolucion;
-                            }
-                        } catch (e) { }
-                    }
-                    if (!ejemplosText) return null;
+                {/* ─── GLOSARIO ─── */}
+                {glosarioDat.length > 0 && (
+                    <div className="rounded-2xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20 p-4 shadow-sm">
+                        <p className="text-xs font-bold uppercase tracking-widest text-purple-600 dark:text-purple-400 mb-3 flex items-center gap-2">
+                            <span>📚</span> Glosario del Nivel
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {glosarioDat.map((g, idx) => (
+                                <div key={idx} className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-purple-100 dark:border-purple-900">
+                                    <span className="font-bold text-purple-700 dark:text-purple-300 text-sm">{g.palabra}</span>
+                                    <p className="text-slate-600 dark:text-slate-400 text-xs mt-1 leading-relaxed">{g.definicion}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
-                    return (
-                        <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 p-6 rounded-r-xl shadow-sm my-6">
-                            <div className="flex items-center gap-2 font-bold text-blue-800 dark:text-blue-300 mb-2">
-                                <span className="text-xl">💡</span>
-                                <span className="uppercase tracking-wider text-sm">Ejemplo de Resolución</span>
+                {/* ─── EJERCICIO DE LIBRETA ─── */}
+                {ejercicioLibreta && (
+                    <div className={`rounded-2xl border-2 shadow-md transition-all ${notebookDone ? 'border-green-400 bg-green-50 dark:bg-green-900/20' : 'border-amber-400 bg-amber-50 dark:bg-amber-900/20'}`}>
+                        <div className="px-5 py-4">
+                            <div className="flex items-center gap-3 mb-3">
+                                <span className="text-2xl">
+                                    {tipoLibretaEmoji[ejercicioLibreta.tipo] || '📓'}
+                                </span>
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">
+                                        📓 Ejercicio en tu Libreta
+                                    </p>
+                                    <p className="text-xs text-amber-600 dark:text-amber-500">
+                                        Completa esto en tu cuaderno antes de continuar
+                                    </p>
+                                </div>
+                                {notebookDone && (
+                                    <span className="ml-auto bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                        <ShieldCheck className="w-3 h-3" /> Listo
+                                    </span>
+                                )}
                             </div>
-                            <div className="prose prose-blue dark:prose-invert text-blue-900 dark:text-blue-200 font-medium">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-                                    {ejemplosText}
-                                </ReactMarkdown>
+                            <p className="text-slate-800 dark:text-slate-200 font-medium leading-relaxed text-sm mb-4">
+                                {ejercicioLibreta.instruccion}
+                            </p>
+                            {!notebookDone && (
+                                <button
+                                    type="button"
+                                    onClick={() => setNotebookDone(true)}
+                                    className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl font-bold text-base shadow-md shadow-amber-500/30 transition-all active:scale-95"
+                                >
+                                    ✅ Ya lo hice en mi libreta
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* ─── RETO EN PANTALLA ─── */}
+                {instruccionFiel && (
+                    <div className={`bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border-2 transition-all ${ejercicioLibreta && !notebookDone ? 'border-slate-200 opacity-60 pointer-events-none select-none' : 'border-teal-200 dark:border-teal-700'}`}>
+                        {ejercicioLibreta && !notebookDone && (
+                            <div className="text-center text-sm text-slate-500 dark:text-slate-400 mb-3 font-medium">
+                                🔒 Completa el ejercicio de libreta primero
+                            </div>
+                        )}
+                        <p className="text-xs font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400 mb-3 flex items-center gap-2">
+                            <span>🎮</span> Reto en Pantalla
+                        </p>
+                        <div className="bg-teal-50 dark:bg-slate-700 p-5 rounded-xl border border-teal-100 dark:border-slate-600">
+                            <div className="prose prose-sky dark:prose-invert prose-base max-w-full break-words">
+                                {renderSafeContent(instruccionFiel.replace(/\[NOMBRE_DEL_ESTUDIANTE\]/gi, studentName))}
                             </div>
                         </div>
-                    );
-                })()}
+                    </div>
+                )}
 
+                {/* ─── REFLEXIÓN FINAL ─── */}
+                {cierreReflexion && (
+                    <div className="bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-900/20 dark:to-indigo-900/20 border border-violet-200 dark:border-violet-800 rounded-2xl p-5">
+                        <p className="text-xs font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400 mb-2 flex items-center gap-2">
+                            <span>🌟</span> Reflexión Final
+                        </p>
+                        <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed">{cierreReflexion}</p>
+                    </div>
+                )}
+
+                {/* ─── ACCIONES ─── */}
                 <div className="flex gap-4 mt-6">
                     <button
                         type="button"
                         onClick={onComplete}
-                        className="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-600/30 transition-transform active:scale-95"
+                        disabled={!!(ejercicioLibreta && !notebookDone)}
+                        className="flex-1 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-600/30 transition-transform active:scale-95"
                     >
                         📝 Subir Evidencia
                     </button>
@@ -634,15 +765,15 @@ export default function InteractiveLessonCard({ data, studentName = "Aventurero"
                     <div className="bg-amber-100 dark:bg-amber-900/30 border-l-4 border-amber-500 p-4 rounded-r-xl animate-fade-in-up mt-4">
                         <div className="flex items-start gap-3">
                             <Bot className="text-amber-600 dark:text-amber-400 mt-1 flex-shrink-0" />
-                            <p className="text-amber-900 dark:text-amber-200 leading-relaxed font-medium">
-                                {aiHint}
-                            </p>
+                            <p className="text-amber-900 dark:text-amber-200 leading-relaxed font-medium">{aiHint}</p>
                         </div>
                     </div>
                 )}
             </div>
         );
     };
+
+
 
     const renderMiniGame = () => {
         const type = data.content?.miniGame?.type;

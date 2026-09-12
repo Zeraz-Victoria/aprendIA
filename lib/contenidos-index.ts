@@ -91,18 +91,6 @@ const MATERIA_KEYWORDS: Record<string, string[]> = {
     '6º Saberes y P. C.': ['ciencias', 'física', 'química', 'biología', 'astronomía', 'energía', 'materia'],
     '6º Ética N. y S.': ['ética', 'cívica', 'responsabilidad', 'ciudadanía', 'valores'],
     '6º De lo Humano y lo C.': ['tecnología', 'ingeniería', 'diseño', 'procesos', 'materiales'],
-    // Existing secondary entries follow below
-    // ── 2° Secundaria ──────────────────────────────────────────────────────────
-    '2° MAT':     ['matematicas', 'matematica', 'fraccion', 'fracciones', 'decimal', 'decimales', 'ecuacion', 'ecuaciones', 'algebra', 'algebraico', 'geometria', 'geometrico', 'recta', 'porcentaje', 'reparto', 'proporcionalidad', 'angulos', 'triangulos', 'poligonos', 'area', 'perimetro', 'volumen', 'probabilidad', 'estadistica', 'grafica', 'graficas', 'numeros', 'calculo'],
-    '2° ESP':     ['lenguaje', 'lengua', 'espanol', 'lectura', 'redaccion', 'texto', 'textos', 'cuento', 'cuentos', 'poema', 'poemas', 'poesia', 'ensayo', 'debate', 'noticia', 'periodico', 'entrevista', 'comunicacion', 'dialogo', 'literario', 'literatura', 'ortografia', 'gramatica', 'argumentacion'],
-    '2° ING':     ['ingles', 'english', 'idioma', 'vocabulario', 'pronunciacion', 'traduccion', 'bilingue'],
-    '2° FIS':     ['fisica', 'fuerza', 'fuerzas', 'velocidad', 'aceleracion', 'movimiento', 'energia', 'trabajo', 'potencia', 'inercia', 'newton', 'cinematica', 'dinamica', 'calor', 'temperatura', 'termodinamica', 'electricidad', 'magnetismo', 'onda', 'sonido', 'luz', 'optica', 'presion', 'densidad', 'flotacion', 'gravedad', 'caida libre', 'tiro parabolico', 'circuito', 'voltaje', 'resistencia', 'ondas mecanicas', 'medicion', 'unidades'],
-    '2° HIST':    ['historia', 'historico', 'independencia', 'revolucion', 'virreinato', 'colonia', 'colonizacion', 'conquista', 'mesoamerica', 'constitucion', 'porfiriato', 'siglo', 'epoca', 'aztecas', 'mayas', 'espana', 'colonial', 'hernandez cortes', 'independencia', 'reforma', 'juarez', 'porfirio'],
-    '2° F.C.E':   ['civica', 'etica', 'derechos', 'derechos humanos', 'leyes', 'normas', 'justicia', 'igualdad', 'genero', 'discriminacion', 'inclusion', 'democracia', 'ciudadania', 'violencia', 'paz', 'acoso', 'identidad juvenil', 'bienestar colectivo'],
-    '2° ART':     ['artes', 'artistico', 'musica', 'danza', 'teatro', 'pintura', 'dibujo', 'sonido', 'colores', 'expresion artistica'],
-    '2° TEC':     ['tecnologia', 'tecnico', 'herramientas', 'maquinas', 'instrumentos', 'innovacion', 'materiales', 'procesos tecnicos', 'artesanal', 'industrial', 'digital'],
-    '2° TUTO':    ['tutoria', 'socioemocional', 'emociones', 'autoestima', 'proyecto de vida', 'empatia', 'sentimientos', 'convivencia escolar', 'adicciones', 'toma de decisiones'],
-    '2° EDU.FIS': ['educacion fisica', 'deporte', 'motricidad', 'juego', 'actividad fisica', 'corporalidad', 'recreacion', 'condicion fisica', 'habilidades motrices'],
     // ── 3° Secundaria ──────────────────────────────────────────────────────────
     '3° MAT':     ['matematicas', 'matematica', 'fraccion', 'fracciones', 'decimal', 'decimales', 'ecuacion', 'ecuaciones', 'algebra', 'algebraico', 'geometria', 'geometrico', 'recta', 'porcentaje', 'reparto', 'proporcionalidad', 'angulos', 'triangulos', 'poligonos', 'area', 'perimetro', 'volumen', 'probabilidad', 'estadistica', 'grafica', 'graficas', 'numeros', 'calculo'],
     '3° ESP':     ['lenguaje', 'lengua', 'espanol', 'lectura', 'redaccion', 'texto', 'textos', 'cuento', 'cuentos', 'poema', 'poemas', 'poesia', 'ensayo', 'debate', 'noticia', 'periodico', 'entrevista', 'comunicacion', 'dialogo', 'literario', 'literatura', 'ortografia', 'gramatica', 'argumentacion'],
