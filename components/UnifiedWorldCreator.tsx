@@ -145,7 +145,12 @@ export default function UnifiedWorldCreator({ onClose, onWorldCreated }: Unified
                 createdAt: new Date().toISOString()
             };
 
-            addWorld(newWorld);
+            setWorldLoadingText("Guardando aventura en tu biblioteca...");
+            const saved = await addWorld(newWorld);
+            if (!saved) {
+                throw new Error("No se pudo guardar la aventura en el servidor. Revisa los límites de tu plan o tu conexión.");
+            }
+
             setActiveWorld(newWorld.id);
 
             if (onWorldCreated) onWorldCreated();

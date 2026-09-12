@@ -254,7 +254,7 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
         setNodes([...nodes, newNode as LevelContent]);
     };
 
-    const handleSaveWorld = () => {
+    const handleSaveWorld = async () => {
         if (initialWorld) {
             const updatedWorld = {
                 ...initialWorld,
@@ -263,8 +263,11 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                 days: nodes,
                 classroomIds: selectedClassrooms
             };
-            updateWorld(updatedWorld);
-            setActiveWorld(updatedWorld.id);
+            const updated = await updateWorld(updatedWorld);
+            if (updated) {
+                setActiveWorld(updatedWorld.id);
+                onClose();
+            }
         } else {
             const newWorld = {
                 id: crypto.randomUUID(),
@@ -274,10 +277,12 @@ export default function VisualWorldBuilder({ onClose, initialWorld, initialShowA
                 createdAt: new Date().toISOString(),
                 classroomIds: selectedClassrooms
             };
-            addWorld(newWorld);
-            setActiveWorld(newWorld.id);
+            const saved = await addWorld(newWorld);
+            if (saved) {
+                setActiveWorld(newWorld.id);
+                onClose();
+            }
         }
-        onClose();
     };
 
     const handleDownloadCompleteMapPdf = async () => {

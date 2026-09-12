@@ -327,10 +327,12 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       } else {
         const errorData = await res.json().catch(() => ({}));
         console.error("Failed to add world:", errorData);
+        alert(errorData.error || `Error al guardar la aventura: ${res.statusText}`);
         return false;
       }
     } catch (e) {
       console.error("Network error adding world:", e);
+      alert(`Error de conexión al guardar la aventura: ${e instanceof Error ? e.message : String(e)}`);
       return false;
     }
   };
